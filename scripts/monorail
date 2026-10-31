@@ -1,16 +1,16 @@
 #!/bin/sh
 # Command-line control for Monorail by Ashforde®.
 #   monorail <action>                 run any action (focus-left, overview, …)
-#   monorail layout|pair|template|snapshot <name>
-#   monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions
+#   monorail layout|pair|template|snapshot|focus-app|notify <name>
+#   monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
 # Queries need the local API (Settings → Automation → Local API) and print JSON.
 set -eu
 
 usage() {
     cat <<'USAGE'
 Usage: monorail <action>
-       monorail layout|pair|template|snapshot <name>
-       monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions
+       monorail layout|pair|template|snapshot|focus-app|notify <name>
+       monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
 
 Actions include:
   focus-left focus-right focus-up focus-down focus-first focus-last
@@ -40,9 +40,9 @@ if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
 fi
 
 case "$1" in
-    windows|state|workspaces|layouts|pairs|templates|snapshots|actions)
+    windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights)
         api "$1" ;;
-    layout|pair|template|snapshot)
+    layout|pair|template|snapshot|focus-app|notify)
         [ $# -eq 2 ] || { usage; exit 64; }
         exec open -g "monorail://$1/$(encode "$2")" ;;
     *[!a-z0-9-]*)

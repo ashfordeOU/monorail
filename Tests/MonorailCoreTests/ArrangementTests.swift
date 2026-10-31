@@ -410,3 +410,94 @@ final class V10Tests: XCTestCase {
         XCTAssertEqual(settings.sliderBar, .whileMoving)
     }
 }
+
+final class V11Tests: XCTestCase {
+    func testOlderSettingsGetTheNarrowMenuBarOnce() throws {
+        let old = #"{"showNavigationArrows": true, "menuBarStyle": "glyph"}"#.data(using: .utf8)!
+        let migrated = try JSONDecoder().decode(AppSettings.self, from: old)
+        XCTAssertFalse(migrated.showNavigationArrows)
+        XCTAssertEqual(migrated.menuBarStyle, .mini)
+        // Once applied, choosing the arrows again sticks.
+        var chosen = migrated
+        chosen.showNavigationArrows = true
+        chosen.menuBarStyle = .dots
+        let again = try JSONDecoder().decode(AppSettings.self, from: JSONEncoder().encode(chosen))
+        XCTAssertTrue(again.showNavigationArrows)
+        XCTAssertEqual(again.menuBarStyle, .dots)
+    }
+
+    func strip(_ slides: [[WindowID]]) -> Strip {
+        var strip = Strip()
+        for slide in slides { strip.insertSlide(slide, width: 0.5, arrangement: .columns, position: .end, focus: true) }
+        return strip
+    }
+
+    func testMoveSlideToStartAndEnd() {
+        var s = strip([[1], [2], [3]])
+        s.focus(3)
+        s.moveFocusedColumn(toStart: true)
+        XCTAssertEqual(s.columns.map(\.windows), [[3], [1], [2]])
+        XCTAssertEqual(s.focusedWindow, 3)
+        s.moveFocusedColumn(toStart: false)
+        XCTAssertEqual(s.columns.map(\.windows), [[1], [2], [3]])
+    }
+
+    func testUnpairAndMerge() {
+        var s = strip([[1, 2, 3], [4]])
+        s.focus(2)
+        s.unpairFocused()
+        XCTAssertEqual(s.columns.map(\.windows), [[1], [2], [3], [4]])
+        XCTAssertEqual(s.focusedWindow, 2)
+        XCTAssertTrue(s.mergeFocused(withNext: true))
+        XCTAssertEqual(s.columns.map(\.windows), [[1], [2, 3], [4]])
+        XCTAssertTrue(s.mergeFocused(withNext: false))
+        XCTAssertEqual(s.columns.map(\.windows), [[1, 2, 3], [4]])
+        XCTAssertEqual(s.focusedWindow, 2)
+    }
+
+    func testMergeRespectsTheSixWindowLimit() {
+        var s = strip([[1, 2, 3, 4], [5, 6, 7]])
+        s.focus(1)
+        XCTAssertFalse(s.mergeFocused(withNext: true))
+    }
+
+    func testCycleTilesAndMain() {
+        var s = strip([[1, 2, 3]])
+        s.focus(1)
+        s.cycleTile(forward: true)
+        XCTAssertEqual(s.focusedWindow, 2)
+        s.cycleTile(forward: false)
+        s.cycleTile(forward: false)
+        XCTAssertEqual(s.focusedWindow, 3)
+        s.focusMainTile()
+        XCTAssertEqual(s.focusedWindow, 1)
+    }
+
+    func testRemoveAndAppendSlides() {
+        var s = strip([[1], [2, 3]])
+        s.focus(2)
+        let column = s.removeFocusedColumn()
+        XCTAssertEqual(column?.windows, [2, 3])
+        var other = strip([[9]])
+        other.appendColumn(column!)
+        XCTAssertEqual(other.columns.map(\.windows), [[9], [2, 3]])
+        XCTAssertEqual(other.focusedWindow, 2, "the slide keeps its active window")
+    }
+
+    func testDirectLayoutsAndWidths() {
+        XCTAssertEqual(Action.layoutSpiral.directLayout, .some(.spiral))
+        XCTAssertEqual(Action.layoutTabs.directLayout, .some(nil))
+        XCTAssertNil(Action.focusLeft.directLayout)
+        XCTAssertEqual(Action.widthHalf.directWidth, 0.5)
+    }
+
+    func testWorkspaceConfigAndCornersDecode() throws {
+        var settings = AppSettings()
+        settings.workspaceConfigs["2"] = WorkspaceConfig(color: "#FF0000", focusMode: true)
+        settings.hotCorners[1] = .overview
+        let decoded = try JSONDecoder().decode(AppSettings.self, from: JSONEncoder().encode(settings))
+        XCTAssertEqual(decoded.workspaceConfig(2).color, "#FF0000")
+        XCTAssertEqual(decoded.hotCorners[1], .overview)
+        XCTAssertNil(decoded.workspaceConfig(3).color)
+    }
+}

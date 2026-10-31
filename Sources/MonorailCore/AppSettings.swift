@@ -19,6 +19,13 @@ public struct AppRule: Equatable, Hashable, Codable, Sendable, Identifiable {
     public var workspace: Int?
     /// The display (by name) this app's new windows open on.
     public var display: String?
+    /// New windows open full width, tabbed, pinned to an edge, on every
+    /// workspace, or as the scratchpad.
+    public var fullWidth: Bool?
+    public var tabbed: Bool?
+    public var pin: PinSide?
+    public var sticky: Bool?
+    public var scratchpad: Bool?
     /// Only windows whose title contains this (any case), e.g. "Meet" in a
     /// browser. Empty or nil applies to every window of the app.
     public var titleContains: String?
@@ -228,6 +235,58 @@ public enum Version {
     }
 }
 
+/// What a screen corner does when the pointer rests in it.
+public enum HotCorner: String, Codable, CaseIterable, Sendable {
+    case none, overview, showDesktop, palette, focusMode, cheatSheet, stripZoom
+
+    public var title: String {
+        switch self {
+        case .none: return "Nothing"
+        case .overview: return "Overview"
+        case .showDesktop: return "Show desktop"
+        case .palette: return "Command palette"
+        case .focusMode: return "Focus mode"
+        case .cheatSheet: return "Cheat sheet"
+        case .stripZoom: return "Zoom out on the strip"
+        }
+    }
+}
+
+/// Settings for one workspace.
+public struct WorkspaceConfig: Equatable, Hashable, Codable, Sendable {
+    /// Its colour (hex), instead of the theme's.
+    public var color: String?
+    /// The layout of its new slides.
+    public var arrangement: Arrangement?
+    /// Its own gap between windows.
+    public var gap: Double?
+    /// Focus mode turns on when you go there.
+    public var focusMode: Bool?
+    /// New windows never open here; they go to the next workspace.
+    public var closed: Bool?
+
+    public init(color: String? = nil, arrangement: Arrangement? = nil, gap: Double? = nil, focusMode: Bool? = nil,
+                closed: Bool? = nil) {
+        self.color = color
+        self.arrangement = arrangement
+        self.gap = gap
+        self.focusMode = focusMode
+        self.closed = closed
+    }
+}
+
+/// How windows move.
+public enum AnimationCurve: String, Codable, CaseIterable, Sendable {
+    case smooth, snappy, linear
+    public var title: String { rawValue.capitalized }
+}
+
+/// Where notices appear.
+public enum NoticePosition: String, Codable, CaseIterable, Sendable {
+    case top, middle, bottom
+    public var title: String { rawValue.capitalized }
+}
+
 /// What the menu bar item shows.
 public enum MenuBarStyle: String, Codable, CaseIterable, Sendable {
     /// The M glyph and the slide number.
@@ -236,9 +295,12 @@ public enum MenuBarStyle: String, Codable, CaseIterable, Sendable {
     case dots
     /// Just the workspace number.
     case number
+    /// The position drawn into the icon itself: a pip per slide, no text.
+    case mini
 
     public var title: String {
         switch self {
+        case .mini: return "Mini map in the icon (narrowest)"
         case .glyph: return "M and slide number"
         case .dots: return "A dot per slide"
         case .number: return "Workspace number"
@@ -248,7 +310,7 @@ public enum MenuBarStyle: String, Codable, CaseIterable, Sendable {
 
 /// Colours for the overview, the slider bar and workspace dots.
 public enum Theme: String, Codable, CaseIterable, Sendable {
-    case vivid, ocean, sunset, forest, mono
+    case vivid, ocean, sunset, forest, mono, ashforde
 
     public var title: String {
         switch self {
@@ -257,6 +319,7 @@ public enum Theme: String, Codable, CaseIterable, Sendable {
         case .sunset: return "Sunset"
         case .forest: return "Forest"
         case .mono: return "Monochrome"
+        case .ashforde: return "Ashforde"
         }
     }
 }
@@ -284,6 +347,8 @@ public struct AppPair: Equatable, Hashable, Codable, Sendable, Identifiable {
     public var bundleIDs: [String]
     public var arrangement: Arrangement
     public var customRows: [Int]?
+    /// Partner apps: when one of them opens a window, it pairs with the other's.
+    public var autoPair: Bool?
 
     public init(id: String = UUID().uuidString, name: String, bundleIDs: [String], arrangement: Arrangement,
                 customRows: [Int]? = nil) {
@@ -331,7 +396,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// Scrolling over the menu bar moves the strip, no keys needed.
     public var scrollOverMenuBar = true
     /// Show clickable ‹ › buttons in the menu bar.
-    public var showNavigationArrows = true
+    public var showNavigationArrows = false
     /// Tapping this key on its own turns on slide mode.
     public var slideTrigger: SlideTrigger = .rightOption
     /// Scroll the strip with a three- or four-finger swipe.
@@ -471,7 +536,9 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// Window titles on the slider bar's tiles, and a smaller bar.
     public var sliderTitles = false
     public var compactSlider = false
-    public var menuBarStyle: MenuBarStyle = .glyph
+    public var menuBarStyle: MenuBarStyle = .mini
+    /// Set once the narrower 1.1 menu bar has been applied to older settings.
+    public var compactMenuBarApplied = true
     /// No pop-up notices (confirmations, tips).
     public var quietMode = false
     /// A soft click as the strip lands on a slide.
@@ -506,6 +573,66 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var weeklySummary = true
     /// The version whose What's New was last shown.
     public var lastSeenVersion = ""
+    // 1.1
+    /// Screen corners: top-left, top-right, bottom-left, bottom-right.
+    public var hotCorners: [HotCorner] = [.none, .none, .none, .none]
+    /// Mouse buttons 4 and 5 (back and forward) step through slides.
+    public var mouseButtonsStep = true
+    /// ⌃⌥ + scroll over a window changes its slide's width.
+    public var scrollResizes = true
+    /// ⇧ + scroll over the slider bar switches workspace.
+    public var shiftScrollSwitchesWorkspace = true
+    /// ⌥ + middle-click a window zooms it.
+    public var middleClickZoom = true
+    /// The focus border glows, and can take the app icon's colour.
+    public var focusGlow = false
+    public var borderFromAppIcon = false
+    /// A quick highlight of the focused window when focus moves by keyboard.
+    public var focusFlash = false
+    /// The slider bar's opacity and size (0.8, 1 or 1.25).
+    public var sliderOpacity = 1.0
+    public var sliderScale = 1.0
+    /// The overview's backdrop: colourful, or plain.
+    public var plainOverview = false
+    /// The overview with app icons only (no live previews).
+    public var overviewIconsOnly = false
+    /// The menu bar shows the focused window's title.
+    public var menuBarShowsTitle = false
+    /// Where notices appear and for how long (seconds).
+    public var noticePosition: NoticePosition = .top
+    public var noticeDuration = 1.8
+    /// Pomodoro: focus and break lengths in minutes.
+    public var pomodoroFocus = 25
+    public var pomodoroBreak = 5
+    /// Remind to rest your eyes every so many minutes (0 = off).
+    public var breakReminderMinutes = 0
+    /// A daily focus goal in minutes (0 = none), shown in Insights.
+    public var dailyFocusGoal = 0
+    /// Settings per workspace, by absolute workspace number.
+    public var workspaceConfigs: [String: WorkspaceConfig] = [:]
+    /// Park a workspace you haven't visited for this many hours (0 = never).
+    public var autoParkHours = 0
+    /// Windows smaller than this (points, either side) float on their own (0 = off).
+    public var floatSmallerThan = 0.0
+    /// Settings and preferences windows float.
+    public var floatSettingsWindows = true
+    /// Tiling pauses while one of these apps (bundle IDs) is in front.
+    public var pauseForApps: [String] = []
+    /// Lay everything out again after the Mac wakes.
+    public var retileAfterWake = true
+    public var animationCurve: AnimationCurve = .smooth
+    /// Animation frames per second: 30, 60 or 120.
+    public var animationFPS = 60
+    /// Bring every window back after Monorail quit unexpectedly.
+    public var rescueAfterCrash = true
+    /// The click sound for slide changes.
+    public var clickSound = "Tink"
+    /// VoiceOver also says which window got focus.
+    public var announceWindows = false
+    /// POST events as JSON to this address (empty = off).
+    public var webhookURL = ""
+    /// Let other apps run actions with the org.ashforde.monorail.perform distributed notification.
+    public var remoteCommands = false
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true
     /// After resizing a window in a slide, offer to rearrange the slide.
@@ -577,6 +704,11 @@ public struct AppSettings: Equatable, Codable, Sendable {
             config.edgeGap = (config.edgeGap * 1.5).rounded()
         }
         return config
+    }
+
+    /// Settings for one workspace (absolute number).
+    public func workspaceConfig(_ workspace: Int) -> WorkspaceConfig {
+        workspaceConfigs[String(workspace)] ?? WorkspaceConfig()
     }
 
     /// True if workspace `workspace` (absolute number) fits every slide on screen.
@@ -661,6 +793,11 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case cheatSheetOnHold, focusFollowsMouseDelay
         case capsLockKey, fitByDefault, fitExceptions, workspaceNotes, autoNameWorkspaces, betaUpdates, weeklySummary
         case lastSeenVersion
+        case hotCorners, mouseButtonsStep, scrollResizes, shiftScrollSwitchesWorkspace, middleClickZoom, focusGlow
+        case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
+        case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
+        case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied
     }
 
     public init(from decoder: Decoder) throws {
@@ -778,6 +915,46 @@ public struct AppSettings: Equatable, Codable, Sendable {
         betaUpdates = value(.betaUpdates, d.betaUpdates)
         weeklySummary = value(.weeklySummary, d.weeklySummary)
         lastSeenVersion = value(.lastSeenVersion, d.lastSeenVersion)
+        hotCorners = value(.hotCorners, d.hotCorners)
+        if hotCorners.count != 4 { hotCorners = d.hotCorners }
+        mouseButtonsStep = value(.mouseButtonsStep, d.mouseButtonsStep)
+        scrollResizes = value(.scrollResizes, d.scrollResizes)
+        shiftScrollSwitchesWorkspace = value(.shiftScrollSwitchesWorkspace, d.shiftScrollSwitchesWorkspace)
+        middleClickZoom = value(.middleClickZoom, d.middleClickZoom)
+        focusGlow = value(.focusGlow, d.focusGlow)
+        borderFromAppIcon = value(.borderFromAppIcon, d.borderFromAppIcon)
+        focusFlash = value(.focusFlash, d.focusFlash)
+        sliderOpacity = value(.sliderOpacity, d.sliderOpacity)
+        sliderScale = value(.sliderScale, d.sliderScale)
+        plainOverview = value(.plainOverview, d.plainOverview)
+        overviewIconsOnly = value(.overviewIconsOnly, d.overviewIconsOnly)
+        menuBarShowsTitle = value(.menuBarShowsTitle, d.menuBarShowsTitle)
+        noticePosition = value(.noticePosition, d.noticePosition)
+        noticeDuration = value(.noticeDuration, d.noticeDuration)
+        pomodoroFocus = value(.pomodoroFocus, d.pomodoroFocus)
+        pomodoroBreak = value(.pomodoroBreak, d.pomodoroBreak)
+        breakReminderMinutes = value(.breakReminderMinutes, d.breakReminderMinutes)
+        dailyFocusGoal = value(.dailyFocusGoal, d.dailyFocusGoal)
+        workspaceConfigs = value(.workspaceConfigs, d.workspaceConfigs)
+        autoParkHours = value(.autoParkHours, d.autoParkHours)
+        floatSmallerThan = value(.floatSmallerThan, d.floatSmallerThan)
+        floatSettingsWindows = value(.floatSettingsWindows, d.floatSettingsWindows)
+        pauseForApps = value(.pauseForApps, d.pauseForApps)
+        retileAfterWake = value(.retileAfterWake, d.retileAfterWake)
+        animationCurve = value(.animationCurve, d.animationCurve)
+        animationFPS = value(.animationFPS, d.animationFPS)
+        rescueAfterCrash = value(.rescueAfterCrash, d.rescueAfterCrash)
+        clickSound = value(.clickSound, d.clickSound)
+        announceWindows = value(.announceWindows, d.announceWindows)
+        webhookURL = value(.webhookURL, d.webhookURL)
+        remoteCommands = value(.remoteCommands, d.remoteCommands)
+        // Settings from before 1.1 get the narrow menu bar once.
+        compactMenuBarApplied = (try? c.decodeIfPresent(Bool.self, forKey: .compactMenuBarApplied)) ?? false
+        if !compactMenuBarApplied {
+            compactMenuBarApplied = true
+            showNavigationArrows = false
+            if menuBarStyle == .glyph { menuBarStyle = .mini }
+        }
         installUpdatesAutomatically = value(.installUpdatesAutomatically, d.installUpdatesAutomatically)
         rulesVersion = value(.rulesVersion, 1)
         if rulesVersion < Self.currentRulesVersion {

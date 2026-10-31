@@ -42,6 +42,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var capsLockOn = false
     private let whatsNew = WhatsNew()
     private let weekly = WeeklySummary()
+    private let pomodoro = Pomodoro()
+    private let breakReminder = BreakReminder()
+    private let focusFlash = FocusFlash()
+    private let pointerLocator = PointerLocator()
+    private let hotCorners = HotCorners()
+    private let remoteCommands = RemoteCommands()
+    private var pomodoroText: String?
+    private var focusMinuteTimer: Timer?
     private var scriptsOn = false
     private let statusMenu = NSMenu()
     private let navigation = SettingsNavigation()
@@ -127,6 +135,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 engine.setPresenting(argument == "on")
             case "focus-mode" where argument == "on" || argument == "off":
                 engine.setFocusMode(argument == "on")
+            case "focus-app":
+                // monorail://focus-app/Safari: the app's most recent window.
+                if let window = engine.allWindowSummaries().first(where: {
+                    $0.appName.caseInsensitiveCompare(argument) == .orderedSame
+                }) {
+                    engine.focusAndReveal(window.id)
+                } else if let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: argument) {
+                    NSWorkspace.shared.openApplication(at: app, configuration: NSWorkspace.OpenConfiguration())
+                }
+            case "notify": toast.show(argument)
+            case "pomodoro": performAppAction(.pomodoro)
             default:
                 if let action = Action(url: url.absoluteString) {
                     engine.perform(action)
@@ -254,12 +273,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         meetings.onMeeting = { [weak self] title, link in self?.joinMeeting(title, link) }
         api.handler = { [weak self] method, path, body in self?.handleAPI(method, path, body) }
         scripts.bridge = scriptBridge()
-        integrations.onEvent = { [weak self] event, state in
-            let payload: [String: Any] = event == "workspaceChanged"
-                ? ["index": state.workspace, "name": state.workspaceName, "profile": state.profile]
-                : ["app": state.app ?? "", "title": state.title ?? ""]
-            self?.scripts.emit(event, payload)
-        }
         NotificationCenter.default.addObserver(forName: .monorailReloadScripts, object: nil, queue: .main) { [weak self] _ in
             self?.reloadScripts()
         }
@@ -349,6 +362,179 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         switcher.windows = { [weak self] in self?.engine.allWindowSummaries() ?? [] }
         switcher.choose = { [weak self] id in self?.engine.focusAndReveal(id) }
+        wireUpV11()
+    }
+
+    // MARK: - 1.1
+
+    private func wireUpV11() {
+        engine.onAppAction = { [weak self] action in self?.performAppAction(action) }
+        engine.onWindowClosed = { [weak self] id, app in
+            guard let self else { return }
+            self.scripts.emit("windowClosed", ["id": Int(id), "app": app])
+            self.postWebhook("window_closed", ["id": Int(id), "app": app])
+        }
+        engine.onDropCheck = { [weak self] id, _ in
+            guard let self, let hit = self.sliderBar.slide(at: NSEvent.mouseLocation) else { return false }
+            self.engine.moveWindow(id, intoSlide: hit.column, displayUUID: hit.displayUUID)
+            return true
+        }
+        input.onMiddleClickZoom = { [weak self] point in self?.engine.zoomWindow(at: point) }
+        input.onScrollResize = { [weak self] point, delta in self?.engine.resizeSlide(at: point, by: delta) }
+        input.onWorkspaceScroll = { [weak self] next in self?.engine.perform(next ? .nextWorkspace : .previousWorkspace) }
+        hotCorners.onTrigger = { [weak self] corner in self?.runHotCorner(corner) }
+        remoteCommands.onPerform = { [weak self] name in
+            guard let self else { return }
+            if let action = Action(rawValue: name) {
+                self.engine.perform(action)
+            } else {
+                log.info("Remote command not recognised: \(name, privacy: .public)")
+            }
+        }
+        pomodoro.onTick = { [weak self] text in
+            self?.pomodoroText = text
+            self?.updateStatusItem()
+        }
+        pomodoro.onPhase = { [weak self] focusing in
+            guard let self else { return }
+            self.toast.show(focusing ? "Focus for \(self.pomodoro.focusMinutes) minutes · Monorail keeps the rest out of sight"
+                            : "Break time · stand up, look away for \(self.pomodoro.breakMinutes) minutes")
+            if focusing != self.engine.isFocusMode { self.engine.setFocusMode(focusing) }
+            self.postWebhook(focusing ? "pomodoro_focus" : "pomodoro_break", [:])
+        }
+        pomodoro.onFocusMinute = { [weak self] in self?.stats.addFocusMinute() }
+        breakReminder.onRemind = { [weak self] in
+            self?.toast.show("Time for a short break · look 20 feet away for 20 seconds")
+        }
+        // Focus mode counts towards the daily focus goal.
+        focusMinuteTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            guard let self, self.engine.isFocusMode, !self.pomodoro.isRunning else { return }
+            self.stats.addFocusMinute()
+            let goal = self.store.settings.dailyFocusGoal
+            if goal > 0, self.stats.today.focusMinutes == goal {
+                self.toast.show("Daily focus goal reached · \(InsightsPane.duration(goal)) today")
+            }
+        }
+        integrations.onEvent = { [weak self] event, state in
+            guard let self else { return }
+            let payload: [String: Any] = event == "workspaceChanged"
+                ? ["index": state.workspace, "name": state.workspaceName, "profile": state.profile]
+                : ["app": state.app ?? "", "title": state.title ?? ""]
+            self.scripts.emit(event, payload)
+            if event == "focusChanged" { self.scripts.emit("slideChanged", ["slide": state.slide, "slides": state.slides]) }
+            self.postWebhook(event == "workspaceChanged" ? "workspace_changed" : "focus_changed", payload)
+        }
+    }
+
+    private func postWebhook(_ event: String, _ payload: [String: Any]) {
+        let url = store.settings.webhookURL.trimmingCharacters(in: .whitespaces)
+        guard !url.isEmpty else { return }
+        Webhook.post(url, event: event, payload: payload)
+    }
+
+    private func runHotCorner(_ corner: HotCorner) {
+        guard engine.isRunning, !engine.isPaused else { return }
+        switch corner {
+        case .none: break
+        case .overview: overview.toggle()
+        case .showDesktop: engine.perform(.showDesktop)
+        case .palette: palette.toggle()
+        case .focusMode: engine.setFocusMode(!engine.isFocusMode)
+        case .cheatSheet: cheatSheet.toggle()
+        case .stripZoom: stripZoom.toggle()
+        }
+    }
+
+    private func accentColor() -> NSColor {
+        NSColor(hex: store.settings.focusBorderColor) ?? .controlAccentColor
+    }
+
+    /// Actions the engine hands to the app: prompts, the clipboard, timers and flashes.
+    private func performAppAction(_ action: Action) {
+        switch action {
+        case .renameWorkspace:
+            guard let status = engine.status() else { return }
+            let index = status.workspace - 1
+            guard let name = TextPrompt.ask(
+                title: "Rename this workspace", message: "Shown in the slider, the overview and the menu bar.",
+                initial: store.settings.workspaceName(index), placeholder: "Mail, Code, Design…")
+            else { return }
+            var settings = store.settings
+            settings.setWorkspaceName(name, at: index)
+            store.settings = settings
+            engine.onStateChange()
+        case .noteWindow:
+            guard let id = engine.focusedWindowID(), let note = TextPrompt.ask(
+                title: "Note on this window",
+                message: "A reminder of what this window is for. Shown in the overview and found by the command palette.",
+                initial: engine.note(of: id) ?? "", placeholder: "Reply to Sam by 3 pm", button: "Save")
+            else { return }
+            engine.setNote(note, for: id)
+        case .quickLaunchBeside:
+            toast.show("Open beside: type an app’s letter")
+            let beside = engine.focusedWindowID()
+            input.captureNextKey = { [weak self] letter in
+                guard let self, let letter else { return }
+                self.engine.quickLaunch(letter)
+                self.pairWhenFocusChanges(from: beside)
+            }
+        case .openLinkBeside:
+            guard let text = NSPasteboard.general.string(forType: .string)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                let url = URL(string: text), ["http", "https"].contains(url.scheme?.lowercased() ?? "")
+            else {
+                toast.show("Copy a link first · then open it beside this window")
+                return
+            }
+            let beside = engine.focusedWindowID()
+            NSWorkspace.shared.open(url)
+            pairWhenFocusChanges(from: beside)
+        case .copyLayout:
+            guard let json = engine.layoutJSON() else {
+                toast.show("Nothing to copy in this workspace")
+                return
+            }
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(json, forType: .string)
+            toast.show("Layout copied · paste it on another workspace or Mac")
+        case .pasteLayout:
+            let text = NSPasteboard.general.string(forType: .string) ?? ""
+            toast.show(engine.applyLayoutJSON(text) ? "Layout pasted" : "The clipboard has no Monorail layout with open windows")
+        case .locatePointer:
+            pointerLocator.show(color: accentColor())
+        case .flashFocus:
+            if let frame = engine.focusedFrame() { focusFlash.flash(frame, color: accentColor()) }
+        case .pomodoro:
+            pomodoro.focusMinutes = store.settings.pomodoroFocus
+            pomodoro.breakMinutes = store.settings.pomodoroBreak
+            if pomodoro.isRunning {
+                pomodoro.stop()
+                if engine.isFocusMode { engine.setFocusMode(false) }
+                toast.show("Pomodoro stopped")
+            } else {
+                pomodoro.start(.focus)
+            }
+        case .restart:
+            WindowThumbnails.relaunch()
+        case .openSettings:
+            showSettings()
+        case .checkForUpdates:
+            updater.check(userInitiated: true)
+        default:
+            break
+        }
+    }
+
+    /// After launching something "beside", pairs its window with the one you were in.
+    private func pairWhenFocusChanges(from beside: WindowID?, attempts: Int = 0) {
+        guard let beside, attempts < 20 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self else { return }
+            guard let now = self.engine.focusedWindowID(), now != beside else {
+                self.pairWhenFocusChanges(from: beside, attempts: attempts + 1)
+                return
+            }
+            self.engine.pairWindows([beside, now], arrangement: .columns)
+        }
     }
 
     private func startEngine() {
@@ -437,7 +623,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         sliderBar.peekEnabled = settings.peekWithOption
         popover.peekEnabled = settings.peekWithOption
         sliderBar.edge = settings.sliderBarEdge
+        sliderBar.opacity = settings.sliderOpacity
+        sliderBar.scale = settings.sliderScale
         sliderBar.update()
+        toast.position = settings.noticePosition
+        toast.duration = settings.noticeDuration
+        OverviewStyle.plain = settings.plainOverview
+        OverviewStyle.iconsOnly = settings.overviewIconsOnly
+        WorkspaceColor.overrides = settings.workspaceConfigs.reduce(into: [:]) { result, entry in
+            if let index = Int(entry.key), let color = entry.value.color, !color.isEmpty { result[index] = color }
+        }
+        input.mouseButtonsStep = settings.mouseButtonsStep
+        input.middleClickZoom = settings.middleClickZoom
+        input.scrollResizes = settings.scrollResizes
+        input.shiftScrollSwitchesWorkspace = settings.shiftScrollSwitchesWorkspace
+        hotCorners.corners = settings.hotCorners
+        hotCorners.setEnabled(settings.hotCorners.contains { $0 != .none })
+        remoteCommands.setEnabled(settings.remoteCommands)
+        breakReminder.set(minutes: settings.breakReminderMinutes)
+        pomodoro.focusMinutes = settings.pomodoroFocus
+        pomodoro.breakMinutes = settings.pomodoroBreak
 
         trackpad.fingers = settings.swipeFingers.rawValue
         trackpad.detectsTap = settings.threeFingerTapOverview
@@ -508,19 +713,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return
         }
         guard arrowItems.isEmpty else { return }
-        for (symbol, selector, label) in [
-            ("chevron.right", #selector(stepRight), "Next window"),
-            ("chevron.left", #selector(stepLeft), "Previous window"),
-        ] {
-            let item = NSStatusBar.system.statusItem(withLength: 22)
-            let image = NSImage(systemSymbolName: symbol, accessibilityDescription: label)
-            image?.isTemplate = true
-            item.button?.image = image
-            item.button?.toolTip = label
-            item.button?.target = self
-            item.button?.action = selector
-            arrowItems.append(item)
-        }
+        // One narrow item for both directions: its left half goes back, its right half forward.
+        let item = NSStatusBar.system.statusItem(withLength: 24)
+        item.button?.image = StatusIcon.arrows()
+        item.button?.toolTip = "Previous / next window (scroll over the menu bar works too)"
+        item.button?.target = self
+        item.button?.action = #selector(arrowClicked(_:))
+        arrowItems.append(item)
+    }
+
+    @objc private func arrowClicked(_ sender: NSStatusBarButton) {
+        guard let event = NSApp.currentEvent else { return }
+        let x = sender.convert(event.locationInWindow, from: nil).x
+        if x < sender.bounds.midX { stepLeft() } else { stepRight() }
     }
 
     /// Window commands shared by the slider-bar previews, popover and overview.
@@ -864,6 +1069,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case ("POST", "snapshot"):
             engine.restoreSnapshot(named: text("name") ?? "")
             return ["ok": true]
+        case ("POST", "undo"):
+            engine.undo(steps: max(int("steps") ?? 1, 1))
+            return ["ok": true]
+        case ("POST", "redo"):
+            engine.redo()
+            return ["ok": true]
+        case ("GET", "history"):
+            let format = ISO8601DateFormatter()
+            return engine.undoHistory().map { ["label": $0.label, "date": format.string(from: $0.date)] }
+        case ("POST", "name-slide"):
+            guard let id = int("id") else { return ["error": "Needs id"] }
+            engine.nameSlide(WindowID(id), text("name") ?? "")
+            return ["ok": true]
+        case ("POST", "slide-layout"):
+            let name = text("layout") ?? ""
+            guard let action = Action.allCases.first(where: { action in
+                guard let layout = action.directLayout else { return false }
+                return (layout?.rawValue ?? "tabs") == name
+            }) else { return ["error": "Unknown layout"] }
+            if let id = int("id") { engine.focusAndReveal(WindowID(id)) }
+            engine.perform(action)
+            return ["ok": true]
+        case ("POST", "close"):
+            guard let id = int("id") else { return ["error": "Needs id"] }
+            engine.closeWindow(WindowID(id))
+            return ["ok": true]
+        case ("POST", "note"):
+            guard let id = int("id") else { return ["error": "Needs id"] }
+            engine.setNote(text("text") ?? "", for: WindowID(id))
+            return ["ok": true]
+        case ("POST", "notify"):
+            toast.show(text("text") ?? "")
+            return ["ok": true]
+        case ("GET", "insights"):
+            let today = stats.today
+            return ["switches": today.switches, "windowsOpened": today.windowsOpened, "focusSessions": today.focusSessions,
+                    "focusMinutes": today.focusMinutes, "focusGoal": store.settings.dailyFocusGoal,
+                    "workspaceMinutes": today.workspaceMinutes, "appMinutes": today.appMinutes]
+        case ("GET", "layout"):
+            return ["json": engine.layoutJSON() ?? ""]
         default:
             return nil
         }
@@ -966,7 +1211,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         for window in engine.allWindowSummaries() {
             list.append(PaletteCommand(
                 id: "window-\(window.id)", title: window.title.isEmpty ? window.appName : window.title,
-                subtitle: "Go to window · \(window.appName)", symbol: "macwindow", keywords: "focus go window \(window.appName)"
+                subtitle: "Go to window · \(window.appName)" + (window.note.map { " · \($0)" } ?? ""), symbol: "macwindow",
+                keywords: "focus go window \(window.appName) \(window.note ?? "")"
             ) { [weak self] in self?.engine.focusAndReveal(window.id) })
         }
         for index in 0..<engine.workspaceCount {
@@ -1101,7 +1347,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard let button = statusItem?.button else { return }
         button.image = StatusIcon.image(paused: engine.isPaused, badge: updater.available != nil)
         button.imagePosition = .imageLeading
-        if store.settings.showColumnIndicator, !engine.isPaused, let status = engine.status() {
+        if store.settings.menuBarStyle == .mini, store.settings.showColumnIndicator, !engine.isPaused,
+            let status = engine.status()
+        {
+            // The position lives in the icon; only extras (pomodoro, recording, focus) add text.
+            button.image = StatusIcon.mini(slide: status.focusedColumn, slides: status.columnCount,
+                                           workspace: status.workspace, workspaces: engine.workspaceCount,
+                                           badge: updater.available != nil)
+            var title = ""
+            if engine.isFocusMode { title += " ◉" }
+            if engine.isRecording { title += " ● REC" }
+            if store.settings.menuBarShowsApp, let app = engine.focusedAppName { title += " \(app)" }
+            if store.settings.menuBarShowsTitle,
+                let focused = engine.allWindowSummaries().first(where: { $0.isFocused }), !focused.title.isEmpty
+            {
+                title += " " + (focused.title.count > 32 ? String(focused.title.prefix(31)) + "…" : focused.title)
+            }
+            if let pomodoroText { title += " \(pomodoroText)" }
+            button.title = title
+            button.imagePosition = title.isEmpty ? .imageOnly : .imageLeading
+            button.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular)
+        } else if store.settings.showColumnIndicator, !engine.isPaused, let status = engine.status() {
             var position = "\(status.focusedColumn)/\(status.columnCount)"
             switch store.settings.menuBarStyle {
             case .dots where status.columnCount > 0 && status.columnCount <= 9:
@@ -1116,10 +1382,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if store.settings.menuBarShowsApp, let app = engine.focusedAppName { title = " \(app) ·" + title }
             if engine.isFocusMode { title = " ◉" + title }
             if engine.isRecording { title = " ● REC" + title }
+            if store.settings.menuBarShowsTitle,
+                let focused = engine.allWindowSummaries().first(where: { $0.isFocused }), !focused.title.isEmpty
+            {
+                let short = focused.title.count > 32 ? String(focused.title.prefix(31)) + "…" : focused.title
+                title = " \(short) ·" + title
+            }
+            if let pomodoroText { title = " \(pomodoroText) ·" + title }
             button.title = title
             button.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular)
         } else {
-            button.title = ""
+            button.title = pomodoroText.map { " \($0)" } ?? ""
         }
     }
 

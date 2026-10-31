@@ -68,8 +68,10 @@ final class Overlays {
         view.color = NSColor(hex: settings.focusBorderColor) ?? .controlAccentColor
         view.color2 = settings.focusBorderGradient ? NSColor(hex: settings.focusBorderColor2) : nil
         view.lineWidth = width
+        view.glow = settings.focusGlow ? width * 3 : 0
         view.needsDisplay = true
-        panel.setFrame(cocoaFrame(frame.insetBy(dx: -width, dy: -width)), display: true)
+        let pad = width + view.glow
+        panel.setFrame(cocoaFrame(frame.insetBy(dx: -pad, dy: -pad)), display: true)
         panel.order(.above, relativeTo: Int(id))
     }
 
@@ -153,11 +155,25 @@ private final class BorderView: NSView {
     /// With a second colour, the border fades from one to the other.
     var color2: NSColor?
     var lineWidth: CGFloat = 3
+    /// A soft halo around the border (0 = none); the view is this much larger on every side.
+    var glow: CGFloat = 0
 
     override func draw(_ dirtyRect: NSRect) {
+        let bounds = self.bounds.insetBy(dx: glow, dy: glow)
         let inset = lineWidth / 2
         let path = NSBezierPath(roundedRect: bounds.insetBy(dx: inset, dy: inset), xRadius: 11, yRadius: 11)
         path.lineWidth = lineWidth
+        if glow > 0 {
+            NSGraphicsContext.saveGraphicsState()
+            let shadow = NSShadow()
+            shadow.shadowColor = color.withAlphaComponent(0.85)
+            shadow.shadowBlurRadius = glow
+            shadow.shadowOffset = .zero
+            shadow.set()
+            color.setStroke()
+            path.stroke()
+            NSGraphicsContext.restoreGraphicsState()
+        }
         guard let color2, let gradient = NSGradient(starting: color, ending: color2) else {
             color.setStroke()
             path.stroke()
@@ -329,20 +345,30 @@ final class Toast {
         @Published var text = ""
     }
 
+    /// Where and how long notices show (Settings → Appearance).
+    var position: NoticePosition = .top
+    var duration: Double = 1.8
+
     func show(_ text: String) {
         model.text = text
         let panel = self.panel ?? makePanel()
         self.panel = panel
         guard let screen = NSScreen.main?.visibleFrame else { return }
         let size = NSSize(width: 460, height: 48)  // the capsule sizes itself inside
+        let y: CGFloat
+        switch position {
+        case .top: y = screen.maxY - size.height - 16
+        case .middle: y = screen.midY - size.height / 2
+        case .bottom: y = screen.minY + 40
+        }
         panel.setFrame(
-            NSRect(x: screen.midX - size.width / 2, y: screen.maxY - size.height - 16, width: size.width, height: size.height),
+            NSRect(x: screen.midX - size.width / 2, y: y, width: size.width, height: size.height),
             display: true)
         panel.alphaValue = 0
         panel.orderFrontRegardless()
         NSAnimationContext.runAnimationGroup { $0.duration = 0.15; panel.animator().alphaValue = 1 }
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.8, repeats: false) { _ in
+        timer = Timer.scheduledTimer(withTimeInterval: min(max(duration, 0.8), 10), repeats: false) { _ in
             NSAnimationContext.runAnimationGroup({ $0.duration = 0.3; panel.animator().alphaValue = 0 },
                                                  completionHandler: { panel.orderOut(nil) })
         }

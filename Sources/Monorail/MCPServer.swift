@@ -47,6 +47,31 @@ enum MCPServer {
              properties: ["name": ["type": "string"]], required: ["name"]) { args in ("POST", "/pair-name", args) },
         Tool(name: "run_template", description: "Start a workspace template by name.",
              properties: ["name": ["type": "string"]], required: ["name"]) { args in ("POST", "/template", args) },
+        Tool(name: "undo", description: "Undo the last layout changes (steps defaults to 1).",
+             properties: ["steps": ["type": "integer"]], required: []) { args in ("POST", "/undo", args) },
+        Tool(name: "redo", description: "Redo the last undone layout change.",
+             properties: [:], required: []) { _ in ("POST", "/redo", [:]) },
+        Tool(name: "get_history", description: "Recent layout changes that can be undone, newest first.",
+             properties: [:], required: []) { _ in ("GET", "/history", [:]) },
+        Tool(name: "name_slide", description: "Name the slide a window is in (empty name clears it).",
+             properties: ["id": ["type": "integer"], "name": ["type": "string"]], required: ["id", "name"]) { args in
+            ("POST", "/name-slide", args)
+        },
+        Tool(name: "set_slide_layout",
+             description: "Change the layout of a window's slide (or the focused one): columns, stack, grid, mainLeft, mainTop, spiral, accordion or tabs.",
+             properties: ["id": ["type": "integer"], "layout": ["type": "string"]], required: ["layout"]) { args in
+            ("POST", "/slide-layout", args)
+        },
+        Tool(name: "close_window", description: "Close a window by id.",
+             properties: ["id": ["type": "integer"]], required: ["id"]) { args in ("POST", "/close", args) },
+        Tool(name: "note_window", description: "Attach a short note to a window (empty text clears it).",
+             properties: ["id": ["type": "integer"], "text": ["type": "string"]], required: ["id", "text"]) { args in
+            ("POST", "/note", args)
+        },
+        Tool(name: "notify", description: "Show a short notice on screen.",
+             properties: ["text": ["type": "string"]], required: ["text"]) { args in ("POST", "/notify", args) },
+        Tool(name: "get_insights", description: "Today's usage: switches, windows opened, focus minutes and goal, time per workspace and app.",
+             properties: [:], required: []) { _ in ("GET", "/insights", [:]) },
     ]
 
     static func run() -> Never {

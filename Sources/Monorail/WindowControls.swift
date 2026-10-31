@@ -225,6 +225,10 @@ enum WorkspaceColor {
                     rgb(0.35, 0.5, 0.35)]
         case .mono:
             return [0.92, 0.78, 0.64, 0.86, 0.7, 0.56, 0.96, 0.6, 0.74].map { Color(white: $0) }
+        case .ashforde:
+            return [rgb(0.85, 0.68, 0.32), rgb(0.33, 0.47, 0.86), rgb(0.94, 0.8, 0.5), rgb(0.45, 0.62, 0.95),
+                    rgb(0.78, 0.55, 0.28), rgb(0.6, 0.7, 0.92), rgb(0.98, 0.88, 0.62), rgb(0.26, 0.36, 0.7),
+                    rgb(0.9, 0.74, 0.45)]
         }
     }
 
@@ -247,14 +251,55 @@ enum WorkspaceColor {
         case .mono:
             return ([Color(white: 0.1), Color(white: 0.16), Color(white: 0.12)],
                     [Color(white: 0.5), Color(white: 0.35), Color(white: 0.6)])
+        case .ashforde:
+            return ([rgb(0.04, 0.07, 0.18), rgb(0.07, 0.12, 0.28), rgb(0.05, 0.09, 0.22)],
+                    [rgb(0.85, 0.68, 0.32), rgb(0.33, 0.47, 0.86), rgb(0.94, 0.8, 0.5)])
         }
     }
 
     static var all: [Color] { palette(theme) }
 
+    /// Per-workspace colours chosen in Settings → Workspaces (hex, keyed by index).
+    static var overrides: [Int: String] = [:]
+
     static func color(_ index: Int) -> Color {
+        if let hex = overrides[index], let color = Color(hex: hex) { return color }
         let colors = all
         return colors[((index % colors.count) + colors.count) % colors.count]
+    }
+}
+extension Color {
+    /// A colour from "#RRGGBB" or "RRGGBB".
+    init?(hex: String) {
+        var text = hex.trimmingCharacters(in: .whitespaces)
+        if text.hasPrefix("#") { text.removeFirst() }
+        guard text.count == 6, let value = UInt32(text, radix: 16) else { return nil }
+        self.init(red: Double((value >> 16) & 0xFF) / 255, green: Double((value >> 8) & 0xFF) / 255,
+                  blue: Double(value & 0xFF) / 255)
+    }
+}
+
+/// The average colour of an app's icon, for borders that match the app.
+enum IconColor {
+    private static var cache: [pid_t: String] = [:]
+
+    static func hex(for pid: pid_t) -> String? {
+        if let cached = cache[pid] { return cached }
+        guard let icon = NSRunningApplication(processIdentifier: pid)?.icon,
+            let cg = icon.cgImage(forProposedRect: nil, context: nil, hints: nil)
+        else { return nil }
+        var pixel = [UInt8](repeating: 0, count: 4)
+        guard let context = CGContext(data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return nil }
+        context.interpolationQuality = .medium
+        context.draw(cg, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        let alpha = max(Double(pixel[3]) / 255, 0.01)
+        func channel(_ v: UInt8) -> Int { min(255, Int(Double(v) / alpha)) }
+        let hex = String(format: "#%02X%02X%02X", channel(pixel[0]), channel(pixel[1]), channel(pixel[2]))
+        cache[pid] = hex
+        return hex
     }
 }
 #endif

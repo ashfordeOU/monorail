@@ -133,6 +133,56 @@ public enum Action: String, Codable, CaseIterable, Sendable {
     case cheatSheet = "cheat-sheet"
     case nameSlide = "name-slide"
     case toggleFitMode = "fit-mode"
+    case slideToStart = "slide-to-start"
+    case slideToEnd = "slide-to-end"
+    case slideToNextWorkspace = "slide-to-next-workspace"
+    case slideToPreviousWorkspace = "slide-to-previous-workspace"
+    case slideToEmptyWorkspace = "slide-to-empty-workspace"
+    case unpairSlide = "unpair-slide"
+    case mergeNext = "merge-next"
+    case mergePrevious = "merge-previous"
+    case nextTile = "next-tile"
+    case previousTile = "previous-tile"
+    case mainTile = "main-tile"
+    case widthQuarter = "width-quarter"
+    case widthThird = "width-third"
+    case widthHalf = "width-half"
+    case widthTwoThirds = "width-two-thirds"
+    case widthThreeQuarters = "width-three-quarters"
+    case scrollToStart = "scroll-to-start"
+    case scrollToEnd = "scroll-to-end"
+    case layoutSideBySide = "layout-side-by-side"
+    case layoutUpDown = "layout-up-down"
+    case layoutGrid = "layout-grid"
+    case layoutMainSide = "layout-main-side"
+    case layoutMainBottom = "layout-main-bottom"
+    case layoutSpiral = "layout-spiral"
+    case layoutAccordion = "layout-accordion"
+    case layoutTabs = "layout-tabs"
+    case resetSplit = "reset-split"
+    case hideApp = "hide-app"
+    case minimizeWorkspace = "minimize-workspace"
+    case minimizeOthers = "minimize-others"
+    case renameWorkspace = "rename-workspace"
+    case swapWorkspaceNext = "swap-workspace-next"
+    case swapWorkspacePrevious = "swap-workspace-previous"
+    case mergeWorkspacePrevious = "merge-workspace-previous"
+    case quickLaunchBeside = "launch-beside"
+    case openLinkBeside = "open-link-beside"
+    case copyLayout = "copy-layout"
+    case pasteLayout = "paste-layout"
+    case noteWindow = "note-window"
+    case locatePointer = "locate-pointer"
+    case flashFocus = "flash-focus"
+    case toggleDim = "toggle-dim"
+    case toggleBorder = "toggle-border"
+    case toggleSliderBar = "toggle-slider-bar"
+    case toggleAnimations = "toggle-animations"
+    case pomodoro = "pomodoro"
+    case toggleQuietMode = "toggle-quiet"
+    case restart = "restart"
+    case openSettings = "open-settings"
+    case checkForUpdates = "check-updates"
     case retile
     case undo
     case togglePause = "toggle-pause"
@@ -244,6 +294,56 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         case .cheatSheet: return "Show the shortcut cheat sheet"
         case .nameSlide: return "Name the slide…"
         case .toggleFitMode: return "Fit mode on / off (every slide on screen)"
+        case .slideToStart: return "Move the slide to the start"
+        case .slideToEnd: return "Move the slide to the end"
+        case .slideToNextWorkspace: return "Move the slide to the next workspace"
+        case .slideToPreviousWorkspace: return "Move the slide to the previous workspace"
+        case .slideToEmptyWorkspace: return "Move the slide to an empty workspace"
+        case .unpairSlide: return "Give every window in the slide its own slide"
+        case .mergeNext: return "Merge with the next slide"
+        case .mergePrevious: return "Merge with the previous slide"
+        case .nextTile: return "Next window in the slide"
+        case .previousTile: return "Previous window in the slide"
+        case .mainTile: return "Go to the slide’s main window"
+        case .widthQuarter: return "Width: a quarter"
+        case .widthThird: return "Width: a third"
+        case .widthHalf: return "Width: half"
+        case .widthTwoThirds: return "Width: two thirds"
+        case .widthThreeQuarters: return "Width: three quarters"
+        case .scrollToStart: return "Look at the start of the strip"
+        case .scrollToEnd: return "Look at the end of the strip"
+        case .layoutSideBySide: return "Slide layout: side by side"
+        case .layoutUpDown: return "Slide layout: up and down"
+        case .layoutGrid: return "Slide layout: grid"
+        case .layoutMainSide: return "Slide layout: main + side"
+        case .layoutMainBottom: return "Slide layout: main + bottom"
+        case .layoutSpiral: return "Slide layout: spiral"
+        case .layoutAccordion: return "Slide layout: accordion"
+        case .layoutTabs: return "Slide layout: tabs"
+        case .resetSplit: return "Reset the main window’s share"
+        case .hideApp: return "Hide the focused app"
+        case .minimizeWorkspace: return "Minimise every window in the workspace"
+        case .minimizeOthers: return "Minimise everything but this slide"
+        case .renameWorkspace: return "Rename the workspace…"
+        case .swapWorkspaceNext: return "Swap the workspace with the next one"
+        case .swapWorkspacePrevious: return "Swap the workspace with the previous one"
+        case .mergeWorkspacePrevious: return "Merge the workspace into the previous one"
+        case .quickLaunchBeside: return "Quick launch beside this window (then a letter)"
+        case .openLinkBeside: return "Open the copied link beside this window"
+        case .copyLayout: return "Copy the workspace’s layout"
+        case .pasteLayout: return "Paste a copied layout"
+        case .noteWindow: return "Add a note to the window…"
+        case .locatePointer: return "Show where the pointer is"
+        case .flashFocus: return "Show which window has focus"
+        case .toggleDim: return "Dimming on / off"
+        case .toggleBorder: return "Focus border on / off"
+        case .toggleSliderBar: return "Slider bar on / off"
+        case .toggleAnimations: return "Animations on / off"
+        case .pomodoro: return "Pomodoro: focus and break cycles"
+        case .toggleQuietMode: return "Quiet mode on / off"
+        case .restart: return "Restart Monorail"
+        case .openSettings: return "Open Settings"
+        case .checkForUpdates: return "Check for updates"
         case .retile: return "Retile everything"
         case .undo: return "Undo last layout change"
         case .togglePause: return "Pause / resume"
@@ -314,5 +414,33 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         .swapDisplays, .moveToPointerDisplay, .expandToFill, .closeSlide, .minimizeSlide, .gatherApp, .sortSlides,
         .tileAllFloating, .rescueWindows, .biggerGaps, .smallerGaps, .centerFloating, .lockSlide, .openIntoSlide,
         .nameSlide, .toggleFitMode,
+        .slideToStart, .slideToEnd, .slideToNextWorkspace, .slideToPreviousWorkspace, .slideToEmptyWorkspace, .unpairSlide, .mergeNext, .mergePrevious, .nextTile, .previousTile, .mainTile, .widthQuarter, .widthThird, .widthHalf, .widthTwoThirds, .widthThreeQuarters, .scrollToStart, .scrollToEnd, .layoutSideBySide, .layoutUpDown, .layoutGrid, .layoutMainSide, .layoutMainBottom, .layoutSpiral, .layoutAccordion, .layoutTabs, .resetSplit, .hideApp, .minimizeWorkspace, .minimizeOthers, .renameWorkspace, .swapWorkspaceNext, .swapWorkspacePrevious, .mergeWorkspacePrevious, .quickLaunchBeside, .openLinkBeside, .copyLayout, .pasteLayout, .noteWindow, .locatePointer, .flashFocus, .toggleDim, .toggleBorder, .toggleSliderBar, .toggleAnimations, .pomodoro, .toggleQuietMode, .restart, .openSettings, .checkForUpdates,
     ]
+
+    /// The slide layout a "Slide layout: …" action sets (nil for tabs).
+    public var directLayout: Arrangement?? {
+        switch self {
+        case .layoutSideBySide: return .columns
+        case .layoutUpDown: return .stack
+        case .layoutGrid: return .grid
+        case .layoutMainSide: return .mainLeft
+        case .layoutMainBottom: return .mainTop
+        case .layoutSpiral: return .spiral
+        case .layoutAccordion: return .accordion
+        case .layoutTabs: return .some(nil)
+        default: return nil
+        }
+    }
+
+    /// The width a "Width: …" action sets, as a share of the screen.
+    public var directWidth: Double? {
+        switch self {
+        case .widthQuarter: return 0.25
+        case .widthThird: return 1.0 / 3.0
+        case .widthHalf: return 0.5
+        case .widthTwoThirds: return 2.0 / 3.0
+        case .widthThreeQuarters: return 0.75
+        default: return nil
+        }
+    }
 }

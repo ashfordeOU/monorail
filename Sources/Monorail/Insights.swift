@@ -19,6 +19,8 @@ final class UsageStats: ObservableObject {
         /// Minutes spent in each workspace (by name) and each app.
         var workspaceMinutes: [String: Int] = [:]
         var appMinutes: [String: Int] = [:]
+        /// Minutes in focus mode or a pomodoro focus block.
+        var focusMinutes = 0
 
         init() {}
 
@@ -31,6 +33,7 @@ final class UsageStats: ObservableObject {
             mostSlides = try c.decodeIfPresent(Int.self, forKey: .mostSlides) ?? 0
             workspaceMinutes = try c.decodeIfPresent([String: Int].self, forKey: .workspaceMinutes) ?? [:]
             appMinutes = try c.decodeIfPresent([String: Int].self, forKey: .appMinutes) ?? [:]
+            focusMinutes = try c.decodeIfPresent(Int.self, forKey: .focusMinutes) ?? 0
         }
     }
 
@@ -107,6 +110,16 @@ final class UsageStats: ObservableObject {
             let oldest = Self.dayKey(cutoff)
             stored.days = stored.days.filter { $0.key >= oldest }
         }
+        scheduleSave()
+    }
+
+    /// One more focused minute (focus mode or a pomodoro block).
+    func addFocusMinute() {
+        guard isEnabled else { return }
+        let key = Self.dayKey()
+        var day = stored.days[key] ?? Day()
+        day.focusMinutes += 1
+        stored.days[key] = day
         scheduleSave()
     }
 
@@ -256,6 +269,19 @@ struct InsightsPane: View {
                         figure("\(stats.today.focusSessions)", "focus sessions")
                     }
                     .padding(.vertical, 4)
+                    HStack {
+                        Stepper(value: $store.settings.dailyFocusGoal, in: 0...600, step: 15) {
+                            Text(store.settings.dailyFocusGoal == 0 ? "Daily focus goal: off"
+                                 : "Daily focus goal: \(InsightsPane.duration(store.settings.dailyFocusGoal))")
+                        }
+                    }
+                    if store.settings.dailyFocusGoal > 0 {
+                        let done = stats.today.focusMinutes, goal = store.settings.dailyFocusGoal
+                        ProgressView(value: Double(min(done, goal)), total: Double(goal)) {
+                            Text("\(InsightsPane.duration(done)) focused today" + (done >= goal ? " · goal reached 🎉" : ""))
+                                .font(.callout)
+                        }
+                    }
                     week
                 }
             } header: {

@@ -22,6 +22,9 @@ final class Animator {
     private var current: [WindowID: Rect] = [:]
     private var start: CFTimeInterval = 0
     private var duration: CFTimeInterval = 0.2
+    /// The easing and frames per second (Settings → Motion & Input).
+    var curve: AnimationCurve = .smooth
+    var framesPerSecond = 60
     private var timer: Timer?
 
     var isRunning: Bool { timer != nil }
@@ -57,7 +60,7 @@ final class Animator {
         self.duration = max(duration, 0.01)
         start = CACurrentMediaTime()
         if timer == nil {
-            let timer = Timer(timeInterval: 1.0 / 120.0, repeats: true) { [weak self] _ in self?.step() }
+            let timer = Timer(timeInterval: 1.0 / Double(min(max(framesPerSecond, 30), 120)), repeats: true) { [weak self] _ in self?.step() }
             RunLoop.main.add(timer, forMode: .common)
             self.timer = timer
         }
@@ -83,7 +86,12 @@ final class Animator {
     private func step() {
         let elapsed = CACurrentMediaTime() - start
         let progress = min(elapsed / duration, 1)
-        let eased = 1 - pow(1 - progress, 3)  // ease-out cubic
+        let eased: Double
+        switch curve {
+        case .smooth: eased = 1 - pow(1 - progress, 3)  // ease-out cubic
+        case .snappy: eased = 1 - pow(1 - progress, 5)  // quick start, long settle
+        case .linear: eased = progress
+        }
         for (id, track) in tracks {
             var frame = track.from.interpolated(to: track.to, t: eased).rounded()
             frame.width = track.to.width

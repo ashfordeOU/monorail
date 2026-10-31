@@ -71,6 +71,18 @@ final class InputMonitor {
     var onFlagsChanged: (Modifiers) -> Void = { _ in }
     /// Any key press (the cheat sheet waits for a quiet ⌃⌥ hold).
     var onKeyActivity: () -> Void = {}
+    /// Mouse buttons 4 and 5 step slides back and forward.
+    var mouseButtonsStep = false
+    /// ⌥ + middle-click zooms the window under the pointer.
+    var middleClickZoom = false
+    var onMiddleClickZoom: (CGPoint) -> Void = { _ in }
+    /// ⌃⌥ + scroll over a window makes its slide narrower or wider.
+    var scrollResizes = false
+    var onScrollResize: (CGPoint, Double) -> Void = { _, _ in }
+    /// ⇧ + scroll over the menu bar or slider bar switches workspace.
+    var shiftScrollSwitchesWorkspace = false
+    var onWorkspaceScroll: (Bool) -> Void = { _ in }
+    private var lastWorkspaceScroll: CFTimeInterval = 0
     /// Caps Lock as the Monorail key: macOS turns it into F18 (see CapsLockKey);
     /// while it's held, keys count as if ⌃⌥ were held.
     var capsLockKey = false
@@ -103,7 +115,7 @@ final class InputMonitor {
         guard tap == nil else { return true }
         let types: [CGEventType] = [
             .keyDown, .keyUp, .flagsChanged, .scrollWheel, .leftMouseDown, .leftMouseDragged, .leftMouseUp,
-            .rightMouseDown, .rightMouseDragged, .rightMouseUp,
+            .rightMouseDown, .rightMouseDragged, .rightMouseUp, .otherMouseDown,
         ]
         let mask = types.reduce(CGEventMask(1) << Self.magnifyType) { $0 | (CGEventMask(1) << $1.rawValue) }
         guard
@@ -197,6 +209,20 @@ final class InputMonitor {
             guard dragging else { return pass }
             onDragMove(event.location)
             return nil
+        case .otherMouseDown:
+            guard !isSuspended, !isPaused() else { return pass }
+            let button = event.getIntegerValueField(.mouseEventButtonNumber)
+            if mouseButtonsStep, button == 3 || button == 4 {
+                let forward = button == 4
+                DispatchQueue.main.async { self.onStep(forward) }
+                return nil
+            }
+            if middleClickZoom, button == 2, Modifiers(event.flags) == [.option] {
+                let point = event.location
+                DispatchQueue.main.async { self.onMiddleClickZoom(point) }
+                return nil
+            }
+            return pass
         case .leftMouseUp, .rightMouseUp:
             guard dragging else { return pass }
             dragging = false
@@ -333,7 +359,24 @@ final class InputMonitor {
     private func handleScroll(_ event: CGEvent) -> Bool {
         guard !isSuspended, !isPaused() else { return false }
         if titleBarSwipes, handleTitleBarSwipe(event) { return true }
-        var mods = Modifiers(event.flags)
+        let rawMods = Modifiers(event.flags)
+        if scrollResizes, rawMods == [.control, .option] {
+            let dy = event.getDoubleValueField(.scrollWheelEventPointDeltaAxis1)
+            if dy != 0 { onScrollResize(event.location, dy > 0 ? 0.03 : -0.03) }
+            return true
+        }
+        if shiftScrollSwitchesWorkspace, rawMods == [.shift], isOverMenuBar(event.location) {
+            let dx = event.getDoubleValueField(.scrollWheelEventPointDeltaAxis2)
+            let dy = event.getDoubleValueField(.scrollWheelEventPointDeltaAxis1)
+            let value = abs(dx) >= abs(dy) ? dx : dy
+            let now = CACurrentMediaTime()
+            if value != 0, now - lastWorkspaceScroll > 0.35 {
+                lastWorkspaceScroll = now
+                onWorkspaceScroll(value < 0)
+            }
+            return true
+        }
+        var mods = rawMods
         mods.remove(.shift)  // Shift turns a mouse wheel sideways; allow it.
         let withModifier = modifierSwipe && !scrollModifier.isEmpty && mods == scrollModifier
         let overMenuBar = scrollOverMenuBar && mods.isEmpty && isOverMenuBar(event.location)

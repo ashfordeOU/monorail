@@ -106,6 +106,14 @@ struct OverviewActions {
     var moveColumnAcross: (_ sourceRow: Int, _ column: Int, _ target: StripKey, _ index: Int) -> Void = { _, _, _, _ in }
 }
 
+/// How the overview looks (Settings → Appearance).
+enum OverviewStyle {
+    /// A calm, solid backdrop instead of the gradient and glows.
+    static var plain = false
+    /// App icons instead of live previews, even with Screen Recording on.
+    static var iconsOnly = false
+}
+
 /// The overview's backdrop: a deep, colourful gradient with soft glows and a
 /// fine dot pattern, over a blur of the desktop.
 private struct OverviewBackground: View {
@@ -113,6 +121,14 @@ private struct OverviewBackground: View {
     private var backdrop: (gradient: [Color], glows: [Color]) { WorkspaceColor.backdrop(theme) }
 
     var body: some View {
+        if OverviewStyle.plain || NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency {
+            backdrop.gradient[0].opacity(0.97).ignoresSafeArea()
+        } else {
+            fancy
+        }
+    }
+
+    private var fancy: some View {
         ZStack {
             LinearGradient(colors: backdrop.gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
             .opacity(0.9)
@@ -515,9 +531,17 @@ private struct ColumnCard: View {
 
 private struct WindowTile: View {
     let window: Engine.WindowSummary
-    let thumbnail: NSImage?
+    private let liveThumbnail: NSImage?
     var isSelected = false
+
+    init(window: Engine.WindowSummary, thumbnail: NSImage?, isSelected: Bool = false) {
+        self.window = window
+        self.liveThumbnail = thumbnail
+        self.isSelected = isSelected
+    }
     @State private var hovering = false
+
+    private var thumbnail: NSImage? { OverviewStyle.iconsOnly ? nil : liveThumbnail }
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -550,6 +574,14 @@ private struct WindowTile: View {
             .padding(4)
         }
         .overlay(alignment: .topTrailing) { WindowBadges(window: window).padding(5) }
+        .overlay(alignment: .topLeading) {
+            if let note = window.note {
+                Image(systemName: "note.text").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+                    .padding(4).background(Circle().fill(Color.orange.opacity(0.85))).padding(5)
+                    .help(note)
+            }
+        }
+        .help(window.note ?? "")
         .clipShape(RoundedRectangle(cornerRadius: 7))
         .overlay(
             RoundedRectangle(cornerRadius: 7)

@@ -45,7 +45,30 @@ final class SliderBarController {
     /// A smaller bar, and window titles on its tiles.
     var compact = false
     var showTitles = false
-    private var height: CGFloat { compact ? 40 : 52 }
+    /// How see-through and how big the bar is (Settings → Slider).
+    var opacity: Double = 1
+    var scale: Double = 1
+    private var height: CGFloat { (compact ? 40 : 52) * CGFloat(min(max(scale, 0.7), 1.6)) }
+
+    /// The slide under a point (Cocoa coordinates) on a visible bar, for dropping windows onto it.
+    func slide(at point: CGPoint) -> (column: Int, displayUUID: String)? {
+        for (uuid, bar) in bars where bar.panel.isVisible && bar.panel.alphaValue > 0.1 && bar.panel.frame.contains(point) {
+            guard let map = bar.model.map, !map.tiles.isEmpty, let track = bar.model.trackFrame else { continue }
+            // The track's frame is top-left based inside the panel.
+            let x = Double(point.x - bar.panel.frame.minX - track.minX)
+            let lower = min(0, map.viewportX)
+            let upper = max(map.totalWidth, map.viewportX + map.viewportWidth)
+            let span = max(upper - lower, 1), scale = Double(track.width) / span
+            func left(_ tile: Engine.MiniTile) -> Double {
+                let l = (tile.x - lower) * scale
+                return map.isRightToLeft ? span * scale - l - tile.width * scale : l
+            }
+            let tile = map.tiles.first { x >= left($0) && x <= left($0) + $0.width * scale }
+                ?? map.tiles.min { abs(left($0) + $0.width * scale / 2 - x) < abs(left($1) + $1.width * scale / 2 - x) }
+            if let tile { return (tile.id, uuid) }
+        }
+        return nil
+    }
     private static let margin: CGFloat = 6
 
     /// Refreshes the bars. Called whenever the strips change.
@@ -94,7 +117,7 @@ final class SliderBarController {
     /// True if `point` (Cocoa coordinates) is over a visible slider bar, so
     /// scrolling there can slide the strip.
     func contains(_ point: CGPoint) -> Bool {
-        bars.values.contains { $0.panel.isVisible && $0.panel.alphaValue > 0.5 && $0.panel.frame.contains(point) }
+        bars.values.contains { $0.panel.isVisible && $0.panel.alphaValue > 0.1 && $0.panel.frame.contains(point) }
     }
 
     func hideAll(animated: Bool) {
@@ -136,15 +159,16 @@ final class SliderBarController {
             panel.alphaValue = 0
             panel.orderFrontRegardless()
         }
+        let target = CGFloat(min(max(opacity, 0.2), 1))
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.15
-            panel.animator().alphaValue = 1
+            panel.animator().alphaValue = target
         }
     }
 
     private func position(_ panel: NSPanel, for map: Engine.MiniMap) {
         let screen = map.screenFrame
-        let width = min(max(screen.width * 0.5, 320), 820)
+        let width = min(max(screen.width * 0.5, 320), 820) * CGFloat(min(max(scale, 0.7), 1.6))
         let y = edge == .bottom
             ? screen.minY + Self.margin
             : screen.maxY - height - Self.margin
@@ -260,6 +284,8 @@ final class SliderBarModel: ObservableObject {
     @Published var isDragging = false
     /// Window titles (or the slide's name) on the tiles.
     @Published var showTitles = false
+    /// Where the track sits in the bar (top-left based), for drops.
+    var trackFrame: CGRect?
 }
 
 private enum AppIcons {
@@ -282,6 +308,8 @@ private struct SliderBarView: View {
     @State private var dragOrigin: Double = 0
     /// Set when a drag on the track goes up or down instead of sideways.
     @State private var verticalSwipe = false
+    /// For double-clicks on the track, which open the overview.
+    @State private var lastClick = Date.distantPast
 
     var body: some View {
         HStack(spacing: 12) {
@@ -313,6 +341,8 @@ private struct SliderBarView: View {
             }
             GeometryReader { geometry in
                 track(size: geometry.size)
+                    .onAppear { model.trackFrame = geometry.frame(in: .global) }
+                    .onChange(of: geometry.size) { _ in model.trackFrame = geometry.frame(in: .global) }
             }
             Button(action: actions.showOverview) {
                 Image(systemName: "square.grid.3x2")
@@ -438,7 +468,12 @@ private struct SliderBarView: View {
                             onInteraction()
                             return
                         }
-                        if dragScale == nil {
+                        if dragScale == nil, Date().timeIntervalSince(lastClick) < NSEvent.doubleClickInterval {
+                            // A double-click opens the overview.
+                            lastClick = .distantPast
+                            actions.showOverview()
+                        } else if dragScale == nil {
+                            lastClick = Date()
                             // A click: jump to the window under the pointer.
                             if let id = window(at: value.location, map: map, lower: lower, span: span, scale: scale,
                                                height: Double(size.height)) {

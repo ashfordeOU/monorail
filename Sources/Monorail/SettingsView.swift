@@ -126,6 +126,8 @@ private struct GeneralPane: View {
                 Toggle("Show the workspace’s name when switching", isOn: $store.settings.workspaceHUD)
                 Toggle("Quiet mode: no pop-up notices", isOn: $store.settings.quietMode)
                 Toggle("VoiceOver announces slide and workspace changes", isOn: $store.settings.announceChanges)
+                Toggle("VoiceOver also says which window got focus", isOn: $store.settings.announceWindows)
+                    .disabled(!store.settings.announceChanges)
                 Toggle("Keep a “Last session” snapshot on quit and sleep", isOn: $store.settings.autoSnapshot)
                 Toggle("Show the focused app’s name in the menu bar too", isOn: $store.settings.menuBarShowsApp)
                     .disabled(!store.settings.showColumnIndicator)
@@ -348,6 +350,20 @@ private struct InputPane: View {
                     .frame(width: 240)
                 }
                 .disabled(!store.settings.animate)
+                Picker("Motion", selection: $store.settings.animationCurve) {
+                    ForEach(AnimationCurve.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                .disabled(!store.settings.animate)
+                Picker("Frame rate", selection: $store.settings.animationFPS) {
+                    Text("30 fps (saves energy)").tag(30)
+                    Text("60 fps").tag(60)
+                    Text("120 fps (ProMotion)").tag(120)
+                }
+                .disabled(!store.settings.animate)
+                Picker("Click sound", selection: $store.settings.clickSound) {
+                    ForEach(["Tink", "Pop", "Morse", "Bottle", "Frog", "Purr", "Submarine"], id: \.self) { Text($0).tag($0) }
+                }
+                .disabled(!store.settings.slideSound)
             }
             Section {
                 Picker("Slide mode key", selection: $store.settings.slideTrigger) {
@@ -405,6 +421,27 @@ private struct InputPane: View {
             } header: {
                 Text("Gestures & screen edges")
             }
+            Section {
+                Toggle("Mouse buttons 4 and 5 (back and forward) step through slides", isOn: $store.settings.mouseButtonsStep)
+                Toggle("⌥ + middle-click zooms the window under the pointer", isOn: $store.settings.middleClickZoom)
+                Toggle("⌃⌥ + scroll over a window makes its slide narrower or wider", isOn: $store.settings.scrollResizes)
+                Toggle("⇧ + scroll over the menu bar or slider switches workspace", isOn: $store.settings.shiftScrollSwitchesWorkspace)
+            } header: {
+                Text("Mouse")
+            }
+            Section {
+                ForEach(0..<4, id: \.self) { index in
+                    Picker(["Top-left corner", "Top-right corner", "Bottom-left corner", "Bottom-right corner"][index],
+                           selection: hotCorner(index)) {
+                        ForEach(HotCorner.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }
+                }
+            } header: {
+                Text("Hot corners")
+            } footer: {
+                Text("Rest the pointer in a corner for a moment. If macOS has its own hot corner there, turn it off in System Settings → Desktop & Dock → Hot Corners.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
             Section("Focus") {
                 Toggle("Focus follows mouse", isOn: $store.settings.focusFollowsMouse)
                 if store.settings.focusFollowsMouse {
@@ -420,6 +457,15 @@ private struct InputPane: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    private func hotCorner(_ index: Int) -> Binding<HotCorner> {
+        Binding(
+            get: { store.settings.hotCorners.indices.contains(index) ? store.settings.hotCorners[index] : .none },
+            set: { value in
+                while store.settings.hotCorners.count < 4 { store.settings.hotCorners.append(.none) }
+                store.settings.hotCorners[index] = value
+            })
     }
 }
 
@@ -449,6 +495,15 @@ private struct AppearancePane: View {
                     }
                     Toggle("Window titles on the slides", isOn: $store.settings.sliderTitles)
                     Toggle("Compact", isOn: $store.settings.compactSlider)
+                    LabeledContent("Opacity") {
+                        Slider(value: $store.settings.sliderOpacity, in: 0.3...1).frame(width: 240)
+                    }
+                    Picker("Size", selection: $store.settings.sliderScale) {
+                        Text("Small").tag(0.8)
+                        Text("Normal").tag(1.0)
+                        Text("Large").tag(1.25)
+                    }
+                    .pickerStyle(.segmented)
                 }
             } header: {
                 Text("Slider bar")
@@ -500,6 +555,25 @@ private struct AppearancePane: View {
                     }
                 }
                 .disabled(!store.settings.focusBorder)
+                Toggle("Glow", isOn: $store.settings.focusGlow).disabled(!store.settings.focusBorder)
+                Toggle("Take the colour of the app’s icon", isOn: $store.settings.borderFromAppIcon)
+                    .disabled(!store.settings.focusBorder)
+                Toggle("Flash the focused window when focus moves", isOn: $store.settings.focusFlash)
+            }
+            Section("Overview, menu bar and notices") {
+                Toggle("Plain overview backdrop (no colours or glows)", isOn: $store.settings.plainOverview)
+                    .help("Also used when Reduce Transparency is on")
+                Toggle("App icons in the overview instead of live previews", isOn: $store.settings.overviewIconsOnly)
+                Toggle("Show the focused window’s title in the menu bar", isOn: $store.settings.menuBarShowsTitle)
+                Picker("Notices appear", selection: $store.settings.noticePosition) {
+                    ForEach(NoticePosition.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                LabeledContent("Notices stay for") {
+                    HStack {
+                        Slider(value: $store.settings.noticeDuration, in: 1...6).frame(width: 200)
+                        Text(String(format: "%.1f s", store.settings.noticeDuration)).monospacedDigit()
+                    }
+                }
             }
             Section("Inactive windows") {
                 Toggle("Dim windows that don’t have focus", isOn: $store.settings.dimInactive)
@@ -618,6 +692,20 @@ private struct AppsPane: View {
                             .frame(width: 200)
                             .disabled(rule.float)
                         }
+                        HStack(spacing: 16) {
+                            Toggle("Full width", isOn: optionalFlag($rule.fullWidth)).disabled(rule.float)
+                            Toggle("Tabbed", isOn: optionalFlag($rule.tabbed)).disabled(rule.float)
+                            Picker("Pin", selection: $rule.pin) {
+                                Text("No").tag(PinSide?.none)
+                                Text("Left").tag(PinSide?.some(.left))
+                                Text("Right").tag(PinSide?.some(.right))
+                            }
+                            .frame(width: 120)
+                            .disabled(rule.float)
+                            Toggle("On every workspace", isOn: optionalFlag($rule.sticky))
+                            Toggle("Scratchpad", isOn: optionalFlag($rule.scratchpad))
+                                .help("Its first window becomes the scratchpad: ⌃⌥` shows and hides it")
+                        }
                     }
                     .padding(.vertical, 2)
                 }
@@ -646,6 +734,41 @@ private struct AppsPane: View {
                 Text("Floating apps stay where you put them. Dialogs, panels and fixed-size windows always float. A title rule only applies to windows whose title contains its words (a browser window titled “Meet”), and takes over when the title changes. Rules apply to windows opened after the change; press ⌃⌥T to float or tile a window right now.")
                     .font(.callout).foregroundStyle(.secondary)
             }
+            Section {
+                LabeledContent("Float windows smaller than") {
+                    Picker("", selection: $store.settings.floatSmallerThan) {
+                        Text("Off").tag(0.0)
+                        ForEach([300.0, 400, 500, 600], id: \.self) { Text("\(Int($0)) pt").tag($0) }
+                    }
+                    .labelsHidden().frame(width: 120)
+                }
+                Toggle("Settings and Preferences windows float", isOn: $store.settings.floatSettingsWindows)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Pause tiling while these apps are in front (games, video, presentations)")
+                    ForEach(store.settings.pauseForApps, id: \.self) { bundleID in
+                        HStack {
+                            Text(Self.appName(bundleID))
+                            Text(bundleID).font(.caption).foregroundStyle(.secondary)
+                            Spacer()
+                            Button { store.settings.pauseForApps.removeAll { $0 == bundleID } } label: {
+                                Image(systemName: "minus.circle")
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                    }
+                    Menu("Add a running app…") {
+                        ForEach(allRunningApps.filter { !store.settings.pauseForApps.contains($0.bundleIdentifier ?? "") },
+                                id: \.processIdentifier) { app in
+                            Button(app.localizedName ?? app.bundleIdentifier ?? "App") {
+                                if let id = app.bundleIdentifier { store.settings.pauseForApps.append(id) }
+                            }
+                        }
+                    }
+                    .fixedSize()
+                }
+            } header: {
+                Text("Automatic floating and pausing")
+            }
             QuickLaunchSection(store: store, apps: allRunningApps)
             TemplatesSection(store: store, apps: allRunningApps)
             Section {
@@ -659,6 +782,8 @@ private struct AppsPane: View {
                         Text(pair.bundleIDs.map(Self.appName).joined(separator: " · "))
                             .font(.callout).foregroundStyle(.secondary).lineLimit(1)
                         Spacer()
+                        Toggle("Partners", isOn: optionalFlag($pair.autoPair))
+                            .help("A new window of one of these apps joins the other's window in a slide by itself")
                         Button {
                             store.settings.appPairs.removeAll { $0.id == pair.id }
                         } label: {
@@ -1149,6 +1274,44 @@ private struct AutomationPane: View {
     var body: some View {
         Form {
             Section {
+                LabeledContent("Pomodoro") {
+                    HStack {
+                        Stepper("Focus \(store.settings.pomodoroFocus) min", value: $store.settings.pomodoroFocus, in: 5...120, step: 5)
+                        Stepper("Break \(store.settings.pomodoroBreak) min", value: $store.settings.pomodoroBreak, in: 1...30)
+                    }
+                }
+                Picker("Remind me to take a break", selection: $store.settings.breakReminderMinutes) {
+                    Text("Never").tag(0)
+                    ForEach([20, 30, 45, 60, 90], id: \.self) { Text("Every \($0) minutes").tag($0) }
+                }
+            } header: {
+                Text("Focus and breaks")
+            } footer: {
+                Text("Start a pomodoro from the command palette or a shortcut (Settings → Shortcuts): focus mode turns on for the focus block and the countdown shows in the menu bar. Set a daily focus goal in Insights.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+            Section {
+                Picker("Park workspaces I haven’t visited for", selection: $store.settings.autoParkHours) {
+                    Text("Never").tag(0)
+                    ForEach([1, 2, 4, 8, 24], id: \.self) { Text("\($0) hour\($0 == 1 ? "" : "s")").tag($0) }
+                }
+                Toggle("Lay windows out again after the Mac wakes", isOn: $store.settings.retileAfterWake)
+                Toggle("Bring every window back if Monorail quit unexpectedly", isOn: $store.settings.rescueAfterCrash)
+            } header: {
+                Text("Housekeeping")
+            }
+            Section {
+                TextField("Webhook URL", text: $store.settings.webhookURL, prompt: Text("https://example.com/hooks/monorail"))
+                    .textFieldStyle(.roundedBorder)
+                Toggle("Let other apps run actions with a distributed notification", isOn: $store.settings.remoteCommands)
+            } header: {
+                Text("Webhooks and remote commands")
+            } footer: {
+                Text("Monorail POSTs JSON for workspace, focus and window-closed events, and pomodoro changes, to the webhook. Remote commands: post org.ashforde.monorail.perform with an action name (e.g. overview) as the object, from Swift, AppleScript-ObjC or a shell tool.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+            WorkspaceConfigSection(store: store)
+            Section {
                 ForEach($store.settings.autoRules) { $rule in
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -1512,6 +1675,17 @@ private struct ShortcutsPane: View {
         ("Power moves", [.radialMenu, .balanceSizes, .workspaceBackAndForth, .moveToEmptyWorkspace, .focusAttention,
                          .showDesktop, .screenshotSlide, .appOverview]),
         ("Monorail", [.undo, .togglePause, .retile]),
+        ("Slides (1.1)", [.slideToStart, .slideToEnd, .slideToNextWorkspace, .slideToPreviousWorkspace, .slideToEmptyWorkspace,
+                          .unpairSlide, .mergeNext, .mergePrevious, .nextTile, .previousTile, .mainTile, .resetSplit,
+                          .scrollToStart, .scrollToEnd]),
+        ("Exact widths and layouts", [.widthQuarter, .widthThird, .widthHalf, .widthTwoThirds, .widthThreeQuarters,
+                                      .layoutSideBySide, .layoutUpDown, .layoutGrid, .layoutMainSide, .layoutMainBottom,
+                                      .layoutSpiral, .layoutAccordion, .layoutTabs]),
+        ("Workspaces & apps", [.renameWorkspace, .swapWorkspaceNext, .swapWorkspacePrevious, .mergeWorkspacePrevious,
+                               .minimizeWorkspace, .minimizeOthers, .hideApp, .quickLaunchBeside, .openLinkBeside]),
+        ("Find, note & share", [.locatePointer, .flashFocus, .noteWindow, .copyLayout, .pasteLayout]),
+        ("Quick toggles", [.toggleDim, .toggleBorder, .toggleSliderBar, .toggleAnimations, .toggleQuietMode, .pomodoro,
+                           .openSettings, .checkForUpdates, .restart]),
     ]
 
     var body: some View {
@@ -1686,6 +1860,7 @@ private struct AboutPane: View {
                 .font(.footnote).foregroundStyle(.secondary)
             Button("Copy Diagnostics") { NotificationCenter.default.post(name: .monorailCopyDiagnostics, object: nil) }
                 .help("A short report (no window titles) to paste into a bug report")
+            Button("Show Log") { LogViewer.show() }
             Button("Reveal settings file") {
                 NSWorkspace.shared.activateFileViewerSelecting([SettingsStore.fileURL])
             }
@@ -1693,6 +1868,67 @@ private struct AboutPane: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
+    }
+}
+/// A toggle for an optional flag stored as true or nil.
+func optionalFlag(_ value: Binding<Bool?>) -> Binding<Bool> {
+    Binding(get: { value.wrappedValue ?? false }, set: { value.wrappedValue = $0 ? true : nil })
+}
+/// Settings → Automation → Each workspace: colour, layout, gap, focus mode, closed.
+private struct WorkspaceConfigSection: View {
+    @ObservedObject var store: SettingsStore
+
+    var body: some View {
+        Section {
+            ForEach(0..<max(store.settings.workspaceCount, 1), id: \.self) { index in
+                let config = binding(index)
+                HStack(spacing: 12) {
+                    Circle().fill(WorkspaceColor.color(index)).frame(width: 10, height: 10)
+                    Text(store.settings.workspaceName(index)).frame(width: 120, alignment: .leading)
+                    ColorPicker("", selection: color(config), supportsOpacity: false).labelsHidden()
+                    Picker("", selection: config.arrangement) {
+                        Text("Default layout").tag(Arrangement?.none)
+                        ForEach(Arrangement.standard, id: \.self) { Text($0.title).tag(Arrangement?.some($0)) }
+                    }
+                    .labelsHidden().frame(width: 150)
+                    Picker("", selection: config.gap) {
+                        Text("Default gap").tag(Double?.none)
+                        ForEach([0.0, 4, 8, 12, 20], id: \.self) { Text("\(Int($0)) pt").tag(Double?.some($0)) }
+                    }
+                    .labelsHidden().frame(width: 120)
+                    Toggle("Focus", isOn: optionalFlag(config.focusMode))
+                        .help("Focus mode turns on when you go to this workspace")
+                    Toggle("Closed", isOn: optionalFlag(config.closed))
+                        .help("New windows skip this workspace")
+                    if store.settings.workspaceConfigs[String(index)] != nil {
+                        Button { store.settings.workspaceConfigs[String(index)] = nil } label: {
+                            Image(systemName: "arrow.uturn.backward")
+                        }
+                        .buttonStyle(.borderless)
+                        .help("Back to the defaults")
+                    }
+                }
+            }
+        } header: {
+            Text("Each workspace")
+        } footer: {
+            Text("Settings for one workspace on every display of the first profile. Leave anything on Default to follow the rest of Settings.")
+                .font(.callout).foregroundStyle(.secondary)
+        }
+    }
+
+    private func binding(_ index: Int) -> Binding<WorkspaceConfig> {
+        Binding(
+            get: { store.settings.workspaceConfigs[String(index)] ?? WorkspaceConfig() },
+            set: { value in
+                store.settings.workspaceConfigs[String(index)] = value == WorkspaceConfig() ? nil : value
+            })
+    }
+
+    private func color(_ config: Binding<WorkspaceConfig>) -> Binding<Color> {
+        Binding(
+            get: { config.wrappedValue.color.flatMap { Color(hex: $0) } ?? WorkspaceColor.palette(store.settings.theme)[0] },
+            set: { config.wrappedValue.color = NSColor($0).hexString })
     }
 }
 #endif

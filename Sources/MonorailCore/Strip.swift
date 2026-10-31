@@ -648,6 +648,76 @@ public struct Strip: Equatable, Codable, Sendable {
         if let focused { focus(focused) }
     }
 
+    /// Moves the focused slide to the start or the end of the strip.
+    public mutating func moveFocusedColumn(toStart: Bool) {
+        guard columns.indices.contains(focusedColumn), columns[focusedColumn].pin == nil else { return }
+        let target = toStart ? (columns.firstIndex { $0.pin == nil } ?? 0) : (columns.lastIndex { $0.pin == nil } ?? columns.count - 1)
+        moveColumn(from: focusedColumn, to: target)
+    }
+
+    /// Takes the focused slide off the strip and returns it (to put on another strip).
+    public mutating func removeFocusedColumn() -> Column? {
+        guard columns.indices.contains(focusedColumn) else { return nil }
+        let column = columns.remove(at: focusedColumn)
+        focusedColumn = min(focusedColumn, max(columns.count - 1, 0))
+        return column
+    }
+
+    /// Adds a whole slide at the end of the strip and focuses it.
+    public mutating func appendColumn(_ column: Column) {
+        columns.append(column)
+        focusedColumn = columns.count - 1
+    }
+
+    /// Every window in the focused slide gets a slide of its own, in order.
+    public mutating func unpairFocused() {
+        guard columns.indices.contains(focusedColumn), columns[focusedColumn].windows.count > 1 else { return }
+        let column = columns[focusedColumn]
+        let active = column.activeWindow
+        let singles = column.windows.map { Column(windows: [$0], width: column.width, isCustom: true) }
+        columns.replaceSubrange(focusedColumn...focusedColumn, with: singles)
+        focus(active)
+    }
+
+    /// The slide next to the focused one (after it, or before) joins it, up to six windows.
+    @discardableResult
+    public mutating func mergeFocused(withNext next: Bool) -> Bool {
+        let other = focusedColumn + (next ? 1 : -1)
+        guard columns.indices.contains(focusedColumn), columns.indices.contains(other), columns[other].pin == nil,
+            columns[focusedColumn].windows.count + columns[other].windows.count <= Column.maximumWindows
+        else { return false }
+        let active = columns[focusedColumn].activeWindow
+        var merged = columns[min(focusedColumn, other)]
+        merged.windows += columns[max(focusedColumn, other)].windows
+        merged.isCustom = true
+        merged.isTabbed = false
+        if merged.arrangement == .stack { merged.arrangement = .columns }
+        columns[min(focusedColumn, other)] = merged
+        columns.remove(at: max(focusedColumn, other))
+        focusedColumn = min(focusedColumn, other)
+        focus(active)
+        return true
+    }
+
+    /// Moves focus to the next (or previous) window in the focused slide, round and round.
+    public mutating func cycleTile(forward: Bool) {
+        guard columns.indices.contains(focusedColumn), columns[focusedColumn].windows.count > 1 else { return }
+        let count = columns[focusedColumn].windows.count
+        columns[focusedColumn].active = (columns[focusedColumn].active + (forward ? 1 : count - 1)) % count
+    }
+
+    /// Focus the slide's first (main) window.
+    public mutating func focusMainTile() {
+        guard columns.indices.contains(focusedColumn) else { return }
+        columns[focusedColumn].active = 0
+    }
+
+    /// The main window's share back to the default.
+    public mutating func resetSplit() {
+        guard columns.indices.contains(focusedColumn) else { return }
+        columns[focusedColumn].split = Arrangement.defaultSplit
+    }
+
     /// Names (or, with nil or empty, un-names) the slide holding `window`.
     public mutating func setName(_ name: String?, ofSlideWith window: WindowID) {
         guard let (c, _) = locate(window) else { return }

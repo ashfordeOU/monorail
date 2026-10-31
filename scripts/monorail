@@ -1,7 +1,7 @@
 #!/bin/sh
 # Command-line control for Monorail by Ashforde®.
 #   monorail <action>                 run any action (focus-left, overview, …)
-#   monorail layout|pair|template|snapshot|focus-app|notify <name>
+#   monorail layout|pair|template|snapshot|focus-app|notify|awake <name>
 #   monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
 # Queries need the local API (Settings → Automation → Local API) and print JSON.
 set -eu
@@ -9,7 +9,7 @@ set -eu
 usage() {
     cat <<'USAGE'
 Usage: monorail <action>
-       monorail layout|pair|template|snapshot|focus-app|notify <name>
+       monorail layout|pair|template|snapshot|focus-app|notify|awake <name>
        monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
 
 Actions include:
@@ -42,6 +42,8 @@ fi
 case "$1" in
     windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights)
         api "$1" ;;
+    awake)
+        exec open -g "monorail://awake/${2:-toggle}" ;;
     layout|pair|template|snapshot|focus-app|notify)
         [ $# -eq 2 ] || { usage; exit 64; }
         exec open -g "monorail://$1/$(encode "$2")" ;;

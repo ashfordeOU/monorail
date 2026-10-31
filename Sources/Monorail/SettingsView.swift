@@ -6,7 +6,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum SettingsTab: String, CaseIterable, Identifiable {
-    case general, layout, input, appearance, apps, smart, devices, automation, insights, shortcuts, about
+    case general, layout, input, appearance, apps, smart, devices, awake, automation, insights, shortcuts, about
     var id: String { rawValue }
 
     var title: String {
@@ -18,6 +18,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .apps: return L("Apps")
         case .smart: return L("Smart")
         case .devices: return L("Devices & Sharing")
+        case .awake: return L("Stay Awake")
         case .automation: return L("Automation")
         case .insights: return L("Insights")
         case .shortcuts: return L("Shortcuts")
@@ -34,6 +35,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .apps: return "square.grid.2x2"
         case .smart: return "sparkles"
         case .devices: return "dot.radiowaves.left.and.right"
+        case .awake: return "cup.and.saucer"
         case .automation: return "clock.arrow.2.circlepath"
         case .insights: return "chart.bar"
         case .shortcuts: return "keyboard"
@@ -76,6 +78,9 @@ struct SettingsView: View {
             DevicesPane(store: store)
                 .tabItem { Label(SettingsTab.devices.title, systemImage: SettingsTab.devices.symbol) }
                 .tag(SettingsTab.devices)
+            StayAwakePane(store: store)
+                .tabItem { Label(SettingsTab.awake.title, systemImage: SettingsTab.awake.symbol) }
+                .tag(SettingsTab.awake)
             AutomationPane(store: store)
                 .tabItem { Label(SettingsTab.automation.title, systemImage: SettingsTab.automation.symbol) }
                 .tag(SettingsTab.automation)
@@ -89,7 +94,7 @@ struct SettingsView: View {
                 .tabItem { Label(SettingsTab.about.title, systemImage: SettingsTab.about.symbol) }
                 .tag(SettingsTab.about)
         }
-        .frame(width: 900, height: 660)
+        .frame(width: 980, height: 680)
     }
 }
 

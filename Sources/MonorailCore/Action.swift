@@ -217,6 +217,12 @@ public enum Action: String, Codable, CaseIterable, Sendable {
     case pairSync = "pair-sync"
     case handoff = "handoff"
     case clipboardHistory = "workspace-clipboard"
+    case toggleAwake = "stay-awake"
+    case awake30 = "stay-awake-30"
+    case awake60 = "stay-awake-60"
+    case awake120 = "stay-awake-120"
+    case awakeWhileDownloading = "stay-awake-downloading"
+    case toggleAwakeDisplay = "stay-awake-display"
     case retile
     case undo
     case togglePause = "toggle-pause"
@@ -412,6 +418,12 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         case .pairSync: return "Sync layout with a nearby Mac"
         case .handoff: return "Continue this workspace on my other Mac"
         case .clipboardHistory: return "This workspace’s clipboard"
+        case .toggleAwake: return "Stay Awake on or off"
+        case .awake30: return "Stay awake for 30 minutes"
+        case .awake60: return "Stay awake for 1 hour"
+        case .awake120: return "Stay awake for 2 hours"
+        case .awakeWhileDownloading: return "Stay awake while downloading"
+        case .toggleAwakeDisplay: return "Stay Awake: keep the display on or let it sleep"
         case .retile: return "Retile everything"
         case .undo: return "Undo last layout change"
         case .togglePause: return "Pause / resume"
@@ -483,7 +495,7 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         .tileAllFloating, .rescueWindows, .biggerGaps, .smallerGaps, .centerFloating, .lockSlide, .openIntoSlide,
         .nameSlide, .toggleFitMode,
         .slideToStart, .slideToEnd, .slideToNextWorkspace, .slideToPreviousWorkspace, .slideToEmptyWorkspace, .unpairSlide, .mergeNext, .mergePrevious, .nextTile, .previousTile, .mainTile, .widthQuarter, .widthThird, .widthHalf, .widthTwoThirds, .widthThreeQuarters, .scrollToStart, .scrollToEnd, .layoutSideBySide, .layoutUpDown, .layoutGrid, .layoutMainSide, .layoutMainBottom, .layoutSpiral, .layoutAccordion, .layoutTabs, .resetSplit, .hideApp, .minimizeWorkspace, .minimizeOthers, .renameWorkspace, .swapWorkspaceNext, .swapWorkspacePrevious, .mergeWorkspacePrevious, .quickLaunchBeside, .openLinkBeside, .copyLayout, .pasteLayout, .noteWindow, .locatePointer, .flashFocus, .toggleDim, .toggleBorder, .toggleSliderBar, .toggleAnimations, .pomodoro, .toggleQuietMode, .restart, .openSettings, .checkForUpdates,
-        .sortIntoProjects, .goToPredicted, .startIntent, .toggleElasticFocus, .addBookmark, .nextBookmark, .forkLayout, .keepFork, .discardFork, .groupWindow, .moveGroupToNextWorkspace, .showTimeline, .toggleTallColumn, .archiveWorkspace, .shareWorkspace, .toggleVimMode, .searchWindowText, .voiceCommand, .toggleDeepWork, .toggleReadingMode, .markPrivate, .shareSlide, .demoZoom, .toggleKeystrokes, .toggleAnnotate, .presenterNotes, .mirrorWindow, .guestMode, .ultrawideCenter, .linkAcrossDisplays, .cameraTile, .pairSync, .handoff, .clipboardHistory,
+        .sortIntoProjects, .goToPredicted, .startIntent, .toggleElasticFocus, .addBookmark, .nextBookmark, .forkLayout, .keepFork, .discardFork, .groupWindow, .moveGroupToNextWorkspace, .showTimeline, .toggleTallColumn, .archiveWorkspace, .shareWorkspace, .toggleVimMode, .searchWindowText, .voiceCommand, .toggleDeepWork, .toggleReadingMode, .markPrivate, .shareSlide, .demoZoom, .toggleKeystrokes, .toggleAnnotate, .presenterNotes, .mirrorWindow, .guestMode, .ultrawideCenter, .linkAcrossDisplays, .cameraTile, .pairSync, .handoff, .clipboardHistory, .toggleAwake, .awake30, .awake60, .awake120, .awakeWhileDownloading, .toggleAwakeDisplay,
     ]
 
     /// The slide layout a "Slide layout: …" action sets (nil for tabs).

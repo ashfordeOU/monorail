@@ -789,6 +789,36 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var wholeSlidesOnly = true
     /// Fit mode never makes a window narrower than this (points; a pair needs twice as much); extra slides scroll.
     public var fitMinimumWidth = 480.0
+    /// Stay Awake keeps the display on too (otherwise only the Mac stays awake and the display may sleep).
+    public var awakeKeepDisplayOn = true
+    /// Let the screen saver start during a Stay Awake session (the Mac still stays awake).
+    public var awakeAllowScreenSaver = false
+    /// How long Stay Awake lasts when toggled on (0 = until you end it).
+    public var awakeDefaultMinutes = 0
+    /// End Stay Awake when the battery drops to this percent on battery power (0 = never).
+    public var awakeBatteryCutoff = 10
+    /// During Stay Awake, nudge the pointer now and then so chat apps don’t mark you away.
+    public var awakeMoveCursor = false
+    /// How often the pointer is nudged (minutes).
+    public var awakeMoveCursorMinutes = 4
+    /// During Stay Awake, keep external drives from spinning down.
+    public var awakeDriveAlive = false
+    /// During Stay Awake, keep running with the lid closed, even without an external display (asks for your password).
+    public var awakeClosedLid = false
+    /// Show a notice when Stay Awake starts and ends.
+    public var awakeNotify = true
+    /// Play a sound when Stay Awake starts and ends.
+    public var awakeSound = false
+    /// Show the time left in the menu bar.
+    public var awakeShowTime = true
+    /// Start Stay Awake when Monorail opens.
+    public var awakeOnLaunch = false
+    /// Things that start Stay Awake by themselves.
+    public var awakeTriggers: [AwakeTrigger] = []
+    /// Automatic Stay Awake triggers are on.
+    public var awakeTriggersOn = true
+    /// During Stay Awake, still lock the screen after this many idle minutes (0 = never).
+    public var awakeLockAfterMinutes = 0
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true
     /// After resizing a window in a slide, offer to rearrange the slide.
@@ -953,7 +983,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
-        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
     }
 
     public init(from decoder: Decoder) throws {
@@ -1104,6 +1134,21 @@ public struct AppSettings: Equatable, Codable, Sendable {
         announceWindows = value(.announceWindows, d.announceWindows)
         webhookURL = value(.webhookURL, d.webhookURL)
         remoteCommands = value(.remoteCommands, d.remoteCommands)
+        awakeKeepDisplayOn = value(.awakeKeepDisplayOn, d.awakeKeepDisplayOn)
+        awakeAllowScreenSaver = value(.awakeAllowScreenSaver, d.awakeAllowScreenSaver)
+        awakeDefaultMinutes = value(.awakeDefaultMinutes, d.awakeDefaultMinutes)
+        awakeBatteryCutoff = value(.awakeBatteryCutoff, d.awakeBatteryCutoff)
+        awakeMoveCursor = value(.awakeMoveCursor, d.awakeMoveCursor)
+        awakeMoveCursorMinutes = value(.awakeMoveCursorMinutes, d.awakeMoveCursorMinutes)
+        awakeDriveAlive = value(.awakeDriveAlive, d.awakeDriveAlive)
+        awakeClosedLid = value(.awakeClosedLid, d.awakeClosedLid)
+        awakeNotify = value(.awakeNotify, d.awakeNotify)
+        awakeSound = value(.awakeSound, d.awakeSound)
+        awakeShowTime = value(.awakeShowTime, d.awakeShowTime)
+        awakeOnLaunch = value(.awakeOnLaunch, d.awakeOnLaunch)
+        awakeTriggers = value(.awakeTriggers, d.awakeTriggers)
+        awakeTriggersOn = value(.awakeTriggersOn, d.awakeTriggersOn)
+        awakeLockAfterMinutes = value(.awakeLockAfterMinutes, d.awakeLockAfterMinutes)
         fitMinimumWidth = value(.fitMinimumWidth, d.fitMinimumWidth)
         wholeSlidesOnly = value(.wholeSlidesOnly, d.wholeSlidesOnly)
         parkInCorner = value(.parkInCorner, d.parkInCorner)

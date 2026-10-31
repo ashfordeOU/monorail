@@ -6,7 +6,7 @@ Run any action from the command palette (⌃⌥/), with `open -g monorail://<nam
 the local API (`POST /action`), MCP (`perform_action`), AppleScript or a script (`monorail.perform`).
 Give any of them a key in **Settings → Shortcuts**.
 
-219 actions.
+225 actions.
 
 | Action | Name | Default key |
 | --- | --- | --- |
@@ -226,6 +226,12 @@ Give any of them a key in **Settings → Shortcuts**.
 | Sync layout with a nearby Mac | `pair-sync` | none (add one in Settings) |
 | Continue this workspace on my other Mac | `handoff` | none (add one in Settings) |
 | This workspace’s clipboard | `workspace-clipboard` | none (add one in Settings) |
+| Stay Awake on or off | `stay-awake` | none (add one in Settings) |
+| Stay awake for 30 minutes | `stay-awake-30` | none (add one in Settings) |
+| Stay awake for 1 hour | `stay-awake-60` | none (add one in Settings) |
+| Stay awake for 2 hours | `stay-awake-120` | none (add one in Settings) |
+| Stay awake while downloading | `stay-awake-downloading` | none (add one in Settings) |
+| Stay Awake: keep the display on or let it sleep | `stay-awake-display` | none (add one in Settings) |
 | Retile everything | `retile` | yes (see Settings → Shortcuts) |
 | Undo last layout change | `undo` | yes (see Settings → Shortcuts) |
 | Pause / resume | `toggle-pause` | yes (see Settings → Shortcuts) |

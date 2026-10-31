@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-172 settings.
+187 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -171,6 +171,21 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `parkInCorner` | Slides off screen wait hidden in the corner (no slivers at the screen edges). | `true` |
 | `wholeSlidesOnly` | Hide slides that only partly fit on screen, instead of showing them cut off at the edge. | `true` |
 | `fitMinimumWidth` | Fit mode never makes a window narrower than this (points; a pair needs twice as much); extra slides scroll. | `480.0` |
+| `awakeKeepDisplayOn` | Stay Awake keeps the display on too (otherwise only the Mac stays awake and the display may sleep). | `true` |
+| `awakeAllowScreenSaver` | Let the screen saver start during a Stay Awake session (the Mac still stays awake). | `false` |
+| `awakeDefaultMinutes` | How long Stay Awake lasts when toggled on (0 = until you end it). | `0` |
+| `awakeBatteryCutoff` | End Stay Awake when the battery drops to this percent on battery power (0 = never). | `10` |
+| `awakeMoveCursor` | During Stay Awake, nudge the pointer now and then so chat apps don’t mark you away. | `false` |
+| `awakeMoveCursorMinutes` | How often the pointer is nudged (minutes). | `4` |
+| `awakeDriveAlive` | During Stay Awake, keep external drives from spinning down. | `false` |
+| `awakeClosedLid` | During Stay Awake, keep running with the lid closed, even without an external display (asks for your password). | `false` |
+| `awakeNotify` | Show a notice when Stay Awake starts and ends. | `true` |
+| `awakeSound` | Play a sound when Stay Awake starts and ends. | `false` |
+| `awakeShowTime` | Show the time left in the menu bar. | `true` |
+| `awakeOnLaunch` | Start Stay Awake when Monorail opens. | `false` |
+| `awakeTriggers` | Things that start Stay Awake by themselves. | `[]` |
+| `awakeTriggersOn` | Automatic Stay Awake triggers are on. | `true` |
+| `awakeLockAfterMinutes` | During Stay Awake, still lock the screen after this many idle minutes (0 = never). | `0` |
 | `keepWindowsInPlace` | Snap windows back when an app moves or resizes one by itself. | `true` |
 | `resizeAssist` | After resizing a window in a slide, offer to rearrange the slide. | `true` |
 | `pairLoneWindowsOnOpen` | Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). | `false` |

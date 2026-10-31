@@ -210,3 +210,55 @@ final class TilesAcrossTests: XCTestCase {
         XCTAssertEqual(LayoutConfig().fitWidth(slides: 5, viewportWidth: 1512, minimum: 960), 1, accuracy: 0.0001)
     }
 }
+
+final class AwakeTests: XCTestCase {
+    func date(_ weekday: Int, _ hour: Int, _ minute: Int = 0) -> Date {
+        // 2026-11-01 is a Sunday (weekday 1).
+        var c = DateComponents(year: 2026, month: 11, day: weekday, hour: hour, minute: minute)
+        c.timeZone = TimeZone(identifier: "UTC")
+        return Calendar(identifier: .gregorian).date(from: c)!
+    }
+
+    var utc: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        return calendar
+    }
+
+    func testTriggers() {
+        let context = AwakeContext(now: date(2, 10), runningApps: ["us.zoom.xos"], frontApp: "com.apple.Keynote",
+                                   externalDisplays: ["LG UltraFine"], wifi: "Office", charging: false, battery: 40,
+                                   cpu: 72, downloadRate: 300, mountedVolumes: ["Backup"])
+        func active(_ t: AwakeTrigger) -> Bool { AwakeRules.isActive(t, in: context, calendar: utc) }
+        XCTAssertTrue(active(AwakeTrigger(kind: .app, value: "us.zoom.xos")))
+        XCTAssertFalse(active(AwakeTrigger(kind: .app, value: "com.apple.Music")))
+        XCTAssertTrue(active(AwakeTrigger(kind: .frontApp, value: "com.apple.Keynote")))
+        XCTAssertTrue(active(AwakeTrigger(kind: .display)))
+        XCTAssertTrue(active(AwakeTrigger(kind: .display, value: "ultrafine")))
+        XCTAssertTrue(active(AwakeTrigger(kind: .wifi, value: "Office")))
+        XCTAssertFalse(active(AwakeTrigger(kind: .charging)))
+        XCTAssertTrue(active(AwakeTrigger(kind: .cpu, threshold: 60)))
+        XCTAssertTrue(active(AwakeTrigger(kind: .downloading)))
+        XCTAssertTrue(active(AwakeTrigger(kind: .drive, value: "backup")))
+        XCTAssertTrue(active(AwakeTrigger(kind: .schedule, startMinute: 9 * 60, endMinute: 17 * 60, weekdays: [2, 3, 4, 5, 6])))
+        XCTAssertFalse(active(AwakeTrigger(kind: .schedule, startMinute: 9 * 60, endMinute: 17 * 60, weekdays: [1, 7])))
+        XCTAssertFalse(active(AwakeTrigger(kind: .app, value: "us.zoom.xos", isEnabled: false)))
+    }
+
+    func testOvernightScheduleAndSessions() {
+        let night = AwakeTrigger(kind: .schedule, startMinute: 22 * 60, endMinute: 6 * 60)
+        XCTAssertTrue(AwakeRules.isActive(night, in: AwakeContext(now: date(2, 23)), calendar: utc))
+        XCTAssertTrue(AwakeRules.isActive(night, in: AwakeContext(now: date(3, 5)), calendar: utc))
+        XCTAssertFalse(AwakeRules.isActive(night, in: AwakeContext(now: date(3, 12)), calendar: utc))
+        let now = Date()
+        XCTAssertTrue(AwakeRules.sessionContinues(.until(now.addingTimeInterval(60)), in: AwakeContext(now: now)))
+        XCTAssertFalse(AwakeRules.sessionContinues(.until(now.addingTimeInterval(-1)), in: AwakeContext(now: now)))
+        XCTAssertFalse(AwakeRules.sessionContinues(.whileApp("a"), in: AwakeContext(runningApps: ["b"])))
+        XCTAssertTrue(AwakeRules.batteryTooLow(AwakeContext(charging: false, battery: 8), cutoff: 10))
+        XCTAssertFalse(AwakeRules.batteryTooLow(AwakeContext(charging: true, battery: 8), cutoff: 10))
+        XCTAssertEqual(AwakeFormat.remaining(65 * 60), "1 h 05")
+        XCTAssertEqual(AwakeFormat.clock(3725), "1:02")
+        XCTAssertEqual(AwakeFormat.clock(125), "2:05")
+        XCTAssertEqual(AwakeSession.until(now.addingTimeInterval(1800)).describe(now: now), "for 30 min")
+    }
+}

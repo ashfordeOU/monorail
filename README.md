@@ -18,7 +18,7 @@
 
 ---
 
-**Monorail by Ashforde®** is a scrolling window manager for your Mac. **Version 1.2 is here:** you can tell it what you want in plain words, it learns how you work, it tells you when an AI agent needs you, it keeps private windows out of screen shares, and it comes in 27 themes.
+**Monorail by Ashforde®** is a scrolling window manager for your Mac. **Version 1.3 is here:** it can now keep your Mac awake, Amphetamine-style. Version 1.2 added this: you can tell it what you want in plain words, it learns how you work, it tells you when an AI agent needs you, it keeps private windows out of screen shares, and it comes in 27 themes.
 
 Grid tilers squeeze every new window into the space that's already there.
 **Monorail does the opposite.** Each window is a column on a horizontal strip
@@ -537,7 +537,29 @@ search, so you can see which slide wants you.
 - **In your language**: menus, Settings tabs and the welcome tour in English, Deutsch, Français, Español and 日本語 (**Settings → General → Language**).
 - **Practice windows**: the welcome tour can open three practice windows, so you learn the moves without touching your work.
 
-### New in 1.2
+### New in 1.3: Stay Awake ☕
+
+Monorail can keep your Mac awake, like Amphetamine, with no extra app to install. Choose **Stay Awake** in the menu bar, use the command palette, give it a shortcut, run `monorail awake 60`, or open `monorail://awake`.
+
+- **Sessions:** until you end it, for 15 minutes up to 12 hours, until a clock time, while an app is open, or while something downloads. The menu bar shows ☕ and the time left.
+- **Display:** keep it on, or let it sleep while the Mac stays awake. You can allow the screen saver, and still have the screen lock after the idle time you choose.
+- **Stays awake by itself** when a trigger applies:
+  - an app is open or in front
+  - an external display or drive is connected
+  - you're on a particular Wi-Fi network or charging
+  - a weekly schedule (overnight works too)
+  - the Mac is busy, or something is downloading
+- **While awake:**
+  - It can nudge the pointer now and then, so chat apps don't mark you away.
+  - It can keep external drives from spinning down.
+  - **Closed-lid mode** keeps a MacBook running with its lid shut, even without an external display. macOS asks for your password each time.
+- **Battery safety:** Stay Awake ends when the battery drops to a level you choose (10% by default) and the Mac isn't charging.
+- **Automation:** `POST /awake` in the local API, the `stay_awake` MCP tool, webhooks when it starts and stops, and notices and sounds if you want them.
+- It uses the same power assertions as macOS's own `caffeinate`, so it costs almost nothing. With no session and no triggers it does no work at all.
+
+Also in 1.3, Monorail is lighter on energy: background checks rest while the screen sleeps or is locked, and they run at half speed in Low Power Mode or on battery. Settings → About shows how much CPU time Monorail has used.
+
+
 
 <p align="center"><img src="assets/readme/new-in-1.2.svg" alt="New in 1.2: say it, intent workspaces, AI agent alerts, learning, tall slides, elastic focus, deep work, safe screen sharing, share one slide, demo zoom and ink, vim mode, phone remote, MIDI and controllers, folders to workspaces, display memory, 27 themes" width="100%"></p>
 
@@ -721,18 +743,19 @@ Monorail asks you before an assistant closes a window.
 | --- | --- |
 | `get_state`, `list_windows`, `list_workspaces` | Where everything is |
 | `focus_window`, `move_window`, `pair_windows`, `switch_workspace` | Move around and arrange |
-| `perform_action` | Any of the [219 actions](docs/ACTIONS.md) |
+| `perform_action` | Any of the [226 actions](docs/ACTIONS.md) |
 | `apply_layout`, `open_app_pair`, `run_template` | Bring back a setup |
 | `say` | Carry out a sentence (“Safari two thirds”) or an intent (“write the Q3 report”) |
 | `undo`, `redo`, `get_history` | Take changes back |
 | `name_slide`, `set_slide_layout`, `note_window`, `close_window` | Edit slides and windows |
 | `get_waiting_agents` | Terminals whose AI agent is waiting for approval |
+| `stay_awake` | Keep the Mac awake for some minutes, or end it |
 | `notify`, `get_insights` | Show a notice; today's usage and focus |
 
 The local API has the same endpoints under `GET`/`POST http://127.0.0.1:4767/…`:
 `state`, `windows`, `workspaces`, `layouts`, `pairs`, `templates`, `snapshots`, `actions`, `action`, `focus`,
 `move`, `pair`, `workspace`, `layout`, `pair-name`, `template`, `snapshot`, `undo`, `redo`, `history`,
-`name-slide`, `slide-layout`, `close`, `note`, `notify`, `insights`, `say`, `agents`, `predict` and `context`.
+`name-slide`, `slide-layout`, `close`, `note`, `notify`, `insights`, `say`, `agents`, `predict`, `context` and `awake`.
 
 The same API serves the extensions in this repository and your own scripts:
 - [Raycast](extensions/raycast)
@@ -829,7 +852,7 @@ current strip, and has Pause, Search Windows, Retile and Settings.
 
 ## Keyboard shortcuts
 
-**[All 219 actions](docs/ACTIONS.md)**, with their `monorail://` names, are listed in docs/ACTIONS.md, which is generated from the source. The ones below have keys out of the box; give any other action a key in **Settings → Shortcuts**.
+**[All 226 actions](docs/ACTIONS.md)**, with their `monorail://` names, are listed in docs/ACTIONS.md, which is generated from the source. The ones below have keys out of the box; give any other action a key in **Settings → Shortcuts**.
 
 If you prefer chords to slide mode, all shortcuts start with <kbd>⌃⌥</kbd> by default. In **Settings → Shortcuts**
 you can switch the prefix to <kbd>⌥</kbd>, <kbd>⌘⌥</kbd> or <kbd>⌃⌘</kbd> in
@@ -931,6 +954,7 @@ Everything is set in a standard Settings window, and changes apply immediately.
 | Appearance | Slider bar on or off (always or while sliding; top or bottom), theme, focus mode, focus border, dimming |
 | Apps | Rules per app and per window title, automatic floating and pausing, quick launch letters, templates and the template gallery, app pairs |
 | Smart | Learning (next window, rule suggestions, focus nudges, content-aware widths), AI agents, elastic focus, whole slides, display profiles, folders to workspaces, deep work, contexts and time budgets |
+| Stay Awake | Default length, display on or off, screen saver, lock after idle, battery cut-off, pointer nudges, drives, closed lid, notices, triggers |
 | Devices & Sharing | Monorail key, mouse gestures, game controllers, MIDI, phone remote, head focus, safe screen sharing, private apps, per-workspace clipboard, notch, drifting wallpaper, sounds, trust and privacy |
 | Automation | Pomodoro and breaks, housekeeping, webhooks and remote commands, each workspace's look, auto rules by time or Wi-Fi, URLs, scripts and the local API |
 | Insights | Today's counts, the week, your most-used pairs and suggestions (all kept on your Mac) |
@@ -972,7 +996,8 @@ A few take a name or number:
 | `monorail://focus-app/Safari` | Go to an app's window (or open it) |
 | `monorail://notify/Hello` | Show a notice |
 | `monorail://pomodoro` | Start or stop the pomodoro timer |
-| `monorail://deep-work` · `monorail://share-slide` · `monorail://demo-zoom` | Any 1.2 action, by its name |
+| `monorail://awake` · `awake/60` · `awake/off` · `awake/downloading` | Stay Awake: toggle, for minutes, off, while downloading |
+| `monorail://deep-work` · `monorail://share-slide` · `monorail://demo-zoom` | Any action, by its name |
 
 In the **Shortcuts** app, use the **Open URLs** action with any of these, so
 Monorail fits into your automations, Focus filters and Stream Deck buttons.

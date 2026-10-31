@@ -322,4 +322,141 @@ struct AppMenu: View {
         .fixedSize()
     }
 }
+/// Settings → Stay Awake: keep the Mac from sleeping, by hand or by itself.
+struct StayAwakePane: View {
+    @ObservedObject var store: SettingsStore
+    private static let weekdays = ["S", "M", "T", "W", "T", "F", "S"]
+
+    var body: some View {
+        Form {
+            Section {
+                Picker("When turned on, stay awake", selection: $store.settings.awakeDefaultMinutes) {
+                    Text("Until I end it").tag(0)
+                    ForEach([15, 30, 60, 120, 240, 480], id: \.self) { Text(InsightsPane.duration($0)).tag($0) }
+                }
+                Toggle("Keep the display on", isOn: $store.settings.awakeKeepDisplayOn)
+                Toggle("Allow the screen saver", isOn: $store.settings.awakeAllowScreenSaver)
+                    .disabled(!store.settings.awakeKeepDisplayOn)
+                Picker("Still lock the screen after", selection: $store.settings.awakeLockAfterMinutes) {
+                    Text("Never").tag(0)
+                    ForEach([5, 10, 15, 30, 60], id: \.self) { Text("\($0) idle minutes").tag($0) }
+                }
+                Toggle("Start Stay Awake when Monorail opens", isOn: $store.settings.awakeOnLaunch)
+            } header: {
+                Text("Stay Awake")
+            } footer: {
+                Text("Turn it on from the menu bar (Stay Awake), the command palette, a shortcut in Settings → Shortcuts, `monorail awake 60`, or monorail://awake. The menu bar shows ☕ and the time left.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+            Section {
+                Picker("End it when the battery drops to", selection: $store.settings.awakeBatteryCutoff) {
+                    Text("Never").tag(0)
+                    ForEach([5, 10, 15, 20, 30, 50], id: \.self) { Text("\($0)%").tag($0) }
+                }
+                Toggle("Move the pointer now and then, so chat apps don’t show me as away", isOn: $store.settings.awakeMoveCursor)
+                if store.settings.awakeMoveCursor {
+                    Stepper("Every \(store.settings.awakeMoveCursorMinutes) minutes", value: $store.settings.awakeMoveCursorMinutes, in: 1...30)
+                }
+                Toggle("Keep external drives from spinning down", isOn: $store.settings.awakeDriveAlive)
+                Toggle("Stay awake with the lid closed (asks for your password)", isOn: $store.settings.awakeClosedLid)
+                    .help("Keeps a MacBook running when closed, even without an external display. Don't put a running Mac in a bag.")
+            } header: {
+                Text("While awake")
+            }
+            Section {
+                Toggle("Show a notice when it starts and ends", isOn: $store.settings.awakeNotify)
+                Toggle("Play a sound when it starts and ends", isOn: $store.settings.awakeSound)
+                Toggle("Show the time left in the menu bar", isOn: $store.settings.awakeShowTime)
+            } header: {
+                Text("Feedback")
+            }
+            Section {
+                Toggle("Automatic triggers are on", isOn: $store.settings.awakeTriggersOn)
+                ForEach($store.settings.awakeTriggers) { $trigger in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Toggle("", isOn: $trigger.isEnabled).labelsHidden()
+                            Picker("", selection: $trigger.kind) {
+                                ForEach(AwakeTrigger.Kind.allCases, id: \.self) { Text($0.title).tag($0) }
+                            }
+                            .labelsHidden().frame(width: 260)
+                            Spacer()
+                            Button { store.settings.awakeTriggers.removeAll { $0.id == trigger.id } } label: {
+                                Image(systemName: "minus.circle")
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                        detail($trigger)
+                    }
+                    .padding(.vertical, 2)
+                }
+                Menu("Add a Trigger") {
+                    ForEach(AwakeTrigger.Kind.allCases, id: \.self) { kind in
+                        Button(kind.title) { store.settings.awakeTriggers.append(AwakeTrigger(kind: kind)) }
+                    }
+                }
+                .fixedSize()
+            } header: {
+                Text("Stay awake by itself")
+            } footer: {
+                Text("While any trigger applies, your Mac stays awake: a presentation app open, an external display, a download, a busy CPU, your office Wi-Fi, a schedule…")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    @ViewBuilder
+    private func detail(_ trigger: Binding<AwakeTrigger>) -> some View {
+        switch trigger.wrappedValue.kind {
+        case .app, .frontApp:
+            HStack {
+                Text(trigger.wrappedValue.value.isEmpty ? "No app chosen" : UsageStats.appName(trigger.wrappedValue.value))
+                    .foregroundStyle(.secondary)
+                AppMenu(title: "Choose…") { trigger.wrappedValue.value = $0 }
+            }
+        case .display:
+            TextField("Any external display, or part of its name", text: trigger.value).textFieldStyle(.roundedBorder)
+        case .wifi:
+            TextField("Wi-Fi network name", text: trigger.value).textFieldStyle(.roundedBorder)
+        case .drive:
+            TextField("Any external drive, or its name", text: trigger.value).textFieldStyle(.roundedBorder)
+        case .charging:
+            EmptyView()
+        case .cpu:
+            Stepper("Busier than \(Int(trigger.wrappedValue.threshold > 0 ? trigger.wrappedValue.threshold : 50))%",
+                    value: Binding(get: { trigger.wrappedValue.threshold > 0 ? trigger.wrappedValue.threshold : 50 },
+                                   set: { trigger.wrappedValue.threshold = $0 }), in: 10...95, step: 5)
+        case .downloading:
+            Stepper("Faster than \(Int(trigger.wrappedValue.threshold > 0 ? trigger.wrappedValue.threshold : 50)) KB/s",
+                    value: Binding(get: { trigger.wrappedValue.threshold > 0 ? trigger.wrappedValue.threshold : 50 },
+                                   set: { trigger.wrappedValue.threshold = $0 }), in: 10...10000, step: 10)
+        case .schedule:
+            HStack {
+                minutePicker("From", trigger.startMinute)
+                minutePicker("to", trigger.endMinute)
+                ForEach(1...7, id: \.self) { day in
+                    let on = trigger.wrappedValue.weekdays.isEmpty || trigger.wrappedValue.weekdays.contains(day)
+                    Button(Self.weekdays[day - 1]) {
+                        var days = trigger.wrappedValue.weekdays.isEmpty ? Array(1...7) : trigger.wrappedValue.weekdays
+                        if let i = days.firstIndex(of: day) { days.remove(at: i) } else { days.append(day) }
+                        trigger.wrappedValue.weekdays = days.count == 7 ? [] : days.sorted()
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(on ? .accentColor : .secondary)
+                    .controlSize(.small)
+                }
+            }
+        }
+    }
+
+    private func minutePicker(_ label: String, _ minute: Binding<Int>) -> some View {
+        Picker(label, selection: minute) {
+            ForEach(Array(stride(from: 0, to: 24 * 60, by: 30)), id: \.self) { m in
+                Text(String(format: "%02d:%02d", m / 60, m % 60)).tag(m)
+            }
+        }
+        .frame(width: 130)
+    }
+}
 #endif

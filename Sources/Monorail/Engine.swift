@@ -442,7 +442,8 @@ final class Engine {
             .locatePointer, .flashFocus, .pomodoro, .restart, .openSettings, .checkForUpdates,
             .startIntent, .showTimeline, .shareWorkspace, .toggleVimMode, .searchWindowText, .voiceCommand,
             .toggleDeepWork, .shareSlide, .demoZoom, .toggleKeystrokes, .toggleAnnotate, .presenterNotes, .mirrorWindow,
-            .guestMode, .cameraTile, .pairSync, .handoff, .clipboardHistory:
+            .guestMode, .cameraTile, .pairSync, .handoff, .clipboardHistory,
+            .toggleAwake, .awake30, .awake60, .awake120, .awakeWhileDownloading, .toggleAwakeDisplay:
             onAppAction(action)
             return
         case .sortIntoProjects:

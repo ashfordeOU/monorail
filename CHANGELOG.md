@@ -4,9 +4,22 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [1.2.1] - 2026-10-31
+## [1.3.0] - 2026-10-31
 
-Lighter on energy.
+Stay Awake, and lighter on energy.
+
+### Added
+- **Stay Awake**, built in, like Amphetamine:
+  - **Sessions:** until you end it, for 15 minutes up to 12 hours, until a time, while an app is open, or while downloading.
+  - **Display:** keep it on or let it sleep, allow the screen saver, and lock after a set idle time.
+  - **Battery cut-off.**
+  - **Pointer nudges** so chat apps don't mark you away.
+  - **Drive Alive** for external disks.
+  - **Closed-lid mode** (asks for your password).
+  - **Automatic triggers:** app open or in front, external display, Wi-Fi network, charging, schedule, busy CPU, downloading, external drive.
+  - **Feedback:** notices and sounds, and ☕ with the time left in the menu bar.
+  - **Ways to start it:** a Stay Awake submenu and settings pane, palette actions, `monorail awake`, `monorail://awake`, `POST /awake`, the `stay_awake` MCP tool, and webhooks.
+- **A measuring script**, `scripts/measure-performance.sh`, that measures Monorail's own CPU, wake-ups, energy and memory, while idle and in use.
 
 ### Changed
 - **Timers can be grouped:** every repeating timer gives macOS some leeway, so its wake-ups are grouped with other apps' instead of waking the Mac separately.

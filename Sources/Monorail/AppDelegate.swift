@@ -83,6 +83,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var seenHandoffs: Set<String> = []
     private var notesSave: DispatchWorkItem?
     private var dimMonitor: Any?
+    private let awake = StayAwake()
+    private var awakeTicker: Timer?
     private var scriptsOn = false
     private let statusMenu = NSMenu()
     private let navigation = SettingsNavigation()
@@ -133,6 +135,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         input.stop()
         trackpad.stop()
         engine.shutdown()
+        awake.shutdown()
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
@@ -180,6 +183,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     NSWorkspace.shared.openApplication(at: app, configuration: NSWorkspace.OpenConfiguration())
                 }
             case "notify": toast.show(argument)
+            case "awake":
+                // monorail://awake (toggle), awake/on, awake/off, awake/90 (minutes), awake/downloading
+                switch argument.lowercased() {
+                case "", "toggle": awake.toggle()
+                case "on": awake.start(minutes: store.settings.awakeDefaultMinutes)
+                case "off": awake.end()
+                case "downloading": awake.start(.whileDownloading)
+                default: if let minutes = Int(argument) { awake.start(minutes: minutes) }
+                }
             case "pomodoro": performAppAction(.pomodoro)
             default:
                 if let action = Action(url: url.absoluteString) {
@@ -506,6 +518,145 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in self?.checkNotch() }
         watchDormancy()
+        wireUpAwake()
+    }
+
+    // MARK: Stay Awake
+
+    private func wireUpAwake() {
+        awake.settings = { [weak self] in self?.store.settings ?? AppSettings() }
+        awake.onChange = { [weak self] on, why in
+            guard let self else { return }
+            if self.store.settings.awakeNotify { self.toast.show(why) }
+            if self.store.settings.awakeSound { NSSound(named: on ? "Purr" : "Pop")?.play() }
+            self.postWebhook(on ? "stay_awake_on" : "stay_awake_off", ["status": self.awake.statusText])
+            self.awakeTicker?.invalidate()
+            self.awakeTicker = on ? Timer.every(20) { [weak self] _ in self?.updateStatusItem() } : nil
+            self.updateStatusItem()
+        }
+        if store.settings.awakeOnLaunch { awake.start(minutes: store.settings.awakeDefaultMinutes) }
+    }
+
+    private func performAwake(_ action: Action) {
+        switch action {
+        case .toggleAwake: awake.toggle()
+        case .awake30: awake.start(minutes: 30)
+        case .awake60: awake.start(minutes: 60)
+        case .awake120: awake.start(minutes: 120)
+        case .awakeWhileDownloading: awake.start(.whileDownloading)
+        case .toggleAwakeDisplay:
+            var settings = store.settings
+            settings.awakeKeepDisplayOn.toggle()
+            store.settings = settings
+            toast.show(settings.awakeKeepDisplayOn ? "Stay Awake keeps the display on" : "Stay Awake lets the display sleep (the Mac stays awake)")
+        default: break
+        }
+    }
+
+    private func awakeMenu() -> NSMenuItem {
+        let parent = NSMenuItem(title: awake.isOn ? "Stay Awake · \(awake.statusText)" : "Stay Awake", action: nil, keyEquivalent: "")
+        parent.image = NSImage(systemSymbolName: awake.isOn ? "cup.and.saucer.fill" : "cup.and.saucer", accessibilityDescription: nil)
+        let menu = NSMenu()
+        if awake.isOn {
+            menu.addItem(item("End Stay Awake", #selector(endAwakeFromMenu), action: .toggleAwake))
+            menu.addItem(.separator())
+        }
+        let header = NSMenuItem(title: "Keep this Mac awake…", action: nil, keyEquivalent: "")
+        header.isEnabled = false
+        menu.addItem(header)
+        let indefinitely = item("Until I end it", #selector(awakeForMinutesFromMenu(_:)))
+        indefinitely.tag = 0
+        menu.addItem(indefinitely)
+        for (title, minutes) in [("For 15 minutes", 15), ("For 30 minutes", 30), ("For 1 hour", 60), ("For 2 hours", 120),
+                                 ("For 4 hours", 240), ("For 8 hours", 480), ("For 12 hours", 720)] {
+            let entry = item(title, #selector(awakeForMinutesFromMenu(_:)))
+            entry.tag = minutes
+            menu.addItem(entry)
+        }
+        menu.addItem(item("Until a Time…", #selector(awakeUntilFromMenu)))
+        let apps = NSMenuItem(title: "While an App Is Open", action: nil, keyEquivalent: "")
+        let appsMenu = NSMenu()
+        for app in NSWorkspace.shared.runningApplications.filter({ $0.activationPolicy == .regular && $0.bundleIdentifier != nil })
+            .sorted(by: { ($0.localizedName ?? "") < ($1.localizedName ?? "") })
+        {
+            let entry = item(app.localizedName ?? app.bundleIdentifier!, #selector(awakeWhileAppFromMenu(_:)))
+            entry.representedObject = app.bundleIdentifier
+            entry.image = app.icon.map { icon in
+                let copy = icon.copy() as! NSImage
+                copy.size = NSSize(width: 16, height: 16)
+                return copy
+            }
+            appsMenu.addItem(entry)
+        }
+        apps.submenu = appsMenu
+        menu.addItem(apps)
+        menu.addItem(item("While Downloading", #selector(awakeDownloadingFromMenu)))
+        menu.addItem(.separator())
+        let settings = store.settings
+        for (title, on, selector) in [
+            ("Keep the Display On", settings.awakeKeepDisplayOn, #selector(toggleAwakeDisplayFromMenu)),
+            ("Allow the Screen Saver", settings.awakeAllowScreenSaver, #selector(toggleAwakeScreenSaverFromMenu)),
+            ("Move the Pointer Now and Then", settings.awakeMoveCursor, #selector(toggleAwakeCursorFromMenu)),
+            ("Keep External Drives Awake", settings.awakeDriveAlive, #selector(toggleAwakeDrivesFromMenu)),
+            ("Stay Awake with the Lid Closed", settings.awakeClosedLid, #selector(toggleAwakeLidFromMenu)),
+            ("Automatic Triggers", settings.awakeTriggersOn, #selector(toggleAwakeTriggersFromMenu)),
+        ] {
+            let entry = item(title, selector)
+            entry.state = on ? .on : .off
+            menu.addItem(entry)
+        }
+        menu.addItem(.separator())
+        menu.addItem(item("Stay Awake Settings…", #selector(showAwakeSettingsFromMenu)))
+        parent.submenu = menu
+        return parent
+    }
+
+    @objc private func endAwakeFromMenu() { awake.end() }
+    @objc private func awakeForMinutesFromMenu(_ sender: NSMenuItem) { awake.start(minutes: sender.tag) }
+    @objc private func awakeDownloadingFromMenu() { awake.start(.whileDownloading) }
+    @objc private func awakeWhileAppFromMenu(_ sender: NSMenuItem) {
+        if let id = sender.representedObject as? String { awake.start(.whileApp(id)) }
+    }
+    @objc private func awakeUntilFromMenu() {
+        afterMenu { delegate in
+            let formatter = DateFormatter()
+            formatter.dateFormat = "HH:mm"
+            guard let text = TextPrompt.ask(title: "Stay awake until…", message: "A time today (or tomorrow, if it has passed), like 18:30.",
+                                            initial: formatter.string(from: Date().addingTimeInterval(3600)), placeholder: "18:30", button: "Start"),
+                let time = formatter.date(from: text.trimmingCharacters(in: .whitespaces))
+            else { return }
+            let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
+            var date = Calendar.current.date(bySettingHour: parts.hour ?? 0, minute: parts.minute ?? 0, second: 0, of: Date()) ?? Date()
+            if date <= Date() { date = date.addingTimeInterval(86400) }
+            delegate.awake.start(.until(date))
+        }
+    }
+    private func toggleAwakeSetting(_ change: (inout AppSettings) -> Void) {
+        var settings = store.settings
+        change(&settings)
+        store.settings = settings
+        awake.refresh()
+    }
+    @objc private func toggleAwakeDisplayFromMenu() { toggleAwakeSetting { $0.awakeKeepDisplayOn.toggle() } }
+    @objc private func toggleAwakeScreenSaverFromMenu() { toggleAwakeSetting { $0.awakeAllowScreenSaver.toggle() } }
+    @objc private func toggleAwakeCursorFromMenu() { toggleAwakeSetting { $0.awakeMoveCursor.toggle() } }
+    @objc private func toggleAwakeDrivesFromMenu() { toggleAwakeSetting { $0.awakeDriveAlive.toggle() } }
+    @objc private func toggleAwakeLidFromMenu() {
+        if !store.settings.awakeClosedLid {
+            let alert = NSAlert()
+            alert.messageText = "Stay awake with the lid closed?"
+            alert.informativeText = "During Stay Awake your MacBook keeps running when you close it, even without an external display. macOS asks for your password each time it turns on or off. Don't put a running Mac in a bag: it can get hot."
+            alert.addButton(withTitle: "Turn On")
+            alert.addButton(withTitle: "Cancel")
+            NSApp.activate(ignoringOtherApps: true)
+            guard alert.runModal() == .alertFirstButtonReturn else { return }
+        }
+        toggleAwakeSetting { $0.awakeClosedLid.toggle() }
+    }
+    @objc private func toggleAwakeTriggersFromMenu() { toggleAwakeSetting { $0.awakeTriggersOn.toggle() } }
+    @objc private func showAwakeSettingsFromMenu() {
+        navigation.tab = .awake
+        showSettings()
     }
 
     /// Pollers rest while the screen sleeps, is locked or shows the screen saver.
@@ -577,6 +728,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         OverviewStyle.blurPrivate = settings.privacyBlur
         OverviewStyle.live = !(settings.energySaver && Power.onBattery)
         updateThrift()
+        awake.refresh()
         if settings.dimFollowsPointer, dimMonitor == nil {
             dimMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
                 let location = NSEvent.mouseLocation
@@ -642,7 +794,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Text after the menu bar icon for timers and modes.
     private var statusExtra: String? {
-        let parts = [pomodoroText, vimText, deepWork.isOn ? "◆ Deep work" : nil, guestOn ? "Guest" : nil].compactMap { $0 }
+        let parts = [awake.menuBarText, pomodoroText, vimText, deepWork.isOn ? "◆ Deep work" : nil, guestOn ? "Guest" : nil].compactMap { $0 }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
@@ -969,6 +1121,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                        : "Saved · turn on iCloud sync (Settings → General) on both Macs to continue there")
         case .clipboardHistory:
             palette.show(query: "clipboard")
+        case .toggleAwake, .awake30, .awake60, .awake120, .awakeWhileDownloading, .toggleAwakeDisplay:
+            performAwake(action)
         default:
             break
         }
@@ -1765,6 +1919,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return ["json": engine.layoutJSON() ?? ""]
         case ("POST", "say"):
             return ["ok": say(text("text") ?? "")]
+        case ("GET", "awake"):
+            return ["on": awake.isOn, "status": awake.statusText]
+        case ("POST", "awake"):
+            if text("state") == "off" { awake.end() } else if let minutes = int("minutes") { awake.start(minutes: minutes) } else {
+                awake.toggle()
+            }
+            return ["on": awake.isOn, "status": awake.statusText]
         case ("GET", "agents"):
             return engine.waitingAgents.map { ["id": Int($0)] }
         case ("GET", "predict"):
@@ -2079,6 +2240,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if !trusted {
             menu.addItem(item("Grant Accessibility Access…", #selector(showWelcomeFromMenu)))
         }
+        menu.addItem(awakeMenu())
 
         let windows = engine.activeStripWindows()
         if !windows.isEmpty {

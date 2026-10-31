@@ -4880,6 +4880,17 @@ final class Engine {
 
     func traceText() -> String { trace.joined(separator: "\n") }
 
+    /// The focused slide's frame on screen (all its windows), for sharing it.
+    func focusedSlideFrame() -> CGRect? {
+        guard let id = focusedWindowID(), let key = windows[id]?.key, let strip = strips[key], let (c, _) = strip.locate(id)
+        else { return focusedFrame() }
+        let frames = strip.columns[c].windows.compactMap { windows[$0]?.lastApplied.map(CGRect.init) }
+        return frames.dropFirst().reduce(frames.first) { $0?.union($1) } ?? focusedFrame()
+    }
+
+    /// The window under a point (accessibility coordinates).
+    func window(at point: CGPoint) -> WindowID? { topWindow(at: point) }
+
     /// Picks up newly known app quirks from the repository, once a launch.
     private static func fetchQuirks() {
         guard let url = URL(string: "https://raw.githubusercontent.com/ashfordeOU/monorail/main/quirks.json") else { return }

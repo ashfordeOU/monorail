@@ -205,6 +205,17 @@ final class ScriptHost {
         var notify: (String) -> Void
         var windows: () -> [[String: Any]]
         var state: () -> [String: Any]
+        /// Layouts as code: widths for the slides of the workspace, left to right.
+        var setWidths: ([Double]) -> Void = { _ in }
+        /// A sentence, as typed in the palette ("Slack and Mail side by side").
+        var say: (String) -> Void = { _ in }
+    }
+
+    /// Palette commands added by scripts: title → function.
+    private(set) var commands: [(title: String, function: JSValue)] = []
+
+    func runCommand(_ title: String) {
+        commands.first { $0.title == title }?.function.call(withArguments: [])
     }
 
     var bridge: Bridge?
@@ -216,6 +227,7 @@ final class ScriptHost {
     /// Loads (or reloads) every .js file in the Scripts folder.
     func load() {
         handlers.removeAll()
+        commands.removeAll()
         guard let bridge, let context = JSContext() else { return }
         self.context = context
         context.exceptionHandler = { _, exception in
@@ -234,9 +246,16 @@ final class ScriptHost {
         let notify: @convention(block) (String) -> Void = { bridge.notify($0) }
         let windows: @convention(block) () -> [[String: Any]] = { bridge.windows() }
         let state: @convention(block) () -> [String: Any] = { bridge.state() }
+        let addCommand: @convention(block) (String, JSValue) -> Void = { [weak self] title, function in
+            self?.commands.removeAll { $0.title == title }
+            self?.commands.append((title, function))
+        }
+        let setWidths: @convention(block) ([Double]) -> Void = { bridge.setWidths($0) }
+        let say: @convention(block) (String) -> Void = { bridge.say($0) }
         let functions: [(String, Any)] = [
             ("on", on), ("perform", perform), ("focus", focus), ("moveToWorkspace", move), ("park", park),
             ("openPair", pair), ("applyLayout", layout), ("notify", notify), ("windows", windows), ("state", state),
+            ("addCommand", addCommand), ("setWidths", setWidths), ("say", say),
         ]
         for (name, function) in functions { api.setObject(function, forKeyedSubscript: name as NSString) }
         context.setObject(api, forKeyedSubscript: "monorail" as NSString)
@@ -256,6 +275,7 @@ final class ScriptHost {
 
     func unload() {
         handlers.removeAll()
+        commands.removeAll()
         context = nil
     }
 

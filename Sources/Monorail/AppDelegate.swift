@@ -3,6 +3,7 @@ import AppKit
 import Combine
 import MonorailCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let store = SettingsStore()
@@ -50,6 +51,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let remoteCommands = RemoteCommands()
     private var pomodoroText: String?
     private var focusMinuteTimer: Timer?
+    private let deepWork = DeepWork()
+    private let shareWatch = ScreenShareWatch()
+    private let workspaceClipboard = WorkspaceClipboard()
+    private let drift = WallpaperDrift()
+    private let notchHUD = NotchHUD()
+    private let crashReporter = CrashReporter()
+    private let calendarFocus = CalendarFocus()
+    private let midi = MIDIControl()
+    private let gamepad = GameControllerInput()
+    private let voice = VoiceCommands()
+    private let headFocus = HeadFocus()
+    private let webRemote = WebRemote()
+    private let pairSync = PairSync()
+    private let slideShare = ScreenMirror()
+    private let windowMirror = ScreenMirror()
+    private let demoLens = ScreenMirror()
+    private let annotation = AnnotationOverlay()
+    private let keystrokes = KeystrokeOverlay()
+    private let presenterNotesPanel = PresenterNotes()
+    private let cameraTile = CameraTile()
+    private var timelineWindow: NSWindow?
+    private var safeMode = false
+    private var guestOn = false
+    private var vimText: String?
+    private var midiLearn: ((Int) -> Void)?
+    private var budgetWarned: Set<String> = []
+    private var budgetTimer: Timer?
+    private var lastSyncSent = Date.distantPast
+    private var lastStatusSignature = ""
+    private var seenHandoffs: Set<String> = []
+    private var notesSave: DispatchWorkItem?
+    private var dimMonitor: Any?
     private var scriptsOn = false
     private let statusMenu = NSMenu()
     private let navigation = SettingsNavigation()
@@ -76,6 +109,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // The main thread never waits long on a busy app; window moves run in
         // the background with their own, longer allowance (see WindowWriter).
         Accessibility.setGlobalTimeout(0.25)
+        // Hold ⌥ while Monorail starts for safe mode.
+        safeMode = NSEvent.modifierFlags.contains(.option)
         setUpStatusItem()
         wireUp()
         handleTerminationSignals()
@@ -363,7 +398,576 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         switcher.windows = { [weak self] in self?.engine.allWindowSummaries() ?? [] }
         switcher.choose = { [weak self] id in self?.engine.focusAndReveal(id) }
         wireUpV11()
+        wireUpV12()
     }
+
+    // MARK: - 1.2
+
+    private func wireUpV12() {
+        engine.onAgentWaiting = { [weak self] id, app in
+            guard let self else { return }
+            self.toast.show("\(app): an agent is waiting for you · ⌃⌥/ then “agent”")
+            NSSound(named: "Glass")?.play()
+            self.postWebhook("agent_waiting", ["id": Int(id), "app": app])
+        }
+        engine.onRuleSuggestion = { [weak self] name, bundle, width in
+            guard let self else { return }
+            var settings = self.store.settings
+            settings.suggestedRules[bundle] = width
+            self.store.settings = settings
+            self.toast.show("You keep giving \(name) \(Self.widthName(width)) · make it a rule in Settings → Smart")
+        }
+        engine.onDistraction = { [weak self] count in
+            self?.toast.show("\(count) switches in five minutes · try focus mode (⌃⌥B) or deep work")
+        }
+        engine.onRunShortcut = { name in ShortcutRunner.run(name) }
+        let previousStateChange = engine.onStateChange
+        engine.onStateChange = { [weak self] in
+            previousStateChange()
+            self?.stateChangedV12()
+        }
+        palette.dynamic = { [weak self] query in self?.dynamicCommands(query) ?? [] }
+        deepWork.apps = { [weak self] in self?.store.settings.deepWorkApps ?? [] }
+        deepWork.onChange = { [weak self] on in
+            guard let self else { return }
+            if on != self.engine.isFocusMode { self.engine.setFocusMode(on) }
+            self.toast.show(on ? "Deep work · distracting apps stay hidden until it ends" : "Deep work over · welcome back")
+            self.postWebhook(on ? "deep_work_on" : "deep_work_off", [:])
+            self.updateStatusItem()
+        }
+        deepWork.onBlocked = { [weak self] app in self?.toast.show("\(app) waits until deep work ends") }
+        shareWatch.onChange = { [weak self] sharing in
+            guard let self else { return }
+            self.engine.setPrivateHidden(sharing)
+            if sharing { self.toast.show("You’re sharing your screen · private windows are out of sight") }
+            self.postWebhook(sharing ? "screen_share_on" : "screen_share_off", [:])
+        }
+        workspaceClipboard.currentWorkspace = { [weak self] in self?.engine.status().map { $0.workspace - 1 } }
+        calendarFocus.onFocusEvent = { [weak self] until in self?.deepWork.start(until: until) }
+        midi.onNote = { [weak self] note in
+            guard let self else { return }
+            if let learn = self.midiLearn {
+                self.midiLearn = nil
+                learn(note)
+                return
+            }
+            if let name = self.store.settings.midiMap[String(note)], let action = Action(rawValue: name) { self.engine.perform(action) }
+        }
+        gamepad.perform = { [weak self] action in self?.engine.perform(action) }
+        voice.onState = { [weak self] text in self?.toast.show(text) }
+        voice.onText = { [weak self] text in self?.say(text) }
+        headFocus.onTurn = { [weak self] _ in self?.engine.perform(.focusNextDisplay) }
+        webRemote.perform = { [weak self] name in if let action = Action(rawValue: name) { self?.engine.perform(action) } }
+        webRemote.status = { [weak self] in
+            guard let status = self?.engine.status() else { return "" }
+            return "Workspace \(status.workspace) · slide \(status.focusedColumn) of \(status.columnCount)"
+        }
+        pairSync.onStatus = { [weak self] text in self?.toast.show(text) }
+        pairSync.onLayout = { [weak self] json in _ = self?.engine.applyLayoutJSON(json) }
+        presenterNotesPanel.text = { [weak self] in self?.store.settings.presenterNotes ?? "" }
+        presenterNotesPanel.save = { [weak self] text in
+            self?.notesSave?.cancel()
+            let work = DispatchWorkItem { [weak self] in
+                guard let self else { return }
+                var settings = self.store.settings
+                settings.presenterNotes = text
+                self.store.settings = settings
+            }
+            self?.notesSave = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: work)
+        }
+        input.onKeyEcho = { [weak self] key in self?.keystrokes.show(key: key) }
+        input.onVimChange = { [weak self] on, pending in self?.vimChanged(on, pending) }
+        input.onMouseGesture = { [weak self] dx, dy in self?.mouseGesture(dx, dy) }
+        NotificationCenter.default.addObserver(forName: .monorailNeedsScreenRecording, object: nil, queue: .main) { [weak self] _ in
+            self?.toast.show("Sharing, mirroring and zoom need Screen Recording · turn on live previews in the overview")
+        }
+        store.onLayoutsChanged = { [weak self] in
+            self?.engine.reloadLayouts()
+            self?.checkHandoff()
+        }
+        budgetTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in self?.checkBudgets() }
+        if safeMode {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.toast.show("Safe mode · rules, scripts and automations are off until Monorail restarts")
+            }
+        }
+        if StageManagerCheck.isOn {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+                self?.toast.show("Stage Manager is on as well · turn it off in Control Centre so Monorail can arrange windows")
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in self?.checkNotch() }
+    }
+
+    /// Settings as the engine should see them: managed values, safe mode, battery and sound packs.
+    private func adjustedV12(_ original: AppSettings) -> AppSettings {
+        var settings = ManagedSettings.apply(to: original)
+        if safeMode {
+            settings.appRules = []
+            settings.autoRules = []
+            settings.scripts = false
+            settings.pathRules = []
+        }
+        if settings.energySaver, Power.onBattery { settings.animationFPS = 30 }
+        switch settings.soundPack {
+        case .classic: break
+        case .silent: settings.slideSound = false
+        default: if let sound = settings.soundPack.sounds.slide { settings.clickSound = sound }
+        }
+        return settings
+    }
+
+    private func applyV12(_ settings: AppSettings) {
+        if CapsLockKey.source != settings.monorailKeySource.usage {
+            CapsLockKey.source = settings.monorailKeySource.usage
+            if settings.capsLockKey { CapsLockKey.set(true) }
+        }
+        input.mouseGestures = settings.mouseGestures
+        midi.setEnabled(settings.midiControl)
+        gamepad.setEnabled(settings.gameController)
+        headFocus.setEnabled(settings.headFocus)
+        if settings.webRemote, settings.webRemoteToken.isEmpty {
+            var changed = settings
+            changed.webRemoteToken = Self.randomToken()
+            DispatchQueue.main.async { [weak self] in self?.store.settings = changed }
+        }
+        webRemote.token = settings.webRemoteToken
+        webRemote.setEnabled(settings.webRemote && !settings.webRemoteToken.isEmpty, port: UInt16(clamping: settings.apiPort + 1))
+        shareWatch.setEnabled(settings.safeScreenShare)
+        workspaceClipboard.setEnabled(settings.workspaceClipboard)
+        calendarFocus.setEnabled(settings.deepWorkFromCalendar)
+        crashReporter.setEnabled(settings.crashReports)
+        OverviewStyle.blurPrivate = settings.privacyBlur
+        if settings.dimFollowsPointer, dimMonitor == nil {
+            dimMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
+                let location = NSEvent.mouseLocation
+                let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
+                self?.engine.dimAnchor = self?.engine.window(at: CGPoint(x: location.x, y: primaryHeight - location.y))
+            }
+        } else if !settings.dimFollowsPointer, let monitor = dimMonitor {
+            NSEvent.removeMonitor(monitor)
+            dimMonitor = nil
+            engine.dimAnchor = nil
+        }
+        stateChangedV12()
+    }
+
+    private static func randomToken() -> String {
+        let letters = Array("abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789")
+        return String((0..<24).map { _ in letters.randomElement()! })
+    }
+
+    static func widthName(_ width: Double) -> String {
+        switch width {
+        case ..<0.3: return "a quarter of the screen"
+        case ..<0.4: return "a third of the screen"
+        case ..<0.6: return "half the screen"
+        case ..<0.7: return "two thirds of the screen"
+        case ..<0.9: return "three quarters of the screen"
+        default: return "the full width"
+        }
+    }
+
+    private func stateChangedV12() {
+        guard engine.isRunning else { return }
+        let maps = engine.miniMaps()
+        drift.update(path: store.settings.driftWallpaper, positions: maps.compactMap { map in
+            guard let screen = NSScreen.screens.first(where: { $0.frame.contains(CGPoint(x: map.screenFrame.midX, y: map.screenFrame.midY)) })
+            else { return nil }
+            let fraction = map.viewportX / max(map.totalWidth - map.viewportWidth, 1)
+            return (screen, map.displayUUID, fraction)
+        })
+        if let status = engine.status() {
+            let signature = "\(status.workspace)-\(status.focusedColumn)-\(status.columnCount)"
+            if signature != lastStatusSignature {
+                lastStatusSignature = signature
+                if store.settings.notchHUD {
+                    notchHUD.show(slide: status.focusedColumn, slides: status.columnCount, workspace: status.workspace,
+                                  workspaces: engine.workspaceCount)
+                }
+            }
+        }
+        if pairSync.isOn, Date().timeIntervalSince(lastSyncSent) > 1, let json = engine.layoutJSON() {
+            lastSyncSent = Date()
+            pairSync.send(json)
+        }
+    }
+
+    private func vimChanged(_ on: Bool, _ pending: String) {
+        let wasOn = vimText != nil
+        vimText = on ? "NORMAL" + (pending.isEmpty ? "" : " " + pending) : nil
+        if on && !wasOn { toast.show("Vim mode · h j k l, 3l, gg, G, dd, w b, u, / · i or Esc to leave") }
+        if !on && wasOn { toast.show("Vim mode off") }
+        updateStatusItem()
+    }
+
+    /// Text after the menu bar icon for timers and modes.
+    private var statusExtra: String? {
+        let parts = [pomodoroText, vimText, deepWork.isOn ? "◆ Deep work" : nil, guestOn ? "Guest" : nil].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    private func mouseGesture(_ dx: Double, _ dy: Double) {
+        guard max(abs(dx), abs(dy)) > 60 else { return }
+        if abs(dx) > abs(dy) {
+            engine.perform(dx > 0 ? .nextWorkspace : .previousWorkspace)
+        } else if dy < 0 {
+            overview.show()
+        } else {
+            engine.perform(.showDesktop)
+        }
+    }
+
+    // MARK: Sentences and intents
+
+    private func runningAppNames() -> [String] {
+        let windows = engine.allWindowSummaries().map(\.appName)
+        let apps = NSWorkspace.shared.runningApplications.filter { $0.activationPolicy == .regular }.compactMap(\.localizedName)
+        return Array(Set(windows + apps)).sorted { $0.count > $1.count }
+    }
+
+    /// Carries out a sentence; false when nothing was understood.
+    @discardableResult
+    private func say(_ text: String) -> Bool {
+        if let command = CommandParser.parse(text, apps: runningAppNames()) {
+            run(command)
+            return true
+        }
+        if let (candidate, score) = IntentMatcher.best(for: text, in: intentCandidates()), score >= 0.2 {
+            start(candidate)
+            return true
+        }
+        toast.show("Didn’t catch that · try “Safari two thirds” or “Slack and Mail side by side on 2”")
+        return false
+    }
+
+    private func describe(_ command: NaturalCommand) -> String {
+        switch command {
+        case .pair(let apps, let arrangement, let workspace):
+            return apps.joined(separator: " and ") + " " + arrangement.title.lowercased() + (workspace.map { " on workspace \($0 + 1)" } ?? "")
+        case .width(let app, let share): return "\(app ?? "This window") at \(Int((share * 100).rounded()))% width"
+        case .moveTo(let app, let workspace): return "Move \(app ?? "this window") to workspace \(workspace + 1)"
+        case .switchTo(let workspace): return "Go to workspace \(workspace + 1)"
+        case .open(let app): return "Open \(app)"
+        case .focusMode(let on): return "Focus mode \(on ? "on" : "off")"
+        case .action(let action): return action.title
+        }
+    }
+
+    private func run(_ command: NaturalCommand) {
+        let summaries = engine.allWindowSummaries()
+        func window(of app: String) -> WindowID? {
+            summaries.first { $0.appName.caseInsensitiveCompare(app) == .orderedSame }?.id
+                ?? summaries.first { $0.appName.lowercased().hasPrefix(app.lowercased()) }?.id
+        }
+        switch command {
+        case .pair(let apps, let arrangement, let workspace):
+            let ids = apps.compactMap(window(of:))
+            guard ids.count >= 2 else {
+                toast.show("Open \(apps.joined(separator: " and ")) first, then try again")
+                return
+            }
+            engine.pairWindows(ids, arrangement: arrangement)
+            if let workspace {
+                for id in ids { engine.moveWindow(id, toWorkspace: workspace) }
+                engine.switchWorkspace(to: workspace)
+            }
+        case .width(let app, let share):
+            if let app, let id = window(of: app) { engine.focusAndReveal(id) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+                if let action = Action.allCases.first(where: { abs(($0.directWidth ?? -1) - share) < 0.02 }) {
+                    self?.engine.perform(action)
+                } else {
+                    self?.engine.perform(.toggleFullWidth)
+                }
+            }
+        case .moveTo(let app, let workspace):
+            if let id = app.flatMap(window(of:)) ?? engine.focusedWindowID() { engine.moveWindow(id, toWorkspace: workspace) }
+        case .switchTo(let workspace):
+            engine.switchWorkspace(to: workspace)
+        case .open(let app):
+            if let id = window(of: app) {
+                engine.focusAndReveal(id)
+            } else {
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+                process.arguments = ["-a", app]
+                try? process.run()
+            }
+        case .focusMode(let on):
+            engine.setFocusMode(on)
+        case .action(let action):
+            engine.perform(action)
+        }
+    }
+
+    private func intentCandidates() -> [IntentCandidate] {
+        let settings = store.settings
+        var list: [IntentCandidate] = settings.templates.map {
+            IntentCandidate(kind: .template, name: $0.name, keywords: $0.items.map { UsageStats.appName($0.bundleID) })
+        }
+        list += engine.layouts.filter { $0.isSnapshot != true }.map { IntentCandidate(kind: .layout, name: $0.name) }
+        list += settings.appPairs.map { IntentCandidate(kind: .pair, name: $0.name, keywords: $0.bundleIDs.map(UsageStats.appName)) }
+        list += (0..<engine.workspaceCount).map { IntentCandidate(kind: .workspace, name: settings.workspaceName($0)) }
+        return list
+    }
+
+    private func start(_ candidate: IntentCandidate) {
+        let settings = store.settings
+        switch candidate.kind {
+        case .template:
+            if let template = settings.templates.first(where: { $0.name == candidate.name }) { engine.runTemplate(template) }
+        case .layout:
+            engine.applyLayout(named: candidate.name)
+        case .pair:
+            if let pair = settings.appPairs.first(where: { $0.name == candidate.name }) { engine.openPair(pair) }
+        case .workspace:
+            if let index = (0..<engine.workspaceCount).first(where: { settings.workspaceName($0) == candidate.name }) {
+                engine.switchWorkspace(to: index)
+            }
+        case .project:
+            break
+        }
+        toast.show("Starting “\(candidate.name)”")
+    }
+
+    private func dynamicCommands(_ query: String) -> [PaletteCommand] {
+        guard query.split(separator: " ").count >= 2 else { return [] }
+        var list: [PaletteCommand] = []
+        if let command = CommandParser.parse(query, apps: runningAppNames()) {
+            list.append(PaletteCommand(id: "say", title: "Do it: \(describe(command))", subtitle: "From what you typed",
+                                       symbol: "sparkles", keywords: query) { [weak self] in self?.run(command) })
+        }
+        if let (candidate, score) = IntentMatcher.best(for: query, in: intentCandidates()), score >= 0.2 {
+            list.append(PaletteCommand(id: "intent", title: "Start “\(candidate.name)”",
+                                       subtitle: "Your \(candidate.kind.rawValue) that matches what you’re doing",
+                                       symbol: "wand.and.stars", keywords: query) { [weak self] in self?.start(candidate) })
+        }
+        return list
+    }
+
+    private func v12PaletteCommands() -> [PaletteCommand] {
+        var list: [PaletteCommand] = []
+        for id in engine.waitingAgents {
+            let name = engine.allWindowSummaries().first { $0.id == id }?.appName ?? "Agent"
+            list.append(PaletteCommand(id: "agent-\(id)", title: "Go to the waiting agent (\(name))", subtitle: "Needs your approval",
+                                       symbol: "exclamationmark.bubble", keywords: "agent claude codex waiting approve") { [weak self] in
+                self?.engine.focusAndReveal(id)
+            })
+        }
+        if let next = engine.predictedNext {
+            list.append(PaletteCommand(id: "predicted", title: "Next: \(UsageStats.appName(next))", subtitle: "Where you usually go from here",
+                                       symbol: "arrow.forward.circle", keywords: "next predicted usual") { [weak self] in
+                self?.engine.perform(.goToPredicted)
+            })
+        }
+        if let index = engine.status().map({ $0.workspace - 1 }) {
+            for (n, text) in workspaceClipboard.items(for: index).enumerated() {
+                let short = text.count > 60 ? String(text.prefix(59)) + "…" : text
+                list.append(PaletteCommand(id: "clip-\(n)", title: "Clipboard: \(short)", subtitle: "Copied in this workspace",
+                                           symbol: "doc.on.clipboard", keywords: "clip clipboard paste copy") { [weak self] in
+                    self?.workspaceClipboard.use(text)
+                    self?.toast.show("On the clipboard · ⌘V to paste")
+                })
+            }
+        }
+        for layout in engine.layouts where layout.name.hasPrefix("Archive · ") {
+            list.append(PaletteCommand(id: "archive-\(layout.name)", title: "Bring back \(layout.name.dropFirst(10))",
+                                       subtitle: "Archived workspace", symbol: "archivebox", keywords: "archive restore") { [weak self] in
+                self?.engine.restoreArchive(named: layout.name)
+            })
+        }
+        let host = Host.current().localizedName ?? "Mac"
+        for layout in engine.layouts where layout.name.hasPrefix("Handoff · ") && layout.name != "Handoff · \(host)" {
+            list.append(PaletteCommand(id: "handoff-\(layout.name)", title: "Continue from \(layout.name.dropFirst(10))",
+                                       subtitle: "Your other Mac’s workspaces", symbol: "laptopcomputer.and.arrow.down",
+                                       keywords: "handoff continue other mac") { [weak self] in
+                self?.engine.applyLayout(named: layout.name)
+            })
+        }
+        for command in scripts.commands {
+            let title = command.title
+            list.append(PaletteCommand(id: "script-\(title)", title: title, subtitle: "From your scripts", symbol: "curlybraces") {
+                [weak self] in self?.scripts.runCommand(title)
+            })
+        }
+        for (bundle, width) in store.settings.suggestedRules where store.settings.rule(for: bundle) == nil {
+            list.append(PaletteCommand(id: "suggest-\(bundle)", title: "Always give \(UsageStats.appName(bundle)) \(Self.widthName(width))",
+                                       subtitle: "Suggested from how you work", symbol: "lightbulb", keywords: "rule suggestion width") {
+                [weak self] in self?.acceptSuggestion(bundle)
+            })
+        }
+        return list
+    }
+
+    func acceptSuggestion(_ bundle: String) {
+        var settings = store.settings
+        guard let width = settings.suggestedRules.removeValue(forKey: bundle) else { return }
+        var rule = AppRule(bundleID: bundle, name: UsageStats.appName(bundle))
+        rule.width = width
+        settings.appRules.append(rule)
+        store.settings = settings
+        toast.show("Rule added · \(UsageStats.appName(bundle)) opens at \(Self.widthName(width))")
+    }
+
+    private func checkHandoff() {
+        let host = Host.current().localizedName ?? "Mac"
+        for layout in engine.layouts where layout.name.hasPrefix("Handoff · ") && layout.name != "Handoff · \(host)"
+            && !seenHandoffs.contains(layout.name + "\(layout.savedAt?.timeIntervalSince1970 ?? 0)")
+        {
+            seenHandoffs.insert(layout.name + "\(layout.savedAt?.timeIntervalSince1970 ?? 0)")
+            toast.show("\(layout.name.dropFirst(10)) sent you its workspaces · ⌃⌥/ then “continue”")
+        }
+    }
+
+    private func checkBudgets() {
+        let settings = store.settings
+        let today = stats.today
+        let day = Calendar.current.ordinality(of: .day, in: .era, for: Date()) ?? 0
+        for (key, config) in settings.workspaceConfigs {
+            guard let budget = config.budgetMinutes, let index = Int(key) else { continue }
+            let name = settings.workspaceName(index)
+            let used = today.workspaceMinutes[name] ?? 0
+            let warning = "\(day)-\(key)"
+            if let over = TimeBudget.over(used: used, budget: budget), !budgetWarned.contains(warning) {
+                budgetWarned.insert(warning)
+                toast.show("\(name) has had its \(InsightsPane.duration(budget)) today\(over > 0 ? " (+\(over) min)" : "") · time for something else?")
+            }
+        }
+    }
+
+    /// With a crowded menu bar on a notched MacBook, Monorail's icon can hide behind the notch.
+    private func checkNotch() {
+        guard let window = statusItem?.button?.window, !window.occlusionState.contains(.visible) else { return }
+        toast.show("Monorail’s menu bar icon is hidden by the notch · ⌘-drag it to the right, or use ⌃⌥/")
+    }
+
+    private func performAppActionV12(_ action: Action) {
+        switch action {
+        case .startIntent:
+            guard let text = TextPrompt.ask(
+                title: "What are you working on?",
+                message: "Monorail opens the template, layout, app pair or workspace that fits, or does what you say (“Slack and Mail side by side”).",
+                initial: "", placeholder: "Write the Q3 report", button: "Start")
+            else { return }
+            say(text)
+        case .showTimeline:
+            showTimeline()
+        case .shareWorkspace:
+            exportSetup()
+        case .toggleVimMode:
+            input.setVim(!input.vimActive)
+        case .searchWindowText:
+            guard WindowThumbnails.isAllowed else {
+                toast.show("Finding windows by their contents needs Screen Recording · turn on live previews in the overview")
+                return
+            }
+            guard let query = TextPrompt.ask(title: "Find a window by what’s in it", message: "Words you can see in the window.",
+                                             initial: "", placeholder: "invoice 4471", button: "Find")
+            else { return }
+            toast.show("Reading your windows…")
+            WindowTextSearch.search(query, in: engine.allWindowSummaries().map(\.id)) { [weak self] id in
+                if let id { self?.engine.focusAndReveal(id) } else { self?.toast.show("No window shows “\(query)”") }
+            }
+        case .voiceCommand:
+            voice.toggle()
+        case .toggleDeepWork:
+            deepWork.toggle()
+        case .shareSlide:
+            if slideShare.isRunning {
+                slideShare.stop()
+                return
+            }
+            guard let frame = engine.focusedSlideFrame() else { return }
+            let size = NSSize(width: max(frame.width * 0.5, 480), height: max(frame.height * 0.5, 300))
+            slideShare.start(.region(frame), title: "Monorail · Shared slide", frame: NSRect(origin: NSPoint(x: 60, y: 60), size: size),
+                             floating: false)
+            toast.show("Share the window “Monorail · Shared slide” in your call · it shows only this slide")
+        case .demoZoom:
+            if demoLens.isRunning { demoLens.stop() } else {
+                demoLens.start(.pointer(zoom: 2.2), title: "Monorail · Zoom", frame: NSRect(x: 0, y: 0, width: 520, height: 340), floating: true)
+            }
+        case .toggleKeystrokes:
+            keystrokes.toggle()
+            input.echoKeys = keystrokes.isOn
+            toast.show(keystrokes.isOn ? "Showing keystrokes and clicks" : "Keystrokes hidden")
+        case .toggleAnnotate:
+            annotation.toggle(color: accentColor())
+            if annotation.isShown { toast.show("Draw with the mouse · C clears · Esc finishes") }
+        case .presenterNotes:
+            presenterNotesPanel.toggle()
+        case .mirrorWindow:
+            if windowMirror.isRunning {
+                windowMirror.stop()
+                return
+            }
+            guard let id = engine.focusedWindowID() else { return }
+            let screen = NSScreen.screens.first { $0 != NSScreen.main } ?? NSScreen.main
+            let area = (screen?.visibleFrame ?? .zero).insetBy(dx: 40, dy: 40)
+            windowMirror.start(.window(id), title: "Monorail · Mirror", frame: area, floating: false)
+        case .guestMode:
+            if guestOn {
+                guestOn = false
+                engine.setPaused(false)
+                engine.restoreSnapshot(named: "Before guest mode")
+                toast.show("Guest mode off · your layout is back")
+            } else {
+                engine.saveSnapshot(named: "Before guest mode", quiet: true)
+                engine.setPaused(true)
+                guestOn = true
+                toast.show("Guest mode · Monorail steps aside and keeps your layout safe")
+            }
+            updateStatusItem()
+        case .cameraTile:
+            cameraTile.toggle()
+        case .pairSync:
+            pairSync.toggle()
+        case .handoff:
+            let host = Host.current().localizedName ?? "Mac"
+            engine.saveLayout(named: "Handoff · \(host)")
+            toast.show(store.settings.syncThroughICloud
+                       ? "Sent · on your other Mac, ⌃⌥/ then “continue from \(host)”"
+                       : "Saved · turn on iCloud sync (Settings → General) on both Macs to continue there")
+        case .clipboardHistory:
+            palette.show(query: "clipboard")
+        default:
+            break
+        }
+    }
+
+    private func showTimeline() {
+        let view = TimelineView(changes: engine.undoHistory(30)) { [weak self] steps in
+            self?.engine.undo(steps: steps)
+            self?.timelineWindow?.close()
+        }
+        let window = timelineWindow ?? NSWindow(contentRect: .zero, styleMask: [.titled, .closable], backing: .buffered, defer: false)
+        window.title = "Layout timeline"
+        window.isReleasedWhenClosed = false
+        window.contentView = NSHostingView(rootView: view)
+        window.setContentSize(window.contentView?.fittingSize ?? NSSize(width: 440, height: 360))
+        window.center()
+        timelineWindow = window
+        NSApp.activate(ignoringOtherApps: true)
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    private func exportSetup() {
+        let list = engine.windowList()
+        let workspaces = (0..<engine.workspaceCount).map { index -> (name: String, apps: [String]) in
+            let apps = list.filter { ($0["workspace"] as? Int) == index + 1 }.compactMap { $0["app"] as? String }
+            return (store.settings.workspaceName(index), Array(Set(apps)).sorted())
+        }
+        let html = SetupExporter.html(settings: store.settings, workspaces: workspaces)
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "My Monorail setup.html"
+        panel.allowedContentTypes = [.html]
+        NSApp.activate(ignoringOtherApps: true)
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        try? html.write(to: url, atomically: true, encoding: .utf8)
+        NSWorkspace.shared.open(url)
+    }
+
 
     // MARK: - 1.1
 
@@ -520,7 +1124,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case .checkForUpdates:
             updater.check(userInitiated: true)
         default:
-            break
+            performAppActionV12(action)
         }
     }
 
@@ -577,7 +1181,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
-    private func apply(_ settings: AppSettings) {
+    private func apply(_ original: AppSettings) {
+        let settings = adjustedV12(original)
         let syncWasOn = engine.settings.syncThroughICloud
         let liveReloadWasOn = engine.settings.liveReloadSettings
         engine.settings = settings
@@ -643,6 +1248,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         breakReminder.set(minutes: settings.breakReminderMinutes)
         pomodoro.focusMinutes = settings.pomodoroFocus
         pomodoro.breakMinutes = settings.pomodoroBreak
+        applyV12(settings)
 
         trackpad.fingers = settings.swipeFingers.rawValue
         trackpad.detectsTap = settings.threeFingerTapOverview
@@ -1093,6 +1699,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return ["ok": true]
         case ("POST", "close"):
             guard let id = int("id") else { return ["error": "Needs id"] }
+            if store.settings.confirmDestructiveAPI {
+                let name = engine.allWindowSummaries().first { $0.id == WindowID(id) }.map { $0.title.isEmpty ? $0.appName : $0.title } ?? "a window"
+                let alert = NSAlert()
+                alert.messageText = "Close “\(name)”?"
+                alert.informativeText = "A script or AI assistant asked Monorail to close this window."
+                alert.addButton(withTitle: "Close")
+                alert.addButton(withTitle: "Keep It")
+                NSApp.activate(ignoringOtherApps: true)
+                guard alert.runModal() == .alertFirstButtonReturn else { return ["ok": false, "error": "Declined"] }
+            }
             engine.closeWindow(WindowID(id))
             return ["ok": true]
         case ("POST", "note"):
@@ -1109,6 +1725,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     "workspaceMinutes": today.workspaceMinutes, "appMinutes": today.appMinutes]
         case ("GET", "layout"):
             return ["json": engine.layoutJSON() ?? ""]
+        case ("POST", "say"):
+            return ["ok": say(text("text") ?? "")]
+        case ("GET", "agents"):
+            return engine.waitingAgents.map { ["id": Int($0)] }
+        case ("GET", "predict"):
+            return ["next": engine.predictedNext.map { $0 as Any } ?? NSNull()]
+        case ("POST", "context"):
+            // Editors and browsers can report what you're on: {"project": "...", "file": "..."}.
+            if let project = text("project"), !project.isEmpty, let status = engine.status(), store.settings.autoNameWorkspaces {
+                var settings = store.settings
+                settings.setWorkspaceName(project, at: status.workspace - 1)
+                store.settings = settings
+            }
+            return ["ok": true]
         default:
             return nil
         }
@@ -1134,7 +1764,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
                 else { return [:] }
                 return object
-            })
+            },
+            setWidths: { [weak self] widths in self?.engine.setSlideWidths(widths) },
+            say: { [weak self] text in self?.say(text) })
     }
 
     func reloadScripts() {
@@ -1298,7 +1930,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         list.append(PaletteCommand(id: "settings", title: "Open Settings", symbol: "gearshape") { [weak self] in
             self?.showSettings()
         })
-        return list
+        return v12PaletteCommands() + list
     }
 
     private func saveAppPair(from id: WindowID) {
@@ -1363,7 +1995,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             {
                 title += " " + (focused.title.count > 32 ? String(focused.title.prefix(31)) + "…" : focused.title)
             }
-            if let pomodoroText { title += " \(pomodoroText)" }
+            if let statusExtra { title += " \(statusExtra)" }
             button.title = title
             button.imagePosition = title.isEmpty ? .imageOnly : .imageLeading
             button.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular)
@@ -1388,11 +2020,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 let short = focused.title.count > 32 ? String(focused.title.prefix(31)) + "…" : focused.title
                 title = " \(short) ·" + title
             }
-            if let pomodoroText { title = " \(pomodoroText) ·" + title }
+            if let statusExtra { title = " \(statusExtra) ·" + title }
             button.title = title
             button.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular)
         } else {
-            button.title = pomodoroText.map { " \($0)" } ?? ""
+            button.title = statusExtra.map { " \($0)" } ?? ""
         }
     }
 

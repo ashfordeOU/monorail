@@ -83,6 +83,23 @@ final class InputMonitor {
     var shiftScrollSwitchesWorkspace = false
     var onWorkspaceScroll: (Bool) -> Void = { _ in }
     private var lastWorkspaceScroll: CFTimeInterval = 0
+    /// Vim mode: a persistent normal mode until i or Esc.
+    private(set) var vimActive = false
+    private var vim = VimMachine()
+    var onVimChange: (Bool, String) -> Void = { _, _ in }
+    /// ⌃⌥⇧ + drag in a direction.
+    var mouseGestures = false
+    var onMouseGesture: (_ dx: Double, _ dy: Double) -> Void = { _, _ in }
+    private var gestureStart: CGPoint?
+    /// Every key press, for the keystroke overlay (only while it is on).
+    var echoKeys = false
+    var onKeyEcho: (String) -> Void = { _ in }
+
+    func setVim(_ on: Bool) {
+        vimActive = on
+        vim = VimMachine()
+        onVimChange(on, "")
+    }
     /// Caps Lock as the Monorail key: macOS turns it into F18 (see CapsLockKey);
     /// while it's held, keys count as if ⌃⌥ were held.
     var capsLockKey = false
@@ -198,6 +215,18 @@ final class InputMonitor {
             let mods = Modifiers(event.flags)
             DispatchQueue.main.async { self.onFlagsChanged(mods) }
             return pass
+        case .leftMouseDown where mouseGestures && !isSuspended && Modifiers(event.flags) == [.control, .option, .shift]:
+            gestureStart = event.location
+            return nil
+        case .leftMouseDragged where gestureStart != nil:
+            return nil
+        case .leftMouseUp where gestureStart != nil:
+            if let start = gestureStart {
+                let dx = Double(event.location.x - start.x), dy = Double(event.location.y - start.y)
+                DispatchQueue.main.async { self.onMouseGesture(dx, dy) }
+            }
+            gestureStart = nil
+            return nil
         case .leftMouseDown, .rightMouseDown:
             guard modifierDrag, !isSuspended, !isPaused(), Modifiers(event.flags) == [.control, .option] else {
                 return pass
@@ -254,6 +283,28 @@ final class InputMonitor {
                 modifiers.formUnion([.control, .option])
             }
             DispatchQueue.main.async { self.onKeyActivity() }
+            if echoKeys, let echo = Self.describe(keyCode: keyCode, modifiers: modifiers, event: event) {
+                DispatchQueue.main.async { self.onKeyEcho(echo) }
+            }
+            if vimActive {
+                switch vim.handle(keyCode: keyCode, modifiers: modifiers) {
+                case .actions(let actions):
+                    DispatchQueue.main.async {
+                        actions.forEach(self.onAction)
+                        self.onVimChange(true, "")
+                    }
+                    return nil
+                case .pending:
+                    let text = vim.pendingText
+                    DispatchQueue.main.async { self.onVimChange(true, text) }
+                    return nil
+                case .exit:
+                    DispatchQueue.main.async { self.setVim(false) }
+                    return nil
+                case .passThrough:
+                    break
+                }
+            }
             if let intercept = keyInterceptor, intercept(keyCode, modifiers) { return nil }
             if let capture = captureNextKey {
                 captureNextKey = nil
@@ -288,6 +339,14 @@ final class InputMonitor {
             if type.rawValue == Self.magnifyType { return handleMagnify(event) ? nil : pass }
             return pass
         }
+    }
+
+    /// "⌘⇧K" style text for a key press.
+    static func describe(keyCode: UInt16, modifiers: Modifiers, event: CGEvent) -> String? {
+        let names: [UInt16: String] = [36: "↩", 48: "⇥", 49: "Space", 51: "⌫", 53: "esc", 123: "←", 124: "→", 125: "↓", 126: "↑"]
+        let key = names[keyCode] ?? NSEvent(cgEvent: event)?.charactersIgnoringModifiers?.uppercased() ?? ""
+        guard !key.isEmpty else { return nil }
+        return modifiers.symbols + key
     }
 
     /// A two-finger swipe that starts on a window's title bar. Returns true

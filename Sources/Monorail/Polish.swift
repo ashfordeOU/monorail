@@ -9,12 +9,13 @@ import UserNotifications
 /// tap on its own opens the command palette. Turned back on quit.
 enum CapsLockKey {
     static let f18: UInt16 = 79
-    private static let capsLock = 0x7_0000_0039
+    /// The key turned into the Monorail key (Caps Lock unless chosen otherwise).
+    static var source = 0x7_0000_0039
     private static let f18Usage = 0x7_0000_006D
 
     static func set(_ on: Bool) {
         let mapping = on
-            ? #"{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":\#(capsLock),"HIDKeyboardModifierMappingDst":\#(f18Usage)}]}"#
+            ? #"{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":\#(source),"HIDKeyboardModifierMappingDst":\#(f18Usage)}]}"#
             : #"{"UserKeyMapping":[]}"#
         // Only clear the mapping if it's ours, so other remaps survive.
         if !on, let current = run(["property", "--get", "UserKeyMapping"]),

@@ -112,6 +112,8 @@ enum OverviewStyle {
     static var plain = false
     /// App icons instead of live previews, even with Screen Recording on.
     static var iconsOnly = false
+    /// Private windows are blurred.
+    static var blurPrivate = true
 }
 
 /// The overview's backdrop: a deep, colourful gradient with soft glows and a
@@ -552,6 +554,7 @@ private struct WindowTile: View {
                         .resizable()
                         .scaledToFill()
                         .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+                        .blur(radius: window.isPrivate && OverviewStyle.blurPrivate ? 14 : 0)
                         .clipped()
                 }
             } else if let icon = window.icon {

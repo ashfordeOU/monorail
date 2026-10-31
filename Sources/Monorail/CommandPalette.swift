@@ -20,13 +20,15 @@ final class PaletteModel: ObservableObject {
     }
     @Published var selection = 0
     @Published var commands: [PaletteCommand] = []
+    /// Commands made from what you typed: a sentence to carry out, an intent to start.
+    var dynamic: (String) -> [PaletteCommand] = { _ in [] }
 
     /// Every typed word must appear somewhere in the command; earlier and
     /// title matches rank first.
     var filtered: [PaletteCommand] {
         let terms = query.lowercased().split(separator: " ").map(String.init)
         guard !terms.isEmpty else { return commands }
-        return commands.compactMap { command -> (PaletteCommand, Int)? in
+        return dynamic(query) + commands.compactMap { command -> (PaletteCommand, Int)? in
             let title = command.title.lowercased()
             let haystack = "\(title) \(command.subtitle.lowercased()) \(command.keywords.lowercased())"
             guard terms.allSatisfy({ haystack.contains($0) }) else { return nil }
@@ -49,7 +51,7 @@ struct PaletteView: View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
                 Image(systemName: "command").foregroundStyle(.secondary)
-                TextField("Type a command: go to, move to, open pair, park, snapshot, focus…", text: $model.query)
+                TextField("Type a command or a sentence: “Slack and Mail side by side on 3”…", text: $model.query)
                     .textFieldStyle(.plain)
                     .font(.system(size: 18))
                     .onSubmit(submit)
@@ -112,6 +114,9 @@ final class CommandPalette {
     private var panel: SwitcherPanel?
     /// Builds the commands each time the palette opens, so they're current.
     var commands: () -> [PaletteCommand] = { [] }
+    var dynamic: (String) -> [PaletteCommand] = { _ in [] } {
+        didSet { model.dynamic = dynamic }
+    }
 
     func toggle() {
         if let panel, panel.isVisible {
@@ -121,9 +126,9 @@ final class CommandPalette {
         }
     }
 
-    func show() {
+    func show(query: String = "") {
         model.commands = commands()
-        model.query = ""
+        model.query = query
         model.selection = 0
         let panel = self.panel ?? makePanel()
         self.panel = panel

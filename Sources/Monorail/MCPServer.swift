@@ -70,6 +70,11 @@ enum MCPServer {
         },
         Tool(name: "notify", description: "Show a short notice on screen.",
              properties: ["text": ["type": "string"]], required: ["text"]) { args in ("POST", "/notify", args) },
+        Tool(name: "say",
+             description: "Do what a sentence asks, e.g. “Slack and Mail side by side on 3”, “Safari two thirds”, “write the Q3 report” (opens the matching template or layout).",
+             properties: ["text": ["type": "string"]], required: ["text"]) { args in ("POST", "/say", args) },
+        Tool(name: "get_waiting_agents", description: "Terminal windows whose AI coding agent is waiting for approval.",
+             properties: [:], required: []) { _ in ("GET", "/agents", [:]) },
         Tool(name: "get_insights", description: "Today's usage: switches, windows opened, focus minutes and goal, time per workspace and app.",
              properties: [:], required: []) { _ in ("GET", "/insights", [:]) },
     ]

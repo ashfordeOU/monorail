@@ -4,6 +4,82 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-10-31
+
+A hundred new capabilities, and a much narrower menu bar.
+
+### Changed
+- The menu bar takes far less room. The new default draws your position into the icon itself: a pip per slide, the focused one tall, and a dot per workspace. There's no text. The ‹ › arrows are now one narrow item (click its left or right half) and are off by default, because scrolling over the menu bar already slides. Older settings switch to the narrow look once; you can pick the old styles again in Settings → General.
+
+### Fixed
+- Windows of some apps (often Electron apps) that refuse to park almost off the edge no longer leave a strip showing over the next window. Monorail notices and parks that app's windows in the corner instead.
+
+### Added
+- **Slides:**
+  - Move a slide to the start or end of the strip, or to the next, previous or first empty workspace.
+  - Unpair a slide, and merge it into the next or previous one.
+  - Cycle tiles inside a slide, jump to its main tile, and reset its split.
+  - Jump to the start or end of the strip.
+- **Exact widths and layouts:**
+  - One key per width: ¼, ⅓, ½, ⅔ and ¾.
+  - One key per layout: side by side, up and down, grid, main + side, main + bottom, spiral, accordion and tabs.
+- **Workspaces:**
+  - Rename a workspace with a key.
+  - Swap a workspace with its neighbour, or merge it into the previous one.
+  - Minimise a whole workspace, or everything but the slide you're in.
+  - Hide the app.
+  - Each workspace can have its own colour, slide layout and gap. It can also turn focus mode on when you arrive, or be closed to new windows.
+  - Workspaces you haven't visited for hours can park themselves in the Dock.
+- **Opening things beside you:** quick launch an app or open the copied link right next to the window you're in, paired in one slide.
+- **Per-app rules:** open full width, tabbed or pinned left or right; show on every workspace; become the scratchpad.
+- **Partner apps:** mark an app pair as partners and a new window of one joins the other's window by itself.
+- **Automatic floating:** small windows and Settings or Preferences windows float on their own.
+- **Pause for apps:** tiling pauses while a game, a video player or a presentation app is in front.
+- **Mouse:**
+  - Buttons 4 and 5 step through slides.
+  - ⌥ + middle-click zooms a window.
+  - ⌃⌥ + scroll resizes a slide.
+  - ⇧ + scroll over the menu bar or slider switches workspace.
+- **Hot corners** for the overview, Show Desktop, the command palette, focus mode, the cheat sheet or strip zoom.
+- **Slider bar:**
+  - Opacity and size settings.
+  - Double-click it for the overview.
+  - Drop a dragged window on a slide in the bar to put it there.
+- **Overview:**
+  - A plain backdrop, which is also used with Reduce Transparency.
+  - An icons-only mode.
+- **Window notes:** shown in the overview and found by the command palette.
+- **Copy and paste layouts:** copy a workspace's layout as text and paste it on another workspace or Mac.
+- **Finding your place:**
+  - Find the pointer.
+  - Flash the focused window, or have it flash every time focus moves.
+  - A glowing focus border, or one in the app icon's colour.
+  - A thicker, solid border with Increase Contrast.
+- **New look options:**
+  - The Ashforde theme.
+  - Animation curves and frame rates (30, 60 or 120 fps).
+  - A choice of click sound.
+  - Where notices appear and how long they stay.
+  - The focused window's title in the menu bar.
+- **Focus and breaks:**
+  - A pomodoro timer in the menu bar that turns focus mode on for each focus block.
+  - Break reminders.
+  - A daily focus goal in Insights.
+- **Quick toggles** for dimming, the border, the slider bar, animations and quiet mode, plus keys for Settings, Check for Updates and restarting Monorail.
+- **Reliability:**
+  - If Monorail quits unexpectedly, every window comes back on screen at the next launch.
+  - Windows are laid out again after the Mac wakes.
+- **Accessibility:** VoiceOver can also say which window got focus.
+- **Automation:**
+  - Webhooks for workspace, focus, window-closed and pomodoro events.
+  - Remote commands through the `org.ashforde.monorail.perform` distributed notification.
+  - `slideChanged` and `windowClosed` script events.
+- **API, MCP and command line:**
+  - New local API endpoints and MCP tools: undo, redo, history, name a slide, set a slide's layout, close a window, note a window, notify and insights.
+  - New URLs: `monorail://focus-app/NAME`, `notify/TEXT` and `pomodoro`.
+  - New `monorail` commands: `focus-app`, `notify`, `history` and `insights`.
+- **Log viewer:** Settings → About → Show Log.
+
 ## [1.0.0] - 2026-10-31
 
 Monorail by Ashforde® 1.0.

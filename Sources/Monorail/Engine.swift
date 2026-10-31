@@ -1475,6 +1475,17 @@ final class Engine {
                 {
                     frame.height = min(frame.height, window.home.height.rounded())
                 }
+                if placement.isParked {
+                    parkedOnEdge[placement.window] = display.uuid
+                    if edgeShyApps.contains(Self.appKey(window)) {
+                        // This app won't sit almost off the edge (it stops with a strip
+                        // showing, over its neighbour): park it in the corner instead.
+                        frame = Rect(x: display.frame.maxX - 1, y: display.frame.maxY - 1,
+                                     width: frame.width, height: frame.height)
+                    }
+                } else {
+                    parkedOnEdge[placement.window] = nil
+                }
                 let from = window.lastApplied ?? window.element.frame.map(Rect.init) ?? frame
                 targets[placement.window] = (from, frame)
             }
@@ -1513,7 +1524,45 @@ final class Engine {
             }
             if shouldUpdateOverlays { updateOverlays() }
         }
+        scheduleEdgeCheck(after: animated && settings.animate && !reduceMotion ? settings.animationDuration + 0.5 : 0.5)
         onStateChange()
+    }
+
+    // MARK: Apps that won't park on the edge
+
+    /// Windows parked at a display edge (by id → display uuid), to check they really went there.
+    private var parkedOnEdge: [WindowID: String] = [:]
+    /// Apps (by app key) that keep part of a parked window on screen.
+    private var edgeShyApps: Set<String> = []
+    private var edgeCheck: DispatchWorkItem?
+
+    private func scheduleEdgeCheck(after delay: Double) {
+        guard !parkedOnEdge.isEmpty else { return }
+        edgeCheck?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.checkParkedWindows() }
+        edgeCheck = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
+    /// A parked window showing more than a sliver means its app clamped the move:
+    /// remember the app and park its windows in the corner from now on.
+    private func checkParkedWindows() {
+        guard isRunning, !isPaused else { return }
+        var found = false
+        for (id, uuid) in parkedOnEdge {
+            guard let window = windows[id], !edgeShyApps.contains(Self.appKey(window)),
+                let display = displays.first(where: { $0.uuid == uuid }), let actual = window.element.frame
+            else { continue }
+            let visible = actual.intersection(display.frame)
+            let sliver = layoutConfig(for: display).parkSliver
+            if !visible.isNull, visible.width > sliver + 12 {
+                edgeShyApps.insert(Self.appKey(window))
+                window.lastApplied = nil
+                found = true
+                log.info("\(window.appName, privacy: .public) keeps parked windows on screen; parking it in the corner")
+            }
+        }
+        if found { layout(animated: false) }
     }
 
     private func apply(_ rect: Rect, to id: WindowID, sizeChanged: Bool) {
@@ -1901,6 +1950,7 @@ final class Engine {
 
     private func forget(_ id: WindowID) {
         guard let window = windows[id] else { return }
+        parkedOnEdge[id] = nil
         remember(window)
         removeFromStrip(window)
         windows[id] = nil

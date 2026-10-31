@@ -472,6 +472,41 @@ search, so you can see which slide wants you.
 - **In your language**: menus, Settings tabs and the welcome tour in English, Deutsch, Français, Español and 日本語 (**Settings → General → Language**).
 - **Practice windows**: the welcome tour can open three practice windows, so you learn the moves without touching your work.
 
+### New in 1.1
+
+A hundred new capabilities. Every new action is listed in Settings → Shortcuts → *Slides (1.1)* and the groups after it, and in the command palette.
+
+- **A narrow menu bar:** your position is drawn into the icon itself, with a pip per slide and a dot per workspace. There's no text. The ‹ › arrows are one small item, off by default.
+- **Slides on the move:**
+  - Send the whole slide to the start or end of the strip, or to another workspace.
+  - Unpair or merge slides.
+  - Cycle tiles, and reset a slide's split.
+- **Exact widths and layouts:** a key for each width (¼ to ¾) and for each slide layout.
+- **Each workspace its own way:** a colour, layout, gap and focus mode for each workspace, or close it to new windows (Settings → Automation).
+- **Opening things beside you:** open an app or the copied link right next to the window you're in.
+- **Smarter rules:**
+  - Per-app full width, tabs, pins, every workspace and scratchpad.
+  - Partner apps that pair themselves.
+  - Small and Settings windows float.
+  - Tiling pauses for games and video.
+- **The mouse:**
+  - Back and forward buttons step slides.
+  - ⌥ + middle-click zooms a window.
+  - ⌃⌥ + scroll resizes a slide.
+  - ⇧ + scroll switches workspace.
+  - Hot corners.
+- **Find your place:**
+  - Find the pointer.
+  - Flash the focused window.
+  - A glowing border, or one in the app icon's colour.
+  - Window notes.
+- **Focus:** a pomodoro timer in the menu bar, break reminders and a daily focus goal.
+- **Automation:**
+  - Webhooks.
+  - Remote commands (`org.ashforde.monorail.perform`).
+  - New API endpoints, MCP tools, URLs and `monorail` commands.
+  - A log viewer.
+
 ### New in 1.0
 
 - **Caps Lock as the Monorail key**: turn it on in **Settings → General** and hold Caps Lock instead of <kbd>⌃⌥</kbd> for every shortcut (Caps Lock + <kbd>→</kbd> slides right). Tap it on its own for the command palette. macOS gets Caps Lock back when you quit Monorail.

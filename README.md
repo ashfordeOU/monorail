@@ -554,6 +554,24 @@ search, so you can see which slide wants you.
 - **`monorail subscribe`:** a live stream of events for menu bars and scripts.
 - **Basics** page in Settings, and app-colour tiles in the overview without Screen Recording.
 
+#### How docking works
+
+Drag any window by its title bar onto another window:
+
+- **Near an edge** (the outer third on each side) it docks on that side. The window you dropped onto
+  gives up half its space, and nothing else moves. A highlight shows where it will land before you let go.
+- **In the middle** the two become a **tab group** with a tab bar, even if they're different apps.
+  Click a tab to switch, or drag a tab out to tear it off.
+- **Onto a window that's already docked**, that half splits again, as deep as you like.
+- **Drag the gap** between two windows to resize both at once.
+- Floating windows can be docked the same way.
+
+To **undock**: <kbd>⌃⌥⇧]</kbd> gives the focused window a slide of its own (or choose **Tear off**
+in the palette). <kbd>⌃⌥T</kbd> floats it, and <kbd>⌃⌥G</kbd> turns the whole slide back into a
+standard layout. <kbd>⌃⌥Z</kbd> undoes the last dock. From the keyboard, **Dock onto the window on
+the left / right / above / below** can be given shortcuts in Settings → Shortcuts. Turn docking off
+in Settings → Layout if you prefer dragging to swap windows.
+
 ### New in 1.6
 
 - **Settings has a sidebar**, grouped into Essentials, Make it yours, Power and Monorail, with search at the top.

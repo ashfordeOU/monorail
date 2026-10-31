@@ -190,6 +190,44 @@ footer ul { list-style:none; padding:0; margin:0; display:grid; gap:6px; }
 footer a { color:var(--muted); text-decoration:none; }
 footer a:hover { color:var(--ink); }
 
+
+/* Docking playground */
+.dockwrap { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:28px; align-items:start; margin-top:28px; }
+@media (max-width: 860px) { .dockwrap { grid-template-columns:1fr; } }
+.dockmac { position:relative; aspect-ratio:16/10.5; border-radius:20px; overflow:hidden; background:linear-gradient(135deg,#2E2466,#6E2A72 55%,#B8406A); box-shadow:0 30px 80px rgba(42,20,48,.3), 0 0 0 1px rgba(0,0,0,.06); touch-action:none; user-select:none; -webkit-user-select:none; }
+.dockmac .area { position:absolute; left:2%; right:2%; top:3%; bottom:22%; }
+.dockmac .shelf { position:absolute; left:2%; right:2%; bottom:3%; height:15%; border-radius:12px; border:2px dashed rgba(255,255,255,.35); display:flex; align-items:center; gap:2%; padding:0 2%; color:rgba(255,255,255,.75); font:600 clamp(10px,1.2vw,13px)/1.2 -apple-system, sans-serif; }
+.dockmac .shelf.hot { border-color:#fff; background:rgba(255,255,255,.12); }
+.dwin { position:absolute; border-radius:10px; background:var(--card); box-shadow:0 10px 26px rgba(0,0,0,.3); overflow:hidden; display:flex; flex-direction:column; transition:left .45s var(--ease), top .45s var(--ease), width .45s var(--ease), height .45s var(--ease), opacity .3s; }
+.dwin.dragging { transition:none; z-index:20; box-shadow:0 26px 60px rgba(0,0,0,.5); opacity:.92; cursor:grabbing; }
+.dwin.hidden { opacity:0; pointer-events:none; }
+.dwin .bar { height:22px; flex:0 0 22px; display:flex; align-items:center; gap:5px; padding:0 9px; background:var(--soft); font:600 11px/1 -apple-system, sans-serif; color:var(--muted); cursor:grab; }
+.dwin .bar i { width:8px; height:8px; border-radius:50%; background:#FF5F57; } .dwin .bar i:nth-child(2){background:#FEBC2E} .dwin .bar i:nth-child(3){background:#28C840}
+.dwin .bar span { margin-left:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dwin .body { flex:1; padding:9px; display:grid; gap:6px; align-content:start; background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%); }
+.dwin .body b { display:block; height:8px; border-radius:4px; background:var(--accent); width:50%; }
+.dwin .body s { display:block; height:6px; border-radius:3px; background:var(--line); text-decoration:none; }
+.dwin .body s:nth-child(3n) { width:78%; }
+.dwin.mini { position:relative; left:auto !important; top:auto !important; width:22% !important; height:74% !important; flex:0 0 auto; }
+.dpreview { position:absolute; border-radius:12px; background:rgba(255,255,255,.22); border:3px solid #fff; z-index:15; pointer-events:none; display:grid; place-items:center; color:#fff; font:700 clamp(11px,1.4vw,15px)/1 -apple-system, sans-serif; text-shadow:0 1px 6px rgba(0,0,0,.4); transition:all .14s var(--ease); opacity:0; }
+.dpreview.show { opacity:1; }
+.dtabs { position:absolute; display:flex; gap:3px; z-index:6; transition:all .45s var(--ease); }
+.dtabs button { flex:1; min-width:0; border:0; border-radius:7px 7px 0 0; padding:4px 8px; font:600 10px/1.2 -apple-system, sans-serif; background:rgba(255,255,255,.35); color:#fff; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dtabs button.on { background:var(--card); color:var(--ink); }
+.dgap { position:absolute; z-index:8; display:grid; place-items:center; }
+.dgap.h { cursor:ew-resize; } .dgap.v { cursor:ns-resize; }
+.dgap::after { content:""; border-radius:3px; background:rgba(255,255,255,.0); transition:background .2s; }
+.dgap.h::after { width:4px; height:38px; } .dgap.v::after { width:38px; height:4px; }
+.dgap:hover::after, .dgap.active::after { background:#fff; }
+.dcursor { position:absolute; width:22px; height:22px; z-index:30; pointer-events:none; opacity:0; transition:opacity .2s; }
+.dcursor.show { opacity:1; }
+.dsteps { display:grid; gap:12px; }
+.dsteps .s { display:flex; gap:12px; padding:14px 16px; border-radius:14px; background:var(--card); border:1px solid var(--line); transition:border-color .3s, transform .3s var(--ease); }
+.dsteps .s.on { border-color:var(--pink); transform:translateX(4px); }
+.dsteps .s .k { flex:0 0 30px; height:30px; border-radius:9px; display:grid; place-items:center; color:#fff; font-weight:800; background:linear-gradient(135deg,var(--pink),var(--plum)); }
+.dsteps .s p { margin:0; color:var(--muted); font-size:15px; } .dsteps .s p b { color:var(--ink); }
+.dockbar { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
   .reveal { opacity:1; transform:none; }
@@ -202,7 +240,7 @@ footer a:hover { color:var(--ink); }
   <div class="wrap">
     <a class="brand" href="#"><img src="assets/icon.png" alt="">Monorail <small>by Ashforde®</small></a>
     <div class="links">
-      <a href="#demo">Demo</a><a href="#how">How it works</a><a href="#features">Features</a><a href="#shortcuts">Shortcuts</a><a href="#themes">Themes</a><a href="#faq">FAQ</a>
+      <a href="#demo">Demo</a><a href="#how">How it works</a><a href="#docking">Docking</a><a href="#features">Features</a><a href="#shortcuts">Shortcuts</a><a href="#themes">Themes</a><a href="#faq">FAQ</a>
     </div>
     <a class="btn primary small" href="https://github.com/ashfordeOU/monorail/releases/latest">Download</a>
   </div>
@@ -250,6 +288,32 @@ footer a:hover { color:var(--ink); }
       <div class="step"><div class="art"><i style="--c:var(--w1);left:6%;width:30%"></i><i style="--c:var(--w2);left:39%;width:30%"></i><i style="--c:var(--w3);left:72%;width:40%"></i></div><div class="num">01</div><h3>Open a window</h3><p>It slides in beside the one you're using. Everything else keeps its size.</p></div>
       <div class="step"><div class="art"><i style="--c:var(--w4);left:6%;width:42%"></i><i style="--c:var(--w5);left:52%;width:60%"></i></div><div class="num">02</div><h3>Move along</h3><p>⌃⌥← →, the mouse wheel, a swipe or the slider: the strip glides just far enough.</p></div>
       <div class="step"><div class="art"><i style="--c:var(--w6);left:6%;width:26%"></i><i style="--c:var(--w7);left:35%;width:26%"></i><i style="--c:var(--w8);left:64%;width:26%"></i><i style="--c:var(--w1);left:93%;width:26%"></i></div><div class="num">03</div><h3>See it all</h3><p>⌃⌥O zooms out to every workspace and slide. Drag windows anywhere.</p></div>
+    </div>
+  </section>
+
+  <section id="docking" class="reveal">
+    <div class="center"><div class="kicker">Docking</div><h2>Drop a window <span class="grad">where you want it</span></h2>
+    <p class="sub">Drag a window onto another one. Near an edge it docks beside it; in the middle the two become a tab group. Any apps, as deep as you like. Try it here.</p></div>
+    <div class="dockwrap">
+      <div>
+        <div class="dockmac" id="dockmac" aria-label="Docking playground: drag windows by their title bars">
+          <div class="area" id="dockarea"></div>
+          <div class="shelf" id="dockshelf"><span style="flex:0 0 auto">Floating</span></div>
+          <div class="dpreview" id="dpreview"></div>
+          <svg class="dcursor" id="dcursor" viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.5-3.4-7.3L4 18z" fill="#fff" stroke="#24112B" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="dockbar">
+          <button class="btn primary" id="dockplay" type="button">▶ Show me</button>
+          <button class="btn" id="dockreset" type="button">Start again</button>
+        </div>
+      </div>
+      <div class="dsteps" id="dsteps">
+        <div class="s" data-s="0"><div class="k">1</div><p><b>Drag onto an edge</b> of any window. A highlight shows the half it will take. Let go and it docks there; the other window makes room.</p></div>
+        <div class="s" data-s="1"><div class="k">2</div><p><b>Keep going.</b> Dock onto a docked window and that half splits again: splits inside splits, as deep as you like.</p></div>
+        <div class="s" data-s="2"><div class="k">3</div><p><b>Drop in the middle</b> to make a tab group, even across apps. Click a tab to switch; drag a tab out to tear it off.</p></div>
+        <div class="s" data-s="3"><div class="k">4</div><p><b>Drag the gap</b> between two windows to resize both at once.</p></div>
+        <div class="s" data-s="4"><div class="k">5</div><p><b>Undock</b> whenever you like: <kbd>⌃⌥⇧]</kbd> gives the window a slide of its own, <kbd>⌃⌥T</kbd> floats it (here, drag it to Floating), <kbd>⌃⌥G</kbd> turns the whole slide back into a standard layout, and <kbd>⌃⌥Z</kbd> undoes the last dock.</p></div>
+      </div>
     </div>
   </section>
 
@@ -558,6 +622,235 @@ footer a:hover { color:var(--ink); }
   layout(); play(0);
   let auto = setInterval(() => { if (document.hidden) return; play((step + 1) % 5); }, 7000);
   ['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, () => clearInterval(auto), { once: true }));
+})();
+</script>
+
+<script>
+(() => {
+  const mac = document.getElementById('dockmac'); if (!mac) return;
+  const area = document.getElementById('dockarea'), shelf = document.getElementById('dockshelf');
+  const preview = document.getElementById('dpreview'), cursor = document.getElementById('dcursor');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const apps = { 1: ['Safari', '--w1'], 2: ['Xcode', '--w6'], 3: ['Terminal', '--w8'], 4: ['Notes', '--w5'], 5: ['Slack', '--w2'] };
+  let tree, floating, els = {}, busy = false;
+
+  // The same model as the app: a leaf holds one window or a tab group; a split holds two parts.
+  const leaf = (ids, a = 0) => ({ t: 'leaf', ids, a });
+  const split = (ax, r, a, b) => ({ t: 'split', ax, r, a, b });
+  const has = (n, id) => n.t === 'leaf' ? n.ids.includes(id) : has(n.a, id) || has(n.b, id);
+  function tiles(n, r, out = []) {
+    if (n.t === 'leaf') { n.ids.forEach((id, i) => out.push({ id, r, group: n.ids, front: n.ids[n.a] === id })); return out; }
+    const [x, y] = n.ax === 'h' ? [{ ...r, w: r.w * n.r }, { ...r, x: r.x + r.w * n.r, w: r.w * (1 - n.r) }]
+                                : [{ ...r, h: r.h * n.r }, { ...r, y: r.y + r.h * n.r, h: r.h * (1 - n.r) }];
+    tiles(n.a, x, out); tiles(n.b, y, out); return out;
+  }
+  function remove(n, id) {
+    if (!n) return null;
+    if (n.t === 'leaf') { const ids = n.ids.filter(i => i !== id); return ids.length ? leaf(ids, Math.min(n.a, ids.length - 1)) : null; }
+    const a = remove(n.a, id), b = remove(n.b, id);
+    return a && b ? split(n.ax, n.r, a, b) : a || b;
+  }
+  function dock(n, id, target, edge) {
+    if (n.t === 'leaf') {
+      if (!n.ids.includes(target)) return n;
+      if (edge === 'center') return leaf([...n.ids, id], n.ids.length);
+      const w = leaf([id]), ax = edge === 'left' || edge === 'right' ? 'h' : 'v';
+      return edge === 'left' || edge === 'top' ? split(ax, .5, w, n) : split(ax, .5, n, w);
+    }
+    return split(n.ax, n.r, dock(n.a, id, target, edge), dock(n.b, id, target, edge));
+  }
+  function activate(n, id) {
+    if (n.t === 'leaf') return n.ids.includes(id) ? leaf(n.ids, n.ids.indexOf(id)) : n;
+    return split(n.ax, n.r, activate(n.a, id), activate(n.b, id));
+  }
+  // The splits and where their dividers are, for gap handles.
+  function splits(n, r, path = [], out = []) {
+    if (n.t === 'leaf') return out;
+    out.push({ path, ax: n.ax, r, at: n.ax === 'h' ? r.x + r.w * n.r : r.y + r.h * n.r });
+    const [x, y] = n.ax === 'h' ? [{ ...r, w: r.w * n.r }, { ...r, x: r.x + r.w * n.r, w: r.w * (1 - n.r) }]
+                                : [{ ...r, h: r.h * n.r }, { ...r, y: r.y + r.h * n.r, h: r.h * (1 - n.r) }];
+    splits(n.a, x, [...path, 'a'], out); splits(n.b, y, [...path, 'b'], out); return out;
+  }
+  function setRatio(n, path, r) {
+    if (!path.length) return { ...n, r: Math.min(.85, Math.max(.15, r)) };
+    return { ...n, [path[0]]: setRatio(n[path[0]], path.slice(1), r) };
+  }
+
+  function make(id) {
+    const el = document.createElement('div'); el.className = 'dwin'; el.dataset.id = id;
+    el.style.setProperty('--accent', `var(${apps[id][1]})`);
+    el.innerHTML = `<div class="bar"><i></i><i></i><i></i><span>${apps[id][0]}</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s></div>`;
+    el.querySelector('.bar').addEventListener('pointerdown', e => startDrag(e, id));
+    return el;
+  }
+  const G = 8; // gap, px
+  function render() {
+    const W = area.clientWidth, H = area.clientHeight;
+    area.querySelectorAll('.dtabs, .dgap').forEach(e => e.remove());
+    const placed = tree ? tiles(tree, { x: 0, y: 0, w: W, h: H }) : [];
+    for (const t of placed) {
+      const el = els[t.id]; if (el.parentElement !== area) { el.classList.remove('mini'); area.appendChild(el); }
+      const tabbed = t.group.length > 1, top = tabbed ? 24 : 0;
+      el.style.left = (t.r.x + G / 2) + 'px'; el.style.top = (t.r.y + G / 2 + top) + 'px';
+      el.style.width = (t.r.w - G) + 'px'; el.style.height = (t.r.h - G - top) + 'px';
+      el.classList.toggle('hidden', !t.front);
+      if (tabbed && t.front) {
+        const bar = document.createElement('div'); bar.className = 'dtabs';
+        Object.assign(bar.style, { left: (t.r.x + G / 2) + 'px', top: (t.r.y + G / 2) + 'px', width: (t.r.w - G) + 'px' });
+        t.group.forEach(id => {
+          const b = document.createElement('button'); b.type = 'button'; b.textContent = apps[id][0]; b.className = id === t.id ? 'on' : '';
+          b.addEventListener('click', () => { tree = activate(tree, id); render(); });
+          b.addEventListener('pointerdown', e => { if (id !== t.id) return; startDrag(e, id); });
+          bar.appendChild(b);
+        });
+        area.appendChild(bar);
+      }
+    }
+    for (const sp of tree ? splits(tree, { x: 0, y: 0, w: W, h: H }) : []) {
+      const g = document.createElement('div'); g.className = 'dgap ' + sp.ax;
+      if (sp.ax === 'h') Object.assign(g.style, { left: (sp.at - 7) + 'px', top: sp.r.y + 'px', width: '14px', height: sp.r.h + 'px' });
+      else Object.assign(g.style, { left: sp.r.x + 'px', top: (sp.at - 7) + 'px', width: sp.r.w + 'px', height: '14px' });
+      g.addEventListener('pointerdown', e => dragGap(e, sp, g));
+      area.appendChild(g);
+    }
+    for (const id of floating) { const el = els[id]; el.classList.add('mini'); el.classList.remove('hidden'); el.style.cssText = `--accent:var(${apps[id][1]})`; shelf.appendChild(el); }
+  }
+
+  // Where a point (area coordinates) would land.
+  function target(x, y, self) {
+    const W = area.clientWidth, H = area.clientHeight;
+    if (!tree) return x >= 0 && y >= 0 && x <= W && y <= H ? { empty: true, r: { x: 0, y: 0, w: W, h: H } } : null;
+    for (const t of tiles(tree, { x: 0, y: 0, w: W, h: H })) {
+      if (t.id === self || !t.front) continue;
+      const r = t.r; if (x < r.x || y < r.y || x > r.x + r.w || y > r.y + r.h) continue;
+      const fx = (x - r.x) / r.w, fy = (y - r.y) / r.h;
+      const near = [['left', fx], ['right', 1 - fx], ['top', fy], ['bottom', 1 - fy]].sort((a, b) => a[1] - b[1])[0];
+      return { id: t.id, edge: near[1] < .3 ? near[0] : 'center', r };
+    }
+    return null;
+  }
+  function showPreview(hit) {
+    if (!hit) return preview.classList.remove('show');
+    const a = area.getBoundingClientRect(), m = mac.getBoundingClientRect(), r = hit.r;
+    let p = { ...r };
+    if (hit.edge === 'left') p.w = r.w / 2; if (hit.edge === 'right') { p.x = r.x + r.w / 2; p.w = r.w / 2; }
+    if (hit.edge === 'top') p.h = r.h / 2; if (hit.edge === 'bottom') { p.y = r.y + r.h / 2; p.h = r.h / 2; }
+    Object.assign(preview.style, { left: (a.left - m.left + p.x + 4) + 'px', top: (a.top - m.top + p.y + 4) + 'px', width: (p.w - 8) + 'px', height: (p.h - 8) + 'px' });
+    preview.textContent = hit.empty ? 'Tile here' : hit.edge === 'center' ? 'Tab group' : 'Dock here';
+    preview.classList.add('show');
+  }
+  function drop(id, hit, overShelf) {
+    preview.classList.remove('show'); shelf.classList.remove('hot');
+    if (overShelf) { tree = remove(tree, id); if (!floating.includes(id)) floating.push(id); }
+    else if (hit) {
+      floating = floating.filter(f => f !== id);
+      const base = remove(tree, id);
+      tree = hit.empty || !base ? leaf([id]) : dock(base, id, hit.id, hit.edge);
+      if (!hit.empty) highlight(hit.edge === 'center' ? 2 : tiles(tree, { x: 0, y: 0, w: 1, h: 1 }).length > 2 ? 1 : 0);
+    }
+    render();
+  }
+  function startDrag(e, id) {
+    if (busy && e.isTrusted) return;
+    e.preventDefault();
+    const el = els[id], m = mac.getBoundingClientRect(), a = area.getBoundingClientRect();
+    const start = el.getBoundingClientRect(), dx = e.clientX - start.left, dy = e.clientY - start.top;
+    mac.appendChild(el); el.classList.remove('mini', 'hidden'); el.classList.add('dragging');
+    Object.assign(el.style, { width: Math.max(start.width, m.width * .26) + 'px', height: Math.max(start.height, m.height * .3) + 'px' });
+    const move = ev => {
+      el.style.left = (ev.clientX - m.left - dx) + 'px'; el.style.top = (ev.clientY - m.top - dy) + 'px';
+      const s = shelf.getBoundingClientRect(), overShelf = ev.clientY > s.top && ev.clientY < s.bottom;
+      shelf.classList.toggle('hot', overShelf);
+      showPreview(overShelf ? null : target(ev.clientX - a.left, ev.clientY - a.top, id));
+      return overShelf;
+    };
+    move(e);
+    const up = ev => {
+      removeEventListener('pointermove', move); removeEventListener('pointerup', up);
+      el.classList.remove('dragging'); el.style.width = el.style.height = '';
+      const s = shelf.getBoundingClientRect(), overShelf = ev.clientY > s.top && ev.clientY < s.bottom;
+      drop(id, overShelf ? null : target(ev.clientX - a.left, ev.clientY - a.top, id), overShelf);
+    };
+    addEventListener('pointermove', move); addEventListener('pointerup', up);
+    return { move, up };
+  }
+  function dragGap(e, sp, g) {
+    e.preventDefault(); g.classList.add('active'); highlight(3);
+    const a = area.getBoundingClientRect();
+    els && Object.values(els).forEach(el => el.style.transition = 'none');
+    const move = ev => {
+      const r = sp.ax === 'h' ? (ev.clientX - a.left - sp.r.x) / sp.r.w : (ev.clientY - a.top - sp.r.y) / sp.r.h;
+      tree = setRatio(tree, sp.path, r); render();
+    };
+    const up = () => {
+      removeEventListener('pointermove', move); removeEventListener('pointerup', up);
+      Object.values(els).forEach(el => el.style.transition = '');
+    };
+    addEventListener('pointermove', move); addEventListener('pointerup', up);
+  }
+  function highlight(n) { document.querySelectorAll('#dsteps .s').forEach(s => s.classList.toggle('on', +s.dataset.s === n)); }
+
+  function reset() {
+    tree = split('h', .5, leaf([1]), leaf([2])); floating = [3, 4, 5];
+    Object.values(els).forEach(el => el.remove()); els = {};
+    for (const id in apps) els[id] = make(+id);
+    render(); highlight(-1);
+  }
+
+  // "Show me": a pointer drags windows through every step.
+  const wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+  async function glide(from, to, ms, each) {
+    const steps = reduce ? 1 : Math.max(Math.round(ms / 16), 1);
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps, k = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const x = from.x + (to.x - from.x) * k, y = from.y + (to.y - from.y) * k;
+      cursor.style.left = (x - 3) + 'px'; cursor.style.top = (y - 2) + 'px'; each && each(x, y);
+      await new Promise(r => requestAnimationFrame(r));
+    }
+  }
+  function centre(el) { const m = mac.getBoundingClientRect(), b = el.getBoundingClientRect(); return { x: b.left - m.left + 40, y: b.top - m.top + 11 }; }
+  function spot(id, fx, fy) {
+    const m = mac.getBoundingClientRect(), a = area.getBoundingClientRect();
+    const t = tiles(tree, { x: 0, y: 0, w: area.clientWidth, h: area.clientHeight }).find(t => t.id === id);
+    return { x: a.left - m.left + t.r.x + t.r.w * fx, y: a.top - m.top + t.r.y + t.r.h * fy };
+  }
+  async function scriptedDrag(id, to, fx, fy) {
+    const m = mac.getBoundingClientRect();
+    const from = centre(els[id]); await glide({ x: from.x - 60, y: from.y + 40 }, from, 450);
+    const fake = (x, y) => ({ clientX: m.left + x, clientY: m.top + y, preventDefault() {}, isTrusted: false });
+    const drag = startDrag(fake(from.x, from.y), id);
+    const end = spot(to, fx, fy);
+    await glide(from, end, 1000, (x, y) => drag.move(fake(x, y)));
+    await wait(450);
+    drag.up(fake(end.x, end.y)); await wait(900);
+  }
+  async function showMe() {
+    if (busy) return; busy = true; reset(); cursor.classList.add('show');
+    try {
+      highlight(0); await scriptedDrag(3, 2, .92, .5);
+      highlight(1); await scriptedDrag(4, 3, .5, .9);
+      highlight(2); await scriptedDrag(5, 1, .5, .55);
+      highlight(3);
+      const gap = area.querySelector('.dgap.h'); if (gap) {
+        const m = mac.getBoundingClientRect(), b = gap.getBoundingClientRect(), a = area.getBoundingClientRect();
+        const p = { x: b.left - m.left + 7, y: b.top - m.top + b.height / 2 };
+        await glide({ x: p.x - 50, y: p.y + 30 }, p, 400);
+        const sp = splits(tree, { x: 0, y: 0, w: area.clientWidth, h: area.clientHeight })[0];
+        for (const target of [.38, .6, .5]) {
+          const from = { ...p }; p.x = a.left - m.left + area.clientWidth * target;
+          await glide(from, p, 500, x => { tree = setRatio(tree, sp.path, (x - (a.left - m.left)) / area.clientWidth); render(); });
+        }
+      }
+      highlight(4); await wait(600);
+    } finally { cursor.classList.remove('show'); busy = false; }
+  }
+
+  document.getElementById('dockplay').addEventListener('click', showMe);
+  document.getElementById('dockreset').addEventListener('click', () => { if (!busy) reset(); });
+  addEventListener('resize', () => render());
+  reset();
+  // Play once when it scrolls into view.
+  new IntersectionObserver((entries, o) => { if (entries.some(e => e.isIntersecting)) { o.disconnect(); setTimeout(showMe, 600); } }, { threshold: .5 }).observe(mac);
 })();
 </script>
 </body>

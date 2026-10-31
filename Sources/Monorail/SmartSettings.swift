@@ -169,6 +169,7 @@ struct ScriptGallerySection: View {
 }
 
 enum SmartBridge {
+    static var showUsagePayload: () -> Void = {}
     static var remoteURL: () -> URL? = { nil }
     static var remoteQR: () -> NSImage? = { nil }
     /// Waits for the next MIDI note and hands it back.
@@ -455,6 +456,12 @@ struct DevicesPane: View {
             }
             Section {
                 Toggle("Ask before scripts or AI assistants close windows", isOn: $store.settings.confirmDestructiveAPI)
+                HStack {
+                    Toggle("Share anonymous usage counts", isOn: $store.settings.shareUsageStats)
+                    Spacer()
+                    Button("What's Sent…") { SmartBridge.showUsagePayload() }
+                }
+                .help("Once a day: Monorail and macOS versions, Mac model, chip, displays, language and which features are on. Never titles, apps, files or what you type.")
                 Toggle("Keep crash and hang reports on this Mac", isOn: $store.settings.crashReports)
                 HStack {
                     if !CrashReporter.reports.isEmpty {
@@ -470,7 +477,7 @@ struct DevicesPane: View {
             } header: {
                 Text("Trust")
             } footer: {
-                Text("What Monorail can see: window positions and titles (Accessibility), window pictures only for previews you turn on (Screen Recording), your calendar only for meeting and focus events. It stores layouts and settings in ~/Library/Application Support/Monorail. Network: update checks, quirks updates, and anything you turn on here. Hold ⌥ while opening Monorail for safe mode.")
+                Text("What Monorail can see: window positions and titles (Accessibility), window pictures only for previews you turn on (Screen Recording), your calendar only for meeting and focus events. It stores layouts and settings in ~/Library/Application Support/Monorail. Network: update checks, quirks updates, anonymous daily usage counts (if shared), and anything you turn on here. Hold ⌥ while opening Monorail for safe mode.")
                     .font(.callout).foregroundStyle(.secondary)
             }
         }

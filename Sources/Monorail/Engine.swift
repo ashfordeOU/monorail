@@ -114,6 +114,10 @@ final class Engine {
     var onAgentWaiting: (WindowID, String) -> Void = { _, _ in }
     /// You keep giving an app this width: app name, bundle ID, width.
     var onRuleSuggestion: (String, String, Double) -> Void = { _, _, _ in }
+    /// Someone keeps floating an app's windows by hand: (app name, bundle ID).
+    var onFloatSuggestion: (String, String) -> Void = { _, _ in }
+    /// How often each app's windows were floated by hand this session.
+    private var manualFloats: [String: Int] = [:]
     /// Switching windows very often (switches in the last few minutes).
     var onDistraction: (Int) -> Void = { _ in }
     /// Arrived on a workspace with a Shortcut to run.
@@ -706,6 +710,7 @@ final class Engine {
         if let key = window.key {
             let display = self.display(for: key)
             removeFromStrip(window)
+            noteManualFloat(window)
             if let display {
                 let visible = display.visibleFrame
                 let size = CGSize(
@@ -722,6 +727,15 @@ final class Engine {
             tile(window)
         }
         focus(id, warpMouse: false)
+    }
+
+    /// After the third time this session, suggests always floating the app.
+    private func noteManualFloat(_ window: ManagedWindow) {
+        guard settings.floatSuggestions, let bundle = window.bundleID,
+            settings.rule(for: bundle) == nil, !settings.seenTips.contains("float:" + bundle)
+        else { return }
+        manualFloats[bundle, default: 0] += 1
+        if manualFloats[bundle] == 3 { onFloatSuggestion(window.appName, bundle) }
     }
 
     private func tile(_ window: ManagedWindow) {

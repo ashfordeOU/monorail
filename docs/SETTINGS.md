@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-192 settings.
+197 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -138,7 +138,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `webhookURL` | POST events as JSON to this address (empty = off). | `""` |
 | `remoteCommands` | Let other apps run actions with the org.ashforde.monorail.perform distributed notification. | `false` |
 | `stageNextWindow` | Bring the window you usually go to next right beside the one you are in. | `false` |
-| `distractionNudges` | Suggest focus mode when you switch windows very often. | `true` |
+| `distractionNudges` | Suggest focus mode when you switch windows very often. | `false` |
 | `contentAwareWidths` | New slides get a width that suits the app: ~100 columns of code, a page of text, a web page. | `false` |
 | `pathRules` | Documents from these folders open in these workspaces. | `[]` |
 | `displayProfiles` | Remember the layout for each set of displays and bring it back when they connect again. | `false` |
@@ -162,7 +162,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `dimFollowsPointer` | Dimming follows the pointer instead of focus. | `false` |
 | `energySaver` | On battery, animate at 30 fps and pause live previews. | `true` |
 | `presenterNotes` | Your presenter notes (never shown in screen shares). | `""` |
-| `workspaceClipboard` | Keep a clipboard history for each workspace. | `true` |
+| `workspaceClipboard` | Keep a clipboard history for each workspace. | `false` |
 | `driftWallpaper` | A picture that drifts gently behind the strip as it scrolls (empty = off). | `""` |
 | `notchHUD` | Show slides and workspaces around the MacBook notch as you move. | `false` |
 | `soundPack` | The sounds Monorail plays. | `.classic` |
@@ -191,6 +191,11 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `meetingNotesApp` | The notes app put beside calls (bundle ID). | `"com.apple.Notes"` |
 | `sidecarFit` | On a Sidecar iPad, every slide fits on screen. | `true` |
 | `seenTips` | Tips already shown. | `[]` |
+| `shareUsageStats` | Send anonymous daily usage counts (version, macOS, Mac model, features on). Never titles, apps or files. | `true` |
+| `usageNoticeShown` | Whether the one-time notice about anonymous usage counts was shown. | `false` |
+| `restoreBrowserTabs` | Snapshots also save and reopen browser tabs (Safari, Chrome, Arc, Brave, Edge) and Finder windows. | `false` |
+| `floatSuggestions` | Suggest always floating an app after you float its windows by hand a few times. | `true` |
+| `assistantModel` | The Claude model the optional assistant uses, with your own API key. | `"claude-haiku-5-5"` |
 | `keepWindowsInPlace` | Snap windows back when an app moves or resizes one by itself. | `true` |
 | `resizeAssist` | After resizing a window in a slide, offer to rearrange the slide. | `true` |
 | `pairLoneWindowsOnOpen` | Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). | `false` |

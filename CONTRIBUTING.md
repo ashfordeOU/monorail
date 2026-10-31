@@ -34,4 +34,6 @@ make run    # build dist/Monorail.app and open it
 ## License
 
 By contributing you agree that your contributions are licensed under the
-[GNU Affero General Public License v3.0](LICENSE).
+project's [Functional Source License (FSL-1.1-ALv2)](LICENSE), and that Ashforde OÜ may
+relicense them, including under the Apache License 2.0 when a version's FSL term ends.
+See [docs/LICENSING.md](docs/LICENSING.md) and [TRADEMARKS.md](TRADEMARKS.md).

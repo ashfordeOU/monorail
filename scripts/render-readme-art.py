@@ -117,7 +117,7 @@ def banner():
   <text x="70" y="262" font-family="{FONT}" font-size="76" font-weight="800" fill="#fff" letter-spacing="-1.5">Monorail<tspan dx="16" font-size="30" font-weight="600" letter-spacing="0" opacity="0.85">by Ashforde®</tspan></text>
   <text x="72" y="306" font-family="{FONT}" font-size="27" font-weight="600" fill="#fff" opacity="0.95">Every window rides one rail.</text>
   <text x="72" y="344" font-family="{FONT}" font-size="19" fill="#fff" opacity="0.8">A scrolling window manager for macOS.</text>
-  <text x="72" y="372" font-family="{FONT}" font-size="19" fill="#fff" opacity="0.8">Free and open source.</text>
+  <text x="72" y="372" font-family="{FONT}" font-size="19" fill="#fff" opacity="0.8">Free. Native. Private.</text>
 </g>
 </svg>
 '''

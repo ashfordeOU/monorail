@@ -15,12 +15,12 @@ Alternatives:
 
 **Link:** https://github.com/ashfordeOU/monorail (download: https://github.com/ashfordeOU/monorail/releases/latest)
 
-**Topics:** Mac, Productivity, Open Source, Developer Tools, Artificial Intelligence
+**Topics:** Mac, Productivity, Developer Tools, Artificial Intelligence
 
-**Pricing:** Free (open source, AGPL-3.0)
+**Pricing:** Free (source on GitHub, FSL-1.1-ALv2)
 
 **Description** (260 characters max):
-> Monorail puts every window on an endless strip, so new windows never squeeze the rest. Type “Slack and Mail side by side” and it's done. It tells you when an AI agent is waiting for you, hides private windows when you share, and comes in 27 themes. Free and open source.
+> Monorail puts every window on an endless strip, so new windows never squeeze the rest. Type “Slack and Mail side by side” and it's done. It tells you when an AI agent is waiting for you, hides private windows when you share, and comes in 27 themes. Free.
 
 ## Gallery (1270 × 760)
 
@@ -60,7 +60,7 @@ Thumbnail: `thumbnail-240.png` (the app icon).
 > - 🎨 **27 themes**, including Seasons, which changes through the year.
 > - ⌨️ Vim mode, MIDI pads, game controllers and a phone remote, if that's your thing.
 >
-> It's native Swift, free and open source (AGPL). There's no account and no telemetry, and the only permission it needs is Accessibility.
+> It's native Swift and free, with the source on GitHub. There's no account, it only sends anonymous daily counts you can turn off, and the only permission it needs is Accessibility.
 >
 > I'd love to hear how you arrange your windows, and what would make Monorail yours. 🙏
 
@@ -70,10 +70,10 @@ Thumbnail: `thumbnail-240.png` (the app icon).
 > Monorail 1.2 is live on Product Hunt 🚝
 > A Mac window manager where nothing ever shrinks. Every window rides one endless strip.
 > New: type “Slack and Mail side by side”, AI agent alerts, safe screen sharing, 27 themes.
-> Free & open source → [Product Hunt link]
+> Free for Mac → [Product Hunt link]
 
 **LinkedIn**
-> Today we're launching Monorail by Ashforde® on Product Hunt. It's a free, open-source window manager for macOS built around one idea: new windows should never squeeze the ones you're using. Version 1.2 adds plain-language commands, alerts when an AI coding agent needs you, and privacy for screen sharing. We'd love your support and feedback: [link]
+> Today we're launching Monorail by Ashforde® on Product Hunt. It's a free window manager for macOS built around one idea: new windows should never squeeze the ones you're using. Version 1.2 adds plain-language commands, alerts when an AI coding agent needs you, and privacy for screen sharing. We'd love your support and feedback: [link]
 
 ## Launch checklist
 

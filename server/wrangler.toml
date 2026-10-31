@@ -1,0 +1,10 @@
+name = "monorail-stats"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "monorail-stats"
+database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
+
+# Set the dashboard key with: npx wrangler secret put STATS_KEY

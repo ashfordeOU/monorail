@@ -9,7 +9,7 @@
 [![Latest release](https://img.shields.io/github/v/release/ashfordeOU/monorail?label=version&color=F66270)](https://github.com/ashfordeOU/monorail/releases/latest)
 ![macOS 13+](https://img.shields.io/badge/macOS-13%2B-2A1430?logo=apple)
 ![Universal](https://img.shields.io/badge/Apple%20silicon%20%2B%20Intel-universal-D63A80)
-![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-FF9E62)
+![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-FF9E62)
 [![CI](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml/badge.svg)](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml)
 
 [Install](#install) · [What's new](#new-in-12) · [Getting started](#getting-started) · [Shortcuts](#keyboard-shortcuts) · [Automation](#automation) · [FAQ](#faq) · [Build from source](#build-from-source)
@@ -45,7 +45,7 @@ strip glides just far enough to bring the window into view.
 - **Made for today's work.** It tells you when an AI coding agent is waiting, keeps private windows out of screen shares, and shares exactly one slide in a call.
 - **Mouse, keyboard or neither.** Use the scroll wheel, trackpad swipes, a slider bar, vim keys, a MIDI pad, a game controller or your phone.
 - **It never loses a window.** Undo and a timeline, and restore after a restart, a crash, sleep or unplugging a display.
-- **Free and open source** (AGPL), native Swift, and a universal app.
+- **Free**, source-available (FSL), native Swift, and a universal app.
 
 ## A tour
 
@@ -150,7 +150,7 @@ switches; add <kbd>⇧</kbd> to take the window with you.
 <td valign="top">
 
 ### 🔒 Native, private, safe
-Swift, AppKit and SwiftUI. No account, no telemetry. It needs one permission
+Swift, AppKit and SwiftUI. No account, and only anonymous usage counts you can turn off. It needs one permission
 (Accessibility); the others are only for features you turn on. Pause or quit and every window comes back on
 screen; undo any change with <kbd>⌃⌥Z</kbd>.
 
@@ -228,7 +228,7 @@ floating camera tile.
 | Knows when an AI agent needs you | ✅ | ❌ | ❌ |
 | Keeps private windows out of screen shares | ✅ | ❌ | ❌ |
 | Remembers each display set, plug and unplug | ✅ | partly | ❌ |
-| Free and open source | ✅ AGPL | varies | mostly paid |
+| Free, source on GitHub | ✅ FSL | varies | mostly paid |
 
 ## Install
 
@@ -1087,9 +1087,19 @@ macOS only asks for the other permissions when you turn on the feature that need
 
 Window pictures and text are read on your Mac and never stored or sent anywhere.
 
-Monorail has no account, analytics or telemetry. Its only network requests go to this repository:
+Monorail has no account. Its network requests are:
 - a daily check for a new version, and its download when you accept one
 - the list of known app quirks
+- **anonymous usage counts**, once a day, so we know how many Macs run Monorail and what to improve
+
+The usage counts contain a random install ID (not tied to you, your Apple ID or your Mac's serial
+number), the Monorail and macOS versions, the Mac model (for example `Mac15,3`), chip type and core
+count, a memory range, the number of displays, the system language, how Monorail was installed and
+which features are on. They **never** contain window titles, app names, file names, what you type or
+say, or anything from your screen, and the server doesn't store IP addresses. Monorail tells you
+about this the first time it starts. Turn it off in **Settings → Devices & Sharing → Trust → Share
+anonymous usage counts**, or with `defaults write com.ashforde.monorail MonorailNoUsageCounts -bool YES`.
+Exactly what's sent is shown in the app under **What's sent…**.
 
 Anything else happens only if you turn it on: webhooks, the phone remote, layout sync and iCloud sync. Update checks can be turned off in **Settings → General**. Settings → Devices & Sharing → Trust summarises all of this inside the app.
 
@@ -1181,7 +1191,7 @@ Yes, automatically:
 No. Sentences, intents, predictions and suggestions all run on your Mac, with no account and no network. Voice commands use macOS's on-device speech recognition where your Mac supports it.
 
 **Is it free?**
-Yes. Monorail is free and open source under the GNU AGPL v3.0.
+Yes, free to use, with no trial or subscription. The source is on GitHub under the [Functional Source License (FSL-1.1-ALv2)](LICENSE): you can read it, build it, change it and use it for anything except a competing product or service. Each release becomes Apache 2.0 two years after it ships. See [docs/LICENSING.md](docs/LICENSING.md).
 
 ## Contributing
 
@@ -1192,6 +1202,12 @@ Bug reports and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md
 Monorail by Ashforde®. Copyright © 2026 Ashforde OÜ. Ashforde® is a
 registered trademark of Ashforde OÜ.
 
-Monorail is free software: you can redistribute it and/or modify it under the
-terms of the [GNU Affero General Public License v3.0](LICENSE) as published by
-the Free Software Foundation.
+From version 1.6.0, Monorail is licensed under the [Functional Source License (FSL-1.1-ALv2)](LICENSE).
+You may use, copy, modify and redistribute it for any purpose **other than a competing use**:
+selling it, or offering it or a derivative as a product or service that competes with Monorail.
+Two years after each version is released, that version is also available under the Apache
+License 2.0. Versions up to 1.5.2 remain available under the GNU AGPL v3.0 they were released
+with. Details: [docs/LICENSING.md](docs/LICENSING.md).
+
+The names “Monorail by Ashforde” and “Ashforde®”, and the Monorail icon, are trademarks of
+Ashforde OÜ and are not licensed for use by forks or redistributions. See [TRADEMARKS.md](TRADEMARKS.md).

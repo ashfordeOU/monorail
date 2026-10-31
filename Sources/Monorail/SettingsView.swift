@@ -1924,7 +1924,7 @@ private struct AboutPane: View {
                 Link("Website & source", destination: URL(string: "https://github.com/ashfordeOU/monorail")!)
                 Link("Report an issue", destination: URL(string: "https://github.com/ashfordeOU/monorail/issues")!)
             }
-            Text("\(Brand.full) · © Ashforde OÜ · Licensed under the GNU AGPL v3.0")
+            Text("\(Brand.full) · © Ashforde OÜ · Functional Source License 1.1")
                 .font(.footnote).foregroundStyle(.secondary)
             if let log = UsageBridge.log {
                 UsageSection(log: log).frame(maxWidth: 620)

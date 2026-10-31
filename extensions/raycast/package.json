@@ -5,7 +5,7 @@
   "description": "Run Monorail actions, apply layouts, open app pairs, start templates and restore snapshots.",
   "icon": "icon.png",
   "author": "ashforde",
-  "license": "AGPL-3.0",
+  "license": "FSL-1.1-ALv2",
   "commands": [
     { "name": "actions", "title": "Monorail Actions", "description": "Run any Monorail action", "mode": "view" },
     { "name": "layouts", "title": "Apply Layout", "description": "Apply a saved layout, pair, template or snapshot", "mode": "view" },

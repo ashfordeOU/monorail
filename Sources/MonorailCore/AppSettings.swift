@@ -724,7 +724,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// Bring the window you usually go to next right beside the one you are in.
     public var stageNextWindow = false
     /// Suggest focus mode when you switch windows very often.
-    public var distractionNudges = true
+    public var distractionNudges = false
     /// New slides get a width that suits the app: ~100 columns of code, a page of text, a web page.
     public var contentAwareWidths = false
     /// Documents from these folders open in these workspaces.
@@ -772,7 +772,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// Your presenter notes (never shown in screen shares).
     public var presenterNotes = ""
     /// Keep a clipboard history for each workspace.
-    public var workspaceClipboard = true
+    public var workspaceClipboard = false
     /// A picture that drifts gently behind the strip as it scrolls (empty = off).
     public var driftWallpaper = ""
     /// Show slides and workspaces around the MacBook notch as you move.
@@ -829,6 +829,16 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var sidecarFit = true
     /// Tips already shown.
     public var seenTips: [String] = []
+    /// Send anonymous daily usage counts (version, macOS, Mac model, features on). Never titles, apps or files.
+    public var shareUsageStats = true
+    /// Whether the one-time notice about anonymous usage counts was shown.
+    public var usageNoticeShown = false
+    /// Snapshots also save and reopen browser tabs (Safari, Chrome, Arc, Brave, Edge) and Finder windows.
+    public var restoreBrowserTabs = false
+    /// Suggest always floating an app after you float its windows by hand a few times.
+    public var floatSuggestions = true
+    /// The Claude model the optional assistant uses, with your own API key.
+    public var assistantModel = "claude-haiku-5-5"
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true
     /// After resizing a window in a slide, offer to rearrange the slide.
@@ -993,7 +1003,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
-        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
     }
 
     public init(from decoder: Decoder) throws {
@@ -1144,6 +1154,11 @@ public struct AppSettings: Equatable, Codable, Sendable {
         announceWindows = value(.announceWindows, d.announceWindows)
         webhookURL = value(.webhookURL, d.webhookURL)
         remoteCommands = value(.remoteCommands, d.remoteCommands)
+        shareUsageStats = value(.shareUsageStats, d.shareUsageStats)
+        usageNoticeShown = value(.usageNoticeShown, d.usageNoticeShown)
+        restoreBrowserTabs = value(.restoreBrowserTabs, d.restoreBrowserTabs)
+        floatSuggestions = value(.floatSuggestions, d.floatSuggestions)
+        assistantModel = value(.assistantModel, d.assistantModel)
         meetingLayout = value(.meetingLayout, d.meetingLayout)
         meetingNotesApp = value(.meetingNotesApp, d.meetingNotesApp)
         sidecarFit = value(.sidecarFit, d.sidecarFit)

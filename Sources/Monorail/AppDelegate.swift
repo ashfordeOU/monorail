@@ -114,6 +114,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var dimMonitor: Any?
     private let awake = StayAwake()
     let usage = UsageLog()
+    private let telemetry = Telemetry()
     private var awakeTicker: Timer?
     private var scriptsOn = false
     private let statusMenu = NSMenu()
@@ -463,6 +464,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self.store.settings = settings
             self.toast.show("You keep giving \(name) \(Self.widthName(width)) · make it a rule in Settings → Smart")
         }
+        engine.onFloatSuggestion = { [weak self] name, bundle in self?.suggestFloat(name, bundle) }
+        SmartBridge.showUsagePayload = { [weak self] in self?.showUsagePayload() }
         engine.onDistraction = { [weak self] count in
             self?.toast.show("\(count) switches in five minutes · try focus mode (⌃⌥B) or deep work")
         }
@@ -1072,6 +1075,65 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return list
     }
 
+    private func startTelemetry() {
+        telemetry.settings = { [weak self] in self?.store.settings ?? AppSettings() }
+        telemetry.usage = { [weak self] in self?.usage.stored }
+        telemetry.start()
+        guard !store.settings.usageNoticeShown, !safeMode else { return }
+        // A quiet moment after launch, and never on top of the welcome window.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 45) { [weak self] in
+            guard let self, self.store.settings.hasCompletedOnboarding, !self.store.settings.usageNoticeShown,
+                self.welcomeWindow?.isVisible != true
+            else { return }
+            Telemetry.showNotice(store: self.store) { [weak self] in self?.showUsagePayload() }
+            self.telemetry.sendIfDue()
+        }
+    }
+
+    /// Shows exactly what the daily usage counts contain.
+    func showUsagePayload() {
+        let alert = NSAlert()
+        alert.messageText = "What Monorail sends once a day"
+        alert.informativeText = store.settings.shareUsageStats
+            ? "Anonymous counts, exactly as below. Nothing else."
+            : "Sharing is off, so nothing is sent. This is what would be sent."
+        let scroll = NSTextView.scrollableTextView()
+        scroll.frame = NSRect(x: 0, y: 0, width: 460, height: 300)
+        if let text = scroll.documentView as? NSTextView {
+            text.string = telemetry.payloadText
+            text.isEditable = false
+            text.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
+        }
+        alert.accessoryView = scroll
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: store.settings.shareUsageStats ? "Turn Off" : "Turn On")
+        NSApp.activate(ignoringOtherApps: true)
+        if alert.runModal() == .alertSecondButtonReturn {
+            var settings = store.settings
+            settings.shareUsageStats.toggle()
+            settings.usageNoticeShown = true
+            store.settings = settings
+        }
+    }
+
+    /// Someone floated this app's windows by hand three times: offer a rule.
+    private func suggestFloat(_ name: String, _ bundle: String) {
+        var settings = store.settings
+        settings.seenTips.append("float:" + bundle)
+        store.settings = settings
+        let alert = NSAlert()
+        alert.messageText = "Always float \(name)?"
+        alert.informativeText = "You keep taking \(name) windows off the strip. Monorail can leave them floating from now on. You can change this in Settings → Apps."
+        alert.addButton(withTitle: "Always Float")
+        alert.addButton(withTitle: "Not Now")
+        NSApp.activate(ignoringOtherApps: true)
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        settings = store.settings
+        settings.appRules.append(AppRule(bundleID: bundle, name: name, float: true))
+        store.settings = settings
+        toast.show("\(name) windows now float")
+    }
+
     func acceptSuggestion(_ bundle: String) {
         var settings = store.settings
         guard let width = settings.suggestedRules.removeValue(forKey: bundle) else { return }
@@ -1424,6 +1486,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         store.startCloudSync()
         store.watchFile()
         autoRules.start()
+        startTelemetry()
         // After an update: what changed. (Not on a first install.)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         if store.settings.hasCompletedOnboarding, !version.isEmpty, store.settings.lastSeenVersion != version {

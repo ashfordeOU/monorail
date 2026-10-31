@@ -209,6 +209,8 @@ enum SettingsIndex {
         ("Choose…", "devices"),
         ("Sounds", "devices"),
         ("Ask before scripts or AI assistants close windows", "devices"),
+        ("Share anonymous usage counts", "devices"),
+        ("What's Sent…", "devices"),
         ("Keep crash and hang reports on this Mac", "devices"),
         ("Report a Problem…", "devices"),
         ("When turned on, stay awake", "awake"),

@@ -22,7 +22,6 @@ and versions follow [Semantic Versioning](https://semver.org/).
   - Positions are remembered per kind of window (settings, panels, other windows), and Get Info windows are never piled into one remembered spot.
 - **Fewer redraws:** the focus border, dimming and tab bars are redrawn only when something about them changed.
 
-## [1.3.1] - 2026-10-31
 
 ### Fixed
 - **Get Info and other floating windows no longer open out of view.**

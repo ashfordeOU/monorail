@@ -18,7 +18,7 @@
 
 ---
 
-**Monorail by Ashforde®** is a scrolling window manager for your Mac. **Version 1.3 is here:** it can now keep your Mac awake, Amphetamine-style. Version 1.2 added this: you can tell it what you want in plain words, it learns how you work, it tells you when an AI agent needs you, it keeps private windows out of screen shares, and it comes in 27 themes.
+**Monorail by Ashforde®** is a scrolling window manager for your Mac. **Version 1.4 is here.** It keeps floating windows in view, shows your usage in About, and speaks eight languages. 1.3 added Stay Awake, Amphetamine-style, and 1.2 added this: you can tell it what you want in plain words, it learns how you work, it tells you when an AI agent needs you, it keeps private windows out of screen shares, and it comes in 27 themes.
 
 Grid tilers squeeze every new window into the space that's already there.
 **Monorail does the opposite.** Each window is a column on a horizontal strip
@@ -536,6 +536,15 @@ search, so you can see which slide wants you.
 - **Share layouts**: **Saved Layouts → Share Layout…** makes a `.monorail` file; double-click one on any Mac to add and apply it. Templates and app pairs share the same way.
 - **In your language**: menus, Settings tabs and the welcome tour in English, Deutsch, Français, Español and 日本語 (**Settings → General → Language**).
 - **Practice windows**: the welcome tour can open three practice windows, so you learn the moves without touching your work.
+
+### New in 1.4
+
+- **Floating windows never stay out of view.** Get Info panels, Settings windows and inspectors open where the app puts them. If that would be off screen, they open over the app's window instead, staggered when several open at once. They come back into view if anything leaves them there later.
+- **Usage in Settings → About:** how long Monorail has run, what it has cost in CPU and memory, and what you use most. It's all kept on your Mac.
+- **A What's New tour** with **Try it** buttons, plus **Report a Problem…**, which fills in a GitHub issue for you.
+- **Eight languages:** English, German, French, Spanish, Japanese, Chinese (Simplified), Portuguese, Korean and Italian for the menus and Settings.
+- **Lighter in use.** Overlays only redraw when something changes, and overview previews are smaller.
+- For contributors and testers: [docs/TESTING.md](docs/TESTING.md) (a real-Mac checklist) and [docs/NOTARISATION.md](docs/NOTARISATION.md).
 
 ### New in 1.3: Stay Awake ☕
 

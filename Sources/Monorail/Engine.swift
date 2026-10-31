@@ -3,7 +3,7 @@ import AppKit
 import MonorailCore
 import os
 
-let log = Logger(subsystem: "org.ashforde.macslider", category: "engine")
+let log = Logger(subsystem: BundleIDs.current, category: "engine")
 
 /// One display on one Mission Control Space.
 struct ScreenKey: Hashable, Codable {
@@ -3671,6 +3671,16 @@ final class Engine {
         writeLayouts()
         onStateChange()
         if !quiet { onNotice("Snapshot “\(name)” · \(workspaces.count) workspaces, \(apps.count) apps") }
+        if settings.restoreBrowserTabs {
+            let savedAt = savedLayouts.first { $0.name == name }?.savedAt
+            SessionTabs.capture { [weak self] documents in
+                guard let self, !documents.isEmpty,
+                    let index = self.savedLayouts.firstIndex(where: { $0.name == name && $0.savedAt == savedAt })
+                else { return }
+                self.savedLayouts[index].documents = documents
+                self.writeLayouts()
+            }
+        }
     }
 
     /// Relaunches a snapshot's apps, then puts their windows back as they
@@ -3679,6 +3689,11 @@ final class Engine {
         guard isRunning, !isPaused, let snapshot = savedLayouts.first(where: { $0.name == name && $0.isSnapshot == true })
         else { return }
         var launched = 0
+        let wasRunning = Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier))
+        if settings.restoreBrowserTabs, let documents = snapshot.documents {
+            // Give the apps a moment to open before asking them for windows.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { SessionTabs.reopen(documents, skipping: wasRunning) }
+        }
         for bundleID in snapshot.apps ?? []
         where NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty {
             guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { continue }

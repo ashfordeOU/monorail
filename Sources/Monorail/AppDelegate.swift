@@ -138,6 +138,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NSApp.terminate(nil)
             return
         }
+        BundleIDs.migrateIfNeeded()
 
         // The main thread never waits long on a busy app; window moves run in
         // the background with their own, longer allowance (see WindowWriter).
@@ -216,6 +217,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     NSWorkspace.shared.openApplication(at: app, configuration: NSWorkspace.OpenConfiguration())
                 }
             case "notify": toast.show(argument)
+            case "import": importLink(url.pathComponents.dropFirst().joined(separator: "/"))
             case "awake":
                 // monorail://awake (toggle), awake/on, awake/off, awake/90 (minutes), awake/downloading
                 switch argument.lowercased() {
@@ -1956,6 +1958,54 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             toast.show("That isn’t a Monorail layout file")
             return
         }
+        importShared(file)
+    }
+
+    static let shareBase = "https://ashfordeou.github.io/monorail/share/#"
+
+    @objc private func copyShareLink(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String, let layout = engine.layouts.first(where: { $0.name == name })?.forSharing()
+        else { return }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        guard let data = try? encoder.encode(SharedFile(kind: "layout", layout: layout)) else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(Self.shareBase + Self.base64URL(data), forType: .string)
+        toast.show("Link to “\(name)” copied · anyone with Monorail can open it")
+    }
+
+    static func base64URL(_ data: Data) -> String {
+        data.base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
+    static func fromBase64URL(_ text: String) -> Data? {
+        var s = text.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+        while s.count % 4 != 0 { s += "=" }
+        return Data(base64Encoded: s)
+    }
+
+    /// monorail://import/<data> from a share link: asks first, since it came from the web.
+    private func importLink(_ encoded: String) {
+        guard let data = Self.fromBase64URL(encoded), let file = try? JSONDecoder().decode(SharedFile.self, from: data) else {
+            toast.show("That share link is incomplete or damaged")
+            return
+        }
+        let name = file.layout?.name ?? file.template?.name ?? file.appPair?.name ?? "Shared"
+        let what = file.layout != nil ? "layout" : file.template != nil ? "workspace template" : "app pair"
+        let alert = NSAlert()
+        alert.messageText = "Add the \(what) “\(name)”?"
+        alert.informativeText = file.template != nil
+            ? "It came from a link. Starting it may open apps and web pages it lists."
+            : "It came from a link. It only arranges windows you have open."
+        alert.addButton(withTitle: "Add and Use")
+        alert.addButton(withTitle: "Cancel")
+        NSApp.activate(ignoringOtherApps: true)
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        importShared(file)
+    }
+
+    private func importShared(_ file: SharedFile) {
         if let layout = file.layout {
             engine.importLayout(layout)
             engine.applyLayout(named: layout.name)
@@ -2730,6 +2780,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let shareParent = NSMenuItem(title: L("Share Layout…"), action: nil, keyEquivalent: "")
             shareParent.submenu = share
             menu.addItem(shareParent)
+            let links = NSMenu()
+            for layout in layouts {
+                let entry = item(layout.name, #selector(copyShareLink(_:)))
+                entry.representedObject = layout.name
+                links.addItem(entry)
+            }
+            let linksParent = NSMenuItem(title: L("Copy Share Link"), action: nil, keyEquivalent: "")
+            linksParent.submenu = links
+            menu.addItem(linksParent)
             for layout in layouts {
                 let entry = item(layout.name, #selector(deleteLayout(_:)))
                 entry.representedObject = layout.name

@@ -10,7 +10,7 @@ Open an [issue](https://github.com/ashfordeOU/monorail/issues) and include:
 - the Monorail version (Settings → About),
 - the app whose windows misbehaved, and what you expected to happen.
 
-Logs are in Console.app: filter on the subsystem `org.ashforde.macslider`.
+Logs are in Console.app: filter on the subsystem `org.ashforde.monorail`.
 
 ## Development
 

@@ -21,10 +21,10 @@ jobs:
     env:
       TAG: ${{ github.event.inputs.tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
       GH_TOKEN: ${{ github.token }}
-      MACSLIDER_SIGNING_CERT: ${{ secrets.MACSLIDER_SIGNING_CERT }}
-      MACSLIDER_SIGNING_PASSWORD: ${{ secrets.MACSLIDER_SIGNING_PASSWORD }}
+      MONORAIL_SIGNING_CERT: ${{ secrets.MONORAIL_SIGNING_CERT || secrets.MACSLIDER_SIGNING_CERT }}
+      MONORAIL_SIGNING_PASSWORD: ${{ secrets.MONORAIL_SIGNING_PASSWORD || secrets.MACSLIDER_SIGNING_PASSWORD }}
       # Notarisation turns on when these are set (an Apple Developer ID certificate
-      # in MACSLIDER_SIGNING_CERT, plus an app-specific password for the Apple ID).
+      # in MONORAIL_SIGNING_CERT, plus an app-specific password for the Apple ID).
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
@@ -58,11 +58,11 @@ jobs:
       - name: Import signing certificate
         # Signing with the same certificate every release keeps macOS
         # permissions across updates. See scripts/make-signing-cert.sh.
-        if: env.SKIP != '1' && env.MACSLIDER_SIGNING_CERT != ''
+        if: env.SKIP != '1' && env.MONORAIL_SIGNING_CERT != ''
         run: scripts/ci-import-signing-cert.sh
       - name: Warn about ad-hoc signing
-        if: env.SKIP != '1' && env.MACSLIDER_SIGNING_CERT == ''
-        run: echo "::warning::MACSLIDER_SIGNING_CERT is not set; this release is signed ad hoc and users must re-grant Accessibility after updating."
+        if: env.SKIP != '1' && env.MONORAIL_SIGNING_CERT == ''
+        run: echo "::warning::MONORAIL_SIGNING_CERT is not set; this release is signed ad hoc and users must re-grant Accessibility after updating."
       - name: Build app
         if: env.SKIP != '1'
         run: scripts/build-app.sh

@@ -178,6 +178,8 @@ enum SettingsIndex {
         ("Stage the window I usually go to next right beside me", "smart"),
         ("Suggest focus mode when I’m switching a lot", "smart"),
         ("Suggest rules from the fixes I keep making", "smart"),
+        ("Suggest always floating apps I keep floating", "smart"),
+        ("Snapshots save browser tabs and Finder windows", "smart"),
         ("Give new slides a width that suits the app", "smart"),
         ("Suggested rules", "smart"),
         ("Add Rule", "smart"),

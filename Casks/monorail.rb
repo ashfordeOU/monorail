@@ -17,10 +17,11 @@ cask "monorail" do
 
   app "Monorail.app"
 
-  uninstall quit: "org.ashforde.macslider"
+  uninstall quit: ["org.ashforde.monorail", "org.ashforde.macslider"]
 
   zap trash: [
     "~/Library/Application Support/Monorail",
     "~/Library/Preferences/org.ashforde.macslider.plist",
+    "~/Library/Preferences/org.ashforde.monorail.plist",
   ]
 end

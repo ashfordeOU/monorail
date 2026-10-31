@@ -4,7 +4,7 @@ import MonorailCore
 
 /// Anonymous usage counts, at most once a day, so Ashforde knows how many Macs run Monorail,
 /// which kinds of Mac, and which features people use. On by default; turn off in
-/// Settings → Devices & Sharing → Trust, or `defaults write com.ashforde.monorail MonorailNoUsageCounts -bool YES`.
+/// Settings → Devices & Sharing → Trust, or `defaults write org.ashforde.monorail MonorailNoUsageCounts -bool YES`.
 ///
 /// Never sent: window titles, app names, file names, typed or spoken text, screen contents, the
 /// serial number or the Apple ID. The install ID is random and stays on this Mac (it isn't synced).
@@ -35,7 +35,7 @@ final class Telemetry {
 
     var isAllowed: Bool {
         let s = settings()
-        return s.shareUsageStats && s.usageNoticeShown && !UserDefaults.standard.bool(forKey: Self.optOutKey)
+        return s.shareUsageStats && s.usageNoticeShown && !BundleIDs.bool(Self.optOutKey)
     }
 
     func start() {

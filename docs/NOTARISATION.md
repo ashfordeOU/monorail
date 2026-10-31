@@ -14,8 +14,8 @@ notarises and staples every DMG as soon as these repository secrets exist, so th
    In Xcode: **Settings → Accounts → (your team) → Manage Certificates → + → Developer ID Application**.
 2. **Export it** from Keychain Access (My Certificates → right-click it → Export) as a `.p12` with a strong password.
 3. **Replace the signing secrets** in GitHub → ashfordeOU/monorail → Settings → Secrets and variables → Actions:
-   - `MACSLIDER_SIGNING_CERT`: the `.p12`, base64-encoded: `base64 -i DeveloperID.p12 | pbcopy`
-   - `MACSLIDER_SIGNING_PASSWORD`: its password
+   - `MONORAIL_SIGNING_CERT`: the `.p12`, base64-encoded: `base64 -i DeveloperID.p12 | pbcopy`
+   - `MONORAIL_SIGNING_PASSWORD`: its password
 4. **Add the notarisation secrets:**
    - `APPLE_ID`: the Apple ID email of the developer account
    - `APPLE_TEAM_ID`: the 10-character Team ID (developer.apple.com → Membership)

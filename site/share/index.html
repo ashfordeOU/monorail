@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared Monorail layout</title>
+<meta name="description" content="A window layout shared from Monorail by Ashforde®, the scrolling window manager for Mac.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="../favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="../icons/icon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --accent:#FF6B4A; --accent2:#B455E0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; } }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; }
+* { box-sizing:border-box; }
+body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+main { max-width:860px; margin:0 auto; padding:40px 16px 64px; }
+.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
+.brand img { width:30px; height:30px; border-radius:8px; }
+h1 { font-size:clamp(28px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; margin:40px 0 8px; }
+.muted { color:var(--muted); }
+.card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; margin:24px 0; }
+.ws { margin-bottom:16px; } .ws:last-child { margin-bottom:0; }
+.ws h3 { font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:0 0 8px; }
+.rail { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
+.slide { flex:0 0 auto; height:110px; background:var(--soft); border-radius:12px; padding:6px; display:flex; gap:6px; }
+.win { flex:1; min-width:64px; border-radius:8px; background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; font-size:12px; font-weight:600; padding:8px; overflow:hidden; text-overflow:ellipsis; }
+.actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:999px; font-weight:600; text-decoration:none; border:1px solid var(--line); color:var(--ink); background:var(--card); }
+.btn.primary { background:var(--ink); color:var(--bg); border-color:transparent; }
+code { background:var(--soft); padding:2px 6px; border-radius:6px; font-size:14px; }
+.error { display:none; }
+</style>
+</head>
+<body>
+<main>
+  <a class="brand" href="../"><img src="../assets/icon.png" alt="">Monorail <span class="muted" style="font-weight:500">by Ashforde®</span></a>
+  <div id="ok">
+    <h1 id="title">A shared layout</h1>
+    <p class="muted" id="summary">Someone shared a Monorail window layout with you.</p>
+    <div class="card" id="preview"></div>
+    <div class="actions">
+      <a class="btn primary" id="open" href="#">Open in Monorail</a>
+      <a class="btn" href="../">Get Monorail (free)</a>
+    </div>
+    <p class="muted" style="font-size:14px;margin-top:20px">Monorail asks before adding it. A layout only arranges windows you already have open; it never contains window titles or tabs.</p>
+  </div>
+  <div class="error" id="bad">
+    <h1>This link is incomplete</h1>
+    <p class="muted">Ask for the link again, or copy it in full. In Monorail, links come from <code>Layouts → Copy Share Link</code>.</p>
+    <a class="btn" href="../">About Monorail</a>
+  </div>
+</main>
+<script>
+(function () {
+  var data = location.hash.slice(1);
+  function fail() { document.getElementById('ok').style.display = 'none'; document.getElementById('bad').style.display = 'block'; }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function appName(id) {
+    var known = { 'com.apple.Safari':'Safari', 'com.google.Chrome':'Chrome', 'com.apple.finder':'Finder', 'com.apple.mail':'Mail', 'com.tinyspeck.slackmacgap':'Slack', 'com.microsoft.VSCode':'VS Code', 'com.apple.Terminal':'Terminal', 'com.googlecode.iterm2':'iTerm', 'com.apple.Notes':'Notes', 'com.spotify.client':'Spotify', 'company.thebrowser.Browser':'Arc', 'com.figma.Desktop':'Figma', 'notion.id':'Notion', 'com.apple.iCal':'Calendar', 'com.apple.MobileSMS':'Messages', 'com.microsoft.teams2':'Teams', 'us.zoom.xos':'Zoom', 'com.linear':'Linear', 'com.anthropic.claudefordesktop':'Claude', 'dev.zed.Zed':'Zed' };
+    if (known[id]) return known[id];
+    var last = String(id).split('.').pop() || id;
+    return last.charAt(0).toUpperCase() + last.slice(1);
+  }
+  try {
+    if (!data) throw 0;
+    var b64 = data.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    var json = decodeURIComponent(Array.prototype.map.call(atob(b64), function (c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join(''));
+    var file = JSON.parse(json);
+    var layout = file.layout;
+    var name = (layout || file.template || file.appPair || {}).name || 'Shared';
+    document.title = name + ' · Monorail layout';
+    document.getElementById('title').textContent = '“' + name + '”';
+    document.getElementById('open').href = 'monorail://import/' + data;
+    var preview = document.getElementById('preview');
+    if (layout && layout.workspaces) {
+      var ws = layout.workspaces, pairs = [];
+      if (Array.isArray(ws)) { for (var i = 0; i + 1 < ws.length; i += 2) pairs.push([ws[i], ws[i + 1]]); }
+      else { for (var k in ws) pairs.push([Number(k), ws[k]]); }
+      pairs.sort(function (a, b) { return a[0] - b[0]; });
+      var windows = 0, apps = {};
+      pairs.forEach(function (p) {
+        var box = el('div', 'ws'); box.appendChild(el('h3', null, 'Workspace ' + (p[0] % 100 + 1)));
+        var rail = el('div', 'rail');
+        p[1].forEach(function (col) {
+          var slide = el('div', 'slide'); slide.style.width = Math.round(140 + 260 * Math.min(1, col.width || .5)) + 'px';
+          if (col.arrangement && /rows|stack/i.test(JSON.stringify(col.arrangement))) slide.style.flexDirection = 'column';
+          col.windows.forEach(function (w) { windows++; apps[w.app] = 1; slide.appendChild(el('div', 'win', appName(w.app))); });
+          rail.appendChild(slide);
+        });
+        box.appendChild(rail); preview.appendChild(box);
+      });
+      document.getElementById('summary').textContent = pairs.length + (pairs.length === 1 ? ' workspace, ' : ' workspaces, ') + windows + (windows === 1 ? ' window' : ' windows') + ' across ' + Object.keys(apps).length + ' apps.';
+    } else if (file.template || file.appPair) {
+      var item = file.template || file.appPair;
+      document.getElementById('summary').textContent = file.template ? 'A workspace template.' : 'An app pair.';
+      var list = (item.items || item.apps || []).map(function (x) { return appName(x.bundleID || x); });
+      preview.appendChild(el('p', null, list.length ? list.join(' · ') : name));
+    } else { throw 0; }
+  } catch (e) { fail(); }
+})();
+</script>
+</body>
+</html>

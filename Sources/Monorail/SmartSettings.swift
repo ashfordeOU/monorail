@@ -189,6 +189,9 @@ struct SmartPane: View {
                 Toggle("Stage the window I usually go to next right beside me", isOn: $store.settings.stageNextWindow)
                 Toggle("Suggest focus mode when I’m switching a lot", isOn: $store.settings.distractionNudges)
                 Toggle("Suggest rules from the fixes I keep making", isOn: $store.settings.ruleSuggestions)
+                Toggle("Suggest always floating apps I keep floating", isOn: $store.settings.floatSuggestions)
+                Toggle("Snapshots save browser tabs and Finder windows", isOn: $store.settings.restoreBrowserTabs)
+                    .help("Safari, Chrome, Arc, Brave, Edge, Vivaldi and Finder. macOS asks once per app. Tabs reopen when you restore a snapshot and the app wasn't already open.")
                 Toggle("Give new slides a width that suits the app", isOn: $store.settings.contentAwareWidths)
                     .help("About 100 columns for code and terminals, a page for documents, a web page for browsers")
             } header: {

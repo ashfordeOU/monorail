@@ -22,7 +22,7 @@ ditto -x -k "$TMP/Monorail.zip" "$TMP"
 for name in Monorail MacSlider; do
     if pgrep -xq "$name"; then
         echo "==> Quitting the running copy"
-        osascript -e "quit app id \"org.ashforde.macslider\"" || pkill -x "$name" || true
+        { osascript -e "quit app id \"org.ashforde.monorail\"" 2>/dev/null; osascript -e "quit app id \"org.ashforde.macslider\"" 2>/dev/null; } || pkill -x "$name" || true
         sleep 1
     fi
 done

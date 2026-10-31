@@ -281,17 +281,24 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
 
 /// Settings an organisation sets through a configuration profile (MDM) win over the user's.
 enum ManagedSettings {
-    /// Profiles target the app's bundle identifier.
-    static var domain: String { Bundle.main.bundleIdentifier ?? "org.ashforde.macslider" }
+    /// Profiles target the app's bundle identifier; ones written for the old identifier still apply.
+    static var domain: String { Bundle.main.bundleIdentifier ?? BundleIDs.current }
 
-    private static var defaults: UserDefaults? {
-        Bundle.main.bundleIdentifier == domain ? .standard : UserDefaults(suiteName: domain)
+    private static var allDefaults: [UserDefaults] {
+        [UserDefaults.standard] + BundleIDs.all.filter { $0 != Bundle.main.bundleIdentifier }.compactMap { UserDefaults(suiteName: $0) }
+    }
+
+    private static func forcedValues() -> [String: Any] {
+        var forced: [String: Any] = [:]
+        for defaults in allDefaults.reversed() {
+            for (key, value) in defaults.dictionaryRepresentation() where defaults.objectIsForced(forKey: key) { forced[key] = value }
+        }
+        return forced
     }
 
     /// The settings with every managed (forced) value applied.
     static func apply(to settings: AppSettings) -> AppSettings {
-        guard let defaults else { return settings }
-        let forced = defaults.dictionaryRepresentation().filter { defaults.objectIsForced(forKey: $0.key) }
+        let forced = forcedValues()
         guard !forced.isEmpty, let data = try? JSONEncoder().encode(settings),
             var object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
         else { return settings }
@@ -302,10 +309,7 @@ enum ManagedSettings {
         return result
     }
 
-    static var managedKeys: [String] {
-        guard let defaults else { return [] }
-        return defaults.dictionaryRepresentation().keys.filter { defaults.objectIsForced(forKey: $0) }.sorted()
-    }
+    static var managedKeys: [String] { forcedValues().keys.sorted() }
 }
 
 /// Finds a window by the words in it: reads every window's picture on this Mac.

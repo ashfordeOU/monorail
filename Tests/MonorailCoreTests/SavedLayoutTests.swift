@@ -36,6 +36,19 @@ final class SavedLayoutTests: XCTestCase {
         XCTAssertEqual(layout.windowCount, 1)
     }
 
+    func testSharingDropsTitlesAndTabs() throws {
+        var layout = SavedLayout(name: "Coding", workspaces: [0: [SavedColumn(Column(windows: [1], width: 0.5), fingerprint: { _ in WindowFingerprint(app: "com.apple.Safari", title: "Bank statement") })]], isSnapshot: true)
+        layout.documents = ["com.apple.Safari": [["https://example.com"]]]
+        let shared = layout.forSharing()
+        XCTAssertNil(shared.documents)
+        XCTAssertNil(shared.isSnapshot)
+        XCTAssertEqual(shared.workspaces[0]?.first?.windows, [WindowFingerprint(app: "com.apple.Safari", title: "")])
+        XCTAssertEqual(shared.workspaces[0]?.first?.width, 0.5)
+        // Old files without the new field still decode.
+        let data = try JSONEncoder().encode(SavedLayout(name: "Old", workspaces: [:]))
+        XCTAssertNil(try JSONDecoder().decode(SavedLayout.self, from: data).documents)
+    }
+
     func testSnapFrames() {
         let area = Rect(x: 0, y: 25, width: 1000, height: 800)
         XCTAssertEqual(SnapPosition.leftHalf.frame(in: area, gap: 0), Rect(x: 0, y: 25, width: 500, height: 800))

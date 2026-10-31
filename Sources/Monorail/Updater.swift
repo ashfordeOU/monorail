@@ -242,7 +242,19 @@ final class Updater: ObservableObject {
                 var text: CFString?
                 SecRequirementCopyString(designated, [], &text)
                 // Ad-hoc requirements pin a single build's hash; nothing else can match them.
-                if let text = text as String?, !text.contains("cdhash") { requirement = designated }
+                if let text = text as String?, !text.contains("cdhash") {
+                    requirement = designated
+                    // Monorail is moving from the old identifier to org.ashforde.monorail: either may
+                    // replace the other, as long as the certificate is the same.
+                    let both = "(identifier \"\(BundleIDs.legacy)\" or identifier \"\(BundleIDs.current)\")"
+                    let widened = text
+                        .replacingOccurrences(of: "identifier \"\(BundleIDs.legacy)\"", with: both)
+                        .replacingOccurrences(of: "identifier \"\(BundleIDs.current)\"", with: both)
+                    var relaxed: SecRequirement?
+                    if widened != text, SecRequirementCreateWithString(widened as CFString, [], &relaxed) == errSecSuccess {
+                        requirement = relaxed
+                    }
+                }
             }
         }
         let flags = SecCSFlags(rawValue: kSecCSCheckAllArchitectures | kSecCSStrictValidate)

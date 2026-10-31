@@ -41,6 +41,8 @@ public struct SavedLayout: Equatable, Codable, Sendable, Identifiable {
     public var apps: [String]?
     public var isSnapshot: Bool?
     public var savedAt: Date?
+    /// Browser tabs and Finder folders per app (bundle ID → windows → URLs), when saved.
+    public var documents: [String: [[String]]]?
 
     public var id: String { name }
 
@@ -51,6 +53,21 @@ public struct SavedLayout: Equatable, Codable, Sendable, Identifiable {
         self.apps = apps
         self.isSnapshot = isSnapshot
         self.savedAt = savedAt
+    }
+
+    /// A copy safe to share: window titles and saved tabs removed, so only apps and shapes remain.
+    public func forSharing() -> SavedLayout {
+        var copy = self
+        copy.documents = nil
+        copy.isSnapshot = nil
+        copy.workspaces = workspaces.mapValues { columns in
+            columns.map { column in
+                var column = column
+                column.windows = column.windows.map { WindowFingerprint(app: $0.app, title: "") }
+                return column
+            }
+        }
+        return copy
     }
 
     public var windowCount: Int { workspaces.values.reduce(0) { $0 + $1.reduce(0) { $0 + $1.windows.count } } }

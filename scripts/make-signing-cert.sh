@@ -55,8 +55,8 @@ if [ -n "$OUT" ]; then
 fi
 
 if command -v gh > /dev/null && gh auth status > /dev/null 2>&1; then
-    printf '%s' "$CERT_B64" | gh secret set MACSLIDER_SIGNING_CERT --repo "$REPO"
-    printf '%s' "$PASSWORD" | gh secret set MACSLIDER_SIGNING_PASSWORD --repo "$REPO"
+    printf '%s' "$CERT_B64" | gh secret set MONORAIL_SIGNING_CERT --repo "$REPO"
+    printf '%s' "$PASSWORD" | gh secret set MONORAIL_SIGNING_PASSWORD --repo "$REPO"
     echo "Done: both secrets are set on $REPO. The next build is signed as \"$NAME\"."
     exit 0
 fi
@@ -70,11 +70,11 @@ Add two repository secrets at:
 
 MSG
 printf '%s' "$CERT_B64" | pbcopy
-echo "1) Name: MACSLIDER_SIGNING_CERT   Value: copied to your clipboard — paste it and click Add secret."
+echo "1) Name: MONORAIL_SIGNING_CERT   Value: copied to your clipboard — paste it and click Add secret."
 open "$URL" 2> /dev/null || true
 read -r -p "   Press Return when that's saved… "
 printf '%s' "$PASSWORD" | pbcopy
-echo "2) Name: MACSLIDER_SIGNING_PASSWORD   Value: copied to your clipboard — paste it and click Add secret."
+echo "2) Name: MONORAIL_SIGNING_PASSWORD   Value: copied to your clipboard — paste it and click Add secret."
 open "$URL" 2> /dev/null || true
 read -r -p "   Press Return when that's saved… "
 printf '' | pbcopy

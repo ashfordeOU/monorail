@@ -1098,7 +1098,7 @@ count, a memory range, the number of displays, the system language, how Monorail
 which features are on. They **never** contain window titles, app names, file names, what you type or
 say, or anything from your screen, and the server doesn't store IP addresses. Monorail tells you
 about this the first time it starts. Turn it off in **Settings → Devices & Sharing → Trust → Share
-anonymous usage counts**, or with `defaults write com.ashforde.monorail MonorailNoUsageCounts -bool YES`.
+anonymous usage counts**, or with `defaults write org.ashforde.monorail MonorailNoUsageCounts -bool YES`.
 Exactly what's sent is shown in the app under **What's sent…**.
 
 Anything else happens only if you turn it on: webhooks, the phone remote, layout sync and iCloud sync. Update checks can be turned off in **Settings → General**. Settings → Devices & Sharing → Trust summarises all of this inside the app.
@@ -1125,7 +1125,7 @@ one last re-grant: remove Monorail from **Privacy & Security → Accessibility**
 with **–**, then open it again.)
 
 The certificate is self-signed and lives in two repository secrets,
-`MACSLIDER_SIGNING_CERT` and `MACSLIDER_SIGNING_PASSWORD`. To create or replace
+`MONORAIL_SIGNING_CERT` and `MONORAIL_SIGNING_PASSWORD` (the older `MACSLIDER_*` names still work). To create or replace
 it, run this on your Mac. It uses the GitHub CLI if it's installed, and
 otherwise walks you through pasting the two secrets:
 

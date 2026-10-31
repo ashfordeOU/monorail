@@ -493,7 +493,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.engine.reloadLayouts()
             self?.checkHandoff()
         }
-        budgetTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in self?.checkBudgets() }
+        budgetTimer = Timer.every(60) { [weak self] _ in self?.checkBudgets() }
         if safeMode {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
                 self?.toast.show("Safe mode · rules, scripts and automations are off until Monorail restarts")
@@ -505,6 +505,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in self?.checkNotch() }
+        watchDormancy()
+    }
+
+    /// Pollers rest while the screen sleeps, is locked or shows the screen saver.
+    private func watchDormancy() {
+        let workspace = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.screensDidSleepNotification, NSWorkspace.willSleepNotification,
+                     NSWorkspace.sessionDidResignActiveNotification] {
+            workspace.addObserver(forName: name, object: nil, queue: .main) { _ in Dormancy.isDormant = true }
+        }
+        for name in [NSWorkspace.screensDidWakeNotification, NSWorkspace.didWakeNotification,
+                     NSWorkspace.sessionDidBecomeActiveNotification] {
+            workspace.addObserver(forName: name, object: nil, queue: .main) { _ in Dormancy.isDormant = false }
+        }
+        let distributed = DistributedNotificationCenter.default()
+        for (name, dormant) in [("com.apple.screenIsLocked", true), ("com.apple.screensaver.didstart", true),
+                                ("com.apple.screenIsUnlocked", false), ("com.apple.screensaver.didstop", false)] {
+            distributed.addObserver(forName: Notification.Name(name), object: nil, queue: .main) { _ in
+                Dormancy.isDormant = dormant
+            }
+        }
+        NotificationCenter.default.addObserver(forName: .NSProcessInfoPowerStateDidChange, object: nil, queue: .main) {
+            [weak self] _ in self?.updateThrift()
+        }
+        updateThrift()
+    }
+
+    private func updateThrift() {
+        Dormancy.isThrifty = ProcessInfo.processInfo.isLowPowerModeEnabled || (store.settings.energySaver && Power.onBattery)
     }
 
     /// Settings as the engine should see them: managed values, safe mode, battery and sound packs.
@@ -547,6 +576,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         crashReporter.setEnabled(settings.crashReports)
         OverviewStyle.blurPrivate = settings.privacyBlur
         OverviewStyle.live = !(settings.energySaver && Power.onBattery)
+        updateThrift()
         if settings.dimFollowsPointer, dimMonitor == nil {
             dimMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
                 let location = NSEvent.mouseLocation
@@ -1019,7 +1049,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.toast.show("Time for a short break · look 20 feet away for 20 seconds")
         }
         // Focus mode counts towards the daily focus goal.
-        focusMinuteTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+        focusMinuteTimer = Timer.every(60) { [weak self] _ in
             guard let self, self.engine.isFocusMode, !self.pomodoro.isRunning else { return }
             self.stats.addFocusMinute()
             let goal = self.store.settings.dailyFocusGoal
@@ -1172,7 +1202,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         weekly.isEnabled = { [weak self] in self?.store.settings.weeklySummary ?? false }
         weekly.start()
         // Once a minute, note which apps share slides (for Insights).
-        statsTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+        statsTimer = Timer.every(60) { [weak self] _ in
             guard let self, self.engine.isRunning, !self.engine.isPaused else { return }
             self.stats.sample(slides: self.engine.slideApps(), slideCount: self.engine.slideCount)
             if let state = self.currentState() {
@@ -1183,7 +1213,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Polls until the user grants Accessibility, then starts.
     private func waitForPermission() {
-        permissionTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
+        permissionTimer = Timer.every(1.5) { [weak self] _ in
             guard Accessibility.isTrusted(prompt: false) else { return }
             self?.startEngine()
         }
@@ -1998,10 +2028,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if engine.isFocusMode { title += " ◉" }
             if engine.isRecording { title += " ● REC" }
             if store.settings.menuBarShowsApp, let app = engine.focusedAppName { title += " \(app)" }
-            if store.settings.menuBarShowsTitle,
-                let focused = engine.allWindowSummaries().first(where: { $0.isFocused }), !focused.title.isEmpty
-            {
-                title += " " + (focused.title.count > 32 ? String(focused.title.prefix(31)) + "…" : focused.title)
+            if store.settings.menuBarShowsTitle, let focused = engine.lastFocusedTitle {
+                title += " " + (focused.count > 32 ? String(focused.prefix(31)) + "…" : focused)
             }
             if let statusExtra { title += " \(statusExtra)" }
             button.title = title
@@ -2022,10 +2050,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if store.settings.menuBarShowsApp, let app = engine.focusedAppName { title = " \(app) ·" + title }
             if engine.isFocusMode { title = " ◉" + title }
             if engine.isRecording { title = " ● REC" + title }
-            if store.settings.menuBarShowsTitle,
-                let focused = engine.allWindowSummaries().first(where: { $0.isFocused }), !focused.title.isEmpty
-            {
-                let short = focused.title.count > 32 ? String(focused.title.prefix(31)) + "…" : focused.title
+            if store.settings.menuBarShowsTitle, let focused = engine.lastFocusedTitle {
+                let short = focused.count > 32 ? String(focused.prefix(31)) + "…" : focused
                 title = " \(short) ·" + title
             }
             if let statusExtra { title = " \(statusExtra) ·" + title }

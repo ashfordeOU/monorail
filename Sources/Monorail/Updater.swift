@@ -46,7 +46,7 @@ final class Updater: ObservableObject {
         timer?.invalidate()
         timer = nil
         guard enabled else { return }
-        timer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in self?.checkIfDue() }
+        timer = Timer.every(3600) { [weak self] _ in self?.checkIfDue() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in self?.checkIfDue() }
     }
 

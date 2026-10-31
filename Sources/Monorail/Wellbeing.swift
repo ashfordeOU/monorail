@@ -34,7 +34,7 @@ final class DeepWork {
             app.hide()
             self.onBlocked(app.localizedName ?? id)
         }
-        timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+        timer = Timer.every(30) { [weak self] _ in
             guard let self, let endsAt = self.endsAt, Date() >= endsAt else { return }
             self.stop()
         }
@@ -83,10 +83,11 @@ final class ScreenShareWatch {
             if isSharing { isSharing = false; onChange(false) }
             return
         }
-        timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.check() }
+        timer = Timer.every(2) { [weak self] _ in self?.check() }
     }
 
     private func check() {
+        guard !Dormancy.shouldSkip() else { return }
         guard let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
             as? [[String: Any]]
         else { return }
@@ -115,10 +116,11 @@ final class WorkspaceClipboard {
         timer?.invalidate()
         timer = nil
         guard on else { return }
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.poll() }
+        timer = Timer.every(1) { [weak self] _ in self?.poll() }
     }
 
     private func poll() {
+        guard !Dormancy.isDormant else { return }
         let pasteboard = NSPasteboard.general
         guard pasteboard.changeCount != lastCount else { return }
         lastCount = pasteboard.changeCount
@@ -386,7 +388,7 @@ final class CalendarFocus {
         timer?.invalidate()
         timer = nil
         guard on else { return }
-        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in self?.check() }
+        timer = Timer.every(60) { [weak self] _ in self?.check() }
         check()
     }
 

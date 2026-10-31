@@ -4,6 +4,18 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] - 2026-10-31
+
+Lighter on energy.
+
+### Changed
+- **Timers can be grouped:** every repeating timer gives macOS some leeway, so its wake-ups are grouped with other apps' instead of waking the Mac separately.
+- **Monorail rests:** watching for screen sharing, AI agents, the clipboard and the Dock pauses completely while the screen is asleep or locked, or the screen saver is on.
+- **Half-rate on low power:** in Low Power Mode, or on battery with the energy saver on, those checks run half as often, animation drops to 30 fps and live previews pause.
+- **Fewer checks after layouts:** only windows that actually moved are checked to see whether they landed where they should, instead of every visible window.
+- **Cheaper menu bar title:** showing the window title in the menu bar no longer looks up every window.
+- **Energy report:** Settings → About shows how much CPU time and memory Monorail has used since it opened.
+
 ## [1.2.0] - 2026-10-31
 
 Monorail understands what you want, learns how you work, knows when your AI agent needs you, keeps private windows out of screen shares, and comes in 27 themes.

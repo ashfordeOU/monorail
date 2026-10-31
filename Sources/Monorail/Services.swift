@@ -23,7 +23,7 @@ final class MeetingHelper {
         let begin = { [weak self] in
             DispatchQueue.main.async {
                 self?.timer?.invalidate()
-                self?.timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { _ in self?.check() }
+                self?.timer = Timer.every(20) { _ in self?.check() }
                 self?.check()
             }
         }

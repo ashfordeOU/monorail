@@ -28,7 +28,7 @@ final class AutoRules: NSObject, CLLocationManagerDelegate {
         timer?.invalidate()
         lastNetwork = Self.currentNetwork()
         lastDisplays = Set(NSScreen.screens.map(\.localizedName))
-        timer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in self?.check() }
+        timer = Timer.every(15) { [weak self] _ in self?.check() }
     }
 
     /// The Wi-Fi network's name. macOS only tells apps it after Location
@@ -120,7 +120,7 @@ final class PictureInPicture {
             open: { [weak self] in self?.focus(id) },
             close: { [weak self] in self?.toggle(id, title: title) }))
         panel.orderFrontRegardless()
-        let timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self, weak model] _ in
+        let timer = Timer.every(1) { [weak self, weak model] _ in
             WindowThumbnails.capture([id]) { images in
                 guard let model else { return }
                 if let image = images[id] {

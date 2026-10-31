@@ -257,7 +257,7 @@ final class SettingsStore: ObservableObject {
         guard settings.syncThroughICloud else { return }
         pullFromCloud()
         pushToCloud()
-        cloudPullTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in self?.pullFromCloud() }
+        cloudPullTimer = Timer.every(60) { [weak self] _ in self?.pullFromCloud() }
     }
 }
 

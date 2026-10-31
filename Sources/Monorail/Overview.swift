@@ -47,7 +47,7 @@ final class OverviewModel: ObservableObject {
 
     func startLiveRefresh() {
         refresh?.invalidate()
-        refresh = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.loadThumbnails() }
+        refresh = Timer.every(2) { [weak self] _ in self?.loadThumbnails() }
     }
 
     func stopLiveRefresh() {

@@ -178,7 +178,8 @@ final class Engine {
         loadState()
         registerWorkspaceNotifications()
         sync()
-        attentionTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { [weak self] _ in
+        attentionTimer = Timer.every(3) { [weak self] _ in
+            guard !Dormancy.shouldSkip() else { return }
             self?.refreshAttention()
             self?.refreshAgents()
         }
@@ -193,7 +194,7 @@ final class Engine {
                 self?.onNotice("Monorail quit unexpectedly last time · every window is back on screen")
             }
         }
-        idleTimer = Timer.scheduledTimer(withTimeInterval: 600, repeats: true) { [weak self] _ in self?.parkIdleWorkspaces() }
+        idleTimer = Timer.every(600) { [weak self] _ in self?.parkIdleWorkspaces() }
         log.info("Engine started with \(self.windows.count) windows")
     }
 
@@ -1573,6 +1574,10 @@ final class Engine {
 
         applyComfortTweaks(&targets)
         for id in skip { targets[id] = nil }
+        // Only windows that actually move need checking afterwards.
+        for (id, target) in targets where !(windows[id]?.lastApplied?.isClose(to: target.to, tolerance: 0.5) ?? false) {
+            movedSinceCheck.insert(id)
+        }
 
         if animated && settings.animate && !reduceMotion {
             disableEnhancedUI(for: Set(targets.keys.compactMap { windows[$0]?.pid }))
@@ -1609,7 +1614,11 @@ final class Engine {
             || Quirks.edgeShy.contains { $0.hasSuffix(".") && key.hasPrefix($0) }
     }
 
+    /// Windows moved since the last check of where they really ended up.
+    private var movedSinceCheck: Set<WindowID> = []
+
     private func scheduleEdgeCheck(after delay: Double) {
+        guard !movedSinceCheck.isEmpty, !Dormancy.isDormant else { return }
         edgeCheck?.cancel()
         let work = DispatchWorkItem { [weak self] in self?.checkParkedWindows() }
         edgeCheck = work
@@ -1620,8 +1629,10 @@ final class Engine {
     /// remember the app and park its windows in the corner from now on.
     private func checkParkedWindows() {
         guard isRunning, !isPaused else { return }
+        let moved = movedSinceCheck
+        movedSinceCheck.removeAll()
         var found = false
-        for (id, uuid) in parkedOnEdge {
+        for (id, uuid) in parkedOnEdge where moved.contains(id) {
             guard let window = windows[id], !isEdgeShy(window),
                 let display = displays.first(where: { $0.uuid == uuid }), let actual = window.element.frame
             else { continue }
@@ -1634,7 +1645,7 @@ final class Engine {
                 log.info("\(window.appName, privacy: .public) keeps parked windows on screen; parking it in the corner")
             }
         }
-        found = learnMinimumWidths() || found
+        found = learnMinimumWidths(only: moved) || found
         if found { layout(animated: false) }
     }
 
@@ -1642,7 +1653,7 @@ final class Engine {
     /// insist on, so it never spills over the next one. Windows that died are let go.
     private var minimumWidths: [String: Double] = [:]
 
-    private func learnMinimumWidths() -> Bool {
+    private func learnMinimumWidths(only moved: Set<WindowID>) -> Bool {
         var changed = false
         var dead: [WindowID] = []
         for display in displays {
@@ -1650,7 +1661,7 @@ final class Engine {
             guard var strip = strips[key] else { continue }
             // Fit mode sizes slides itself (and takes learned minimums into account).
             let fit = settings.isFit(key.workspace)
-            for column in strip.columns where column.windows.count == 1 && !column.isFullWidth {
+            for column in strip.columns where column.windows.count == 1 && !column.isFullWidth && moved.contains(column.windows[0]) {
                 let id = column.windows[0]
                 guard let window = windows[id], let target = window.lastApplied else { continue }
                 guard window.element.isAlive else {
@@ -3589,6 +3600,13 @@ final class Engine {
 
     /// The focused window's app, for the menu bar.
     var focusedAppName: String? { focusedWindowID().flatMap { windows[$0]?.appName } }
+
+    /// The last focused window's title, from Monorail's own record (no system calls), for the menu bar.
+    var lastFocusedTitle: String? {
+        guard let id = focusHistory.last, let window = windows[id] else { return nil }
+        let title = displayTitle(window)
+        return title.isEmpty ? nil : title
+    }
 
     // MARK: - Power moves
 

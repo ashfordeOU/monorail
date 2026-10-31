@@ -34,7 +34,7 @@ final class Pomodoro {
         lastMinute = -1
         onPhase(phase == .focus)
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.tick() }
+        timer = Timer.every(1) { [weak self] _ in self?.tick() }
         tick()
     }
 

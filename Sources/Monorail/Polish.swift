@@ -137,7 +137,7 @@ final class WeeklySummary {
     private static let sentKey = "weeklySummarySent"
 
     func start() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1800, repeats: true) { [weak self] _ in self?.check() }
+        timer = Timer.every(1800) { [weak self] _ in self?.check() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 60) { [weak self] in self?.check() }
     }
 

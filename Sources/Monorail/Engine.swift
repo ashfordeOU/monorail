@@ -4360,18 +4360,18 @@ final class Engine {
     /// The workspace's layout as JSON, to paste on another Mac or share.
     func layoutJSON() -> String? {
         guard let (_, key) = activeContext(), let strip = strips[key], !strip.isEmpty else { return nil }
-        let layout = SavedLayout(name: workspaceTitle(key.workspace - base), workspaces: [0: strip.columns.map {
+        let saved = SavedLayout(name: workspaceTitle(key.workspace - base), workspaces: [0: strip.columns.map {
             SavedColumn($0, fingerprint: fingerprint(of:))
         }])
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        return (try? encoder.encode(layout)).flatMap { String(data: $0, encoding: .utf8) }
+        return (try? encoder.encode(saved)).flatMap { String(data: $0, encoding: .utf8) }
     }
 
     /// Arranges this workspace's windows like a copied layout.
     func applyLayoutJSON(_ text: String) -> Bool {
-        guard let data = text.data(using: .utf8), let layout = try? JSONDecoder().decode(SavedLayout.self, from: data),
-            let columns = layout.workspaces.values.first, let (display, key) = activeContext()
+        guard let data = text.data(using: .utf8), let saved = try? JSONDecoder().decode(SavedLayout.self, from: data),
+            let columns = saved.workspaces.values.first, let (display, key) = activeContext()
         else { return false }
         recordHistory()
         let candidates = windows.values.filter { $0.key?.screen == key.screen }

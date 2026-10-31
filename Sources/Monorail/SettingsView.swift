@@ -1879,16 +1879,23 @@ private struct AboutPane: View {
             }
             Text("\(Brand.full) · © Ashforde OÜ · Licensed under the GNU AGPL v3.0")
                 .font(.footnote).foregroundStyle(.secondary)
-            Button("Copy Diagnostics") { NotificationCenter.default.post(name: .monorailCopyDiagnostics, object: nil) }
-                .help("A short report (no window titles) to paste into a bug report")
-            Button("Show Log") { LogViewer.show() }
             if let log = UsageBridge.log {
                 UsageSection(log: log).frame(maxWidth: 620)
             }
-            Button("Reveal settings file") {
-                NSWorkspace.shared.activateFileViewerSelecting([SettingsStore.fileURL])
+            // Tools for troubleshooting and power users, out of the way until wanted.
+            DisclosureGroup("Advanced") {
+                HStack(spacing: 10) {
+                    Button("Copy Diagnostics") { NotificationCenter.default.post(name: .monorailCopyDiagnostics, object: nil) }
+                        .help("A short report (no window titles) to paste into a bug report")
+                    Button("Show Log") { LogViewer.show() }
+                    Button("Reveal Settings File") {
+                        NSWorkspace.shared.activateFileViewerSelecting([SettingsStore.fileURL])
+                    }
+                    .help("settings.json: edit it in any text editor and Monorail picks up the change when you save")
+                }
+                .padding(.top, 6)
             }
-            .buttonStyle(.link)
+            .frame(maxWidth: 620)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()

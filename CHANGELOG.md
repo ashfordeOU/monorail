@@ -20,6 +20,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
   - Several opened at once are staggered.
   - If an app or a drag later leaves one mostly off screen, it comes back once it stops moving.
   - Positions are remembered per kind of window (settings, panels, other windows), and Get Info windows are never piled into one remembered spot.
+- **A tidier About pane.** Copy Diagnostics, Show Log and Reveal Settings File are in a collapsed **Advanced** section.
 - **A shorter menu bar menu.** Windows are listed in a **Windows** submenu, and long titles are shortened. Settings → General → **List windows right in the menu** brings back the inline list.
 - **Fewer redraws:** the focus border, dimming and tab bars are redrawn only when something about them changed.
 

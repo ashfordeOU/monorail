@@ -1,0 +1,22 @@
+{
+  "edgeShy": [
+    "com.tinyspeck.slackmacgap",
+    "com.hnc.Discord",
+    "com.microsoft.teams2",
+    "notion.id",
+    "com.spotify.client",
+    "com.anthropic.claudefordesktop",
+    "com.openai.chat",
+    "md.obsidian",
+    "com.figma.Desktop",
+    "com.linear",
+    "com.todesktop.230313mzl4w4u92",
+    "com.microsoft.VSCode",
+    "net.whatsapp.WhatsApp",
+    "com.electron."
+  ],
+  "float": [
+    "com.apple.calculator",
+    "com.apple.ScreenSharing"
+  ]
+}

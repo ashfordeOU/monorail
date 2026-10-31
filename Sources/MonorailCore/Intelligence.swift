@@ -426,3 +426,35 @@ public enum AgentWatch {
         return .working
     }
 }
+
+// MARK: - App quirks
+
+/// What Monorail knows about apps that bend the rules, built in and updated
+/// from the repository's quirks.json.
+public enum Quirks {
+    /// Apps that keep part of a window on screen when parked at the edge (often Electron).
+    public static var edgeShy: Set<String> = [
+        "com.tinyspeck.slackmacgap", "com.hnc.Discord", "com.microsoft.teams2", "notion.id", "com.spotify.client",
+        "com.anthropic.claudefordesktop", "com.openai.chat", "md.obsidian", "com.figma.Desktop", "com.linear",
+        "com.todesktop.230313mzl4w4u92", "com.microsoft.VSCode", "net.whatsapp.WhatsApp", "com.electron.",
+    ]
+
+    /// The shape of quirks.json.
+    public struct File: Codable, Equatable, Sendable {
+        public var edgeShy: [String]
+        public var float: [String]?
+        public init(edgeShy: [String], float: [String]? = nil) {
+            self.edgeShy = edgeShy
+            self.float = float
+        }
+    }
+
+    /// Merges a downloaded quirks file; returns how many new apps it taught.
+    @discardableResult
+    public static func merge(_ data: Data) -> Int {
+        guard let file = try? JSONDecoder().decode(File.self, from: data) else { return 0 }
+        let before = edgeShy.count
+        edgeShy.formUnion(file.edgeShy)
+        return edgeShy.count - before
+    }
+}

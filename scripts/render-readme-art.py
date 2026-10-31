@@ -413,26 +413,140 @@ def snap_picker():
     return card(W, H, "".join(parts), "The snap layouts picker")
 
 
+THEMES = {
+    "Classic": [
+        ("Vivid", "5B8FFF B06BFF FF619E FF9445 45D18C", "21175C 5C2180"),
+        ("Ocean", "339EFF 29D1DB 5973FA 4DE6B8 8CBFFF", "081F4D 0A406B"),
+        ("Sunset", "FF8C4D FF5C80 D959D9 FFC74D F27359", "4D1433 73243D"),
+        ("Forest", "4DBF73 99CC4D D9B359 40998C B38C59", "0D2E1F 1A4026"),
+        ("Monochrome", "EBEBEB C7C7C7 A3A3A3 DBDBDB B3B3B3", "1A1A1A 292929"),
+        ("Ashforde", "D9AD52 5478DB F0CC80 739EF2 C78C47", "0A122E 121F47"),
+        ("Aurora", "2EE6A6 3DB8FF 9B7CFF 5CF2D6 7AA7FF", "061A2B 1A1446"),
+        ("Nord", "88C0D0 81A1C1 5E81AC 8FBCBB A3BE8C", "2E3440 434C5E"),
+        ("Dracula", "BD93F9 FF79C6 8BE9FD 50FA7B FFB86C", "21222C 343746"),
+        ("Solarized", "268BD2 2AA198 859900 B58900 CB4B16", "002B36 0A3F4C"),
+        ("Rosé Pine", "EBBCBA C4A7E7 9CCFD8 31748F F6C177", "191724 26233A"),
+        ("Mint", "3EB489 66D9A8 98F5C4 2A9D8F 7FD8BE", "0B2A22 123F35"),
+        ("Lavender", "B497F0 D4B3FF 9A7AE6 E2C6FF 8E6FD8", "1E1530 2A1D45"),
+        ("Ember", "FF6B35 F7931E FFC15E E4572E FF8C42", "1F0A05 3A1208"),
+        ("Glacier", "A8DADC 7FC8F8 CDEFFF 5FA8D3 BDE0FE", "0A1A2A 10283E"),
+        ("Desert Sand", "E9C46A F4A261 E76F51 D4A373 CCD5AE", "2A1F14 3B2B1A"),
+    ],
+    "Seasonal": [
+        ("Seasons (auto)", "FFB7C5 FFD166 E67700 BBDEFB D62828", "1F2A1C 0D1B2A"),
+        ("Spring Bloom", "FFB7C5 B5E48C FFD6E0 99D98C FFE5EC", "1F2A1C 3A2A33"),
+        ("Summer Sun", "FFD166 06D6A0 118AB2 EF476F FFB703", "06283D 0E4A6B"),
+        ("Autumn Leaves", "D9480F E67700 F59F00 A0522D C2410C", "2A1408 3A1C0C"),
+        ("Winter Frost", "E3F2FD BBDEFB 90CAF9 CFD8DC B3E5FC", "0D1B2A 1B263B"),
+        ("Festive", "D62828 2A9D8F F4D35E C1121F 006D77", "1A0B0B 0F2A1F"),
+    ],
+    "Unique": [
+        ("Synthwave", "FF2E97 00F0FF FFB800 9D4EDD FF6EC7", "12002B 2D0B4E"),
+        ("Phosphor Terminal", "33FF66 22CC55 66FF99 19A347 99FFBB", "010A03 03140A"),
+        ("Ink &amp; Paper", "1F1F1F 5C5C5C 8C1C13 2E4057 6B4E2E", "EFE9DD E8E0D0"),
+        ("Nebula", "7B2FF7 F107A3 00C2FF FF7AF5 4D96FF", "070214 140533"),
+        ("Holographic", "FF9AA2 FFDAC1 E2F0CB B5EAD7 C7CEEA", "1C1B2E 2A2440"),
+    ],
+}
+
+
 def themes():
-    W, H = 1280, 360
-    palettes = [("Vivid", ["#5B8FFF", "#B06BFF", "#FF619E", "#FF9445", "#45D18C"], ("#21175C", "#5C2180")),
-                ("Ocean", ["#339EFF", "#29D1DB", "#5973FA", "#4DE6B8", "#8CBFFF"], ("#081F4D", "#0A406B")),
-                ("Sunset", ["#FF8C4D", "#FF5C80", "#D959D9", "#FFC74D", "#F27359"], ("#4D1433", "#73243D")),
-                ("Forest", ["#4DBF73", "#99CC4D", "#D9B359", "#40998C", "#B38C59"], ("#0D2E1F", "#1A4026")),
-                ("Monochrome", ["#EBEBEB", "#C7C7C7", "#A3A3A3", "#DBDBDB", "#B3B3B3"], ("#1A1A1A", "#292929"))]
-    cw, gap = 220, 22
-    x0 = (W - (5 * cw + 4 * gap)) / 2
-    parts = [f'<text x="{W / 2}" y="46" text-anchor="middle" font-family="{FONT}" font-size="15" font-weight="700" fill="{MUTED}" letter-spacing="2">FIVE THEMES · SETTINGS → APPEARANCE</text>']
-    for n, (name, colors, (a, b)) in enumerate(palettes):
-        x = x0 + n * (cw + gap)
-        parts.append(f'<defs><linearGradient id="t{n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{a}"/><stop offset="1" stop-color="{b}"/></linearGradient></defs>')
-        parts.append(f'<rect x="{x}" y="70" width="{cw}" height="200" rx="16" fill="url(#t{n})" filter="url(#shadow)"/>')
-        for i, c in enumerate(colors):
-            parts.append(f'<rect x="{x + 16}" y="{88 + i * 32}" width="{cw - 32}" height="24" rx="7" fill="{c}" opacity="{0.28 if i else 0.4}"/>')
-            parts.append(f'<circle cx="{x + 30}" cy="{100 + i * 32}" r="5" fill="{c}"/>')
-            parts.append(f'<rect x="{x + 46}" y="{94 + i * 32}" width="{40 + (i * 23) % 60}" height="12" rx="6" fill="{c}" opacity="0.8"/>')
-        parts.append(f'<text x="{x + cw / 2}" y="300" text-anchor="middle" font-family="{FONT}" font-size="17" font-weight="700" fill="{INK}">{name}</text>')
-    return card(W, H, "".join(parts), "Colour themes")
+    W = 1280
+    cw, ch, gap, cols = 138, 92, 14, 8
+    x0 = (W - (cols * cw + (cols - 1) * gap)) / 2
+    parts = [f'<text x="{W / 2}" y="46" text-anchor="middle" font-family="{FONT}" font-size="15" font-weight="700" fill="{MUTED}" letter-spacing="2">27 THEMES · SETTINGS → APPEARANCE</text>']
+    y, n = 74, 0
+    for group, entries in THEMES.items():
+        parts.append(f'<text x="{x0}" y="{y + 14}" font-family="{FONT}" font-size="13" font-weight="800" fill="{INK}" letter-spacing="1.5">{group.upper()}</text>')
+        y += 26
+        for i, (name, colors, grad) in enumerate(entries):
+            a, b = grad.split()
+            x = x0 + (i % cols) * (cw + gap)
+            yy = y + (i // cols) * (ch + gap)
+            parts.append(f'<defs><linearGradient id="t{n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#{a}"/><stop offset="1" stop-color="#{b}"/></linearGradient></defs>')
+            parts.append(f'<rect x="{x}" y="{yy}" width="{cw}" height="{ch}" rx="14" fill="url(#t{n})" filter="url(#shadow)"/>')
+            for j, c in enumerate(colors.split()):
+                parts.append(f'<circle cx="{x + 18 + j * 17}" cy="{yy + 24}" r="6" fill="#{c}"/>')
+            light = name == "Ink &amp; Paper"
+            parts.append(f'<text x="{x + 12}" y="{yy + ch - 16}" font-family="{FONT}" font-size="13" font-weight="700" fill="{"#2A1430" if light else "#fff"}">{name}</text>')
+            n += 1
+        rows = (len(entries) + cols - 1) // cols
+        y += rows * (ch + gap) + 14
+    H = int(y + 36)
+    return card(W, H, "".join(parts), "27 colour themes: classic, seasonal and unique")
+
+
+def smart():
+    W, H = 1280, 560
+    px, py, pw = 70, 60, 640
+    rows = [("Do it: Slack and Mail side by side on workspace 3", "From what you typed", True),
+            ("Start “Writing”", "Your template that matches what you’re doing", False),
+            ("Go to the waiting agent (Terminal)", "Needs your approval", False),
+            ("Next: Figma", "Where you usually go from here", False),
+            ("Always give Xcode two thirds of the screen", "Suggested from how you work", False)]
+    parts = [f'<rect x="{px}" y="{py}" width="{pw}" height="{86 + len(rows) * 58}" rx="16" fill="#fff" filter="url(#shadow)"/>',
+             f'<text x="{px + 24}" y="{py + 42}" font-family="{FONT}" font-size="19" fill="{INK}">slack and mail side by side on 3<tspan fill="{PINK}">|</tspan></text>',
+             f'<rect x="{px}" y="{py + 62}" width="{pw}" height="1" fill="#000" opacity="0.08"/>']
+    y = py + 76
+    for title, sub, sel in rows:
+        if sel:
+            parts.append(f'<rect x="{px + 8}" y="{y}" width="{pw - 16}" height="50" rx="8" fill="{PINK}"/>')
+        color = "#fff" if sel else INK
+        parts.append(f'<text x="{px + 24}" y="{y + 22}" font-family="{FONT}" font-size="15" font-weight="600" fill="{color}">✦ {title}</text>')
+        parts.append(f'<text x="{px + 24}" y="{y + 40}" font-family="{FONT}" font-size="12" fill="{color}" opacity="0.65">{sub}</text>')
+        y += 58
+    # The agent card and the notice
+    ax, ay = 770, 80
+    parts.append(f'<rect x="{ax}" y="{ay}" width="440" height="250" rx="16" fill="#1B1330" filter="url(#shadow)"/>')
+    parts.append(f'<circle cx="{ax + 22}" cy="{ay + 22}" r="6" fill="#FF5F57"/><circle cx="{ax + 42}" cy="{ay + 22}" r="6" fill="#FEBC2E"/><circle cx="{ax + 62}" cy="{ay + 22}" r="6" fill="#28C840"/>')
+    parts.append(f'<text x="{ax + 90}" y="{ay + 27}" font-family="{FONT}" font-size="13" fill="#fff" opacity="0.7">✳ Claude Code — needs approval</text>')
+    for i, line in enumerate(["› Edit Sources/Engine.swift", "  + 42 lines, − 7 lines", "", "Do you want to make this edit?", "❯ 1. Yes   2. No"]):
+        parts.append(f'<text x="{ax + 24}" y="{ay + 70 + i * 26}" font-family="Menlo, monospace" font-size="14" fill="#E9E3FF">{line}</text>')
+    parts.append(f'<rect x="{ax + 10}" y="{ay + 280}" width="420" height="52" rx="26" fill="{DEEP}" opacity="0.92"/>')
+    parts.append(f'<text x="{ax + 220}" y="{ay + 312}" text-anchor="middle" font-family="{FONT}" font-size="14" fill="#fff">🔔 Terminal: an agent is waiting for you</text>')
+    parts.append(f'<text x="{W / 2}" y="{H - 34}" text-anchor="middle" font-family="{FONT}" font-size="16" font-weight="600" fill="{INK}">Type a sentence or what you’re about to do · Monorail learns how you work, on your Mac</text>')
+    return card(W, H, "".join(parts), "Smart Monorail: sentences in the palette, intents, waiting AI agents and suggested rules")
+
+
+def new_in_12():
+    W, H = 1280, 812
+    items = [("Say it", "“Safari two thirds” in the palette or by voice", WS[0]),
+             ("Intent workspaces", "“Write the Q3 report” opens your setup", WS[1]),
+             ("AI agent alerts", "Know when Claude Code or Codex is waiting", WS[2]),
+             ("Learns your habits", "Stages the next window, suggests rules", WS[3]),
+             ("Tall slides", "Windows full height, scroll up and down", WS[4]),
+             ("Elastic focus", "The slide you’re in grows, others give way", "#33CCDB"),
+             ("Deep work", "Distracting apps stay hidden until it ends", WS[0]),
+             ("Safe screen sharing", "Private windows step aside when you share", WS[1]),
+             ("Share one slide", "A window of just this slide for your call", WS[2]),
+             ("Demo zoom &amp; ink", "A lens, drawing and keystrokes on screen", WS[3]),
+             ("Vim mode", "3l, gg, G, dd: a normal mode for windows", WS[4]),
+             ("Phone remote", "Scan a QR code, slide from your phone", "#33CCDB"),
+             ("MIDI &amp; controllers", "Pads, gamepads and Stream Deck", WS[0]),
+             ("Folders to workspaces", "Documents open where their project lives", WS[1]),
+             ("Display memory", "Unplug and replug: everything goes back", WS[2]),
+             ("27 themes", "Classic, seasonal and unique, plus Seasons", "#33CCDB")]
+    cw, ch, gap = 280, 150, 22
+    x0 = (W - (4 * cw + 3 * gap)) / 2
+    parts = [f'<text x="{W / 2}" y="52" text-anchor="middle" font-family="{FONT}" font-size="28" font-weight="800" fill="{INK}">New in 1.2</text>']
+    for n, (title, sub, color) in enumerate(items):
+        x = x0 + (n % 4) * (cw + gap)
+        y = 84 + (n // 4) * (ch + gap)
+        parts.append(f'<rect x="{x}" y="{y}" width="{cw}" height="{ch}" rx="16" fill="#fff" filter="url(#shadow)"/>')
+        parts.append(f'<rect x="{x + 20}" y="{y + 20}" width="40" height="40" rx="11" fill="{color}" opacity="0.18"/>')
+        parts.append(f'<rect x="{x + 30}" y="{y + 30}" width="20" height="20" rx="5" fill="{color}"/>')
+        parts.append(f'<text x="{x + 20}" y="{y + 92}" font-family="{FONT}" font-size="18" font-weight="800" fill="{INK}">{title}</text>')
+        words, line, lines = sub.split(), "", []
+        for word in words:
+            if len(line) + len(word) > 30:
+                lines.append(line)
+                line = word
+            else:
+                line = f"{line} {word}".strip()
+        lines.append(line)
+        for i, text in enumerate(lines[:2]):
+            parts.append(f'<text x="{x + 20}" y="{y + 116 + i * 18}" font-family="{FONT}" font-size="13" fill="{MUTED}">{text}</text>')
+    return card(W, H, "".join(parts), "New in 1.2: sentences, intents, AI agent alerts, tall slides, deep work, safe sharing and more")
 
 
 def choice():
@@ -488,7 +602,7 @@ def features():
     items = [("Radial menu", "⌃⌥E, point at a side, let go: snapped", WS[2]),
              ("Drag anywhere", "Hold ⌃⌥ and drag inside any window", WS[3]),
              ("Title bar swipes", "Two fingers on a title bar move it along", WS[4]),
-             ("Status bars & scripts", "state.json, events and live-reloading config", "#33CCDB"),("Profiles", "Work and home, each with its own workspaces", WS[0]),
+             ("Status bars &amp; scripts", "state.json, events and live-reloading config", "#33CCDB"),("Profiles", "Work and home, each with its own workspaces", WS[0]),
              ("Marks", "⌃⌥; then a letter jumps back to a window", WS[1]),
              ("Scratchpad", "One window drops in and hides with ⌃⌥`", WS[2]),
              ("App pairs", "Open two apps side by side in one go", WS[3]),
@@ -528,7 +642,7 @@ for name, svg in [("banner.svg", banner()), ("how-it-works.svg", how_it_works())
                   ("overview.svg", overview()), ("slider.svg", slider()), ("menubar.svg", menubar()),
                   ("palette.svg", palette()), ("focus.svg", focus_mode()), ("snap.svg", snap_picker()),
                   ("themes.svg", themes()), ("choice.svg", choice()), ("insights.svg", insights()),
-                  ("features.svg", features())]:
+                  ("features.svg", features()), ("smart.svg", smart()), ("new-in-1.2.svg", new_in_12())]:
     with open(os.path.join(OUT, name), "w") as f:
         f.write(svg)
     print("Wrote", os.path.join(OUT, name))

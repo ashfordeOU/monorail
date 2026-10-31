@@ -213,7 +213,9 @@ final class SliderBarController {
                     self.tip.hide()
                     return
                 }
-                self.tip.show(names[index], color: WorkspaceColor.color(index), over: panel, edge: self.edge)
+                // The name now shows inside the bar itself (see SliderBarView.hoveredName).
+                _ = (names[index], panel)
+                self.tip.hide()
             }
             .store(in: &subscriptions)
         panel.contentView = NSHostingView(rootView: view)
@@ -325,6 +327,8 @@ private struct SliderBarView: View {
                             .animation(.easeOut(duration: 0.12), value: model.hoveredWorkspace)
                             .contentShape(Rectangle().inset(by: -4))
                             .onTapGesture { actions.switchWorkspace(index) }
+                            .accessibilityLabel("Workspace \(name)")
+                            .accessibilityAddTraits(.isButton)
                             .onHover { hovering in
                                 if hovering {
                                     model.hoveredWorkspace = index
@@ -341,6 +345,7 @@ private struct SliderBarView: View {
             }
             GeometryReader { geometry in
                 track(size: geometry.size)
+                    .overlay(alignment: .leading) { hoveredName }
                     .onAppear { model.trackFrame = geometry.frame(in: .global) }
                     .onChange(of: geometry.size) { _ in model.trackFrame = geometry.frame(in: .global) }
             }
@@ -360,6 +365,27 @@ private struct SliderBarView: View {
         .onHover { hovering in
             model.isHovering = hovering
             if !hovering { onInteraction() }
+        }
+    }
+
+    /// The name of the workspace dot under the pointer, over the start of the track.
+    @ViewBuilder
+    private var hoveredName: some View {
+        if let index = model.hoveredWorkspace, let map = model.map {
+            let name = map.workspaceNames.indices.contains(index) ? map.workspaceNames[index] : "Workspace \(index + 1)"
+            HStack(spacing: 6) {
+                Circle().fill(WorkspaceColor.color(index)).frame(width: 8, height: 8)
+                Text(name).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                Text(index == map.workspace ? "· here" : "· click to go").font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 5)
+            .background(.regularMaterial, in: Capsule())
+            .overlay(Capsule().strokeBorder(WorkspaceColor.color(index).opacity(0.6), lineWidth: 1))
+            .shadow(color: .black.opacity(0.2), radius: 4, y: 1)
+            .padding(.leading, 4)
+            .allowsHitTesting(false)
+            .transition(.opacity)
+            .accessibilityHidden(true)
         }
     }
 

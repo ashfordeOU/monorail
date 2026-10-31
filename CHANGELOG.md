@@ -6,6 +6,12 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [1.3.1] - 2026-10-31
 
+### Fixed
+- **Get Info and other floating windows no longer open out of view.**
+  - Apps open these panels next to their main window, which may be waiting off screen. A floating window that doesn't fit on screen is now centred on the display you're working on, and windows that open together are staggered.
+  - A floating window that already fits stays exactly where the app put it.
+  - A remembered position is only reused if it fits on screen, and never for fixed-size panels.
+
 ### Changed
 - **The overview uses less energy.** Window previews are captured at the size the cards show (about a third fewer pixels), and the colourful backdrop is drawn once instead of on every frame.
 - **Measured on a MacBook (1.2.0 → 1.3.0, idle):** CPU went from 0.33% to 0.09% of one core, wake-ups from 18 to 0 per second, and memory from 272 MB to 47 MB.

@@ -2049,11 +2049,13 @@ final class Engine {
         let floats = rule?.float == true || element.hasFixedSize || !element.isSettable(kAXSizeAttribute)
             || ((small || settingsWindow) && rule == nil)
         if floats && !force {
-            // A floating window goes back where you last put this app's windows.
-            if settings.rememberFloatingPositions, let frame = floatingFrames[Self.appKey(window)],
-                displays.contains(where: { $0.frame.intersects(frame) })
-            {
-                element.setFrame(frame)
+            // A floating window goes back where you last put this app's floating windows (if it
+            // fits there), and is otherwise brought into view: apps open Get Info panels and the
+            // like next to their main window, which may be waiting off screen.
+            let remembered = settings.rememberFloatingPositions && !element.hasFixedSize
+                ? floatingFrames[Self.appKey(window)] : nil
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                self?.placeFloating(element, remembered: remembered)
             }
             return false
         }
@@ -2205,6 +2207,43 @@ final class Engine {
 
     /// Puts a new dialog (say, a file picker) over the window that opened it,
     /// centred near its top like a sheet, instead of wherever it appeared.
+    /// Staggers floating windows that open together (Get Info on several files).
+    private var floatCascade = 0
+    private var lastFloatPlaced = Date.distantPast
+
+    /// Makes sure a floating window is fully on screen: left alone if it already is,
+    /// otherwise centred (and staggered) on the display you're working on.
+    private func placeFloating(_ element: AXUIElement, remembered: CGRect?) {
+        guard isRunning, !isPaused, !element.isFullScreen, let frame = element.frame else { return }
+        func fits(_ rect: CGRect) -> Bool {
+            displays.contains { $0.visibleFrame.insetBy(dx: -2, dy: -2).contains(rect) }
+        }
+        if let remembered, fits(remembered), abs(remembered.width - frame.width) < 2 || !element.hasFixedSize {
+            element.setFrame(remembered)
+            return
+        }
+        guard !fits(frame) else { return }
+        guard let display = activeContext()?.0 ?? displayUnderMouse() ?? displays.first else { return }
+        let visible = display.visibleFrame
+        if Date().timeIntervalSince(lastFloatPlaced) > 3 { floatCascade = 0 }
+        lastFloatPlaced = Date()
+        let offset = CGFloat(floatCascade % 8) * 26
+        floatCascade += 1
+        var size = frame.size
+        if (size.width > visible.width || size.height > visible.height), !element.hasFixedSize {
+            size = CGSize(width: min(size.width, visible.width - 40), height: min(size.height, visible.height - 40))
+        }
+        var x = visible.midX - size.width / 2 + offset
+        var y = visible.midY - size.height / 2 + offset
+        x = min(max(x, visible.minX), max(visible.maxX - size.width, visible.minX))
+        y = min(max(y, visible.minY), max(visible.maxY - size.height, visible.minY))
+        if size != frame.size {
+            element.setFrame(CGRect(x: x, y: y, width: size.width, height: size.height))
+        } else {
+            element.setPosition(CGPoint(x: x, y: y))
+        }
+    }
+
     private func centerDialog(_ element: AXUIElement, pid: pid_t) {
         guard isRunning, !isPaused, element.role == kAXWindowRole, let id = element.windowID, windows[id] == nil,
             !placedDialogs.contains(id), !element.isFullScreen, let frame = element.frame

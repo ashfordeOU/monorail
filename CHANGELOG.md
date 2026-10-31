@@ -4,6 +4,97 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-10-31
+
+Monorail understands what you want, learns how you work, knows when your AI agent needs you, keeps private windows out of screen shares, and comes in 27 themes.
+
+### Added
+- **Smart:**
+  - **Sentences** in the command palette and by voice: “Slack and Mail side by side on 3”, “Safari two thirds”, “move Mail to workspace two”.
+  - **Intent workspaces:** **Start working on…** opens the template, layout, pair or workspace that fits what you're about to do.
+  - **AI agent alerts** for Claude Code, Codex, Aider, Gemini and other terminal agents waiting for approval, with a palette shortcut to the agent.
+  - **Learning on your Mac:** stage the window you usually go to next, go straight to it, rule suggestions from widths you keep choosing, and a nudge towards focus mode when you're switching a lot.
+  - **Content-aware widths** for new slides.
+  - **Sort windows into project workspaces** from their titles.
+  - **Folders to workspaces:** documents open in the workspace for their folder.
+- **The strip:**
+  - **Tall slides** that scroll up and down.
+  - **Elastic focus.**
+  - **Whole slides only.**
+  - **Bookmarked views.**
+  - **Try a layout** (fork, then keep or discard).
+  - **Window groups.**
+  - A **layout timeline.**
+  - **Slides linked across displays.**
+  - **Reading mode.**
+  - **Centre the main slide** for ultrawide displays.
+- **Displays:**
+  - A disconnected display's slides come back when it returns.
+  - **Display profiles** keep a layout for each set of displays.
+  - Apps that won't shrink as far as asked get the width they need, so they never overlap their neighbours.
+- **Focus and privacy:**
+  - **Deep work**, also from calendar events.
+  - **Safe screen sharing**, private apps and windows, and a **privacy blur** in the overview.
+  - **Contexts:** a Shortcut runs when you arrive on a workspace.
+  - Daily **time budgets** per workspace.
+  - A **flow score** and **daily focus goal** in Insights.
+  - A **clipboard history for each workspace.**
+  - **Guest mode.**
+- **Presenting:**
+  - **Share one slide.**
+  - **Mirror a window.**
+  - **Demo zoom.**
+  - **Draw on the screen.**
+  - **Show keystrokes and clicks.**
+  - **Presenter notes** hidden from screen shares.
+  - A **camera tile.**
+  - **Layout sync with a nearby Mac.**
+  - **Continue on my other Mac.**
+- **Devices:**
+  - Choose the **Monorail key** (Caps Lock or right ⌘, ⌥ or ⌃).
+  - **Vim mode** with counts.
+  - **Mouse gestures.**
+  - **MIDI** with learn mode.
+  - **Game controllers.**
+  - A **phone remote** with a QR code.
+  - Experimental **head focus.**
+  - **Find a window by what's in it.**
+- **Platform:**
+  - Script commands in the palette, `setWidths` for layouts as code, and `say`.
+  - New API endpoints (`say`, `agents`, `predict`, `context`) and MCP tools (`say`, `get_waiting_agents`).
+  - Confirmation before assistants close windows.
+  - Browser, VS Code, Stream Deck and SketchyBar companions.
+  - Managed settings (MDM).
+  - **Safe mode** (hold ⌥ at launch).
+  - Opt-in local crash reports.
+  - App quirks that update themselves.
+  - **Show Log** in About.
+  - Notarisation in the release pipeline, ready for a Developer ID.
+- **Themes and delight:**
+  - **20 new themes:**
+    - Ten more classics: Aurora, Nord, Dracula, Solarized, Rosé Pine, Mint, Lavender, Ember, Glacier and Desert Sand.
+    - Five seasonal: Spring Bloom, Summer Sun, Autumn Leaves, Winter Frost and Festive.
+    - Five unique: Synthwave, Phosphor Terminal, Ink & Paper, Nebula and Holographic.
+  - **Seasons**, which follows the time of year.
+  - Themes shown as swatches in Settings.
+  - **Template gallery** with ten ready-made workspaces.
+  - Sound packs.
+  - A drifting wallpaper.
+  - A notch HUD.
+  - Animation synced to the display, up to 120 Hz.
+  - Live previews in the overview.
+- **New settings panes:** Smart, and Devices & Sharing.
+- **Generated references** of every action (docs/ACTIONS.md) and every setting (docs/SETTINGS.md), checked in CI.
+
+### Changed
+- Off-screen slides now wait hidden in the corner by default, and slides that would be cut off at the edge wait too. Strips of other windows no longer show at the screen edges. Both are options in Settings → Smart.
+- Firefox, Chrome and more Electron apps are known to resist parking and go to the corner straight away.
+- The overview has a close button, and the overview, palette and switcher show their keys, including esc to close.
+- Hovering a workspace dot shows its name inside the slider bar and the menu bar panel.
+
+### Fixed
+- The “And a lot more” illustration in the README didn't display, because of an unescaped character.
+
 ## [1.1.0] - 2026-10-31
 
 A hundred new capabilities, and a much narrower menu bar.

@@ -39,6 +39,11 @@ jobs:
         run: swift --version
       - name: Test
         run: swift test
+      - name: Docs are up to date
+        # docs/ACTIONS.md and docs/SETTINGS.md are generated; the README art must be valid SVG.
+        run: |
+          python3 scripts/gen-docs.py --check
+          for f in assets/readme/*.svg; do python3 -c "import sys, xml.dom.minidom; xml.dom.minidom.parse(sys.argv[1])" "$f"; done
       - name: Throwaway signing certificate
         # Pull requests and forks have no secrets: still exercise the signing path.
         if: env.MACSLIDER_SIGNING_CERT == ''

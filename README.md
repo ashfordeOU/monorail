@@ -6,6 +6,7 @@
 
 [![Download Monorail by Ashforde®](https://img.shields.io/badge/Download-Monorail%20by%20Ashforde%C2%AE-F66270?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/ashfordeOU/monorail/releases/latest)
 
+[![Latest release](https://img.shields.io/github/v/release/ashfordeOU/monorail?label=version&color=F66270)](https://github.com/ashfordeOU/monorail/releases/latest)
 ![macOS 13+](https://img.shields.io/badge/macOS-13%2B-2A1430?logo=apple)
 ![Universal](https://img.shields.io/badge/Apple%20silicon%20%2B%20Intel-universal-D63A80)
 ![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-FF9E62)
@@ -26,6 +27,25 @@ to the one you're using; everything else keeps its size. Move focus and the
 strip glides just far enough to bring the window into view.
 
 <p align="center"><img src="assets/readme/how-it-works.svg" alt="How Monorail works: windows on a strip that runs past the screen" width="100%"></p>
+
+### Up and running in a minute
+
+1. **Install:** `curl -fsSL https://raw.githubusercontent.com/ashfordeOU/monorail/main/scripts/install.sh | bash`, or [download the DMG](https://github.com/ashfordeOU/monorail/releases/latest).
+2. **Allow Accessibility** when Monorail asks. The welcome tour shows you where.
+3. **Move around:**
+   - <kbd>⌃⌥←</kbd> <kbd>⌃⌥→</kbd> slides the strip.
+   - <kbd>⌃⌥O</kbd> opens the overview.
+   - <kbd>⌃⌥/</kbd> opens the command palette, where you can just type what you want.
+   - <kbd>esc</kbd> closes any Monorail panel.
+
+### Why people switch
+
+- **Nothing shrinks.** New windows join the strip instead of squeezing the rest, so your editor stays the size you left it.
+- **It understands you.** Plain sentences, intents and habits it learns, all on your Mac, with no cloud and no account.
+- **Made for today's work.** It tells you when an AI coding agent is waiting, keeps private windows out of screen shares, and shares exactly one slide in a call.
+- **Mouse, keyboard or neither.** Use the scroll wheel, trackpad swipes, a slider bar, vim keys, a MIDI pad, a game controller or your phone.
+- **It never loses a window.** Undo and a timeline, and restore after a restart, a crash, sleep or unplugging a display.
+- **Free and open source** (AGPL), native Swift, and a universal app.
 
 ## A tour
 
@@ -71,7 +91,7 @@ strip glides just far enough to bring the window into view.
 ### 🚝 One endless strip
 Every display, Space and workspace gets its own strip. New windows open next
 to the one you're using, nothing ever shrinks to make room, and windows off
-screen wait at the edges.
+screen wait out of sight. Tall slides scroll up and down too.
 
 </td>
 <td width="50%" valign="top">
@@ -130,9 +150,9 @@ switches; add <kbd>⇧</kbd> to take the window with you.
 <td valign="top">
 
 ### 🔒 Native, private, safe
-Swift, AppKit and SwiftUI. No account, no telemetry. One permission
-(Accessibility). Pause or quit and every window comes back on screen; undo any
-change with <kbd>⌃⌥Z</kbd>.
+Swift, AppKit and SwiftUI. No account, no telemetry. It needs one permission
+(Accessibility); the others are only for features you turn on. Pause or quit and every window comes back on
+screen; undo any change with <kbd>⌃⌥Z</kbd>.
 
 </td>
 </tr>
@@ -151,6 +171,42 @@ Drag it over its slide-mate and they swap sides as you go. Save a slide as an
 Separate **profiles** for work and home, **marks** to jump to a window with one
 letter, a **scratchpad** window that drops in and hides with <kbd>⌃⌥`</kbd>, and
 **park** a whole workspace in the Dock until you need it.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🧠 Understands you
+Type “Slack and Mail side by side on 3” or “write the Q3 report” and it's
+done. Monorail learns where you go next and which widths you like, and offers
+rules. Everything stays on your Mac.
+
+</td>
+<td valign="top">
+
+### 🤖 Made for AI agents
+Run Claude Code, Codex or Aider in terminals and hear a chime the moment one
+is waiting for approval. Assistants can drive Monorail over **MCP**, and they
+ask before closing anything.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🛡️ Private when it matters
+Start sharing your screen and private apps step aside. They're blurred in the
+overview, you can mark any window private, and **deep work** hides
+distractions until you're done.
+
+</td>
+<td valign="top">
+
+### 🎤 Built for presenting
+Share one slide instead of your screen, zoom in during demos, draw on the
+screen, show keystrokes, keep presenter notes only you can see, and add a
+floating camera tile.
 
 </td>
 </tr>
@@ -658,12 +714,33 @@ Claude Desktop (or any MCP client):
 ```
 
 Then ask things like "put my editor and browser side by side" or "move Slack to workspace 3".
-The assistant can list windows and workspaces, focus, move and pair windows, switch
-workspace, apply layouts, open app pairs, start templates and run any action. The API only
-listens on this Mac and every request needs a token that only you can read.
+The API only listens on this Mac, and every request needs a token that only you can read.
+Monorail asks you before an assistant closes a window.
 
-The same API serves the [Raycast extension](extensions/raycast) and the
-[Alfred workflow](extensions/alfred) in this repository, and your own scripts:
+| MCP tool | Does |
+| --- | --- |
+| `get_state`, `list_windows`, `list_workspaces` | Where everything is |
+| `focus_window`, `move_window`, `pair_windows`, `switch_workspace` | Move around and arrange |
+| `perform_action` | Any of the [219 actions](docs/ACTIONS.md) |
+| `apply_layout`, `open_app_pair`, `run_template` | Bring back a setup |
+| `say` | Carry out a sentence (“Safari two thirds”) or an intent (“write the Q3 report”) |
+| `undo`, `redo`, `get_history` | Take changes back |
+| `name_slide`, `set_slide_layout`, `note_window`, `close_window` | Edit slides and windows |
+| `get_waiting_agents` | Terminals whose AI agent is waiting for approval |
+| `notify`, `get_insights` | Show a notice; today's usage and focus |
+
+The local API has the same endpoints under `GET`/`POST http://127.0.0.1:4767/…`:
+`state`, `windows`, `workspaces`, `layouts`, `pairs`, `templates`, `snapshots`, `actions`, `action`, `focus`,
+`move`, `pair`, `workspace`, `layout`, `pair-name`, `template`, `snapshot`, `undo`, `redo`, `history`,
+`name-slide`, `slide-layout`, `close`, `note`, `notify`, `insights`, `say`, `agents`, `predict` and `context`.
+
+The same API serves the extensions in this repository and your own scripts:
+- [Raycast](extensions/raycast)
+- [Alfred](extensions/alfred)
+- [Stream Deck](extensions/streamdeck)
+- [a browser companion](extensions/browser)
+- [VS Code / Cursor](extensions/vscode)
+- [SketchyBar](extensions/sketchybar)
 
 ```bash
 curl -H "Authorization: Bearer $(cat ~/Library/Application\ Support/Monorail/api-token)" http://127.0.0.1:4767/windows
@@ -680,9 +757,21 @@ monorail.on("windowOpened", w => {
 monorail.on("workspaceChanged", ws => monorail.notify("Now in " + ws.name))
 ```
 
-Events: `windowOpened`, `workspaceChanged`, `focusChanged`. Calls: `perform(action)`, `focus(id)`,
-`moveToWorkspace(id, n)`, `park(n)`, `openPair(name)`, `applyLayout(name)`, `notify(text)`,
-`windows()`, `state()`.
+Events: `windowOpened`, `windowClosed`, `workspaceChanged`, `focusChanged`, `slideChanged`.
+
+Calls:
+- `perform(action)`, `focus(id)`, `moveToWorkspace(id, n)` and `park(n)`
+- `openPair(name)`, `applyLayout(name)` and `notify(text)`
+- `windows()` and `state()`
+- New in 1.2:
+  - `addCommand(title, fn)` adds your own command to the palette.
+  - `setWidths([0.5, 0.25, …])` lays out the workspace's slides from left to right, so you can write layouts as code.
+  - `say("Slack and Mail side by side")` carries out a sentence.
+
+```js
+// A palette command that lays out three slides as a classic IDE: wide, narrow, narrow.
+monorail.addCommand("IDE layout", () => monorail.setWidths([0.6, 0.2, 0.2]))
+```
 
 ### For power users
 
@@ -739,6 +828,8 @@ The menu bar icon shows where you are (`3/8`), lists the windows on the
 current strip, and has Pause, Search Windows, Retile and Settings.
 
 ## Keyboard shortcuts
+
+**[All 219 actions](docs/ACTIONS.md)**, with their `monorail://` names, are listed in docs/ACTIONS.md, which is generated from the source. The ones below have keys out of the box; give any other action a key in **Settings → Shortcuts**.
 
 If you prefer chords to slide mode, all shortcuts start with <kbd>⌃⌥</kbd> by default. In **Settings → Shortcuts**
 you can switch the prefix to <kbd>⌥</kbd>, <kbd>⌘⌥</kbd> or <kbd>⌃⌘</kbd> in
@@ -845,6 +936,8 @@ Everything is set in a standard Settings window, and changes apply immediately.
 | Insights | Today's counts, the week, your most-used pairs and suggestions (all kept on your Mac) |
 | Shortcuts | Modifier prefix, every binding, extra bindings, restore defaults |
 
+**[Every setting, with its default](docs/SETTINGS.md)** is listed in docs/SETTINGS.md, which is generated from the source so it's always complete. Organisations can enforce any of them with a configuration profile.
+
 Settings are saved to `~/Library/Application Support/Monorail/settings.json`,
 and the strip layout to `layout.json` in the same folder.
 
@@ -902,10 +995,11 @@ open those windows.
 ## How it works
 
 Monorail lays out each strip as a row of columns in its own coordinate
-space and maps the visible part onto the display. macOS won't put a window
-entirely off-screen, so columns that scroll out of view are **parked** at the
-display edge with a few points showing. Click a parked window and it slides
-back into view.
+space and maps the visible part onto the display. Columns that scroll out of
+view are **parked**. By default they wait hidden in the screen's corner, and
+slides that would be cut off at the edge wait too, so the edges stay clean. You can
+choose thin slivers at the edges instead. Apps that refuse to go off screen are
+noticed and parked in the corner automatically.
 
 The layout model (`Sources/MonorailCore`) is plain Swift with no AppKit
 code, so it is unit-tested on macOS and Linux. The app
@@ -915,7 +1009,9 @@ code, so it is unit-tested on macOS and Linux. The app
 - **A `CGEventTap`** handles global shortcuts, slide mode and strip scrolling, and passes every other event straight through.
 - **Mission Control Spaces** are read through the system window server, so each Space keeps its own layout. If that lookup ever fails, Monorail treats each display as one Space instead of breaking.
 - **Multitouch input** is read directly from the trackpad for three- and four-finger swipes. It is only loaded when that option is on.
-- **Animations** use a short ease-out curve. Windows are resized once, then slid into place, so apps don't have to re-layout their content on every frame.
+- **Animations** use a short ease-out curve, timed to the display (up to 120 Hz on ProMotion). Windows are resized once, then slid into place, so apps don't have to re-layout their content on every frame.
+- **On-device intelligence** (`Intelligence.swift` in the core) parses sentences, matches intents, predicts your next app and learns widths. It is plain Swift with unit tests, and it uses no network or model downloads.
+- **ScreenCaptureKit** powers live previews, sharing one slide, window mirrors and the demo zoom, only when you use them.
 
 ## Privacy
 
@@ -923,12 +1019,23 @@ Monorail needs one permission, **Accessibility**, which macOS requires
 before any app can move other apps' windows. You can revoke it at any time in
 **System Settings → Privacy & Security → Accessibility**.
 
-Live previews in the overview are optional and need **Screen Recording**
-permission. Previews are drawn on your Mac and never stored or sent anywhere.
+macOS only asks for the other permissions when you turn on the feature that needs one:
 
-Monorail has no account, analytics or telemetry. Its only network requests go
-to this repository's GitHub releases: a daily check for a new version and,
-when you accept one, its download. Both can be turned off in **Settings → General**.
+| Permission | Only for |
+| --- | --- |
+| Screen Recording | Live previews, sharing one slide, mirrors, the demo zoom, finding a window by its contents |
+| Calendars | Opening video calls before they start; *Focus* events starting deep work |
+| Microphone and Speech Recognition | Voice commands, recognised on your Mac where supported |
+| Camera | The camera tile, and head focus if you turn it on |
+| Local Network | The phone remote and layout sync with a nearby Mac |
+
+Window pictures and text are read on your Mac and never stored or sent anywhere.
+
+Monorail has no account, analytics or telemetry. Its only network requests go to this repository:
+- a daily check for a new version, and its download when you accept one
+- the list of known app quirks
+
+Anything else happens only if you turn it on: webhooks, the phone remote, layout sync and iCloud sync. Update checks can be turned off in **Settings → General**. Settings → Devices & Sharing → Trust summarises all of this inside the app.
 
 ## Build from source
 
@@ -973,6 +1080,9 @@ Sources/Monorail/        macOS app: engine, input, overlays, slider, overview, m
 Tests/                   Unit tests for the layout model
 Resources/Info.plist     App bundle metadata
 assets/                  App icon, installer background and README artwork
+docs/                    Generated references: every action and every setting (scripts/gen-docs.py)
+extensions/              Raycast, Alfred, Stream Deck, browser, VS Code and SketchyBar companions
+quirks.json              Known app quirks, picked up by running copies of Monorail
 scripts/                 Build, package, install, signing, artwork and command-line tools
 .github/workflows/       CI on every push; signed releases on demand
 ```

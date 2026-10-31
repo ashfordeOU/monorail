@@ -21,6 +21,7 @@ struct WindowCommands {
     /// The user's own layouts, and setting one on a slide.
     var customLayouts: () -> [CustomLayout] = { [] }
     var setCustomLayout: (WindowID, [Int]) -> Void = { _, _ in }
+    var setZones: (WindowID, SplitTree) -> Void = { _, _ in }
     var currentRows: (WindowID) -> [Int]? = { _ in nil }
     /// Saves the slide's apps as an app pair.
     var saveAppPair: (WindowID) -> Void = { _ in }
@@ -78,7 +79,11 @@ struct SlideLayoutMenu: View {
                 let rows = current == .some(.some(.custom)) ? commands.currentRows(window) : nil
                 ForEach(custom) { layout in
                     Button {
-                        commands.setCustomLayout(window, layout.rows)
+                        if let zones = layout.zones {
+                            commands.setZones(window, zones)
+                        } else {
+                            commands.setCustomLayout(window, layout.rows)
+                        }
                     } label: {
                         if rows == layout.rows { Label(layout.name, systemImage: "checkmark") } else { Text(layout.name) }
                     }

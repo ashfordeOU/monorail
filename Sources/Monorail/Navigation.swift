@@ -199,7 +199,7 @@ private struct SlideCard: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let frames = tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows)
+            let frames = (tile.nestedFrames.flatMap { $0.count == tile.windows.count ? $0 : nil } ?? tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows))
             ZStack(alignment: .topLeading) {
                 ForEach(Array(tile.windows.enumerated()), id: \.element.id) { index, window in
                     let unit = frames.indices.contains(index) ? frames[index] : Rect(x: 0, y: 0, width: 1, height: 1)

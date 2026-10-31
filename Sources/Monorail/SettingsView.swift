@@ -191,6 +191,10 @@ private struct BasicsPane: View {
                 }
                 Toggle("Open Monorail when I log in", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { LoginItem.setEnabled($0) }
+                LabeledContent("Coming from another app?") {
+                    Button("Import Settings…") { Importer.run(store: store) }
+                        .help("Brings over shortcuts, gaps, floating apps and workspace rules from AeroSpace, yabai and skhd, or Rectangle")
+                }
             } header: {
                 Text("Getting set up")
             }
@@ -379,6 +383,9 @@ private struct LayoutPane: View {
                     ForEach(StripDirection.allCases, id: \.self) { Text($0.title).tag($0) }
                 }
                 Toggle("Keep windows in place when an app resizes or moves them itself", isOn: $store.settings.keepWindowsInPlace)
+                Toggle("Drag a window onto another to dock it beside (edges) or tab them together (middle)", isOn: $store.settings.dragToDock)
+                    .help("Works with any apps, in any slide or from floating. Undo puts it back.")
+                Toggle("Drag the gap between two windows to resize both", isOn: $store.settings.gapHandles)
                 Toggle("After resizing a window in a slide, offer to rearrange it", isOn: $store.settings.resizeAssist)
                 Toggle("Group windows into slides by app", isOn: $store.settings.groupByApp)
                 Toggle("Pair lone windows of different apps as they open", isOn: $store.settings.pairLoneWindowsOnOpen)
@@ -1725,12 +1732,13 @@ private struct ProfilesSection: View {
 /// Design slide layouts: columns side by side, each split into rows.
 private struct CustomLayoutsSection: View {
     @ObservedObject var store: SettingsStore
+    @State private var designing: String?
 
     var body: some View {
         Section {
             ForEach($store.settings.customLayouts) { $layout in
                 HStack(alignment: .center, spacing: 14) {
-                    LayoutDiagram(rows: layout.rows).frame(width: 84, height: 52)
+                    LayoutDiagram(rows: layout.rows, zones: layout.zones).frame(width: 84, height: 52)
                     VStack(alignment: .leading, spacing: 6) {
                         TextField("Name", text: $layout.name).textFieldStyle(.roundedBorder).frame(width: 200)
                         HStack(spacing: 10) {
@@ -1760,12 +1768,17 @@ private struct CustomLayoutsSection: View {
                         }
                     }
                     Spacer()
+                    Button("Design Zones…") { designing = layout.id }
+                        .help("Draw the slide yourself: split any zone side by side or up and down, as deep as you like")
                     Button {
                         store.settings.customLayouts.removeAll { $0.id == layout.id }
                     } label: {
                         Image(systemName: "trash")
                     }
                     .buttonStyle(.borderless)
+                }
+                .sheet(isPresented: Binding(get: { designing == layout.id }, set: { if !$0 { designing = nil } })) {
+                    ZoneEditor(layout: $layout) { designing = nil }
                 }
             }
             Button("New Layout") {
@@ -1774,7 +1787,7 @@ private struct CustomLayoutsSection: View {
         } header: {
             Text("Custom slide layouts")
         } footer: {
-            Text("Each column is split into the number of rows shown (up to six windows a slide). Use them from a slide’s right-click menu ▸ Slide Layout.")
+            Text("Each column is split into the number of rows shown, or choose Design Zones… to draw any layout. Use them from a slide’s right-click menu ▸ Slide Layout.")
                 .font(.callout).foregroundStyle(.secondary)
         }
     }
@@ -1795,10 +1808,11 @@ private struct CustomLayoutsSection: View {
 /// A small drawing of a custom layout.
 private struct LayoutDiagram: View {
     let rows: [Int]
+    var zones: SplitTree? = nil
 
     var body: some View {
         GeometryReader { geometry in
-            let frames = Arrangement.customFrames(count: max(rows.reduce(0, +), 1), rows: rows)
+            let frames = zones?.tiles().map(\.frame) ?? Arrangement.customFrames(count: max(rows.reduce(0, +), 1), rows: rows)
             ZStack(alignment: .topLeading) {
                 ForEach(Array(frames.enumerated()), id: \.offset) { _, unit in
                     RoundedRectangle(cornerRadius: 3)
@@ -1811,6 +1825,92 @@ private struct LayoutDiagram: View {
                 }
             }
         }
+    }
+}
+
+/// Draw a slide layout: pick a zone, split it side by side or up and down, resize, remove.
+private struct ZoneEditor: View {
+    @Binding var layout: CustomLayout
+    let done: () -> Void
+    @State private var zones: SplitTree = .single(1)
+    @State private var selected: WindowID = 1
+
+    private var nextID: WindowID { (zones.windows.max() ?? 0) + 1 }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Design “\(layout.name)”").font(.title3.weight(.semibold))
+            Text("Click a zone, then split it. Windows fill zones in number order; extra windows join on the right.")
+                .font(.callout).foregroundStyle(.secondary)
+            GeometryReader { geometry in
+                ZStack(alignment: .topLeading) {
+                    ForEach(zones.tiles(), id: \.window) { tile in
+                        let f = tile.frame
+                        Button { selected = tile.window } label: {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.accentColor.opacity(tile.window == selected ? 0.45 : 0.18))
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(Color.accentColor.opacity(tile.window == selected ? 1 : 0.5), lineWidth: tile.window == selected ? 2.5 : 1)
+                                Text("\(position(of: tile.window))").font(.title2.weight(.bold)).foregroundStyle(.primary.opacity(0.7))
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .frame(width: max(f.width * geometry.size.width - 6, 8), height: max(f.height * geometry.size.height - 6, 8))
+                        .offset(x: f.minX * geometry.size.width + 3, y: f.minY * geometry.size.height + 3)
+                    }
+                }
+            }
+            .frame(width: 520, height: 320)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(0.05)))
+            HStack {
+                Button { split(.right) } label: { Label("Split Side by Side", systemImage: "rectangle.split.2x1") }
+                    .disabled(zones.windows.count >= 9)
+                Button { split(.bottom) } label: { Label("Split Up and Down", systemImage: "rectangle.split.1x2") }
+                    .disabled(zones.windows.count >= 9)
+                Button { remove() } label: { Label("Remove", systemImage: "minus.rectangle") }
+                    .disabled(zones.windows.count <= 1)
+            }
+            HStack {
+                Text("Selected zone:").foregroundStyle(.secondary)
+                Button("Narrower") { zones = zones.adjusting(selected, axis: .horizontal, by: -0.05) }
+                Button("Wider") { zones = zones.adjusting(selected, axis: .horizontal, by: 0.05) }
+                Button("Shorter") { zones = zones.adjusting(selected, axis: .vertical, by: -0.05) }
+                Button("Taller") { zones = zones.adjusting(selected, axis: .vertical, by: 0.05) }
+                Button("Even Out") { zones = zones.balanced }
+            }
+            HStack {
+                Button("Start from Columns") { zones = CustomLayout(name: "", rows: layout.rows).zonesOrDefault }
+                Spacer()
+                Button("Cancel", action: done).keyboardShortcut(.cancelAction)
+                Button("Save") {
+                    layout.zones = zones
+                    done()
+                }
+                .keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(20)
+        .onAppear {
+            zones = layout.zonesOrDefault
+            selected = zones.windows.first ?? 1
+        }
+    }
+
+    /// Zones are numbered in the order windows fill them.
+    private func position(of zone: WindowID) -> Int { (zones.windows.firstIndex(of: zone) ?? 0) + 1 }
+
+    private func split(_ edge: SplitTree.Edge) {
+        guard zones.windows.count < 9 else { return }
+        let id = nextID
+        zones = zones.docking(id, onto: selected, edge: edge)
+        selected = id
+    }
+
+    private func remove() {
+        guard zones.windows.count > 1, let next = zones.removing(selected) else { return }
+        zones = next
+        selected = next.windows.first ?? 1
     }
 }
 

@@ -133,6 +133,8 @@ final class Engine {
     var onAskForLetter: (Action) -> Void = { _ in }
     /// The user started dragging a window (for the snap layouts picker).
     var onWindowDrag: (WindowID) -> Void = { _ in }
+    /// While dragging onto another window: where it would land (nil hides the preview).
+    var onDockPreview: (CGRect?, SplitTree.Edge?) -> Void = { _, _ in }
     /// Something worth counting for Insights happened.
     var onUsage: (UsageEvent) -> Void = { _ in }
 
@@ -295,6 +297,10 @@ final class Engine {
             break
         }
         guard isRunning, !isPaused else { return }
+        if let n = action.viewNumber { return goToView(n) }
+        if let n = action.saveViewNumber { return saveView(n) }
+        if let n = action.tagNumber { return toggleTag(n - 1) }
+        if let n = action.combineNumber { return toggleCombine(n - 1) }
         switch action {
         case .toggleScratchpad:
             toggleScratchpad()
@@ -473,6 +479,39 @@ final class Engine {
             return
         case .addBookmark, .nextBookmark:
             action == .addBookmark ? addBookmark() : nextBookmark()
+            return
+        case .dockLeft, .dockRight, .dockUp, .dockDown:
+            dockFocused([.dockLeft: .left, .dockRight: .right, .dockUp: .up, .dockDown: .down][action]!)
+            return
+        case .tearOff:
+            if let id = focusedWindowID(), let (display, key) = activeContext(), var strip = strips[key] {
+                recordHistory()
+                if strip.tearOff(id, width: layoutConfig(for: display).defaultWidth) {
+                    strips[key] = strip
+                    layout(animated: true)
+                    scheduleSave()
+                } else {
+                    onNotice("This window already has a slide to itself")
+                }
+            }
+            return
+        case .balanceSplits, .nestSlide:
+            guard let (_, key) = activeContext(), var strip = strips[key], strip.columns.indices.contains(strip.focusedColumn) else { return }
+            recordHistory()
+            if action == .nestSlide {
+                strip.nestFocused()
+                onNotice("Drag windows onto each other’s edges to split this slide further")
+            } else if let tree = strip.columns[strip.focusedColumn].tree {
+                strip.columns[strip.focusedColumn].tree = tree.balanced
+            } else {
+                strip.balance(width: strip.columns[strip.focusedColumn].width)
+            }
+            strips[key] = strip
+            layout(animated: true)
+            scheduleSave()
+            return
+        case .viewBack, .viewForward:
+            stepView(back: action == .viewBack)
             return
         case .forkLayout, .keepFork, .discardFork:
             fork(action)
@@ -924,6 +963,8 @@ final class Engine {
         scheduleSave()
         onStateChange()
         lastVisited[newKey] = Date()
+        recordView(from: key)
+        returnCombined(to: key)
         let config = settings.workspaceConfig(newKey.workspace)
         if let shortcut = config.shortcut, !shortcut.isEmpty { onRunShortcut(shortcut) }
         note("workspace \(index + 1)")
@@ -1094,6 +1135,18 @@ final class Engine {
         onStateChange()
     }
 
+    /// Gives the slide holding `id` the zones drawn in the zone editor.
+    func setSlideZones(of id: WindowID, to zones: SplitTree) {
+        guard let key = windows[id]?.key, var strip = strips[key], let (c, _) = strip.locate(id) else { return }
+        recordHistory()
+        strip.focus(id)
+        strip.columns[c].isTabbed = false
+        strip.columns[c].isCustom = true
+        strip.columns[c].tree = zones.filling(strip.columns[c].windows)
+        commit(strip, key)
+        onStateChange()
+    }
+
     /// Moves any window (not just the focused one) to a workspace on its display.
     func moveWindow(_ id: WindowID, toWorkspace index: Int) {
         guard index >= 0, index < workspaceLimit, let window = windows[id], let key = window.key,
@@ -1123,6 +1176,8 @@ final class Engine {
         var customRows: [Int]?
         var name: String?
         var isLocked = false
+        /// The tiles of a nested slide (nil for the standard layouts).
+        var nestedFrames: [Rect]? = nil
     }
 
     struct OverviewStrip: Identifiable {
@@ -1169,7 +1224,8 @@ final class Engine {
                         pin: column.pin,
                         customRows: column.customRows,
                         name: column.name,
-                        isLocked: column.isLocked
+                        isLocked: column.isLocked,
+                        nestedFrames: column.isNested ? column.unitFrames : nil
                     )
                 }.compactMap { column -> OverviewColumn? in
                     guard let onlyApp else { return column }
@@ -1264,6 +1320,7 @@ final class Engine {
         var customRows: [Int]?
         var name: String?
         var isLocked = false
+        var nestedFrames: [Rect]? = nil
     }
 
     /// Everything the slider bar draws for one display.
@@ -1312,7 +1369,8 @@ final class Engine {
                     isFocused: index == strip.focusedColumn && column.windows.contains { $0 == focused },
                     customRows: column.customRows,
                     name: column.name,
-                    isLocked: column.isLocked
+                    isLocked: column.isLocked,
+                    nestedFrames: column.isNested ? column.unitFrames : nil
                 )
             }
             let visible = display.visibleFrame
@@ -1746,7 +1804,11 @@ final class Engine {
         enhancedUIRestore.removeAll()
     }
 
+    /// After the overlays are redrawn (the layout settled): gap handles follow.
+    var onOverlaysUpdated: () -> Void = {}
+
     private func updateOverlays() {
+        defer { onOverlaysUpdated() }
         guard isRunning, !isPaused, !isPresenting else {
             overlays.hideAll()
             return
@@ -2528,6 +2590,11 @@ final class Engine {
         }
         if windows[id]?.key != nil { lastTiledFocus = id } else if id != scratchpad { keepFloatingInView(id) }
         if focusHistory.last != id {
+            if let window = windows[id] {
+                EventStream.shared.send("focus", ["id": Int(id), "app": window.appName, "bundleID": window.bundleID ?? "",
+                                                  "workspace": (window.key?.workspace).map { $0 % Self.profileStride + 1 } ?? 0,
+                                                  "floating": window.key == nil])
+            }
             focusHistory.removeAll { $0 == id }
             focusHistory.append(id)
             if focusHistory.count > 30 { focusHistory.removeFirst() }
@@ -2588,6 +2655,10 @@ final class Engine {
                 scheduleSave()
             }
             keepFloatingInView(window.id)
+            if !resized, settings.dragToDock, NSEvent.pressedMouseButtons != 0 {
+                updateDockPreview(for: window.id)
+                whenMouseIsUp { [weak self] in self?.finishFloatingDock(window) }
+            }
         }
         if !resized, !animator.isRunning, NSEvent.pressedMouseButtons != 0, let window = window(for: element),
             CACurrentMediaTime() - window.appliedAt > 0.3
@@ -2613,7 +2684,7 @@ final class Engine {
             if settings.resizeHUD { onResizeHUD(frame) }
             // Resizing a tile in a slide: the others follow live, then Monorail offers options.
             if let strip = strips[key], let (c, _) = strip.locate(window.id), strip.columns[c].windows.count > 1,
-                strip.columns[c].isTiled || strip.columns[c].isTabbed
+                strip.columns[c].isTiled || strip.columns[c].isTabbed || strip.columns[c].isNested
             {
                 liveResize(window, to: actual, key: key, display: display)
                 return
@@ -2623,7 +2694,11 @@ final class Engine {
             if settings.rememberWidths { appWidths[Self.appKey(window)] = fraction }
         } else {
             guard abs(actual.x - applied.x) > 8 || abs(actual.y - applied.y) > 8 else { return }
-            swapWhileDragging(window, key: key)
+            if settings.dragToDock {
+                updateDockPreview(for: window.id)
+            } else {
+                swapWhileDragging(window, key: key)
+            }
         }
         whenMouseIsUp { [weak self] in self?.finishUserMove(window, resized: resized) }
     }
@@ -2663,7 +2738,15 @@ final class Engine {
             recordHistory()
             resizing = window.id
         }
-        if var strip = strips[key], let (c, _) = strip.locate(window.id) {
+        if var strip = strips[key], let (c, _) = strip.locate(window.id), strip.columns[c].isNested {
+            let column = strip.columnFrames(config: layoutConfig(for: display), viewport: viewport(of: display))[c].frame
+            let unit = Rect(x: (actual.x - column.x) / max(column.width, 1), y: (actual.y - column.y) / max(column.height, 1),
+                            width: actual.width / max(column.width, 1), height: actual.height / max(column.height, 1))
+            if strip.resizeNested(window.id, toUnit: unit) {
+                strips[key] = strip
+                layout(animated: false, updateOverlays: false, skip: [window.id])
+            }
+        } else if var strip = strips[key], let (c, _) = strip.locate(window.id) {
             let column = strip.columnFrames(config: layoutConfig(for: display), viewport: viewport(of: display))[c].frame
             let fraction = (width: actual.width / max(column.width, 1), height: actual.height / max(column.height, 1))
             if strip.resizeTile(window.id, toFraction: fraction) {
@@ -2890,6 +2973,13 @@ final class Engine {
                 return
             }
         }
+        if !resized, settings.dragToDock, let target = dockTarget(at: pointer(), excluding: window.id) {
+            onDockPreview(nil, nil)
+            dragRecorded = nil
+            dock(window, onto: target.window, edge: target.edge)
+            return
+        }
+        onDockPreview(nil, nil)
         guard let key = window.key, var strip = strips[key], let display = display(for: key) else { return }
         if dragRecorded != window.id { recordHistory() }
         dragRecorded = nil
@@ -3046,6 +3136,8 @@ final class Engine {
         var floatingFrames: [String: CGRect]?
         var windowNotes: [WindowID: String]?
         var projectHomes: [String: StripKey]?
+        var savedViews: [String: [Int: SavedView]]?
+        var tags: [WindowID: Set<Int>]?
     }
 
     struct SessionStrip: Codable {
@@ -3075,7 +3167,8 @@ final class Engine {
             activeProfile: activeProfile, profileWorkspaces: profileWorkspaces, marks: marks, scratchpad: scratchpad,
             wholeSlideApps: roomyApps.sorted(), sticky: Array(stickyWindows), appWidths: appWidths,
             floatingFrames: floatingFrames, windowNotes: windowNotes.filter { windows[$0.key] != nil },
-            projectHomes: projectHomes)
+            projectHomes: projectHomes, savedViews: savedViews,
+            tags: windowTags.filter { windows[$0.key] != nil && !$0.value.isEmpty })
         do {
             try FileManager.default.createDirectory(at: SettingsStore.directory, withIntermediateDirectories: true)
             let data = try JSONEncoder().encode(state)
@@ -3108,6 +3201,8 @@ final class Engine {
         floatingFrames = state.floatingFrames ?? [:]
         windowNotes = state.windowNotes ?? [:]
         projectHomes = state.projectHomes ?? [:]
+        savedViews = state.savedViews ?? [:]
+        windowTags = state.tags ?? [:]
         lastSession = state.session ?? []
         lastSessionLoaded = Date()
         savedLayouts = (try? Data(contentsOf: Self.layoutsURL))
@@ -3784,6 +3879,18 @@ final class Engine {
             window.key = key
         }
         stickyWindows = stickyWindows.filter { windows[$0] != nil || windowMemory[$0] != nil }
+        // Tagged windows follow you between the workspaces they're tagged with.
+        for (id, tags) in windowTags where tags.contains(key.workspace) {
+            guard let window = windows[id], let from = window.key, from.screen == key.screen, from != key,
+                tags.contains(from.workspace), !stickyWindows.contains(id)
+            else { continue }
+            let width = strips[from].flatMap { strip in strip.locate(id).map { strip.columns[$0.column].width } } ?? 0.5
+            removeFromStrip(window)
+            var strip = strips[key] ?? Strip()
+            strip.insert(id, width: width, position: .end, focus: false)
+            strips[key] = strip
+            window.key = key
+        }
     }
 
     // MARK: - Zoom
@@ -4212,6 +4319,10 @@ final class Engine {
     /// A tab dragged out of its tab bar and dropped over another slide joins it.
     func dropTab(_ id: WindowID, at point: CGPoint) {
         guard let window = windows[id], let source = window.key else { return }
+        if settings.dragToDock, let target = dockTarget(at: point, excluding: id) {
+            dock(window, onto: target.window, edge: target.edge)
+            return
+        }
         for display in displays where display.frame.contains(point) {
             let key = currentKey(display)
             guard let strip = strips[key] else { continue }
@@ -4225,6 +4336,340 @@ final class Engine {
             if source == key, strip.locate(id)?.column == target { return }
             overviewMove(id, to: key, column: target)
             return
+        }
+    }
+
+    // MARK: - Saved views, back and forward, tags
+
+    /// A place to come back to: a workspace on a display, how far along it was, and the window in front.
+    struct SavedView: Codable, Equatable {
+        var workspace: Int
+        var scroll: Double
+        var window: WindowID?
+    }
+
+    /// Nine saved views per display (keyed by display name).
+    private var savedViews: [String: [Int: SavedView]] = [:]
+    private var viewHistory: [(display: String, view: SavedView)] = []
+    private var viewFuture: [(display: String, view: SavedView)] = []
+    private var restoringView = false
+    /// Workspaces each window is also kept on (besides wherever it is now).
+    private(set) var windowTags: [WindowID: Set<Int>] = [:]
+    /// Windows brought in from other workspaces to show alongside, by the workspace shown.
+    private var combined: [StripKey: [Int: [WindowID]]] = [:]
+
+    private func currentView() -> (String, SavedView)? {
+        guard let (display, key) = activeContext() else { return nil }
+        let strip = strips[key]
+        return (display.name, SavedView(workspace: key.workspace, scroll: strip?.scroll ?? 0, window: strip?.focusedWindow))
+    }
+
+    private func recordView(from key: StripKey) {
+        guard !restoringView, let display = display(for: key) else { return }
+        let strip = strips[key]
+        viewHistory.append((display.name, SavedView(workspace: key.workspace, scroll: strip?.scroll ?? 0, window: strip?.focusedWindow)))
+        if viewHistory.count > 50 { viewHistory.removeFirst() }
+        viewFuture.removeAll()
+    }
+
+    private func show(_ view: SavedView, on displayName: String) {
+        guard let display = displays.first(where: { $0.name == displayName }) ?? displays.first else { return }
+        restoringView = true
+        defer { restoringView = false }
+        let screen = currentKey(display).screen
+        if activeWorkspace[screen] != view.workspace {
+            if activeContext()?.0.uuid == display.uuid {
+                switchWorkspace(to: view.workspace - base)
+            } else {
+                activeWorkspace[screen] = view.workspace
+            }
+        }
+        let key = StripKey(screen: screen, workspace: view.workspace)
+        if var strip = strips[key] {
+            if let window = view.window, strip.locate(window) != nil { strip.focus(window) }
+            strip.scroll = view.scroll
+            strip.clampScroll(config: layoutConfig(for: display), viewportWidth: viewport(of: display).width)
+            strips[key] = strip
+            layout(animated: true)
+            if let window = strip.focusedWindow { focus(window, warpMouse: false) }
+        }
+    }
+
+    private func stepView(back: Bool) {
+        guard let (name, here) = currentView() else { return }
+        if back {
+            guard let previous = viewHistory.popLast() else { return onNotice("Nothing to go back to") }
+            viewFuture.append((name, here))
+            show(previous.view, on: previous.display)
+        } else {
+            guard let next = viewFuture.popLast() else { return onNotice("Nothing to go forward to") }
+            viewHistory.append((name, here))
+            show(next.view, on: next.display)
+        }
+        haptic()
+    }
+
+    private func saveView(_ n: Int) {
+        guard let (name, view) = currentView() else { return }
+        savedViews[name, default: [:]][n] = view
+        scheduleSave()
+        onNotice("View \(n) saved · ⌃⌥⌘\(n) comes back here")
+    }
+
+    private func goToView(_ n: Int) {
+        guard let (name, here) = currentView() else { return }
+        guard let view = savedViews[name]?[n] else { return onNotice("No view \(n) yet · ⌃⌥⌘⇧\(n) saves one") }
+        viewHistory.append((name, here))
+        viewFuture.removeAll()
+        show(view, on: name)
+    }
+
+    /// Saved views on the active display, for the menu bar and palette.
+    func savedViewList() -> [(number: Int, workspace: Int)] {
+        guard let (display, _) = activeContext() else { return [] }
+        return (savedViews[display.name] ?? [:]).sorted { $0.key < $1.key }.map { ($0.key, $0.value.workspace - base + 1) }
+    }
+
+    private func toggleTag(_ index: Int) {
+        guard index >= 0, index < workspaceLimit, let id = focusedWindowID(), let window = windows[id], let key = window.key else { return }
+        let workspace = base + index
+        var tags = windowTags[id] ?? []
+        if tags.contains(workspace) {
+            tags.remove(workspace)
+            onNotice("\(window.appName) no longer kept on workspace \(index + 1)")
+        } else {
+            tags.insert(workspace)
+            tags.insert(key.workspace)
+            onNotice("\(window.appName) is kept on workspaces \(tags.sorted().map { String($0 - base + 1) }.joined(separator: ", "))")
+        }
+        windowTags[id] = tags.count > 1 ? tags : nil
+        scheduleSave()
+        onStateChange()
+    }
+
+    /// Shows workspace `index`'s windows at the end of this one, until toggled again or you leave.
+    private func toggleCombine(_ index: Int) {
+        guard index >= 0, index < workspaceLimit, let (display, key) = activeContext() else { return }
+        let other = StripKey(screen: key.screen, workspace: base + index)
+        guard other != key else { return }
+        if let brought = combined[key]?[other.workspace] {
+            sendBack(brought, to: other)
+            combined[key]?[other.workspace] = nil
+            onNotice("Workspace \(index + 1) put back")
+        } else {
+            guard let source = strips[other], !source.isEmpty else { return onNotice("Workspace \(index + 1) is empty") }
+            var strip = strips[key] ?? Strip()
+            var ids: [WindowID] = []
+            for column in source.columns { ids += column.windows; strip.appendColumn(column) }
+            strips[other] = Strip()
+            for id in ids { windows[id]?.key = key }
+            strip.clampScroll(config: layoutConfig(for: display), viewportWidth: viewport(of: display).width)
+            strips[key] = strip
+            combined[key, default: [:]][other.workspace] = ids
+            onNotice("Showing workspace \(index + 1) here too · same shortcut puts it back")
+        }
+        layout(animated: true)
+        scheduleSave()
+        onStateChange()
+    }
+
+    private func sendBack(_ ids: [WindowID], to other: StripKey) {
+        for id in ids {
+            guard let window = windows[id], let key = window.key, var strip = strips[key], let (c, _) = strip.locate(id) else { continue }
+            let width = strip.columns[c].width
+            strip.remove(id)
+            strips[key] = strip
+            var target = strips[other] ?? Strip()
+            target.insert(id, width: width, position: .end, focus: false)
+            strips[other] = target
+            window.key = other
+        }
+    }
+
+    /// Leaving a workspace puts back what was shown alongside it.
+    private func returnCombined(to key: StripKey) {
+        guard let brought = combined.removeValue(forKey: key) else { return }
+        for (workspace, ids) in brought { sendBack(ids, to: StripKey(screen: key.screen, workspace: workspace)) }
+        layout(animated: true)
+    }
+
+    // MARK: - Docking and nested slides
+
+    private func pointer() -> CGPoint {
+        let mouse = NSEvent.mouseLocation
+        let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
+        return CGPoint(x: mouse.x, y: primaryHeight - mouse.y)
+    }
+
+    /// The window under `point` (other than `excluding`) on a visible strip, and which part of it.
+    private func dockTarget(at point: CGPoint, excluding: WindowID) -> (window: WindowID, key: StripKey, edge: SplitTree.Edge, frame: CGRect)? {
+        for display in displays where display.frame.contains(point) {
+            let key = currentKey(display)
+            guard let strip = strips[key] else { continue }
+            let placements = strip.layout(config: layoutConfig(for: display), viewport: viewport(of: display))
+            for placement in placements where placement.window != excluding && !placement.isHiddenTab && !placement.isParked {
+                let frame = placement.frame
+                guard let edge = DockZone.edge(x: Double(point.x), y: Double(point.y), in: frame) else { continue }
+                // A window's own slide-mate: dropping on its middle swaps, as before.
+                return (placement.window, key, edge, CGRect(frame))
+            }
+        }
+        return nil
+    }
+
+    private func updateDockPreview(for id: WindowID) {
+        guard let target = dockTarget(at: pointer(), excluding: id) else {
+            onDockPreview(nil, nil)
+            return
+        }
+        let area = DockZone.preview(target.edge, in: Rect(target.frame))
+        onDockPreview(CGRect(area), target.edge)
+    }
+
+    private func finishFloatingDock(_ window: ManagedWindow) {
+        onDockPreview(nil, nil)
+        guard window.key == nil, let target = dockTarget(at: pointer(), excluding: window.id) else { return }
+        dock(window, onto: target.window, edge: target.edge)
+    }
+
+    /// Docks `window` onto `target` (any strip, any display); a floating window joins the strip.
+    func dock(_ window: ManagedWindow, onto targetID: WindowID, edge: SplitTree.Edge) {
+        guard let target = windows[targetID], let key = target.key, let display = display(for: key) else { return }
+        recordHistory()
+        nextChangeLabel = edge == .center ? "Tab group" : "Dock"
+        if let source = window.key, source != key { removeFromStrip(window) }
+        var strip = strips[key] ?? Strip()
+        guard strip.dock(window.id, onto: targetID, edge: edge) else { return }
+        window.key = key
+        window.lastApplied = nil
+        strip.focus(window.id)
+        strip.revealFocused(config: layoutConfig(for: display), viewportWidth: viewport(of: display).width)
+        strips[key] = strip
+        haptic()
+        layout(animated: true)
+        scheduleSave()
+        onStateChange()
+    }
+
+    /// Keyboard docking: the focused window onto its neighbour in `direction`, on the near edge.
+    private func dockFocused(_ direction: Direction) {
+        guard let (display, key) = activeContext(), let strip = strips[key], !strip.columns.isEmpty,
+            let id = focusedWindowID(), let window = windows[id]
+        else { return }
+        let placements = strip.layout(config: layoutConfig(for: display), viewport: viewport(of: display))
+        guard let mine = placements.first(where: { $0.window == id })?.frame else { return }
+        let candidates = placements.filter { $0.window != id && !$0.isHiddenTab }
+        func score(_ f: Rect) -> Double? {
+            switch direction {
+            case .left: return f.maxX <= mine.minX + 4 ? (mine.minX - f.maxX) + abs(f.midY - mine.midY) * 0.5 : nil
+            case .right: return f.minX >= mine.maxX - 4 ? (f.minX - mine.maxX) + abs(f.midY - mine.midY) * 0.5 : nil
+            case .up: return f.maxY <= mine.minY + 4 ? (mine.minY - f.maxY) + abs(f.midX - mine.midX) * 0.5 : nil
+            case .down: return f.minY >= mine.maxY - 4 ? (f.minY - mine.maxY) + abs(f.midX - mine.midX) * 0.5 : nil
+            }
+        }
+        guard let target = candidates.compactMap({ p in score(p.frame).map { (p.window, $0) } }).min(by: { $0.1 < $1.1 })?.0 else {
+            onNotice("Nothing to dock onto that way")
+            return
+        }
+        let edge: SplitTree.Edge = [.left: .right, .right: .left, .up: .bottom, .down: .top][direction]!
+        dock(window, onto: target, edge: edge)
+    }
+
+    /// The gaps between windows that can be dragged, on the strips in view.
+    func gapHandles() -> [GapHandle] {
+        guard settings.gapHandles, isRunning, !isPaused else { return [] }
+        var handles: [GapHandle] = []
+        for display in displays {
+            let key = currentKey(display)
+            guard let strip = strips[key] else { continue }
+            let config = layoutConfig(for: display)
+            let placements = strip.layout(config: config, viewport: viewport(of: display))
+            let visible = placements.filter { !$0.isHiddenTab && !$0.isParked }
+            for a in visible {
+                guard let (ca, _) = strip.locate(a.window) else { continue }
+                for b in visible where b.window != a.window {
+                    guard let (cb, _) = strip.locate(b.window) else { continue }
+                    let gap = b.frame.minX - a.frame.maxX
+                    let overlapY = min(a.frame.maxY, b.frame.maxY) - max(a.frame.minY, b.frame.minY)
+                    if gap >= -1, gap <= max(config.gap, 2) + 4, overlapY > 40 {
+                        let x = a.frame.maxX + gap / 2
+                        let top = max(a.frame.minY, b.frame.minY)
+                        let between = ca == cb
+                        handles.append(GapHandle(first: a.window, second: b.window, axis: .horizontal, key: key, betweenSlides: !between,
+                                                 frame: CGRect(x: x - 4, y: top, width: 8, height: overlapY)))
+                    }
+                    let vgap = b.frame.minY - a.frame.maxY
+                    let overlapX = min(a.frame.maxX, b.frame.maxX) - max(a.frame.minX, b.frame.minX)
+                    if ca == cb, vgap >= -1, vgap <= max(config.gap, 2) + 4, overlapX > 40 {
+                        let y = a.frame.maxY + vgap / 2
+                        handles.append(GapHandle(first: a.window, second: b.window, axis: .vertical, key: key, betweenSlides: false,
+                                                 frame: CGRect(x: max(a.frame.minX, b.frame.minX), y: y - 4, width: overlapX, height: 8)))
+                    }
+                }
+            }
+        }
+        // One handle per run of gap (a split shared by several windows is still one line).
+        var unique: [GapHandle] = []
+        for handle in handles where !unique.contains(where: { $0.frame.intersects(handle.frame) && $0.axis == handle.axis }) {
+            unique.append(handle)
+        }
+        return unique
+    }
+
+    struct GapHandle: Equatable {
+        var first: WindowID
+        var second: WindowID
+        var axis: SplitTree.Axis
+        var key: StripKey
+        var betweenSlides: Bool
+        var frame: CGRect
+    }
+
+    private var gapDragRecorded = false
+
+    /// Dragging a gap by `delta` points: both windows change at once.
+    func dragGap(_ handle: GapHandle, by delta: Double, ended: Bool) {
+        guard var strip = strips[handle.key], let display = display(for: handle.key) else { return }
+        if !gapDragRecorded {
+            recordHistory()
+            nextChangeLabel = "Resize"
+            gapDragRecorded = true
+        }
+        let config = layoutConfig(for: display)
+        let width = viewport(of: display).width
+        if handle.betweenSlides {
+            // The left slide grows, the strip scrolls on.
+            guard let (c, _) = strip.locate(handle.first) else { return }
+            let current = strip.columns[c].effectiveWidth
+            let points = config.columnWidth(fraction: current, viewportWidth: width) + delta
+            strip.setWidth(config.fraction(forColumnWidth: points, viewportWidth: width), of: handle.first)
+        } else if let (c, _) = strip.locate(handle.first) {
+            if !strip.columns[c].isNested {
+                strip.focus(handle.first)
+                if [.columns, .stack].contains(strip.columns[c].arrangement) {
+                    strip.nestFocused()
+                } else if [.mainLeft, .mainTop].contains(strip.columns[c].arrangement) {
+                    let size = strip.columnFrames(config: config, viewport: viewport(of: display))[c].frame
+                    let span = handle.axis == .horizontal ? size.width : size.height
+                    strip.adjustSplit(by: delta / max(span, 1) * (strip.columns[c].windows.first == handle.first ? 1 : -1))
+                    strips[handle.key] = strip
+                    layout(animated: false)
+                    if ended { gapDragRecorded = false; scheduleSave() }
+                    return
+                }
+            }
+            let size = strip.columnFrames(config: config, viewport: viewport(of: display))[c].frame
+            let span = handle.axis == .horizontal ? size.width : size.height
+            if let tree = strip.columns[c].tree {
+                strip.columns[c].tree = tree.adjusting(handle.first, axis: handle.axis, by: delta / max(span, 1))
+            }
+        }
+        strips[handle.key] = strip
+        layout(animated: false)
+        if ended {
+            gapDragRecorded = false
+            scheduleSave()
+            onStateChange()
         }
     }
 

@@ -412,7 +412,7 @@ private struct SliderBarView: View {
         var ux = min(max((x - left(tile)) / max(tile.width * scale, 1), 0), 0.999)
         let uy = min(max((Double(point.y) - 4) / max(height - 8, 1), 0), 0.999)
         if map.isRightToLeft { ux = 1 - ux }
-        let frames = tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows)
+        let frames = (tile.nestedFrames.flatMap { $0.count == tile.windows.count ? $0 : nil } ?? tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows))
         let index = frames.firstIndex { $0.contains(x: ux, y: uy) } ?? 0
         return tile.windows.indices.contains(index) ? tile.windows[index].id : tile.windows.first?.id
     }
@@ -535,7 +535,7 @@ private struct TileView: View {
                 .fill(tile.isFocused ? Color.accentColor.opacity(0.35) : Color.primary.opacity(0.10))
             if tile.windows.count > 1 {
                 // Hint at the slide's layout with thin tile outlines.
-                TileOutlines(frames: tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows))
+                TileOutlines(frames: (tile.nestedFrames.flatMap { $0.count == tile.windows.count ? $0 : nil } ?? tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows)))
                     .stroke(Color.primary.opacity(0.18), lineWidth: 1)
                     .padding(3)
             }
@@ -794,7 +794,7 @@ private struct PreviewView: View {
                     }
                 }
                 GeometryReader { geometry in
-                    let frames = tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows)
+                    let frames = (tile.nestedFrames.flatMap { $0.count == tile.windows.count ? $0 : nil } ?? tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows))
                     ZStack(alignment: .topLeading) {
                         ForEach(Array(tile.windows.enumerated()), id: \.element.id) { index, window in
                             let unit = frames[index]
@@ -1123,7 +1123,7 @@ private struct SlideCard: View {
                 RoundedRectangle(cornerRadius: 7)
                     .fill(tile.isFocused ? Color.accentColor.opacity(0.3) : Color.primary.opacity(0.08))
                 if tile.windows.count > 1 {
-                    TileOutlines(frames: tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows))
+                    TileOutlines(frames: (tile.nestedFrames.flatMap { $0.count == tile.windows.count ? $0 : nil } ?? tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows)))
                         .stroke(Color.primary.opacity(0.25), lineWidth: 1)
                         .padding(4)
                 }

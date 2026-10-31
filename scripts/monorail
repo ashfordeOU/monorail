@@ -3,6 +3,7 @@
 #   monorail <action>                 run any action (focus-left, overview, …)
 #   monorail layout|pair|template|snapshot|focus-app|notify|awake <name>
 #   monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
+#   monorail subscribe                 follow live events (one JSON object per line)
 # Queries need the local API (Settings → Automation → Local API) and print JSON.
 set -eu
 
@@ -11,6 +12,7 @@ usage() {
 Usage: monorail <action>
        monorail layout|pair|template|snapshot|focus-app|notify|awake <name>
        monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
+       monorail subscribe    live events: state, action, agent_waiting, window_closed (JSON lines)
 
 Actions include:
   focus-left focus-right focus-up focus-down focus-first focus-last
@@ -40,6 +42,10 @@ if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
 fi
 
 case "$1" in
+    subscribe)
+        sock="$HOME/Library/Application Support/Monorail/events.sock"
+        [ -S "$sock" ] || { echo "monorail: Monorail isn't running" >&2; exit 69; }
+        exec nc -U "$sock" ;;
     windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights)
         api "$1" ;;
     awake)

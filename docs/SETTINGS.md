@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-197 settings.
+199 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -196,6 +196,8 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `restoreBrowserTabs` | Snapshots also save and reopen browser tabs (Safari, Chrome, Arc, Brave, Edge) and Finder windows. | `false` |
 | `floatSuggestions` | Suggest always floating an app after you float its windows by hand a few times. | `true` |
 | `assistantModel` | The Claude model the optional assistant uses, with your own API key. | `"claude-opus-5-5"` |
+| `dragToDock` | Drag a window onto another window: near an edge docks it beside, the middle makes a tab group (any apps). | `true` |
+| `gapHandles` | Drag the gap between two windows to resize both at once. | `true` |
 | `keepWindowsInPlace` | Snap windows back when an app moves or resizes one by itself. | `true` |
 | `resizeAssist` | After resizing a window in a slide, offer to rearrange the slide. | `true` |
 | `pairLoneWindowsOnOpen` | Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). | `false` |

@@ -115,6 +115,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let awake = StayAwake()
     let usage = UsageLog()
     private let telemetry = Telemetry()
+    private let dockPreview = DockPreview()
+    private let gapHandles = GapHandles()
     private var awakeTicker: Timer?
     private var scriptsOn = false
     private let statusMenu = NSMenu()
@@ -174,6 +176,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         usage.awake(false)
         awake.shutdown()
         usage.save()
+        EventStream.shared.stop()
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
@@ -463,6 +466,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NSSound(named: "Glass")?.play()
             self.postWebhook("agent_waiting", ["id": Int(id), "app": app])
         }
+        engine.onDockPreview = { [weak self] rect, edge in self?.dockPreview.show(rect, edge: edge) }
+        gapHandles.handles = { [weak self] in self?.engine.gapHandles() ?? [] }
+        gapHandles.drag = { [weak self] handle, delta, ended in self?.engine.dragGap(handle, by: delta, ended: ended) }
+        engine.onOverlaysUpdated = { [weak self] in self?.gapHandles.refresh() }
         engine.onRuleSuggestion = { [weak self] name, bundle, width in
             guard let self else { return }
             var settings = self.store.settings
@@ -559,6 +566,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func wireUpAwake() {
         engine.onActionPerformed = { [weak self] action in
             guard let self else { return }
+            EventStream.shared.send("action", ["action": action.rawValue])
             self.usage.action(action)
             let steps = (self.usage.stored.actions["focus-left"] ?? 0) + (self.usage.stored.actions["focus-right"] ?? 0)
             if steps == 30 { self.tipOnce("slide-mode", "tap the right ⌥ key on its own for slide mode, then just use the arrow keys") }
@@ -836,6 +844,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let signature = "\(status.workspace)-\(status.focusedColumn)-\(status.columnCount)"
             if signature != lastStatusSignature {
                 lastStatusSignature = signature
+                EventStream.shared.send("state", ["workspace": status.workspace, "slide": status.focusedColumn,
+                                                  "slides": status.columnCount])
                 if store.settings.notchHUD {
                     notchHUD.show(slide: status.focusedColumn, slides: status.columnCount, workspace: status.workspace,
                                   workspaces: engine.workspaceCount)
@@ -1408,6 +1418,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func postWebhook(_ event: String, _ payload: [String: Any]) {
+        EventStream.shared.send(event, payload)
         let url = store.settings.webhookURL.trimmingCharacters(in: .whitespaces)
         guard !url.isEmpty else { return }
         Webhook.post(url, event: event, payload: payload)
@@ -1529,6 +1540,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         store.watchFile()
         autoRules.start()
         startTelemetry()
+        EventStream.shared.start()
         // After an update: what changed. (Not on a first install.)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         if store.settings.hasCompletedOnboarding, !version.isEmpty, store.settings.lastSeenVersion != version {
@@ -1731,6 +1743,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         commands.currentLayout = { [weak self] id in self?.engine.slideLayout(of: id) ?? nil }
         commands.customLayouts = { [weak self] in self?.store.settings.customLayouts ?? [] }
         commands.setCustomLayout = { [weak self] id, rows in self?.engine.setSlideLayout(of: id, to: .custom, rows: rows) }
+        commands.setZones = { [weak self] id, zones in self?.engine.setSlideZones(of: id, to: zones) }
         commands.currentRows = { [weak self] id in self?.engine.slideRows(of: id) }
         commands.saveAppPair = { [weak self] id in self?.saveAppPair(from: id) }
         commands.isSticky = { [weak self] id in self?.engine.isSticky(id) ?? false }
@@ -2629,6 +2642,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             parent.submenu = workspaces
             menu.addItem(parent)
         }
+        // Views: back and forward like a browser, and the saved views of this display.
+        let views = NSMenu()
+        for (title, action) in [("Back", Action.viewBack), ("Forward", Action.viewForward)] {
+            let entry = item(title, #selector(performMenuAction(_:)), action: action)
+            entry.representedObject = action.rawValue
+            views.addItem(entry)
+        }
+        views.addItem(.separator())
+        let saved = engine.savedViewList()
+        for view in saved {
+            let entry = item("View \(view.number) · \(store.settings.workspaceName(view.workspace - 1))", #selector(performMenuAction(_:)),
+                             action: Action(rawValue: "view-\(view.number)"))
+            entry.representedObject = "view-\(view.number)"
+            views.addItem(entry)
+        }
+        if saved.isEmpty {
+            let hint = NSMenuItem(title: "Save a view with ⌃⌥⌘⇧ and a number", action: nil, keyEquivalent: "")
+            hint.isEnabled = false
+            views.addItem(hint)
+        }
+        let next = (1...9).first { n in !saved.contains { $0.number == n } } ?? 9
+        let save = item("Save This View as \(next)", #selector(performMenuAction(_:)), action: Action(rawValue: "save-view-\(next)"))
+        save.representedObject = "save-view-\(next)"
+        views.addItem(save)
+        let viewsParent = NSMenuItem(title: L("Views"), action: nil, keyEquivalent: "")
+        viewsParent.submenu = views
+        menu.addItem(viewsParent)
         if store.settings.profiles.count > 1 {
             let profiles = NSMenu()
             for (index, name) in store.settings.profiles.enumerated() {
@@ -2886,6 +2926,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return "\(workspace)Slide \(status.focusedColumn) of \(status.columnCount)"
         }
         return "Monorail is running"
+    }
+
+    @objc private func performMenuAction(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? String, let action = Action(rawValue: raw) else { return }
+        afterMenu { [weak self] _ in self?.engine.perform(action) }
     }
 
     private func item(_ title: String, _ selector: Selector, key: String = "", action: Action? = nil) -> NSMenuItem {

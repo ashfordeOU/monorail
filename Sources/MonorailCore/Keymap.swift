@@ -242,12 +242,17 @@ public struct Keymap: Equatable, Codable, Sendable {
             .snapCenter: [s(KeyCode.c, coc)],
             .snapRestore: [s(KeyCode.delete, coc)],
             .togglePause: [s(KeyCode.q, co)],
+            .viewBack: [s(KeyCode.leftBracket, coc)],
+            .viewForward: [s(KeyCode.rightBracket, coc)],
         ]
         // Digits switch workspaces (add Shift to take the window along).
         // Jumping to a column by number is in slide mode, or can be bound in Settings.
         for action in Action.allCases {
             if let n = action.workspaceNumber { b[action] = [s(KeyCode.digits[n - 1], co)] }
             if let n = action.moveToWorkspaceNumber { b[action] = [s(KeyCode.digits[n - 1], cos)] }
+            // Saved views: Control-Option-Command plus a digit; add Shift to save.
+            if let n = action.viewNumber { b[action] = [s(KeyCode.digits[n - 1], coc)] }
+            if let n = action.saveViewNumber { b[action] = [s(KeyCode.digits[n - 1], [.control, .option, .command, .shift])] }
         }
         return Keymap(bindings: b)
     }()

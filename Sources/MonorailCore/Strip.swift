@@ -13,7 +13,13 @@ public enum PinSide: String, Codable, Sendable {
 /// One column of the strip: a single window, several stacked vertically,
 /// tabs, or a grid of tiles (a "slide").
 public struct Column: Equatable, Codable, Sendable {
-    public var windows: [WindowID]
+    public var windows: [WindowID] {
+        // A nested slide keeps its shape when windows come and go.
+        didSet { if tree != nil, windows != oldValue { tree = tree?.reconciled(with: windows) } }
+    }
+    /// Splits inside splits, built by docking windows onto each other. Overrides
+    /// `arrangement` while set.
+    public var tree: SplitTree?
     /// Index into `windows` of the window that has focus within the column.
     public var active: Int
     /// Width as a fraction of the usable display width.
@@ -79,6 +85,15 @@ public struct Column: Equatable, Codable, Sendable {
         }
     }
 
+    /// Whether the slide uses its own nested splits.
+    public var isNested: Bool { tree != nil && !isTabbed }
+
+    /// Windows behind the front tab of a tab group inside a nested slide.
+    public var hiddenTabs: Set<WindowID> {
+        guard isNested, let tree else { return [] }
+        return Set(tree.tiles().filter(\.isHiddenTab).map(\.window))
+    }
+
     /// More than six windows in one slide is too crowded to use.
     public static let maximumWindows = 6
 
@@ -90,11 +105,17 @@ public struct Column: Equatable, Codable, Sendable {
     public var isTiled: Bool { arrangement != .stack }
 
     /// Tile rectangles in unit coordinates for the column's windows.
-    public var unitFrames: [Rect] { arrangement.unitFrames(count: windows.count, split: split, rows: customRows) }
+    public var unitFrames: [Rect] {
+        if isNested, let tree {
+            let tiles = Dictionary(tree.tiles().map { ($0.window, $0.frame) }, uniquingKeysWith: { a, _ in a })
+            if tiles.count == windows.count, windows.allSatisfy({ tiles[$0] != nil }) { return windows.map { tiles[$0]! } }
+        }
+        return arrangement.unitFrames(count: windows.count, split: split, rows: customRows)
+    }
 
     private enum CodingKeys: String, CodingKey {
         case windows, active, width, isFullWidth, isTabbed, arrangement, split, isGrid, pin, isCustom, customRows
-        case name, isLocked, isTall
+        case name, isLocked, isTall, tree
     }
 
     public init(from decoder: Decoder) throws {
@@ -116,6 +137,7 @@ public struct Column: Equatable, Codable, Sendable {
         name = try c.decodeIfPresent(String.self, forKey: .name)
         isLocked = try c.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
         isTall = try c.decodeIfPresent(Bool.self, forKey: .isTall) ?? false
+        tree = (try? c.decodeIfPresent(SplitTree.self, forKey: .tree))?.reconciled(with: windows)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -133,6 +155,7 @@ public struct Column: Equatable, Codable, Sendable {
         try c.encodeIfPresent(name, forKey: .name)
         if isLocked { try c.encode(isLocked, forKey: .isLocked) }
         if isTall { try c.encode(isTall, forKey: .isTall) }
+        try c.encodeIfPresent(tree, forKey: .tree)
     }
 }
 
@@ -269,6 +292,7 @@ public struct Strip: Equatable, Codable, Sendable {
         guard let (c, r) = locate(window) else { return false }
         focusedColumn = c
         columns[c].active = r
+        if columns[c].tree != nil { columns[c].tree = columns[c].tree?.activating(window) }
         return true
     }
 
@@ -870,6 +894,63 @@ public struct Strip: Equatable, Codable, Sendable {
         columns[focusedColumn].pin = columns[focusedColumn].pin == side ? nil : side
     }
 
+    // MARK: - Nested slides
+
+    /// Docks `window` onto `target`'s edge (or into its tab group, for `.center`), wherever
+    /// either is: the dragged window leaves its own slide and the target's slide becomes nested.
+    @discardableResult
+    public mutating func dock(_ window: WindowID, onto target: WindowID, edge: SplitTree.Edge) -> Bool {
+        guard window != target, locate(target) != nil else { return false }
+        // From another slide, the window leaves it first (a floating window simply joins).
+        if let (c, _) = locate(window), let (t, _) = locate(target), c != t { _ = remove(window) }
+        guard let (t, _) = locate(target) else { return false }
+        var column = columns[t]
+        let base = column.tree ?? SplitTree.from(column.windows.filter { $0 != window }, arrangement: column.isTabbed ? .columns : column.arrangement)
+            ?? .single(target)
+        let tree = base.docking(window, onto: target, edge: edge)
+        column.isTabbed = false
+        column.isTall = false
+        column.isCustom = true
+        column.tree = tree
+        column.windows = tree.windows
+        column.active = column.windows.firstIndex(of: window) ?? 0
+        columns[t] = column
+        focusedColumn = t
+        return true
+    }
+
+    /// Takes `window` out of its tab group or nested split into a slide of its own beside it.
+    @discardableResult
+    public mutating func tearOff(_ window: WindowID, width: Double) -> Bool {
+        guard let (c, _) = locate(window), columns[c].windows.count > 1 else { return false }
+        moveWindow(window, toNewColumnAt: c + 1, width: width)
+        return true
+    }
+
+    /// Nudges the nearest split around the focused window (positive grows it).
+    public mutating func adjustNested(axis: SplitTree.Axis, by delta: Double) {
+        guard columns.indices.contains(focusedColumn), let tree = columns[focusedColumn].tree else { return }
+        columns[focusedColumn].tree = tree.adjusting(columns[focusedColumn].activeWindow, axis: axis, by: delta)
+    }
+
+    /// Sets the nested splits so `window` fills `unit` of its slide as nearly as it can.
+    @discardableResult
+    public mutating func resizeNested(_ window: WindowID, toUnit unit: Rect) -> Bool {
+        guard let (c, _) = locate(window), let tree = columns[c].tree, columns[c].isNested else { return false }
+        let next = tree.resizing(window, to: unit)
+        guard next != tree else { return false }
+        columns[c].tree = next
+        return true
+    }
+
+    /// Turns the focused slide into a nested one with the same tiles, ready to split further.
+    public mutating func nestFocused() {
+        guard columns.indices.contains(focusedColumn), columns[focusedColumn].tree == nil else { return }
+        let column = columns[focusedColumn]
+        columns[focusedColumn].tree = SplitTree.from(column.windows, arrangement: column.arrangement)
+        columns[focusedColumn].isTabbed = false
+    }
+
     public mutating func toggleTabbed() {
         guard columns.indices.contains(focusedColumn) else { return }
         columns[focusedColumn].isTabbed.toggle()
@@ -881,6 +962,8 @@ public struct Strip: Equatable, Codable, Sendable {
         guard columns.indices.contains(focusedColumn) else { return }
         if columns[focusedColumn].isTabbed {
             columns[focusedColumn].isTabbed = false
+        } else if columns[focusedColumn].tree != nil {
+            columns[focusedColumn].tree = nil
         } else {
             columns[focusedColumn].arrangement = columns[focusedColumn].arrangement.next
         }
@@ -889,6 +972,7 @@ public struct Strip: Equatable, Codable, Sendable {
     public mutating func setArrangement(_ arrangement: Arrangement, rows: [Int]? = nil) {
         guard columns.indices.contains(focusedColumn) else { return }
         columns[focusedColumn].isTabbed = false
+        columns[focusedColumn].tree = nil
         columns[focusedColumn].arrangement = arrangement
         columns[focusedColumn].customRows = arrangement == .custom ? rows : nil
     }
@@ -1150,13 +1234,20 @@ public struct Strip: Equatable, Codable, Sendable {
                 continue
             }
             let mirrored = config.direction == .rightToLeft
+            let hidden = column.hiddenTabs
+            let groups = column.isNested ? (column.tree?.tabGroups.flatMap { $0 } ?? []) : []
             for (index, unit) in column.unitFrames.enumerated() {
                 let tile = mirrored ? Rect(x: 1 - unit.maxX, y: unit.y, width: unit.width, height: unit.height) : unit
+                var frame = Self.tileFrame(tile, in: columnFrame, gap: config.gap)
+                if groups.contains(column.windows[index]) {
+                    // Room for the tab group's bar above it.
+                    let bar = min(config.tabBarHeight, frame.height / 3)
+                    frame = Rect(x: frame.x, y: frame.y + bar, width: frame.width, height: frame.height - bar).rounded()
+                }
                 placements.append(
                     Placement(
-                        window: column.windows[index],
-                        frame: Self.tileFrame(tile, in: columnFrame, gap: config.gap),
-                        isParked: parked))
+                        window: column.windows[index], frame: frame, isParked: parked,
+                        isHiddenTab: hidden.contains(column.windows[index])))
             }
         }
         return placements
@@ -1180,12 +1271,30 @@ public struct Strip: Equatable, Codable, Sendable {
     /// Tab bars for tabbed columns that are on screen.
     public func tabBars(config: LayoutConfig, viewport: Rect) -> [TabBar] {
         let frames = columnFrames(config: config, viewport: viewport)
-        return columns.enumerated().compactMap { index, column in
+        var bars: [TabBar] = []
+        let mirrored = config.direction == .rightToLeft
+        for (index, column) in columns.enumerated() {
             let (frame, parked) = frames[index]
-            guard column.isTabbed, !parked else { return nil }
-            let height = min(config.tabBarHeight, frame.height / 2)
-            let bar = Rect(x: frame.x, y: frame.y, width: frame.width, height: height - 2).rounded()
-            return TabBar(column: index, frame: bar, windows: column.windows, active: column.active)
+            guard !parked else { continue }
+            if column.isTabbed {
+                let height = min(config.tabBarHeight, frame.height / 2)
+                let bar = Rect(x: frame.x, y: frame.y, width: frame.width, height: height - 2).rounded()
+                bars.append(TabBar(column: index, frame: bar, windows: column.windows, active: column.active))
+                continue
+            }
+            // Tab groups inside a nested slide: a bar over each group.
+            guard column.isNested, let tree = column.tree else { continue }
+            var seen = Set<WindowID>()
+            for tile in tree.tiles() where tile.group.count > 1 && !seen.contains(tile.front) {
+                seen.insert(tile.front)
+                let unit = mirrored ? Rect(x: 1 - tile.frame.maxX, y: tile.frame.y, width: tile.frame.width, height: tile.frame.height) : tile.frame
+                let area = Self.tileFrame(unit, in: frame, gap: config.gap)
+                let height = min(config.tabBarHeight, area.height / 3)
+                let bar = Rect(x: area.x, y: area.y, width: area.width, height: height - 2).rounded()
+                bars.append(TabBar(column: index, frame: bar, windows: tile.group,
+                                   active: tile.group.firstIndex(of: tile.front) ?? 0))
+            }
         }
+        return bars
     }
 }

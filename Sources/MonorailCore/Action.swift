@@ -223,6 +223,52 @@ public enum Action: String, Codable, CaseIterable, Sendable {
     case awake120 = "stay-awake-120"
     case awakeWhileDownloading = "stay-awake-downloading"
     case toggleAwakeDisplay = "stay-awake-display"
+    // 1.7: nested slides, docking, saved views, tags.
+    case dockLeft = "dock-left"
+    case dockRight = "dock-right"
+    case dockUp = "dock-up"
+    case dockDown = "dock-down"
+    case tearOff = "tear-off"
+    case balanceSplits = "balance-splits"
+    case nestSlide = "nest-slide"
+    case viewBack = "view-back"
+    case viewForward = "view-forward"
+    case view1 = "view-1"
+    case view2 = "view-2"
+    case view3 = "view-3"
+    case view4 = "view-4"
+    case view5 = "view-5"
+    case view6 = "view-6"
+    case view7 = "view-7"
+    case view8 = "view-8"
+    case view9 = "view-9"
+    case saveView1 = "save-view-1"
+    case saveView2 = "save-view-2"
+    case saveView3 = "save-view-3"
+    case saveView4 = "save-view-4"
+    case saveView5 = "save-view-5"
+    case saveView6 = "save-view-6"
+    case saveView7 = "save-view-7"
+    case saveView8 = "save-view-8"
+    case saveView9 = "save-view-9"
+    case tag1 = "tag-1"
+    case tag2 = "tag-2"
+    case tag3 = "tag-3"
+    case tag4 = "tag-4"
+    case tag5 = "tag-5"
+    case tag6 = "tag-6"
+    case tag7 = "tag-7"
+    case tag8 = "tag-8"
+    case tag9 = "tag-9"
+    case combine1 = "combine-1"
+    case combine2 = "combine-2"
+    case combine3 = "combine-3"
+    case combine4 = "combine-4"
+    case combine5 = "combine-5"
+    case combine6 = "combine-6"
+    case combine7 = "combine-7"
+    case combine8 = "combine-8"
+    case combine9 = "combine-9"
     case retile
     case undo
     case togglePause = "toggle-pause"
@@ -424,6 +470,15 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         case .awake120: return "Stay awake for 2 hours"
         case .awakeWhileDownloading: return "Stay awake while downloading"
         case .toggleAwakeDisplay: return "Stay Awake: keep the display on or let it sleep"
+        case .dockLeft: return "Dock onto the window on the left"
+        case .dockRight: return "Dock onto the window on the right"
+        case .dockUp: return "Dock onto the window above"
+        case .dockDown: return "Dock onto the window below"
+        case .tearOff: return "Tear off into a slide of its own"
+        case .balanceSplits: return "Even out the splits in this slide"
+        case .nestSlide: return "Split this slide freely (nested)"
+        case .viewBack: return "Back to the previous view"
+        case .viewForward: return "Forward to the next view"
         case .retile: return "Retile everything"
         case .undo: return "Undo last layout change"
         case .togglePause: return "Pause / resume"
@@ -431,6 +486,10 @@ public enum Action: String, Codable, CaseIterable, Sendable {
             if let n = columnNumber { return "Focus column \(n)" }
             if let n = workspaceNumber { return "Switch to workspace \(n)" }
             if let n = moveToWorkspaceNumber { return "Move window to workspace \(n)" }
+            if let n = viewNumber { return "Go to saved view \(n)" }
+            if let n = saveViewNumber { return "Save this view as \(n)" }
+            if let n = tagNumber { return "Also keep this window on workspace \(n)" }
+            if let n = combineNumber { return "Show workspace \(n) alongside this one" }
             return rawValue
         }
     }
@@ -471,6 +530,17 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         return Int(rawValue.dropFirst(prefix.count))
     }
 
+    private func number(after prefix: String) -> Int? {
+        guard rawValue.hasPrefix(prefix) else { return nil }
+        return Int(rawValue.dropFirst(prefix.count))
+    }
+
+    /// 1...9 for "go to saved view N", "save view N", "tag N" and "combine N".
+    public var viewNumber: Int? { number(after: "view-") }
+    public var saveViewNumber: Int? { number(after: "save-view-") }
+    public var tagNumber: Int? { number(after: "tag-") }
+    public var combineNumber: Int? { number(after: "combine-") }
+
     /// 1...9 for the "move window to workspace N" actions.
     public var moveToWorkspaceNumber: Int? {
         let prefix = "move-to-workspace-"
@@ -490,13 +560,14 @@ public enum Action: String, Codable, CaseIterable, Sendable {
 
     /// Actions without a default shortcut (bind one in Settings, or use the
     /// menu, command palette, a window's right-click menu or a URL).
-    public static let unboundByDefault: Set<Action> = [
+    public static let unboundByDefault: Set<Action> = Set(Action.allCases.filter { $0.tagNumber != nil || $0.combineNumber != nil })
+        .union([.dockLeft, .dockRight, .dockUp, .dockDown, .tearOff, .balanceSplits, .nestSlide]).union([
         .swapDisplays, .moveToPointerDisplay, .expandToFill, .closeSlide, .minimizeSlide, .gatherApp, .sortSlides,
         .tileAllFloating, .rescueWindows, .biggerGaps, .smallerGaps, .centerFloating, .lockSlide, .openIntoSlide,
         .nameSlide, .toggleFitMode,
         .slideToStart, .slideToEnd, .slideToNextWorkspace, .slideToPreviousWorkspace, .slideToEmptyWorkspace, .unpairSlide, .mergeNext, .mergePrevious, .nextTile, .previousTile, .mainTile, .widthQuarter, .widthThird, .widthHalf, .widthTwoThirds, .widthThreeQuarters, .scrollToStart, .scrollToEnd, .layoutSideBySide, .layoutUpDown, .layoutGrid, .layoutMainSide, .layoutMainBottom, .layoutSpiral, .layoutAccordion, .layoutTabs, .resetSplit, .hideApp, .minimizeWorkspace, .minimizeOthers, .renameWorkspace, .swapWorkspaceNext, .swapWorkspacePrevious, .mergeWorkspacePrevious, .quickLaunchBeside, .openLinkBeside, .copyLayout, .pasteLayout, .noteWindow, .locatePointer, .flashFocus, .toggleDim, .toggleBorder, .toggleSliderBar, .toggleAnimations, .pomodoro, .toggleQuietMode, .restart, .openSettings, .checkForUpdates,
         .sortIntoProjects, .goToPredicted, .startIntent, .toggleElasticFocus, .addBookmark, .nextBookmark, .forkLayout, .keepFork, .discardFork, .groupWindow, .moveGroupToNextWorkspace, .showTimeline, .toggleTallColumn, .archiveWorkspace, .shareWorkspace, .toggleVimMode, .searchWindowText, .voiceCommand, .toggleDeepWork, .toggleReadingMode, .markPrivate, .shareSlide, .demoZoom, .toggleKeystrokes, .toggleAnnotate, .presenterNotes, .mirrorWindow, .guestMode, .ultrawideCenter, .linkAcrossDisplays, .cameraTile, .pairSync, .handoff, .clipboardHistory, .toggleAwake, .awake30, .awake60, .awake120, .awakeWhileDownloading, .toggleAwakeDisplay,
-    ]
+    ])
 
     /// The slide layout a "Slide layout: …" action sets (nil for tabs).
     public var directLayout: Arrangement?? {

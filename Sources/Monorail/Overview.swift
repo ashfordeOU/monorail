@@ -532,7 +532,7 @@ private struct ColumnCard: View {
             .padding(4)
         } else {
             GeometryReader { geometry in
-                let frames = column.arrangement.unitFrames(count: windows.count, split: column.split, rows: column.customRows)
+                let frames = (column.nestedFrames.flatMap { $0.count == windows.count ? $0 : nil } ?? column.arrangement.unitFrames(count: windows.count, split: column.split, rows: column.customRows))
                 ZStack(alignment: .topLeading) {
                     ForEach(Array(windows.enumerated()), id: \.element.id) { index, window in
                         let unit = frames[index]
@@ -583,6 +583,13 @@ private struct WindowTile: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             RoundedRectangle(cornerRadius: 7).fill(Color(white: 0.18))
+            if thumbnail == nil, let icon = window.icon {
+                // No picture (Screen Recording off, or not taken yet): the app's own colour.
+                RoundedRectangle(cornerRadius: 7).fill(
+                    LinearGradient(colors: [Color(nsColor: AppColor.of(icon, key: window.appName)).opacity(0.9),
+                                            Color(nsColor: AppColor.of(icon, key: window.appName)).opacity(0.55)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing))
+            }
             if let thumbnail {
                 GeometryReader { geometry in
                     Image(nsImage: thumbnail)
@@ -865,6 +872,10 @@ final class OverviewController {
             self?.commands.setCustomLayout(id, rows)
             self?.refresh()
         }
+        commands.setZones = { [weak self] id, zones in
+            self?.commands.setZones(id, zones)
+            self?.refresh()
+        }
         commands.currentRows = { [weak self] id in self?.commands.currentRows(id) }
         commands.saveAppPair = { [weak self] id in
             self?.close()
@@ -1050,4 +1061,44 @@ final class OverviewController {
         return panel
     }
 }
+
+/// The main colour of an app's icon, worked out once per app.
+enum AppColor {
+    private static var cache: [String: NSColor] = [:]
+
+    static func of(_ icon: NSImage, key: String) -> NSColor {
+        if let color = cache[key] { return color }
+        let color = average(icon) ?? NSColor(white: 0.3, alpha: 1)
+        cache[key] = color
+        return color
+    }
+
+    /// The average of the icon's saturated pixels at 16×16, so white and grey edges don't wash it out.
+    private static func average(_ icon: NSImage) -> NSColor? {
+        let size = 16
+        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
+                                         samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
+                                         bytesPerRow: 0, bitsPerPixel: 0)
+        else { return nil }
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        icon.draw(in: NSRect(x: 0, y: 0, width: size, height: size))
+        NSGraphicsContext.restoreGraphicsState()
+        var r = 0.0, g = 0.0, b = 0.0, weight = 0.0
+        for x in 0..<size {
+            for y in 0..<size {
+                guard let c = rep.colorAt(x: x, y: y), c.alphaComponent > 0.5 else { continue }
+                let maxC = max(c.redComponent, c.greenComponent, c.blueComponent)
+                let minC = min(c.redComponent, c.greenComponent, c.blueComponent)
+                let w = 0.1 + Double(maxC - minC)
+                r += Double(c.redComponent) * w; g += Double(c.greenComponent) * w; b += Double(c.blueComponent) * w
+                weight += w
+            }
+        }
+        guard weight > 0 else { return nil }
+        // A little darker, so white text stays readable on it.
+        return NSColor(red: r / weight * 0.8, green: g / weight * 0.8, blue: b / weight * 0.8, alpha: 1)
+    }
+}
 #endif
+

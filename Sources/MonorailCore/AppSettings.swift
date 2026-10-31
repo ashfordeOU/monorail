@@ -418,14 +418,39 @@ public struct CustomLayout: Equatable, Hashable, Codable, Sendable, Identifiable
     public var name: String
     /// Rows in each column, e.g. [1, 2] = one big tile beside two stacked.
     public var rows: [Int]
+    /// Zones drawn in the zone editor (splits inside splits); used instead of `rows` when set.
+    /// Leaves are numbered 1, 2, 3… in the order windows fill them.
+    public var zones: SplitTree?
 
-    public init(id: String = UUID().uuidString, name: String, rows: [Int]) {
+    public init(id: String = UUID().uuidString, name: String, rows: [Int], zones: SplitTree? = nil) {
         self.id = id
         self.name = name
         self.rows = rows
+        self.zones = zones
     }
 
-    public var tiles: Int { rows.reduce(0, +) }
+    public var tiles: Int { zones?.windows.count ?? rows.reduce(0, +) }
+
+    /// The same zones as `rows`, to start designing from.
+    public var zonesOrDefault: SplitTree {
+        if let zones { return zones }
+        var next: WindowID = 1
+        var columns: [SplitTree] = []
+        for count in rows {
+            var column = SplitTree.single(next)
+            next += 1
+            for _ in 1..<max(count, 1) {
+                column = column.docking(next, onto: column.windows.last!, edge: .bottom)
+                next += 1
+            }
+            columns.append(column.balanced)
+        }
+        guard var tree = columns.first else { return .single(1) }
+        for (index, column) in columns.enumerated().dropFirst() {
+            tree = .split(.horizontal, Double(index) / Double(index + 1), tree, column)
+        }
+        return tree
+    }
 }
 
 /// Apps that open together in one slide (like Android's app pairs).
@@ -839,6 +864,10 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var floatSuggestions = true
     /// The Claude model the optional assistant uses, with your own API key.
     public var assistantModel = "claude-opus-5-5"
+    /// Drag a window onto another window: near an edge docks it beside, the middle makes a tab group (any apps).
+    public var dragToDock = true
+    /// Drag the gap between two windows to resize both at once.
+    public var gapHandles = true
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true
     /// After resizing a window in a slide, offer to rearrange the slide.
@@ -1003,7 +1032,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
-        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
     }
 
     public init(from decoder: Decoder) throws {
@@ -1154,6 +1183,8 @@ public struct AppSettings: Equatable, Codable, Sendable {
         announceWindows = value(.announceWindows, d.announceWindows)
         webhookURL = value(.webhookURL, d.webhookURL)
         remoteCommands = value(.remoteCommands, d.remoteCommands)
+        dragToDock = value(.dragToDock, d.dragToDock)
+        gapHandles = value(.gapHandles, d.gapHandles)
         shareUsageStats = value(.shareUsageStats, d.shareUsageStats)
         usageNoticeShown = value(.usageNoticeShown, d.usageNoticeShown)
         restoreBrowserTabs = value(.restoreBrowserTabs, d.restoreBrowserTabs)

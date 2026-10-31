@@ -33,6 +33,8 @@ enum SettingsIndex {
         ("Check again", "general"),
         ("Strip direction", "layout"),
         ("Keep windows in place when an app resizes or moves them itself", "layout"),
+        ("Drag a window onto another to dock it beside (edges) or tab them together (middle)", "layout"),
+        ("Drag the gap between two windows to resize both", "layout"),
         ("After resizing a window in a slide, offer to rearrange it", "layout"),
         ("Group windows into slides by app", "layout"),
         ("Pair lone windows of different apps as they open", "layout"),

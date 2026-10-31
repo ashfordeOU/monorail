@@ -966,6 +966,10 @@ AZERTY, QWERTZ, Dvorak and other layouts.
 | Gaps on / off | <kbd>⌃⌥⇧0</kbd> |
 | Cheat sheet | Hold <kbd>⌃⌥</kbd> · <kbd>⌃⌥⇧/</kbd> |
 | Undo last layout change | <kbd>⌃⌥Z</kbd> |
+| Save this view · go to a saved view | <kbd>⌃⌥⌘⇧1</kbd>…<kbd>9</kbd> · <kbd>⌃⌥⌘1</kbd>…<kbd>9</kbd> |
+| Back · forward through views | <kbd>⌃⌥⌘[</kbd> · <kbd>⌃⌥⌘]</kbd> |
+| Dock a window beside another, or make a tab group | Drag it onto the other window's edge, or its middle |
+| Resize two windows at once | Drag the gap between them |
 | Retile everything | <kbd>⌃⌥Esc</kbd> |
 | Pause / resume | <kbd>⌃⌥Q</kbd> |
 
@@ -1041,7 +1045,14 @@ A few take a name or number:
 | `monorail://notify/Hello` | Show a notice |
 | `monorail://pomodoro` | Start or stop the pomodoro timer |
 | `monorail://awake` · `awake/60` · `awake/off` · `awake/downloading` | Stay Awake: toggle, for minutes, off, while downloading |
+| `monorail://view-2` · `monorail://save-view-2` · `monorail://view-back` | Saved views and back/forward |
+| `monorail://import/…` | Add a layout from a share link (asks first) |
 | `monorail://deep-work` · `monorail://share-slide` · `monorail://demo-zoom` | Any action, by its name |
+
+To follow what Monorail does as it happens, for a menu bar like SketchyBar or your own
+scripts, run `monorail subscribe`. It prints one JSON object per line: `focus`, `state`
+(workspace and slide), `action`, `agent_waiting` and `window_closed`. It reads a private socket
+in Monorail's folder; nothing listens on the network.
 
 In the **Shortcuts** app, use the **Open URLs** action with any of these, so
 Monorail fits into your automations, Focus filters and Stream Deck buttons.

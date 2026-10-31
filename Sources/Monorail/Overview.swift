@@ -42,6 +42,19 @@ final class OverviewModel: ObservableObject {
         }
     }
 
+    /// Live previews: refreshed every couple of seconds while the overview is open.
+    private var refresh: Timer?
+
+    func startLiveRefresh() {
+        refresh?.invalidate()
+        refresh = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.loadThumbnails() }
+    }
+
+    func stopLiveRefresh() {
+        refresh?.invalidate()
+        refresh = nil
+    }
+
     func loadThumbnails() {
         previewsAllowed = WindowThumbnails.isAllowed
         guard previewsAllowed else { return }
@@ -114,6 +127,8 @@ enum OverviewStyle {
     static var iconsOnly = false
     /// Private windows are blurred.
     static var blurPrivate = true
+    /// Previews refresh while the overview is open (off on battery with the energy saver).
+    static var live = true
 }
 
 /// The overview's backdrop: a deep, colourful gradient with soft glows and a
@@ -756,6 +771,7 @@ final class OverviewController {
         model.editing = nil
         model.thumbnails = [:]
         model.loadThumbnails()
+        if OverviewStyle.live && !OverviewStyle.iconsOnly { model.startLiveRefresh() }
         let panel = self.panel ?? makePanel()
         self.panel = panel
         let mouse = NSEvent.mouseLocation
@@ -769,6 +785,7 @@ final class OverviewController {
     }
 
     func close() {
+        model.stopLiveRefresh()
         guard let panel, panel.isVisible else { return }
         panel.orderOut(nil)
     }

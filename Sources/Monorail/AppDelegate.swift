@@ -546,6 +546,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         calendarFocus.setEnabled(settings.deepWorkFromCalendar)
         crashReporter.setEnabled(settings.crashReports)
         OverviewStyle.blurPrivate = settings.privacyBlur
+        OverviewStyle.live = !(settings.energySaver && Power.onBattery)
         if settings.dimFollowsPointer, dimMonitor == nil {
             dimMonitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
                 let location = NSEvent.mouseLocation

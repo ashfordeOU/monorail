@@ -911,7 +911,20 @@ private struct TemplatesSection: View {
                 }
                 .padding(.vertical, 3)
             }
-            Button("New Template") { store.settings.templates.append(WorkspaceTemplate(name: "Coding")) }
+            HStack {
+                Button("New Template") { store.settings.templates.append(WorkspaceTemplate(name: "Coding")) }
+                Menu("Add from the Gallery") {
+                    ForEach(TemplateGallery.all, id: \.name) { template in
+                        Button(template.name) {
+                            var copy = template
+                            copy.id = UUID().uuidString
+                            store.settings.templates.append(copy)
+                        }
+                        .disabled(store.settings.templates.contains { $0.name == template.name })
+                    }
+                }
+                .fixedSize()
+            }
         } header: {
             Text("Workspace templates")
         } footer: {

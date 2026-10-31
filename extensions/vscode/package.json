@@ -1,0 +1,19 @@
+{
+  "name": "monorail",
+  "displayName": "Monorail by Ashforde®",
+  "description": "Names your Monorail workspace after the project you're working on.",
+  "version": "1.2.0",
+  "publisher": "ashforde",
+  "engines": { "vscode": "^1.80.0" },
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Monorail",
+      "properties": {
+        "monorail.port": { "type": "number", "default": 4767, "description": "Monorail's local API port" },
+        "monorail.token": { "type": "string", "default": "", "description": "Monorail's local API token" }
+      }
+    }
+  }
+}

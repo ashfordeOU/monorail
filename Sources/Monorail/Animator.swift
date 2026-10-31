@@ -26,6 +26,9 @@ final class Animator {
     var curve: AnimationCurve = .smooth
     var framesPerSecond = 60
     private var timer: Timer?
+    /// On macOS 14 and later, frames follow the display (true 120 Hz on ProMotion).
+    private var link: AnyObject?
+    private var proxy: LinkProxy?
 
     var isRunning: Bool { timer != nil }
 
@@ -59,7 +62,16 @@ final class Animator {
         }
         self.duration = max(duration, 0.01)
         start = CACurrentMediaTime()
-        if timer == nil {
+        if timer == nil, link == nil, #available(macOS 14, *), let screen = NSScreen.main {
+            let proxy = LinkProxy { [weak self] in self?.step() }
+            let link = screen.displayLink(target: proxy, selector: #selector(LinkProxy.tick))
+            let fps = Float(min(max(framesPerSecond, 30), 120))
+            link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: fps, preferred: fps)
+            link.add(to: .main, forMode: .common)
+            self.link = link
+            self.proxy = proxy
+        }
+        if timer == nil, link == nil {
             let timer = Timer(timeInterval: 1.0 / Double(min(max(framesPerSecond, 30), 120)), repeats: true) { [weak self] _ in self?.step() }
             RunLoop.main.add(timer, forMode: .common)
             self.timer = timer
@@ -112,10 +124,19 @@ final class Animator {
     private func stop() {
         timer?.invalidate()
         timer = nil
+        if #available(macOS 14, *) { (link as? CADisplayLink)?.invalidate() }
+        link = nil
+        proxy = nil
     }
 
     private func sameSize(_ a: Rect, _ b: Rect) -> Bool {
         abs(a.width - b.width) < 0.5 && abs(a.height - b.height) < 0.5
     }
+}
+/// The display link's target (it needs an Objective-C object).
+private final class LinkProxy: NSObject {
+    let action: () -> Void
+    init(_ action: @escaping () -> Void) { self.action = action }
+    @objc func tick() { action() }
 }
 #endif

@@ -427,6 +427,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.stateChangedV12()
         }
         palette.dynamic = { [weak self] query in self?.dynamicCommands(query) ?? [] }
+        SmartBridge.remoteURL = { [weak self] in self?.webRemote.url }
+        SmartBridge.remoteQR = { [weak self] in self?.webRemote.qrCode() }
+        SmartBridge.learnMIDINote = { [weak self] handler in
+            self?.midiLearn = handler
+            self?.toast.show("Press a pad or key on your MIDI controller")
+        }
+        SmartBridge.acceptSuggestion = { [weak self] bundle in self?.acceptSuggestion(bundle) }
         deepWork.apps = { [weak self] in self?.store.settings.deepWorkApps ?? [] }
         deepWork.onChange = { [weak self] on in
             guard let self else { return }

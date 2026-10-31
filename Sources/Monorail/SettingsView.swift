@@ -6,7 +6,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum SettingsTab: String, CaseIterable, Identifiable {
-    case general, layout, input, appearance, apps, automation, insights, shortcuts, about
+    case general, layout, input, appearance, apps, smart, devices, automation, insights, shortcuts, about
     var id: String { rawValue }
 
     var title: String {
@@ -16,6 +16,8 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .input: return L("Motion & Input")
         case .appearance: return L("Appearance")
         case .apps: return L("Apps")
+        case .smart: return L("Smart")
+        case .devices: return L("Devices & Sharing")
         case .automation: return L("Automation")
         case .insights: return L("Insights")
         case .shortcuts: return L("Shortcuts")
@@ -30,6 +32,8 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .input: return "hand.draw"
         case .appearance: return "paintbrush"
         case .apps: return "square.grid.2x2"
+        case .smart: return "sparkles"
+        case .devices: return "dot.radiowaves.left.and.right"
         case .automation: return "clock.arrow.2.circlepath"
         case .insights: return "chart.bar"
         case .shortcuts: return "keyboard"
@@ -66,6 +70,12 @@ struct SettingsView: View {
             AppsPane(store: store)
                 .tabItem { Label(SettingsTab.apps.title, systemImage: SettingsTab.apps.symbol) }
                 .tag(SettingsTab.apps)
+            SmartPane(store: store)
+                .tabItem { Label(SettingsTab.smart.title, systemImage: SettingsTab.smart.symbol) }
+                .tag(SettingsTab.smart)
+            DevicesPane(store: store)
+                .tabItem { Label(SettingsTab.devices.title, systemImage: SettingsTab.devices.symbol) }
+                .tag(SettingsTab.devices)
             AutomationPane(store: store)
                 .tabItem { Label(SettingsTab.automation.title, systemImage: SettingsTab.automation.symbol) }
                 .tag(SettingsTab.automation)
@@ -79,7 +89,7 @@ struct SettingsView: View {
                 .tabItem { Label(SettingsTab.about.title, systemImage: SettingsTab.about.symbol) }
                 .tag(SettingsTab.about)
         }
-        .frame(width: 780, height: 640)
+        .frame(width: 900, height: 660)
     }
 }
 

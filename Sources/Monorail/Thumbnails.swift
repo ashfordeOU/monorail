@@ -99,7 +99,8 @@ private enum ModernCapture {
         let filter = SCContentFilter(desktopIndependentWindow: window)
         let config = SCStreamConfiguration()
         // Thumbnail size: sharp at preview scale without capturing full resolution.
-        let scale = min(1, 640 / max(window.frame.width, 1)) * 2
+        // Cards are at most ~420 pt wide, so capture no more than that (at 2× for Retina).
+        let scale = min(1, 420 / max(window.frame.width, 1)) * 2
         config.width = max(Int(window.frame.width * scale), 2)
         config.height = max(Int(window.frame.height * scale), 2)
         config.showsCursor = false

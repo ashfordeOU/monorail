@@ -177,6 +177,9 @@ private struct OverviewBackground: View {
                 }
             }
         }
+        // The backdrop never changes while the overview is open: render it once
+        // into a single layer instead of recomputing its big blurs every frame.
+        .drawingGroup()
         .ignoresSafeArea()
     }
 }

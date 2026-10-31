@@ -4,6 +4,12 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] - 2026-10-31
+
+### Changed
+- **The overview uses less energy.** Window previews are captured at the size the cards show (about a third fewer pixels), and the colourful backdrop is drawn once instead of on every frame.
+- **Measured on a MacBook (1.2.0 → 1.3.0, idle):** CPU went from 0.33% to 0.09% of one core, wake-ups from 18 to 0 per second, and memory from 272 MB to 47 MB.
+
 ## [1.3.0] - 2026-10-31
 
 Stay Awake, and lighter on energy.

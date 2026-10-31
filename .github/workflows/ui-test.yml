@@ -1,0 +1,44 @@
+name: UI test
+
+# Drives real windows end to end with `Monorail --ui-test`. GitHub's own Mac runners can't grant
+# Accessibility, so this runs on a Mac you register as a self-hosted runner with the label
+# `monorail-ui`. See docs/TESTING.md for the one-time setup. Runs by hand (Actions → UI test →
+# Run workflow), so nothing waits for a runner that isn't there.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-test
+  cancel-in-progress: true
+
+jobs:
+  ui:
+    name: UI test (self-hosted Mac)
+    runs-on: [self-hosted, macOS, monorail-ui]
+    timeout-minutes: 20
+    env:
+      MONORAIL_SIGNING_CERT: ${{ secrets.MONORAIL_SIGNING_CERT || secrets.MACSLIDER_SIGNING_CERT }}
+      MONORAIL_SIGNING_PASSWORD: ${{ secrets.MONORAIL_SIGNING_PASSWORD || secrets.MACSLIDER_SIGNING_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Import signing certificate
+        # The same certificate every build, so the Accessibility permission granted once keeps working.
+        run: scripts/ci-import-signing-cert.sh
+      - name: Build app
+        run: scripts/build-app.sh
+      - name: Install to the tested location
+        run: |
+          osascript -e 'quit app "Monorail"' 2>/dev/null || true
+          sleep 1
+          rm -rf "$HOME/Applications/Monorail UI Test.app"
+          mkdir -p "$HOME/Applications"
+          cp -R dist/Monorail.app "$HOME/Applications/Monorail UI Test.app"
+      - name: UI test
+        run: |
+          "$HOME/Applications/Monorail UI Test.app/Contents/MacOS/Monorail" --ui-test
+      - name: Restart the everyday copy
+        if: always()
+        run: open -a Monorail 2>/dev/null || true

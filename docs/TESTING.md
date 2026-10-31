@@ -75,3 +75,21 @@ sh scripts/smoke-test.sh
 It opens three TextEdit windows, checks that Monorail tiles them, pairs two, undoes, moves one to
 workspace 2, then closes them. It takes about 20 seconds and prints each check. Run it before a
 release, alongside `Monorail --self-test`.
+
+## UI test in GitHub Actions (self-hosted Mac)
+
+`Monorail --ui-test` runs the same checks as the smoke test from inside the app, without the
+local API, and exits with 0 when they pass. GitHub's Mac runners can't grant Accessibility, so the
+**UI test** workflow runs on a Mac of yours:
+
+1. On that Mac: GitHub → repository → Settings → Actions → Runners → **New self-hosted runner**
+   (macOS). Follow the steps, and add the label `monorail-ui` when asked.
+2. Run the workflow once (Actions → UI test → Run workflow). It builds and installs
+   `~/Applications/Monorail UI Test.app`, then stops at the UI test step because the app has no
+   Accessibility access yet.
+3. In System Settings → Privacy & Security → Accessibility, allow **Monorail UI Test**. Every later
+   build is signed with the same certificate, so this is needed only once.
+4. Run the workflow again. It quits your everyday Monorail during the test and opens it again after.
+
+To run it without Actions: `dist/Monorail.app/Contents/MacOS/Monorail --ui-test` from a terminal
+that has Accessibility access, or after allowing the built app.

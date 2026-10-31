@@ -4,6 +4,12 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.6.1] - 2026-11-01
+
+### Added
+- **Basics in Settings.** Settings opens on one page with the options most people change: a starting style, opening at login, fit mode, grouping, gaps, animation, the slider bar, focus outline, theme, the Caps Lock key, usage counts and updates. Everything else is still in the sidebar and search.
+- **`Monorail --ui-test`** drives real windows end to end (tiling, pairing, undo, moving between workspaces), plus a **UI test** workflow for a self-hosted Mac runner. See docs/TESTING.md.
+
 ## [1.6.0] - 2026-11-01
 
 ### Added

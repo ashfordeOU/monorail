@@ -6,11 +6,12 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum SettingsTab: String, CaseIterable, Identifiable {
-    case general, layout, input, appearance, apps, smart, devices, awake, automation, insights, shortcuts, about
+    case basics, general, layout, input, appearance, apps, smart, devices, awake, automation, insights, shortcuts, about
     var id: String { rawValue }
 
     var title: String {
         switch self {
+        case .basics: return L("Basics")
         case .general: return L("General")
         case .layout: return L("Layout")
         case .input: return L("Motion & Input")
@@ -28,6 +29,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 
     var symbol: String {
         switch self {
+        case .basics: return "star"
         case .general: return "gearshape"
         case .layout: return "rectangle.split.3x1"
         case .input: return "hand.draw"
@@ -45,7 +47,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 }
 
 final class SettingsNavigation: ObservableObject {
-    @Published var tab: SettingsTab = .general
+    @Published var tab: SettingsTab = .basics
 }
 
 struct SettingsView: View {
@@ -58,7 +60,7 @@ struct SettingsView: View {
 
     /// The sidebar's groups, most-used first.
     static let groups: [(String, [SettingsTab])] = [
-        (L("Essentials"), [.general, .layout, .shortcuts]),
+        (L("Essentials"), [.basics, .general, .layout, .shortcuts]),
         (L("Make it yours"), [.appearance, .input, .apps]),
         (L("Power"), [.smart, .automation, .devices, .awake]),
         (L("Monorail"), [.insights, .about]),
@@ -127,6 +129,7 @@ struct SettingsView: View {
     @ViewBuilder
     private func pane(_ tab: SettingsTab) -> some View {
         switch tab {
+        case .basics: BasicsPane(store: store, navigation: navigation)
         case .general: GeneralPane(store: store, isPaused: isPaused, setPaused: setPaused)
         case .layout: LayoutPane(store: store)
         case .input: InputPane(store: store)
@@ -165,6 +168,72 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+}
+
+// MARK: - Basics
+
+/// The settings most people change, on one page. Everything else is in the other panes.
+private struct BasicsPane: View {
+    @ObservedObject var store: SettingsStore
+    @ObservedObject var navigation: SettingsNavigation
+    @State private var launchAtLogin = LoginItem.isEnabled
+
+    var body: some View {
+        Form {
+            Section {
+                LabeledContent("Start from a style") {
+                    HStack {
+                        ForEach(StartStyle.allCases, id: \.self) { style in
+                            Button(style.title) { store.settings.apply(style) }.help(style.detail)
+                        }
+                    }
+                }
+                Toggle("Open Monorail when I log in", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { LoginItem.setEnabled($0) }
+            } header: {
+                Text("Getting set up")
+            }
+            Section {
+                Toggle("Every slide fits on screen (fit mode)", isOn: $store.settings.fitByDefault)
+                Toggle("Windows of the same app share a slide", isOn: $store.settings.groupByApp)
+                LabeledSlider(title: "Gap between windows", value: $store.settings.layout.gap, range: 0...40)
+                Toggle("Animate windows", isOn: $store.settings.animate)
+            } header: {
+                Text("Windows")
+            }
+            Section {
+                Toggle("Show the slider bar", isOn: Binding(
+                    get: { store.settings.sliderBar != .off },
+                    set: { store.settings.sliderBar = $0 ? .whileMoving : .off }))
+                Toggle("Outline the focused window", isOn: $store.settings.focusBorder)
+                Picker("Theme", selection: $store.settings.theme) {
+                    ForEach(Theme.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+            } header: {
+                Text("Look")
+            }
+            Section {
+                Toggle("Use Caps Lock as the Monorail key", isOn: $store.settings.capsLockKey)
+                    .help("Hold Caps Lock instead of ⌃⌥; tap it for the command palette")
+                LabeledContent("Shortcuts") {
+                    Button("Change Shortcuts…") { navigation.tab = .shortcuts }
+                }
+            } header: {
+                Text("Keys")
+            }
+            Section {
+                Toggle("Share anonymous usage counts", isOn: $store.settings.shareUsageStats)
+                Toggle("Check for updates automatically", isOn: $store.settings.checkForUpdates)
+            } header: {
+                Text("Privacy and updates")
+            } footer: {
+                Text("These are the settings most people change. Everything else is in the sidebar, or type in the search field to find any option.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .onAppear { launchAtLogin = LoginItem.isEnabled }
     }
 }
 

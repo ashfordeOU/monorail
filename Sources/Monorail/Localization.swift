@@ -25,6 +25,10 @@ enum Localization {
     /// Added in 1.4: more languages and the newer labels.
     private static let more: [String: [String: String]] = [
         "de": [
+            "Basics": "Grundlagen",
+            "Essentials": "Wichtig",
+            "Make it yours": "Anpassen",
+            "Power": "Profi",
             "Smart": "Intelligent",
             "Devices & Sharing": "Geräte & Teilen",
             "Stay Awake": "Wach bleiben",
@@ -36,6 +40,10 @@ enum Localization {
             "Usage": "Nutzung",
         ],
         "fr": [
+            "Basics": "L’essentiel",
+            "Essentials": "Principal",
+            "Make it yours": "Personnaliser",
+            "Power": "Avancé",
             "Smart": "Intelligence",
             "Devices & Sharing": "Appareils et partage",
             "Stay Awake": "Rester éveillé",
@@ -47,6 +55,10 @@ enum Localization {
             "Usage": "Utilisation",
         ],
         "es": [
+            "Basics": "Lo básico",
+            "Essentials": "Esencial",
+            "Make it yours": "Personalizar",
+            "Power": "Avanzado",
             "Smart": "Inteligente",
             "Devices & Sharing": "Dispositivos y compartir",
             "Stay Awake": "Mantener despierto",
@@ -58,6 +70,10 @@ enum Localization {
             "Usage": "Uso",
         ],
         "ja": [
+            "Basics": "基本",
+            "Essentials": "主要",
+            "Make it yours": "カスタマイズ",
+            "Power": "上級",
             "Smart": "スマート",
             "Devices & Sharing": "デバイスと共有",
             "Stay Awake": "スリープしない",
@@ -69,6 +85,10 @@ enum Localization {
             "Usage": "使用状況",
         ],
         "zh": [
+            "Basics": "基本",
+            "Essentials": "常用",
+            "Make it yours": "个性化",
+            "Power": "高级",
             "Pause Tiling": "暂停平铺",
             "Resume Tiling": "恢复平铺",
             "Overview": "概览",
@@ -128,6 +148,10 @@ enum Localization {
             "Usage": "使用情况",
         ],
         "pt": [
+            "Basics": "Básico",
+            "Essentials": "Essencial",
+            "Make it yours": "Personalizar",
+            "Power": "Avançado",
             "Pause Tiling": "Pausar organização",
             "Resume Tiling": "Retomar organização",
             "Overview": "Visão geral",
@@ -187,6 +211,10 @@ enum Localization {
             "Usage": "Uso",
         ],
         "ko": [
+            "Basics": "기본",
+            "Essentials": "주요",
+            "Make it yours": "맞춤 설정",
+            "Power": "고급",
             "Pause Tiling": "타일링 일시 정지",
             "Resume Tiling": "타일링 재개",
             "Overview": "개요",
@@ -246,6 +274,10 @@ enum Localization {
             "Usage": "사용량",
         ],
         "it": [
+            "Basics": "Essenziali",
+            "Essentials": "Principali",
+            "Make it yours": "Personalizza",
+            "Power": "Avanzate",
             "Pause Tiling": "Sospendi affiancamento",
             "Resume Tiling": "Riprendi affiancamento",
             "Overview": "Panoramica",

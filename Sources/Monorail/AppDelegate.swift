@@ -154,6 +154,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } else {
             waitForPermission()
         }
+        if UITest.isRequested {
+            runUITest()
+            return
+        }
         if !store.settings.hasCompletedOnboarding || !Accessibility.isTrusted(prompt: false) {
             showWelcome()
         }
@@ -1117,7 +1121,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         telemetry.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         telemetry.usage = { [weak self] in self?.usage.stored }
         telemetry.start()
-        guard !store.settings.usageNoticeShown, !safeMode else { return }
+        guard !store.settings.usageNoticeShown, !safeMode, !UITest.isRequested else { return }
         // A quiet moment after launch, and never on top of the welcome window.
         DispatchQueue.main.asyncAfter(deadline: .now() + 45) { [weak self] in
             guard let self, self.store.settings.hasCompletedOnboarding, !self.store.settings.usageNoticeShown,
@@ -2986,6 +2990,83 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func present(_ window: NSWindow) {
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
+    }
+}
+
+// MARK: - UI test
+
+/// `Monorail --ui-test`: drives real windows end to end on a Mac where Monorail has
+/// Accessibility access (run by the UI-test workflow on a self-hosted Mac).
+enum UITest {
+    static var isRequested: Bool { CommandLine.arguments.contains("--ui-test") }
+}
+
+extension AppDelegate {
+    func runUITest() {
+        var passed = 0
+        var failed = 0
+        func check(_ ok: Bool, _ name: String) {
+            print(ok ? "  ✓ \(name)" : "  ✗ \(name)")
+            if ok { passed += 1 } else { failed += 1 }
+        }
+        func textEdit() -> [[String: Any]] { engine.windowList().filter { $0["app"] as? String == "TextEdit" } }
+        func finish() {
+            SessionTabs.run("tell application \"TextEdit\" to close every document saving no")
+            SessionTabs.run("tell application \"TextEdit\" to quit")
+            print("\n\(passed) passed, \(failed) failed")
+            fflush(stdout)
+            exit(failed == 0 ? 0 : 1)
+        }
+        guard Accessibility.isTrusted(prompt: false) else {
+            print("Monorail needs Accessibility access on this Mac for --ui-test")
+            exit(77)
+        }
+        print("==> Monorail UI test")
+        // Steps run one after another, a moment apart, while windows settle.
+        let steps: [(Double, () -> Void)] = [
+            (0.5, {
+                DispatchQueue.global().async {
+                    SessionTabs.run("tell application \"TextEdit\" to repeat 3 times\nmake new document\nend repeat")
+                }
+            }),
+            (4.0, { [self] in
+                let windows = textEdit()
+                check(windows.count == 3, "sees three TextEdit windows (found \(windows.count))")
+                check(windows.allSatisfy { $0["floating"] as? Bool == false }, "tiles them")
+            }),
+            (1.0, { [self] in
+                let ids = textEdit().prefix(2).compactMap { ($0["id"] as? Int).map { WindowID($0) } }
+                let slidesBefore = Set(textEdit().compactMap { $0["slide"] as? Int }).count
+                UserDefaults.standard.set(slidesBefore, forKey: "MonorailUITestSlides")
+                check(engine.pairWindows(ids, arrangement: .columns), "pairs two windows")
+            }),
+            (1.2, { [self] in
+                let windows = textEdit()
+                check(windows.count >= 2 && windows[0]["slide"] as? Int == windows[1]["slide"] as? Int, "the pair shares a slide")
+                engine.undo()
+            }),
+            (1.2, { [self] in
+                let before = UserDefaults.standard.integer(forKey: "MonorailUITestSlides")
+                check(Set(textEdit().compactMap { $0["slide"] as? Int }).count == before, "undo puts the slides back")
+                if let id = textEdit().first?["id"] as? Int { engine.moveWindow(WindowID(id), toWorkspace: 1) }
+            }),
+            (1.2, { [self] in
+                let moved = textEdit().first
+                check(moved?["workspace"] as? Int == 2, "moves a window to workspace 2")
+                engine.switchWorkspace(to: 0)
+            }),
+            (0.8, { finish() }),
+        ]
+        var delay = 0.0
+        for (wait, step) in steps {
+            delay += wait
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: step)
+        }
+        // Never hang a runner.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
+            print("Timed out")
+            exit(2)
+        }
     }
 }
 #endif

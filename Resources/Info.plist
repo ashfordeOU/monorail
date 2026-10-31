@@ -48,6 +48,19 @@
 	<string>Monorail looks at your upcoming events to open video calls a minute before they start. Your calendar never leaves your Mac.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Monorail looks at your upcoming events to open video calls a minute before they start. Your calendar never leaves your Mac.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Voice commands: Monorail listens only while you hold the voice command, on this Mac.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Voice commands are turned into text on this Mac to arrange your windows.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>The camera tile shows you during calls, and head focus (if you turn it on) watches which display you face. Nothing is recorded or sent.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Monorail's phone remote and layout sync with a nearby Mac use your local network.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_monorail-sync._tcp</string>
+		<string>_monorail-sync._udp</string>
+	</array>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

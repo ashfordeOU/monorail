@@ -458,3 +458,44 @@ public enum Quirks {
         return edgeShy.count - before
     }
 }
+
+// MARK: - Template gallery
+
+/// Ready-made workspaces to start from (Settings → Apps → Templates → Gallery).
+public enum TemplateGallery {
+    public static let all: [WorkspaceTemplate] = [
+        WorkspaceTemplate(name: "Web development", items: [
+            .init(bundleID: "com.microsoft.VSCode"), .init(bundleID: "com.googlecode.iterm2"),
+            .init(bundleID: "com.google.Chrome", open: "http://localhost:3000"),
+        ], arrangement: .mainLeft),
+        WorkspaceTemplate(name: "iOS development", items: [
+            .init(bundleID: "com.apple.dt.Xcode"), .init(bundleID: "com.apple.iphonesimulator"), .init(bundleID: "com.apple.Terminal"),
+        ], arrangement: .mainLeft),
+        WorkspaceTemplate(name: "Design review", items: [
+            .init(bundleID: "com.figma.Desktop"), .init(bundleID: "com.apple.Safari"), .init(bundleID: "com.tinyspeck.slackmacgap"),
+        ], arrangement: .mainLeft),
+        WorkspaceTemplate(name: "Writing", items: [
+            .init(bundleID: "com.apple.iWork.Pages"), .init(bundleID: "com.apple.Safari"),
+        ], arrangement: .columns),
+        WorkspaceTemplate(name: "Research", items: [
+            .init(bundleID: "com.apple.Safari"), .init(bundleID: "md.obsidian"), .init(bundleID: "com.apple.Preview"),
+        ], arrangement: .columns),
+        WorkspaceTemplate(name: "Trading desk", items: [
+            .init(bundleID: "com.google.Chrome", open: "https://www.tradingview.com"),
+            .init(bundleID: "com.apple.stocks"), .init(bundleID: "com.apple.Notes"),
+        ], arrangement: .grid),
+        WorkspaceTemplate(name: "Video editing", items: [
+            .init(bundleID: "com.apple.FinalCut"), .init(bundleID: "com.apple.finder"),
+        ], arrangement: .mainTop),
+        WorkspaceTemplate(name: "Communications", items: [
+            .init(bundleID: "com.apple.mail"), .init(bundleID: "com.tinyspeck.slackmacgap"), .init(bundleID: "com.apple.iCal"),
+        ], arrangement: .columns),
+        WorkspaceTemplate(name: "Data science", items: [
+            .init(bundleID: "com.microsoft.VSCode"), .init(bundleID: "com.google.Chrome", open: "http://localhost:8888"),
+            .init(bundleID: "com.googlecode.iterm2"),
+        ], arrangement: .mainLeft),
+        WorkspaceTemplate(name: "Support desk", items: [
+            .init(bundleID: "com.google.Chrome"), .init(bundleID: "com.tinyspeck.slackmacgap"), .init(bundleID: "com.apple.Notes"),
+        ], arrangement: .mainLeft),
+    ]
+}

@@ -198,3 +198,15 @@ final class FitWidthTests: XCTestCase {
         XCTAssertEqual(config.fitWidth(slides: 1, viewportWidth: 800), 1, accuracy: 0.0001)
     }
 }
+
+final class TilesAcrossTests: XCTestCase {
+    func testPairsNeedTwiceTheRoom() {
+        XCTAssertEqual(Column(windows: [1], width: 0.5).tilesAcross, 1)
+        XCTAssertEqual(Column(windows: [1, 2], width: 0.5, arrangement: .columns).tilesAcross, 2)
+        XCTAssertEqual(Column(windows: [1, 2], width: 0.5, arrangement: .stack).tilesAcross, 1)
+        XCTAssertEqual(Column(windows: [1, 2, 3, 4], width: 0.5, arrangement: .grid).tilesAcross, 2)
+        XCTAssertEqual(Column(windows: [1, 2], width: 0.5, isTabbed: true, arrangement: .columns).tilesAcross, 1)
+        // Five pairs on a laptop: each pair needs 960 pt, so one shares the screen at a time.
+        XCTAssertEqual(LayoutConfig().fitWidth(slides: 5, viewportWidth: 1512, minimum: 960), 1, accuracy: 0.0001)
+    }
+}

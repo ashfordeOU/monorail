@@ -65,6 +65,20 @@ public struct Column: Equatable, Codable, Sendable {
         self.customRows = customRows
     }
 
+    /// How many windows sit side by side in the slide (for minimum widths).
+    public var tilesAcross: Int {
+        let n = windows.count
+        guard n > 1, !isTabbed, !isTall else { return 1 }
+        switch arrangement {
+        case .stack: return 1
+        case .columns: return n
+        case .grid: return Int(Double(n).squareRoot().rounded(.up))
+        case .mainTop: return max(n - 1, 1)
+        case .custom: return max(customRows?.count ?? 2, 1)
+        default: return 2
+        }
+    }
+
     /// More than six windows in one slide is too crowded to use.
     public static let maximumWindows = 6
 

@@ -4386,9 +4386,12 @@ final class Engine {
             let config = layoutConfig(for: display)
             let viewportWidth = viewport(of: display).width
             // Never squeeze slides narrower than apps can go: past that, the extra slides scroll.
-            let learned = strip.allWindows.compactMap { windows[$0].flatMap { minimumWidths[Self.appKey($0)] } }.max() ?? 0
-            let width = config.fitWidth(slides: scrolling, viewportWidth: Double(viewportWidth),
-                                        minimum: max(settings.fitMinimumWidth, learned))
+            // The widest slide decides: windows side by side each need their own minimum.
+            let minimum = strip.columns.filter { $0.pin == nil }.map { column -> Double in
+                let learned = column.windows.compactMap { windows[$0].flatMap { minimumWidths[Self.appKey($0)] } }.max() ?? 0
+                return Double(column.tilesAcross) * max(settings.fitMinimumWidth, learned)
+            }.max() ?? settings.fitMinimumWidth
+            let width = config.fitWidth(slides: scrolling, viewportWidth: Double(viewportWidth), minimum: minimum)
             let overflowing = abs(width - 1 / Double(max(scrolling, 1))) > 0.001
             guard strip.columns.contains(where: { $0.pin == nil && (abs($0.width - width) > 0.001 || $0.isFullWidth) })
                 || (!overflowing && strip.scroll != 0)

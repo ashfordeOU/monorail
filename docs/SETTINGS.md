@@ -170,7 +170,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `confirmDestructiveAPI` | Ask before an assistant or script closes windows. | `true` |
 | `parkInCorner` | Slides off screen wait hidden in the corner (no slivers at the screen edges). | `true` |
 | `wholeSlidesOnly` | Hide slides that only partly fit on screen, instead of showing them cut off at the edge. | `true` |
-| `fitMinimumWidth` | Fit mode never makes a slide narrower than this (points); extra slides scroll. | `480.0` |
+| `fitMinimumWidth` | Fit mode never makes a window narrower than this (points; a pair needs twice as much); extra slides scroll. | `480.0` |
 | `keepWindowsInPlace` | Snap windows back when an app moves or resizes one by itself. | `true` |
 | `resizeAssist` | After resizing a window in a slide, offer to rearrange the slide. | `true` |
 | `pairLoneWindowsOnOpen` | Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). | `false` |

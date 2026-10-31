@@ -87,7 +87,7 @@ public struct LayoutConfig: Equatable, Codable, Sendable {
     /// and the rest scroll.
     public func fitWidth(slides: Int, viewportWidth: Double, minimum: Double = 480) -> Double {
         let usable = usableWidth(viewportWidth)
-        let fitting = max(Int(((usable + gap) / (max(minimum, 100) + gap)).rounded(.down)), 1)
+        let fitting = max(Int(((usable + gap) / (max(minimum, 100) + gap) + 0.0001).rounded(.down)), 1)
         return 1 / Double(min(max(slides, 1), fitting))
     }
 

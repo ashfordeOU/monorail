@@ -787,7 +787,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var parkInCorner = true
     /// Hide slides that only partly fit on screen, instead of showing them cut off at the edge.
     public var wholeSlidesOnly = true
-    /// Fit mode never makes a slide narrower than this (points); extra slides scroll.
+    /// Fit mode never makes a window narrower than this (points; a pair needs twice as much); extra slides scroll.
     public var fitMinimumWidth = 480.0
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true

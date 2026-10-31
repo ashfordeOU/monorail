@@ -11,13 +11,13 @@
 ![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-FF9E62)
 [![CI](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml/badge.svg)](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml)
 
-[Install](#install) · [Getting started](#getting-started) · [Shortcuts](#keyboard-shortcuts) · [FAQ](#faq) · [Build from source](#build-from-source)
+[Install](#install) · [What's new](#new-in-12) · [Getting started](#getting-started) · [Shortcuts](#keyboard-shortcuts) · [Automation](#automation) · [FAQ](#faq) · [Build from source](#build-from-source)
 
 </div>
 
 ---
 
-**Monorail by Ashforde®** is a scrolling window manager for your Mac. **Version 1.0 is here.**
+**Monorail by Ashforde®** is a scrolling window manager for your Mac. **Version 1.2 is here:** you can tell it what you want in plain words, it learns how you work, it tells you when an AI agent needs you, it keeps private windows out of screen shares, and it comes in 27 themes.
 
 Grid tilers squeeze every new window into the space that's already there.
 **Monorail does the opposite.** Each window is a column on a horizontal strip
@@ -51,9 +51,13 @@ strip glides just far enough to bring the window into view.
 <p align="center"><img src="assets/readme/focus.svg" alt="Focus mode: the current slide bright, the windows on either side dimmed" width="100%"></p>
 <p align="center"><img src="assets/readme/snap.svg" alt="The snap layouts picker at the top of the screen with a window being dragged" width="100%"></p>
 
-**Themes** and **Insights**: five colour themes, and a private look at how you work, with app pair suggestions.
+**Say it, or start it**: type a sentence in the palette (“Slack and Mail side by side on 3”, “Safari two thirds”) or what you're about to do (“write the Q3 report”), and Monorail does it. It also tells you when an AI coding agent is waiting for your approval, and suggests rules from the fixes you keep making.
 
-<p align="center"><img src="assets/readme/themes.svg" alt="Five themes: Vivid, Ocean, Sunset, Forest and Monochrome" width="100%"></p>
+<p align="center"><img src="assets/readme/smart.svg" alt="The command palette carrying out a sentence, with an intent, a waiting AI agent and a suggested rule; beside it a terminal where Claude Code waits for approval" width="100%"></p>
+
+**27 themes**: sixteen classics, five seasonal themes plus **Seasons**, which changes with the time of year, and five one-of-a-kind looks. **Insights** gives you a private look at how you work, with a flow score and a daily focus goal.
+
+<p align="center"><img src="assets/readme/themes.svg" alt="27 themes: classic, seasonal and unique" width="100%"></p>
 <p align="center"><img src="assets/readme/insights.svg" alt="Insights: today's counts, a week of switches and a suggested app pair" width="100%"></p>
 
 <p align="center"><img src="assets/readme/features.svg" alt="More features: radial menu, drag anywhere, title bar swipes, status bars and scripts, profiles, marks, scratchpad, app pairs, snapshots, peek, picture in picture, auto rules, title rules, quick launch, sync and Shortcuts" width="100%"></p>
@@ -164,6 +168,10 @@ letter, a **scratchpad** window that drops in and hides with <kbd>⌃⌥`</kbd>,
 | Mouse-first controls (wheel, slider, menu bar) | ✅ | ❌ | partly |
 | Groups windows by app | ✅ | ❌ | ❌ |
 | Live overview you can rearrange | ✅ | ❌ | ❌ |
+| Understands plain sentences | ✅ on device | ❌ | ❌ |
+| Knows when an AI agent needs you | ✅ | ❌ | ❌ |
+| Keeps private windows out of screen shares | ✅ | ❌ | ❌ |
+| Remembers each display set, plug and unplug | ✅ | partly | ❌ |
 | Free and open source | ✅ AGPL | varies | mostly paid |
 
 ## Install
@@ -177,7 +185,8 @@ letter, a **scratchpad** window that drops in and hides with <kbd>⌃⌥`</kbd>,
 <p align="center"><img src="assets/readme/installer.png" alt="The Monorail installer: drag Monorail into Applications" width="560"></p>
 
 > [!NOTE]
-> Release builds are not yet notarized by Apple. The first time you open Monorail,
+> Release builds are not yet notarized by Apple (the release pipeline notarizes
+> automatically once an Apple Developer ID is added). The first time you open Monorail,
 > macOS may say it can't verify the developer. Open **System Settings → Privacy & Security**
 > and click **Open Anyway**. The Terminal installer below avoids this step.
 
@@ -472,6 +481,92 @@ search, so you can see which slide wants you.
 - **In your language**: menus, Settings tabs and the welcome tour in English, Deutsch, Français, Español and 日本語 (**Settings → General → Language**).
 - **Practice windows**: the welcome tour can open three practice windows, so you learn the moves without touching your work.
 
+### New in 1.2
+
+<p align="center"><img src="assets/readme/new-in-1.2.svg" alt="New in 1.2: say it, intent workspaces, AI agent alerts, learning, tall slides, elastic focus, deep work, safe screen sharing, share one slide, demo zoom and ink, vim mode, phone remote, MIDI and controllers, folders to workspaces, display memory, 27 themes" width="100%"></p>
+
+1.2 brings a hundred new capabilities. Everything that learns from you does it on your Mac, and nothing is sent anywhere. Every new action is in the command palette (<kbd>⌃⌥/</kbd>), and you can give any of them a key in **Settings → Shortcuts**.
+
+**Smart** (Settings → Smart)
+- **Say it.** Type a sentence in the palette, or use **Voice command**:
+  - “Slack and Mail side by side on 3”
+  - “Safari two thirds”
+  - “move Mail to workspace two”
+  - “focus mode on”
+- **Intent workspaces.** **Start working on…** takes what you're about to do (“write the Q3 report”) and opens the template, saved layout, app pair or workspace that fits.
+- **AI agent alerts.** Monorail watches terminals running Claude Code, Codex, Aider, Gemini and others. When one asks for approval, you hear a chime and the palette offers to take you there. You can also have the agent's slide brought into view.
+- **Learns your habits:**
+  - It stages the window you usually go to next beside you (optional).
+  - **Go to the window you usually go to next** jumps straight there.
+  - It suggests a rule when you keep giving an app the same width.
+  - It nudges you towards focus mode when you're switching a lot.
+- **Content-aware widths** (optional). New slides get a width that suits the app: about 100 columns for code and terminals, a page for documents, a full web page for browsers.
+- **Sort windows into project workspaces.** Monorail finds projects in window titles (“Engine.swift — monorail”), gives each project its own workspace and names it.
+- **Folders to workspaces.** Documents from `~/Clients/Acme` open in the Acme workspace.
+
+**The strip**
+- **Tall slides.** Each window gets nearly the full height, and you scroll the slide up and down with the next window peeking in below.
+- **Elastic focus.** The slide you're in grows and the others give way.
+- **Whole slides only** (on by default). Slides that would be cut off at the screen edge wait out of sight instead.
+- **Bookmarked views.** Save a spot on the strip, then hop between your bookmarks.
+- **Try a layout.** Fork the workspace, experiment, then **Keep** or **Discard**.
+- **Window groups.** Windows you add to a group move between workspaces together.
+- **Layout timeline.** Scrub back through every change you made.
+- **Linked slides.** Two slides on different displays scroll into view together.
+- **Reading mode** gives you one calm, centred column, and **Centre the main slide** suits ultrawide displays.
+- **Display memory.** Unplug a display and its slides wait for it. Plug it back in and they return as they were. **Display profiles** keep a layout for each set of displays: desk, café or projector.
+
+**Focus and privacy** (Settings → Smart, Settings → Devices & Sharing)
+- **Deep work.** Distracting apps are hidden and stay hidden until it ends. Calendar events called *Focus* or *Deep work* can start it for you.
+- **Safe screen sharing.** When you share your screen in Zoom, Teams, Meet, Webex, Slack or FaceTime, private apps and windows you've marked private step aside. They're blurred in the overview too.
+- **Contexts.** A workspace can run a Shortcut when you arrive, for example to turn on a Focus, switch audio or set your Slack status. It can also have a **time budget** that nudges you once a day when it's used up.
+- **Flow score and daily focus goal** in Insights.
+- **Per-workspace clipboard.** What you copied in a workspace stays with it. It skips anything a password manager marks as secret.
+- **Guest mode.** Monorail steps aside while someone else uses your Mac, and your layout comes back afterwards.
+
+**Presenting**
+- **Share one slide.** You get a window of just this slide to pick in your call, rather than your whole screen.
+- **Mirror a window** on another display, a **demo zoom** lens that follows the pointer, **draw on the screen**, and **show keystrokes and clicks**.
+- **Presenter notes.** Only you can see them, even while sharing the whole screen.
+- **A round camera tile** that floats over everything.
+- **Sync your layout with a nearby Mac**, for pair programming.
+- **Continue on my other Mac** (with iCloud sync).
+
+**Devices**
+- **Choose the Monorail key.** Caps Lock, or right ⌘, ⌥ or ⌃.
+- **Vim mode.** `h j k l` with counts (`3l`), `gg` and `G`, `dd`, `w` and `b`, `u` and `/`. Press `i` or Esc to leave.
+- **Mouse gestures.** <kbd>⌃⌥⇧</kbd> + drag.
+- **MIDI controllers**, with learn mode, and **game controllers**. **Stream Deck** buttons work through `monorail://` links (see [extensions/streamdeck](extensions/streamdeck)).
+- **Phone remote.** Scan a QR code to slide, switch workspace and open the overview from your phone. The link holds a secret.
+- **Head focus** (experimental). Turn towards a display to focus it.
+- **Find a window by what's in it.** Monorail reads the window pictures on your Mac, so “invoice 4471” finds the right window.
+
+**Platform**
+- **Scripts:**
+  - `monorail.addCommand(title, fn)` puts your own commands in the palette.
+  - `monorail.setWidths([…])` lets you write layouts as code.
+  - `monorail.say("…")` carries out a sentence.
+- **Local API, MCP and CLI:**
+  - New API endpoints: `say`, `agents`, `predict` and `context`.
+  - New MCP tools: `say` and `get_waiting_agents`.
+  - Assistants have to ask before closing windows.
+- **Extensions:**
+  - A [browser companion](extensions/browser).
+  - A [VS Code extension](extensions/vscode) that names workspaces after your project.
+  - A [SketchyBar plug-in](extensions/sketchybar).
+- **Organisations:**
+  - Settings can be managed with a configuration profile (MDM).
+  - Hold <kbd>⌥</kbd> while opening Monorail for **safe mode**.
+  - Optional crash reports stay on your Mac.
+  - Known app quirks update themselves.
+- **Delight:**
+  - 27 themes, including **Seasons**.
+  - Sound packs.
+  - A wallpaper that drifts gently as the strip scrolls.
+  - Slides and workspaces around the MacBook notch.
+  - Animation that follows ProMotion displays up to 120 Hz.
+  - Live previews in the overview.
+
 ### New in 1.1
 
 A hundred new capabilities. Every new action is listed in Settings → Shortcuts → *Slides (1.1)* and the groups after it, and in the command palette.
@@ -743,8 +838,10 @@ Everything is set in a standard Settings window, and changes apply immediately.
 | Layout | Strip direction, grouping into slides by app, windows per slide, slide layout, custom layouts, snap picker, gaps (with smart gaps), per-display settings, default width, width presets, centring, window heights, tab bar height |
 | Motion & Input | Slide mode key, scroll modifier, menu bar scrolling, ‹ › buttons, swipes, pinch, three-finger tap, peek, haptics, hot edges, sensitivity, animation speed, focus follows mouse |
 | Appearance | Slider bar on or off (always or while sliding; top or bottom), theme, focus mode, focus border, dimming |
-| Apps | Rules per app and per window title, quick launch letters, app pairs |
-| Automation | Auto rules by time or Wi-Fi, URLs for the Shortcuts app and scripts |
+| Apps | Rules per app and per window title, automatic floating and pausing, quick launch letters, templates and the template gallery, app pairs |
+| Smart | Learning (next window, rule suggestions, focus nudges, content-aware widths), AI agents, elastic focus, whole slides, display profiles, folders to workspaces, deep work, contexts and time budgets |
+| Devices & Sharing | Monorail key, mouse gestures, game controllers, MIDI, phone remote, head focus, safe screen sharing, private apps, per-workspace clipboard, notch, drifting wallpaper, sounds, trust and privacy |
+| Automation | Pomodoro and breaks, housekeeping, webhooks and remote commands, each workspace's look, auto rules by time or Wi-Fi, URLs, scripts and the local API |
 | Insights | Today's counts, the week, your most-used pairs and suggestions (all kept on your Mac) |
 | Shortcuts | Modifier prefix, every binding, extra bindings, restore defaults |
 
@@ -779,6 +876,10 @@ A few take a name or number:
 | `monorail://palette` | Command palette |
 | `monorail://template/Coding` | Start a workspace template |
 | `monorail://presentation-mode/on` | Presentation mode on or off |
+| `monorail://focus-app/Safari` | Go to an app's window (or open it) |
+| `monorail://notify/Hello` | Show a notice |
+| `monorail://pomodoro` | Start or stop the pomodoro timer |
+| `monorail://deep-work` · `monorail://share-slide` · `monorail://demo-zoom` | Any 1.2 action, by its name |
 
 In the **Shortcuts** app, use the **Open URLs** action with any of these, so
 Monorail fits into your automations, Focus filters and Stream Deck buttons.
@@ -881,6 +982,8 @@ scripts/                 Build, package, install, signing, artwork and command-l
 - **Shortcuts do nothing.** Check that Monorail is enabled in **Privacy & Security → Accessibility**. Then use **Settings → General → Check again**.
 - **A window won't tile.** Some apps have fixed-size windows, or open panels instead of standard windows. These float on purpose. Press <kbd>⌃⌥T</kbd> to tile one anyway.
 - **Windows jumped around after a display change.** Press <kbd>⌃⌥Esc</kbd> to retile.
+- **A strip of another window shows at the screen edge.** Some apps (often Firefox and Electron apps) won't move almost off screen. Monorail notices and parks them in the corner. **Whole slides only** and **Hide off-screen slides in the corner** in **Settings → Smart** keep the edges clean.
+- **Something misbehaves after changing settings.** Hold <kbd>⌥</kbd> while opening Monorail for safe mode. Rules, scripts and automations stay off until the next launch. **Settings → About → Show Log** shows what happened.
 - **Everything's in a mess.** Pause with <kbd>⌃⌥Q</kbd>. Every window comes back on screen, and you can move them by hand.
 
 ## FAQ
@@ -899,6 +1002,17 @@ macOS requires it before any app can move other apps' windows. That's the only p
 
 **Some app's windows won't tile.**
 Dialogs, file pickers and fixed-size windows float on purpose. Press <kbd>⌃⌥T</kbd> to tile one anyway, or set a rule for the app in **Settings → Apps**.
+
+**Does it adapt when I connect, disconnect, mirror or project?**
+Yes, automatically:
+- **Connecting or extending:** each new display gets its own strip.
+- **Disconnecting:** the windows from that display move to the one you still have. When you plug it back in, they return where they were.
+- **Projectors:** widths are fractions of the screen, so a layout fits a projector's resolution too.
+- **Mirroring:** a mirrored pair counts as one display.
+- **Display profiles:** these remember a layout for each set of displays (Settings → Smart).
+
+**Does Monorail use AI in the cloud?**
+No. Sentences, intents, predictions and suggestions all run on your Mac, with no account and no network. Voice commands use macOS's on-device speech recognition where your Mac supports it.
 
 **Is it free?**
 Yes. Monorail is free and open source under the GNU AGPL v3.0.

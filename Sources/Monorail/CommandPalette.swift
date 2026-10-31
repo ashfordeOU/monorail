@@ -74,8 +74,11 @@ struct PaletteView: View {
             if model.filtered.isEmpty {
                 Text("No matching commands").foregroundStyle(.secondary).padding()
             }
+            Divider()
+            KeyHints(hints: [("↑ ↓", "choose"), ("return", "run"), ("esc", "close")])
+                .padding(.vertical, 7)
         }
-        .frame(width: 620, height: 420)
+        .frame(width: 620, height: 440)
         .background(.regularMaterial)
     }
 
@@ -180,6 +183,27 @@ final class CommandPalette {
         panel?.orderOut(nil)
         // Let focus return to the app underneath first.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { command.run() }
+    }
+}
+/// A row of key hints ("esc close"), for panels that close with Escape.
+struct KeyHints: View {
+    let hints: [(String, String)]
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ForEach(Array(hints.enumerated()), id: \.offset) { _, hint in
+                HStack(spacing: 5) {
+                    Text(hint.0)
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .padding(.horizontal, 5).padding(.vertical, 1)
+                        .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(Color.secondary.opacity(0.5), lineWidth: 1))
+                    Text(hint.1).font(.caption)
+                }
+            }
+        }
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 }
 #endif

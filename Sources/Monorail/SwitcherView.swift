@@ -63,8 +63,11 @@ struct SwitcherView: View {
             if model.filtered.isEmpty {
                 Text("No matching windows").foregroundStyle(.secondary).padding()
             }
+            Divider()
+            KeyHints(hints: [("↑ ↓", "choose"), ("return", "go"), ("esc", "close")])
+                .padding(.vertical, 7)
         }
-        .frame(width: 780, height: 420)
+        .frame(width: 780, height: 440)
         .background(.regularMaterial)
     }
 

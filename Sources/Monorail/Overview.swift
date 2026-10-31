@@ -255,6 +255,23 @@ struct OverviewView: View {
             if !model.previewsAllowed {
                 LivePreviewsButton { model.loadThumbnails() }
             }
+            Button(action: actions.close) {
+                HStack(spacing: 6) {
+                    Text("esc")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .padding(.horizontal, 5).padding(.vertical, 1)
+                        .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(Color.white.opacity(0.45), lineWidth: 1))
+                    Image(systemName: "xmark").font(.system(size: 13, weight: .bold))
+                }
+                .padding(.horizontal, 10).padding(.vertical, 6)
+                .background(Capsule().fill(Color.white.opacity(0.16)))
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.white)
+            .keyboardShortcut(.cancelAction)
+            .help("Close the overview (esc)")
+            .accessibilityLabel("Close the overview")
         }
     }
 }

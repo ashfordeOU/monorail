@@ -2057,7 +2057,7 @@ final class Engine {
             // fits there), and is otherwise brought into view: apps open Get Info panels and the
             // like next to their main window, which may be waiting off screen.
             let remembered = settings.rememberFloatingPositions && !element.hasFixedSize
-                ? floatingFrames[Self.appKey(window)] : nil
+                ? floatKey(window).flatMap { floatingFrames[$0] } : nil
             // Twice: some apps position their panel a moment after it appears.
             for delay in [0.15, 0.8] {
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
@@ -2217,6 +2217,33 @@ final class Engine {
     /// centred near its top like a sheet, instead of wherever it appeared.
     private var inViewChecks: [WindowID: DispatchWorkItem] = [:]
 
+    /// Where a kind of floating window is remembered: per app and kind (settings, panel, window).
+    /// Get Info and similar per-item windows aren't remembered, so they never pile up in one spot.
+    private func floatKey(_ window: ManagedWindow) -> String? {
+        let title = window.title
+        if title.hasSuffix(" Info") || title.hasSuffix(" Informationen") || title.hasPrefix("Info ") { return nil }
+        let kind: String
+        if Self.looksLikeSettings(title) {
+            kind = "settings"
+        } else if window.element.string(kAXSubroleAttribute) == kAXFloatingWindowSubrole {
+            kind = "panel"
+        } else {
+            kind = "window"
+        }
+        return "\(Self.appKey(window))|\(kind)"
+    }
+
+    /// The app's own tiled window that is on screen now, to put its panels over.
+    private func visibleParent(of pid: pid_t) -> CGRect? {
+        let candidates = windows.values.filter { $0.pid == pid && $0.key != nil }.compactMap { window -> (CGRect, Double)? in
+            guard let frame = window.lastApplied.map(CGRect.init),
+                displays.contains(where: { $0.visibleFrame.insetBy(dx: -2, dy: -2).contains(frame) })
+            else { return nil }
+            return (frame, window.appliedAt)
+        }
+        return candidates.max { $0.1 < $1.1 }?.0
+    }
+
     /// A floating window that an app (or a drag) left mostly off screen comes back into view,
     /// once it has stopped moving and the mouse is up.
     private func keepFloatingInView(_ id: WindowID) {
@@ -2260,8 +2287,14 @@ final class Engine {
             return
         }
         guard !fits(frame) else { return }
-        guard let display = activeContext()?.0 ?? displayUnderMouse() ?? displays.first else { return }
+        var pid: pid_t = 0
+        AXUIElementGetPid(element, &pid)
+        let parent = visibleParent(of: pid)
+        guard let display = parent.flatMap({ self.display(containing: $0) }) ?? activeContext()?.0 ?? displayUnderMouse() ?? displays.first
+        else { return }
         let visible = display.visibleFrame
+        // Over the app's own window when it's on screen, otherwise the middle of the display.
+        let anchor = parent ?? visible
         if Date().timeIntervalSince(lastFloatPlaced) > 3 { floatCascade = 0 }
         lastFloatPlaced = Date()
         let offset = CGFloat(floatCascade % 8) * 26
@@ -2270,8 +2303,8 @@ final class Engine {
         if (size.width > visible.width || size.height > visible.height), !element.hasFixedSize {
             size = CGSize(width: min(size.width, visible.width - 40), height: min(size.height, visible.height - 40))
         }
-        var x = visible.midX - size.width / 2 + offset
-        var y = visible.midY - size.height / 2 + offset
+        var x = anchor.midX - size.width / 2 + offset
+        var y = (parent != nil ? anchor.minY + min(60, max(anchor.height - size.height, 0) / 2) : anchor.midY - size.height / 2) + offset
         x = min(max(x, visible.minX), max(visible.maxX - size.width, visible.minX))
         y = min(max(y, visible.minY), max(visible.maxY - size.height, visible.minY))
         if size != frame.size {
@@ -2534,10 +2567,10 @@ final class Engine {
     /// was dropped. Either way the layout is re-applied after mouse-up.
     private func userMovedOrResized(_ element: AXUIElement, resized: Bool) {
         if let window = window(for: element), window.key == nil, window.id != scratchpad {
-            if settings.rememberFloatingPositions, let frame = element.frame,
+            if settings.rememberFloatingPositions, let key = floatKey(window), let frame = element.frame,
                 displays.contains(where: { $0.visibleFrame.insetBy(dx: -2, dy: -2).contains(frame) })
             {
-                floatingFrames[Self.appKey(window)] = frame
+                floatingFrames[key] = frame
                 scheduleSave()
             }
             keepFloatingInView(window.id)

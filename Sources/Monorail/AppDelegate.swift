@@ -529,6 +529,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func wireUpAwake() {
         engine.onActionPerformed = { [weak self] action in self?.usage.action(action) }
+        whatsNew.tryAction = { [weak self] action in
+            if action == .commandPalette { self?.palette.show() } else { self?.engine.perform(action) }
+        }
         UsageBridge.log = usage
         awake.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         awake.onChange = { [weak self] on, why in
@@ -623,6 +626,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         settings.animate.toggle()
         store.settings = settings
         toast.show(settings.animate ? "Animations on" : "Animations off · windows move instantly")
+    }
+
+    @objc private func showWhatsNewFromMenu() {
+        whatsNew.show(version: Bundle.main.shortVersion)
     }
 
     @objc private func endAwakeFromMenu() { awake.end() }
@@ -2386,6 +2393,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(item(L("Settings…"), #selector(showSettingsFromMenu), key: ","))
         menu.addItem(shortcutsMenu())
         menu.addItem(item(L("Welcome Tour…"), #selector(showWelcomeFromMenu)))
+        menu.addItem(item(L("What’s New") + "…", #selector(showWhatsNewFromMenu)))
         menu.addItem(item(L("Check for Updates…"), #selector(checkForUpdates)))
         menu.addItem(item("About \(Brand.full)", #selector(showAbout)))
         menu.addItem(.separator())

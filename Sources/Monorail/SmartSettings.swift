@@ -56,6 +56,22 @@ struct UsageSection: View {
     }
 }
 
+/// A bug report on GitHub, filled in with what helps (no window titles or personal data).
+enum ProblemReport {
+    static func open() {
+        let info = ProcessInfo.processInfo
+        var body = "**What happened?**\n\n\n**What did you expect?**\n\n\n---\n"
+        body += "Monorail \(Bundle.main.shortVersion) · macOS \(info.operatingSystemVersionString)\n"
+        body += "\(CrashReporter.reports.count) crash or hang reports on this Mac (attach them from the folder that just opened)\n\n"
+        if let log = UsageBridge.log { body += "```\n\(log.text)\n```\n" }
+        var components = URLComponents(string: "https://github.com/ashfordeOU/monorail/issues/new")!
+        components.queryItems = [URLQueryItem(name: "title", value: "Problem: "), URLQueryItem(name: "body", value: body)]
+        if let url = components.url { NSWorkspace.shared.open(url) }
+        try? FileManager.default.createDirectory(at: CrashReporter.folder, withIntermediateDirectories: true)
+        if !CrashReporter.reports.isEmpty { NSWorkspace.shared.open(CrashReporter.folder) }
+    }
+}
+
 enum SmartBridge {
     static var remoteURL: () -> URL? = { nil }
     static var remoteQR: () -> NSImage? = { nil }
@@ -341,8 +357,12 @@ struct DevicesPane: View {
             Section {
                 Toggle("Ask before scripts or AI assistants close windows", isOn: $store.settings.confirmDestructiveAPI)
                 Toggle("Keep crash and hang reports on this Mac", isOn: $store.settings.crashReports)
-                if !CrashReporter.reports.isEmpty {
-                    Button("Show \(CrashReporter.reports.count) Reports") { NSWorkspace.shared.open(CrashReporter.folder) }
+                HStack {
+                    if !CrashReporter.reports.isEmpty {
+                        Button("Show \(CrashReporter.reports.count) Reports") { NSWorkspace.shared.open(CrashReporter.folder) }
+                    }
+                    Button("Report a Problem…") { ProblemReport.open() }
+                        .help("Opens a new GitHub issue with your Mac, version and usage counts filled in. Attach crash reports from the folder that opens.")
                 }
                 if !ManagedSettings.managedKeys.isEmpty {
                     Text("Managed by your organisation: \(ManagedSettings.managedKeys.joined(separator: ", "))")

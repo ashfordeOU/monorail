@@ -49,6 +49,8 @@ enum CapsLockKey {
 /// After an update, a window with that version's part of the changelog.
 final class WhatsNew {
     private var window: NSWindow?
+    /// Runs an action from a "Try it" button.
+    var tryAction: (Action) -> Void = { _ in }
 
     func show(version: String) {
         guard let url = Bundle.main.url(forResource: "CHANGELOG", withExtension: "md"),
@@ -56,7 +58,10 @@ final class WhatsNew {
         else { return }
         let notes = Self.section(for: version, in: changelog)
         guard !notes.isEmpty else { return }
-        let view = WhatsNewView(version: version, lines: notes) { [weak self] in self?.window?.close() }
+        let view = WhatsNewView(version: version, lines: notes, tryAction: { [weak self] action in
+            self?.window?.close()
+            self?.tryAction(action)
+        }) { [weak self] in self?.window?.close() }
         let window = NSWindow(contentViewController: NSHostingController(rootView: view))
         window.title = "What’s New in \(Brand.full) \(version)"
         window.styleMask = [.titled, .closable]
@@ -86,7 +91,16 @@ final class WhatsNew {
 private struct WhatsNewView: View {
     let version: String
     let lines: [String]
+    let tryAction: (Action) -> Void
     let close: () -> Void
+
+    /// The features people most often miss, with a button to try each.
+    private static let highlights: [(symbol: String, title: String, text: String, action: Action)] = [
+        ("sparkles", "Say it", "Type “Slack and Mail side by side on 3” or “write the Q3 report” in the palette.", .commandPalette),
+        ("cup.and.saucer.fill", "Stay Awake", "Keep your Mac awake for an hour, while downloading, or by itself.", .awake60),
+        ("eye.slash", "Safe screen sharing", "Private windows step aside when you share. Mark one private now.", .markPrivate),
+        ("bell.badge", "AI agent alerts", "Run Claude Code or Codex: hear a chime when it waits for you.", .commandPalette),
+    ]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -95,6 +109,18 @@ private struct WhatsNewView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("What’s new in \(version)").font(.title2).fontWeight(.semibold)
                     Text(Brand.full).foregroundStyle(.secondary)
+                }
+            }
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                ForEach(Array(Self.highlights.enumerated()), id: \.offset) { _, item in
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label(item.title, systemImage: item.symbol).font(.headline)
+                        Text(item.text).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        Button("Try it") { tryAction(item.action) }.controlSize(.small)
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.08)))
                 }
             }
             ScrollView {
@@ -114,7 +140,7 @@ private struct WhatsNewView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(height: 360)
+            .frame(height: 240)
             HStack {
                 Link("Full changelog", destination: URL(string: "https://github.com/ashfordeOU/monorail/blob/main/CHANGELOG.md")!)
                 Spacer()
@@ -122,7 +148,7 @@ private struct WhatsNewView: View {
             }
         }
         .padding(22)
-        .frame(width: 560)
+        .frame(width: 620)
     }
 }
 

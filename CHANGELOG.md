@@ -11,6 +11,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 - The website has an interactive docking playground with a guided demo, and the README explains docking and undocking.
+- The website has a light, dark or automatic switch and a text-size control (remembered on your device), fits phones without sideways scrolling, and says what's coming for Windows and Linux.
+- A new Product Hunt gallery and an 85-second demo video in `assets/launch/v17`.
 
 ## [1.7.0] - 2026-11-01
 

@@ -22,27 +22,33 @@ Alternatives:
 **Description** (260 characters max):
 > Every window rides one endless strip, so new windows never squeeze the rest. Drag windows onto each other to dock or tab them, any apps. Type “Slack and Mail side by side”. Alerts when an AI agent waits. Imports AeroSpace, yabai and Rectangle setups. Free.
 
-## Gallery (1270 × 760)
+## Gallery
+
+The images are in [`assets/launch/v17`](../../assets/launch/v17), at 2540 × 1520 (Product Hunt's 1270 × 760 at double resolution). Upload them in this order:
 
 | # | File | Shows |
 | --- | --- | --- |
-| 1 | `01-hero.png` | The strip: every window rides one rail |
-| 2 | `02-smart.png` | Sentences, intents, a waiting AI agent and suggested rules |
-| 3 | `03-overview.png` | The overview: every workspace on one canvas |
-| 4 | `04-new.png` | Feature highlights (made for 1.2; refresh it with docking and saved views before launch) |
-| 5 | `05-themes.png` | 27 themes, including Seasons |
-| 6 | `06-slider.png` | The slider bar with live previews |
-| 7 | `07-focus.png` | Focus mode |
+| 1 | `01-hero.png` | Every window rides one rail |
+| 2 | `docking.gif` | Docking, live: edge, nested split, tab group, gap resize |
+| 3 | `02-dock.png` | Drop a window where you want it |
+| 4 | `03-tabs-resize.png` | Tab groups across apps, and resizing two windows at once |
+| 5 | `04-say-it.png` | Plain-language commands and AI agent alerts |
+| 6 | `05-saved-views.png` | Saved views, back and forward |
+| 7 | `06-import-free.png` | Import from AeroSpace, yabai or Rectangle; no Pro tier |
+| 8 | `07-themes.png` | 27 themes |
+| 9 | `08-native-private.png` | Native, light, private |
+| 10 | `09-end.png` | End card with the download link |
 
-Thumbnail: `thumbnail-240.png` (the app icon).
+Thumbnail: `assets/launch/thumbnail-240.png` (the app icon).
 
-**Video (recommended, 30–60 s).** Record with the app's own **Show keystrokes and clicks** and **Demo zoom**:
-1. Open three windows and show nothing shrinking (0–10 s).
-2. Drag a window onto another's edge to dock it, onto its middle for a tab group, then drag the gap to resize both (10–20 s).
-3. Type “Slack and Mail side by side on 2” in ⌃⌥/ (20–30 s).
-4. Start a screen share and watch private windows step aside (30–40 s).
-5. A Claude Code agent asks for approval, the chime plays, and ⌃⌥/ takes you to it (40–50 s).
-6. Flip themes: Synthwave, Ink & Paper, Seasons (50–60 s).
+**Video.** [`monorail-demo.mp4`](../../assets/launch/v17/monorail-demo.mp4) (85 s, 1080p) walks through everything: opening windows,
+gliding along the strip, pairing, plain-language commands, focus mode, the docking playground (edge, nested split, tab
+group, gap resize), saved views, import, themes, privacy and the Windows and Linux plans. Product Hunt takes a YouTube
+link: upload it to YouTube (unlisted is fine) and paste the link under **Add video**.
+
+It's made from the website's interactive demos and the gallery cards, rebuilt with `scripts/launch/gallery.html`. Once
+the signed build is out, a 30-second screen recording of the real app is worth adding as a second video: record with
+**Show keystrokes and clicks** and **Demo zoom** on, and follow the same order.
 
 ## First comment (from the maker)
 

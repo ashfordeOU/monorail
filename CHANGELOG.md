@@ -4,6 +4,24 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-10-31
+
+### Added
+- **Usage in About.** Launches, running time, average CPU, memory, windows managed, slide and workspace switches, time kept awake, and your most used actions. It's all kept on your Mac, and Copy and Reset are there too.
+- **What's New tour:** feature cards with a **Try it** button each, for sentences, Stay Awake, safe screen sharing and AI agent alerts. **What's New…** is in the menu bar menu too.
+- **Report a Problem…** (Settings → Devices & Sharing) opens a GitHub issue filled in with your version, macOS and usage counts, and opens the folder of crash reports to attach.
+- **Four more languages:** Chinese (Simplified), Portuguese, Korean and Italian, alongside German, French, Spanish and Japanese. The newer labels (Smart, Devices & Sharing, Stay Awake…) are translated into all of them.
+- **docs/TESTING.md:** a real-Mac checklist, including the first-hour energy check. **docs/NOTARISATION.md:** one-time steps to ship notarised builds.
+
+### Changed
+- **Floating windows never stay out of view:**
+  - They open where macOS or the app puts them.
+  - If that's off screen, they move over the app's own window, or to the middle of the display.
+  - Several opened at once are staggered.
+  - If an app or a drag later leaves one mostly off screen, it comes back once it stops moving.
+  - Positions are remembered per kind of window (settings, panels, other windows), and Get Info windows are never piled into one remembered spot.
+- **Fewer redraws:** the focus border, dimming and tab bars are redrawn only when something about them changed.
+
 ## [1.3.1] - 2026-10-31
 
 ### Fixed

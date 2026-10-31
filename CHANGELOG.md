@@ -93,6 +93,7 @@ Monorail understands what you want, learns how you work, knows when your AI agen
 - Hovering a workspace dot shows its name inside the slider bar and the menu bar panel.
 
 ### Fixed
+- **Fit on screen** with many slides no longer piles windows on top of each other. A slide is never squeezed below 480 pt, or below the width an app insists on, and the extra slides scroll instead.
 - The “And a lot more” illustration in the README didn't display, because of an unescaped character.
 
 ## [1.1.0] - 2026-10-31

@@ -63,7 +63,9 @@ public enum Arrangement: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    public static let splitRange = 0.25...0.8
+    /// How far one tile may take over its slide: far enough to squeeze its mate hard
+    /// (apps that won't go that narrow make the slide wider instead; see the engine).
+    public static let splitRange = 0.12...0.88
     public static let defaultSplit = 0.6
 
     /// Number of grid columns for `count` tiles.

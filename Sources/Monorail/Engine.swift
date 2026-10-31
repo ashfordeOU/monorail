@@ -2664,13 +2664,59 @@ final class Engine {
     private func finishResize(_ window: ManagedWindow) {
         resizing = nil
         onResizeHUD(nil)
+        let wanted = window.element.frame
         window.lastApplied = nil
         layout(animated: true)
         scheduleSave()
+        // Once the windows have settled, make room if a slide-mate wouldn't go as narrow as asked.
+        DispatchQueue.main.asyncAfter(deadline: .now() + settings.animationDuration + 0.35) { [weak self] in
+            self?.fitSlideAfterResize(window, wanted: wanted)
+        }
         guard settings.resizeAssist, let key = window.key, let strip = strips[key],
             let (c, _) = strip.locate(window.id), let frame = window.element.frame
         else { return }
         onResized(window.id, frame, window.appName, strip.columns[c].windows.count > 1)
+    }
+
+    /// Side by side, the slide must be as wide as its windows really are. When a mate
+    /// refuses to shrink (an app's minimum width) or the resized window was made wider
+    /// than its share allows, the slide grows (up to the full screen) instead of letting
+    /// the windows overlap.
+    private func fitSlideAfterResize(_ window: ManagedWindow, wanted: CGRect?) {
+        guard let key = window.key, var strip = strips[key], let display = display(for: key),
+            let (c, _) = strip.locate(window.id)
+        else { return }
+        let column = strip.columns[c]
+        guard column.windows.count > 1, !column.isTabbed, !column.isTall, column.tilesAcross > 1 else { return }
+        let config = layoutConfig(for: display)
+        let viewportWidth = viewport(of: display).width
+        let frame = strip.columnFrames(config: config, viewport: viewport(of: display))[c].frame
+        // What the row of windows needs: each at least as wide as it really is.
+        let placements = strip.layout(config: config, viewport: viewport(of: display)).filter { column.windows.contains($0.window) }
+        let topRow = placements.filter { abs($0.frame.y - frame.y) < 4 }
+        guard topRow.count > 1 else { return }
+        var needed = config.gap * Double(topRow.count - 1)
+        for placement in topRow {
+            var width = placement.frame.width
+            if let actual = windows[placement.window]?.element.frame { width = max(width, Double(actual.width)) }
+            if placement.window == window.id, let wanted { width = max(width, Double(wanted.width)) }
+            needed += width
+        }
+        guard needed > frame.width + 6 else { return }
+        let fraction = config.fraction(forColumnWidth: needed, viewportWidth: viewportWidth)
+        strip.setWidth(fraction, of: window.id)
+        // Keep the resized window's share of the wider slide.
+        if let wanted, strip.columns.indices.contains(c), strip.columns[c].windows.count == 2 {
+            let newWidth = config.columnWidth(fraction: strip.columns[c].effectiveWidth, viewportWidth: viewportWidth)
+            let share = Double(wanted.width) / max(newWidth, 1)
+            _ = strip.resizeTile(window.id, toFraction: (width: share, height: 1))
+        }
+        strip.revealFocused(config: config, viewportWidth: viewportWidth)
+        strips[key] = strip
+        for id in column.windows { windows[id]?.lastApplied = nil }
+        note("slide widened to fit")
+        layout(animated: true)
+        scheduleSave()
     }
 
     /// Called after the user resizes a window in a slide, to offer options.

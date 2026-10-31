@@ -33,7 +33,7 @@ final class ArrangementTests: XCTestCase {
         strip.adjustSplit(by: 1)
         XCTAssertEqual(strip.columns[0].split, Arrangement.splitRange.upperBound)
         frames = strip.layout(config: flat, viewport: viewport).map(\.frame)
-        XCTAssertEqual(frames[0].width, 960)
+        XCTAssertEqual(frames[0].width, (1200 * Arrangement.splitRange.upperBound).rounded())
     }
 
     func testMainTopAndColumns() {

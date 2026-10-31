@@ -4,6 +4,15 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.5.2] - 2026-10-31
+
+### Fixed
+- **Resizing a window in a shared slide no longer hides its neighbour.**
+  - A window used to stop at 80% of its slide, then cover the window beside it.
+  - Now it can take up to 88%, squeezing the other window as far as it will go.
+  - If that window won't get narrower (many apps have a minimum width), the slide widens, up to the full screen, so both stay side by side.
+  - When even the full screen isn't enough, the resize toast offers **Own slide**.
+
 ## [1.5.1] - 2026-10-31
 
 ### Changed

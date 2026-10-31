@@ -57,7 +57,7 @@ the Product Hunt launch). It takes about 30 minutes. Note anything that's off an
 - [ ] Run Claude Code or Codex in a terminal and let it ask for approval: a chime and a notice.
 - [ ] **Animate Windows** off in the menu bar menu: windows move instantly, everything still works.
 - [ ] Settings → About → **Usage** shows launches, running time, CPU and your most used actions.
-- [ ] Switch the language (Settings → General) to each of the 8 languages: the menu bar menu and Settings tabs change.
+- [ ] Switch the language (Settings → General) to each of the 9 languages: the menu bar menu and Settings tabs change.
 
 ## 7. Crash check (a week)
 

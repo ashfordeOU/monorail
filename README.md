@@ -1035,6 +1035,7 @@ code, so it is unit-tested on macOS and Linux. The app
 - **Mission Control Spaces** are read through the system window server, so each Space keeps its own layout. If that lookup ever fails, Monorail treats each display as one Space instead of breaking.
 - **Multitouch input** is read directly from the trackpad for three- and four-finger swipes. It is only loaded when that option is on.
 - **Animations** use a short ease-out curve, timed to the display (up to 120 Hz on ProMotion). Windows are resized once, then slid into place, so apps don't have to re-layout their content on every frame.
+- **Animations are optional.** Switch off **Animate Windows** in the menu bar menu, and windows move instantly with no other change in behaviour.
 - **Energy.** Monorail is event-driven: it reacts to macOS notifications instead of polling window positions.
   - Its few background checks pause completely while your screen sleeps or is locked.
   - In Low Power Mode, or on battery, those checks run half as often and animation drops to 30 fps.

@@ -19,6 +19,7 @@ Stay Awake, and lighter on energy.
   - **Automatic triggers:** app open or in front, external display, Wi-Fi network, charging, schedule, busy CPU, downloading, external drive.
   - **Feedback:** notices and sounds, and ☕ with the time left in the menu bar.
   - **Ways to start it:** a Stay Awake submenu and settings pane, palette actions, `monorail awake`, `monorail://awake`, `POST /awake`, the `stay_awake` MCP tool, and webhooks.
+- **Animate Windows** in the menu bar menu: switch animation off in one click. Windows then move instantly, everything else works the same, and it uses less energy. (Also in Settings → Motion & Input and the command palette.)
 - **A measuring script**, `scripts/measure-performance.sh`, that measures Monorail's own CPU, wake-ups, energy and memory, while idle and in use.
 
 ### Changed

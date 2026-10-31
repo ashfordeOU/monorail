@@ -348,6 +348,7 @@ private struct InputPane: View {
         Form {
             Section("Animation") {
                 Toggle("Animate windows", isOn: $store.settings.animate)
+                    .help("Off: windows move instantly. Everything else works exactly the same, and it uses less energy.")
                 Toggle("Skip animations with Reduce Motion or Low Power Mode", isOn: $store.settings.followReduceMotion)
                     .disabled(!store.settings.animate)
                 Toggle("Skip animations on battery", isOn: $store.settings.skipAnimationsOnBattery)

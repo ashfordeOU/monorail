@@ -611,6 +611,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return parent
     }
 
+    @objc private func toggleAnimationsFromMenu() {
+        var settings = store.settings
+        settings.animate.toggle()
+        store.settings = settings
+        toast.show(settings.animate ? "Animations on" : "Animations off · windows move instantly")
+    }
+
     @objc private func endAwakeFromMenu() { awake.end() }
     @objc private func awakeForMinutesFromMenu(_ sender: NSMenuItem) { awake.start(minutes: sender.tag) }
     @objc private func awakeDownloadingFromMenu() { awake.start(.whileDownloading) }
@@ -2241,6 +2248,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(item("Grant Accessibility Access…", #selector(showWelcomeFromMenu)))
         }
         menu.addItem(awakeMenu())
+        let animate = item("Animate Windows", #selector(toggleAnimationsFromMenu), action: .toggleAnimations)
+        animate.state = store.settings.animate ? .on : .off
+        animate.toolTip = "Off: windows move instantly. Everything else works the same, and it saves energy."
+        menu.addItem(animate)
 
         let windows = engine.activeStripWindows()
         if !windows.isEmpty {

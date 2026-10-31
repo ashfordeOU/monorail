@@ -18,6 +18,12 @@
 <link rel="manifest" href="site.webmanifest">
 <meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#120914" media="(prefers-color-scheme: dark)">
+<script>
+(() => { try {
+  const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+  const z = parseFloat(localStorage.getItem('monorail-zoom')); if (z >= .8 && z <= 1.4) document.documentElement.style.setProperty('--zoom', z);
+} catch (e) {} })();
+</script>
 <style>
 :root {
   --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA;
@@ -26,11 +32,21 @@
   --radius:20px; --ease:cubic-bezier(.22,.8,.25,1);
 }
 @media (prefers-color-scheme: dark) {
-  :root { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; }
+  :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; color-scheme:dark; }
 }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; color-scheme:dark; }
+:root[data-theme="light"] { color-scheme:light; }
+/* Reader controls: theme and text size */
+.prefs { display:flex; align-items:center; gap:4px; padding:3px; border-radius:999px; border:1px solid var(--line); background:var(--card); }
+.prefs button { border:0; background:transparent; color:var(--muted); min-width:32px; height:30px; border-radius:999px; font:700 13px/1 inherit; cursor:pointer; padding:0 8px; }
+.prefs button:hover { color:var(--ink); background:var(--soft); }
+.prefs button[aria-pressed="true"] { color:var(--ink); background:var(--soft); }
+.prefs .sep { width:1px; height:18px; background:var(--line); }
+.prefs button svg { display:block; margin:auto; }
+@media (hover: none), (max-width: 700px) { .stage .hint { display:none; } }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }
-body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+body { zoom:var(--zoom, 1); margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
 a { color:var(--plum); }
 .wrap { max-width:1120px; margin:0 auto; padding:0 22px; }
 .grad { background:linear-gradient(100deg, var(--coral), var(--pink) 45%, var(--plum)); -webkit-background-clip:text; background-clip:text; color:transparent; }
@@ -50,7 +66,8 @@ nav.top .links a:hover { color:var(--ink); }
 .btn.primary { color:#fff; background:linear-gradient(100deg, var(--pink), var(--plum)); box-shadow:0 10px 30px rgba(214,58,128,.35); }
 .btn.ghost { color:var(--ink); background:var(--card); border:1px solid var(--line); }
 .btn.small { padding:8px 16px; font-size:14px; }
-@media (max-width:760px) { nav.top .links { display:none; } nav.top .btn { margin-left:auto; } }
+@media (max-width:980px) { nav.top .links { display:none; } nav.top .prefs { margin-left:auto; } }
+@media (max-width:480px) { nav.top .brand small { display:none; } nav.top .wrap { gap:8px; } .prefs { gap:0; } .prefs .sep { display:none; } .prefs button { min-width:26px; padding:0 5px; } nav.top .btn.small { padding:7px 12px; font-size:13px; } }
 
 /* Hero */
 .hero { padding:44px 0 30px; text-align:center; position:relative; overflow:hidden; }
@@ -136,6 +153,7 @@ h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; 
 .pad { display:grid; grid-template-columns:1.1fr .9fr; gap:22px; margin-top:34px; align-items:start; }
 @media (max-width:860px) { .pad { grid-template-columns:1fr; } }
 .legend, .checklist { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px; }
+.legend { max-width:100%; overflow-x:auto; }
 .legend table { width:100%; border-collapse:collapse; font-size:15px; }
 .legend td { padding:9px 4px; border-bottom:1px solid var(--line); }
 .legend td:last-child { text-align:right; white-space:nowrap; }
@@ -192,11 +210,10 @@ footer a:hover { color:var(--ink); }
 
 
 /* Docking playground */
-.dockwrap { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:28px; align-items:start; margin-top:28px; }
-@media (max-width: 860px) { .dockwrap { grid-template-columns:1fr; } }
+.dockwrap { max-width:980px; margin:28px auto 0; }
 .dockmac { position:relative; aspect-ratio:16/10.5; border-radius:20px; overflow:hidden; background:linear-gradient(135deg,#2E2466,#6E2A72 55%,#B8406A); box-shadow:0 30px 80px rgba(42,20,48,.3), 0 0 0 1px rgba(0,0,0,.06); touch-action:none; user-select:none; -webkit-user-select:none; }
-.dockmac .area { position:absolute; left:2%; right:2%; top:3%; bottom:22%; }
-.dockmac .shelf { position:absolute; left:2%; right:2%; bottom:3%; height:15%; border-radius:12px; border:2px dashed rgba(255,255,255,.35); display:flex; align-items:center; gap:2%; padding:0 2%; color:rgba(255,255,255,.75); font:600 clamp(10px,1.2vw,13px)/1.2 -apple-system, sans-serif; }
+.dockmac .area { position:absolute; left:2%; right:2%; top:3%; bottom:25%; }
+.dockmac .shelf { position:absolute; left:2%; right:2%; bottom:3%; height:18%; border-radius:12px; border:2px dashed rgba(255,255,255,.35); display:flex; align-items:center; gap:2%; padding:0 2%; color:rgba(255,255,255,.75); font:600 clamp(10px,1.2vw,13px)/1.2 -apple-system, sans-serif; }
 .dockmac .shelf.hot { border-color:#fff; background:rgba(255,255,255,.12); }
 .dwin { position:absolute; border-radius:10px; background:var(--card); box-shadow:0 10px 26px rgba(0,0,0,.3); overflow:hidden; display:flex; flex-direction:column; transition:left .45s var(--ease), top .45s var(--ease), width .45s var(--ease), height .45s var(--ease), opacity .3s; }
 .dwin.dragging { transition:none; z-index:20; box-shadow:0 26px 60px rgba(0,0,0,.5); opacity:.92; cursor:grabbing; }
@@ -221,13 +238,28 @@ footer a:hover { color:var(--ink); }
 .dgap:hover::after, .dgap.active::after { background:#fff; }
 .dcursor { position:absolute; width:22px; height:22px; z-index:30; pointer-events:none; opacity:0; transition:opacity .2s; }
 .dcursor.show { opacity:1; }
-.dsteps { display:grid; gap:12px; }
-.dsteps .s { display:flex; gap:12px; padding:14px 16px; border-radius:14px; background:var(--card); border:1px solid var(--line); transition:border-color .3s, transform .3s var(--ease); }
-.dsteps .s.on { border-color:var(--pink); transform:translateX(4px); }
-.dsteps .s .k { flex:0 0 30px; height:30px; border-radius:9px; display:grid; place-items:center; color:#fff; font-weight:800; background:linear-gradient(135deg,var(--pink),var(--plum)); }
-.dsteps .s p { margin:0; color:var(--muted); font-size:15px; } .dsteps .s p b { color:var(--ink); }
-.dockbar { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.dsteps { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:12px; margin-top:22px; }
+@media (max-width: 900px) { .dsteps { grid-template-columns:repeat(2, minmax(0,1fr)); } .dsteps .s:last-child { grid-column:1 / -1; } }
+@media (max-width: 520px) { .dsteps { grid-template-columns:1fr; } }
+.dsteps .s { display:flex; flex-direction:column; gap:10px; padding:16px; border-radius:16px; background:var(--card); border:1px solid var(--line); transition:border-color .3s, box-shadow .3s; }
+.dsteps .s.on { border-color:var(--pink); box-shadow:0 0 0 1px var(--pink); }
+.dsteps .s .k { flex:0 0 30px; width:30px; align-self:flex-start; height:30px; border-radius:9px; display:grid; place-items:center; color:#fff; font-weight:800; background:linear-gradient(135deg,var(--pink),var(--plum)); }
+.dsteps .s p { margin:0; color:var(--muted); font-size:14.5px; line-height:1.5; } .dsteps .s p b { color:var(--ink); }
+.dockbar { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:16px; }
 
+
+/* Platforms */
+.platforms { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; max-width:980px; margin:28px auto 0; }
+@media (max-width: 760px) { .platforms { grid-template-columns:1fr; } }
+.platform { position:relative; padding:26px 24px; border-radius:20px; background:var(--card); border:1px solid var(--line); text-align:left; display:flex; flex-direction:column; gap:10px; }
+.platform .os { width:46px; height:46px; border-radius:13px; display:grid; place-items:center; font-size:24px; color:#fff; }
+.platform h3 { margin:4px 0 0; font-size:21px; }
+.platform p { margin:0; color:var(--muted); font-size:15px; line-height:1.5; flex:1; }
+.platform .badge { position:absolute; top:22px; right:20px; padding:5px 11px; border-radius:999px; font:700 12px/1 inherit; letter-spacing:.04em; text-transform:uppercase; }
+.platform .badge.now { background:color-mix(in srgb, var(--w5) 18%, transparent); color:var(--w5); }
+.platform .badge.soon { background:color-mix(in srgb, var(--pink) 14%, transparent); color:var(--pink); }
+.platform a.more { font-weight:700; color:var(--pink); text-decoration:none; font-size:15px; }
+.platform a.more:hover { text-decoration:underline; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
   .reveal { opacity:1; transform:none; }
@@ -242,13 +274,19 @@ footer a:hover { color:var(--ink); }
     <div class="links">
       <a href="#demo">Demo</a><a href="#how">How it works</a><a href="#docking">Docking</a><a href="#features">Features</a><a href="#shortcuts">Shortcuts</a><a href="#themes">Themes</a><a href="#faq">FAQ</a>
     </div>
+    <div class="prefs" role="group" aria-label="Display">
+      <button type="button" id="themebtn" title="Theme: follows your system" aria-label="Theme"></button>
+      <span class="sep"></span>
+      <button type="button" id="smaller" title="Smaller text" aria-label="Smaller text">A−</button>
+      <button type="button" id="bigger" title="Larger text" aria-label="Larger text">A+</button>
+    </div>
     <a class="btn primary small" href="https://github.com/ashfordeOU/monorail/releases/latest">Download</a>
   </div>
 </nav>
 
 <header class="hero">
   <div class="wrap">
-    <span class="eyebrow"><b>New</b> Stay Awake, Ask Monorail and 27 themes</span>
+    <a class="eyebrow" href="#docking" style="text-decoration:none"><b>New</b> Drag-to-dock, tab groups and saved views</a>
     <h1>Every window rides <em class="grad">one rail.</em></h1>
     <p class="lede">Monorail is a scrolling window manager for your Mac. New windows slide in next to the one you're using, and <b>nothing else ever shrinks</b>. Tell it what you want in plain words.</p>
     <div class="cta">
@@ -308,11 +346,11 @@ footer a:hover { color:var(--ink); }
         </div>
       </div>
       <div class="dsteps" id="dsteps">
-        <div class="s" data-s="0"><div class="k">1</div><p><b>Drag onto an edge</b> of any window. A highlight shows the half it will take. Let go and it docks there; the other window makes room.</p></div>
-        <div class="s" data-s="1"><div class="k">2</div><p><b>Keep going.</b> Dock onto a docked window and that half splits again: splits inside splits, as deep as you like.</p></div>
-        <div class="s" data-s="2"><div class="k">3</div><p><b>Drop in the middle</b> to make a tab group, even across apps. Click a tab to switch; drag a tab out to tear it off.</p></div>
+        <div class="s" data-s="0"><div class="k">1</div><p><b>Drag onto an edge</b> of any window. A highlight shows the half it will take; let go and it docks there.</p></div>
+        <div class="s" data-s="1"><div class="k">2</div><p><b>Keep going.</b> Dock onto a docked window and that half splits again, as deep as you like.</p></div>
+        <div class="s" data-s="2"><div class="k">3</div><p><b>Drop in the middle</b> for a tab group, even across apps. Drag a tab out to tear it off.</p></div>
         <div class="s" data-s="3"><div class="k">4</div><p><b>Drag the gap</b> between two windows to resize both at once.</p></div>
-        <div class="s" data-s="4"><div class="k">5</div><p><b>Undock</b> whenever you like: <kbd>⌃⌥⇧]</kbd> gives the window a slide of its own, <kbd>⌃⌥T</kbd> floats it (here, drag it to Floating), <kbd>⌃⌥G</kbd> turns the whole slide back into a standard layout, and <kbd>⌃⌥Z</kbd> undoes the last dock.</p></div>
+        <div class="s" data-s="4"><div class="k">5</div><p><b>Undock</b> with <kbd>⌃⌥⇧]</kbd> for a slide of its own, <kbd>⌃⌥T</kbd> to float (here, drag to Floating), or <kbd>⌃⌥Z</kbd> to undo.</p></div>
       </div>
     </div>
   </section>
@@ -393,6 +431,18 @@ footer a:hover { color:var(--ink); }
     </div>
   </section>
 
+  <section id="platforms" class="center reveal">
+    <div class="kicker">Everywhere you work</div>
+    <h2>On the Mac today. <span class="grad">Windows and Linux are coming.</span></h2>
+    <p class="sub">The same strip, the same docking and the same shortcuts, made natively for each system.</p>
+    <div class="platforms">
+      <div class="platform"><span class="badge now">Available</span><div class="os" style="background:linear-gradient(135deg,#5B5B66,#24242B)">⌘</div><h3>macOS</h3><p>macOS 13 or later, on Apple silicon and Intel. Free, with every feature.</p><a class="more" href="https://github.com/ashfordeOU/monorail/releases/latest">Download for Mac →</a></div>
+      <div class="platform"><span class="badge soon">Coming soon</span><div class="os" style="background:linear-gradient(135deg,#2F8CFF,#1B5FD6)">⊞</div><h3>Windows</h3><p>For Windows 11 and 10: one strip across your screens, drag-to-dock, saved views and the command palette.</p><a class="more" href="https://github.com/ashfordeOU/monorail/issues/new?title=I%27d%20like%20Monorail%20for%20Windows&amp;labels=windows">I want it on Windows →</a></div>
+      <div class="platform"><span class="badge soon">Coming soon</span><div class="os" style="background:linear-gradient(135deg,#F5B700,#E07A00)">🐧</div><h3>Linux</h3><p>For GNOME and KDE on Wayland and X11, with the same keyboard-first design.</p><a class="more" href="https://github.com/ashfordeOU/monorail/issues/new?title=I%27d%20like%20Monorail%20for%20Linux&amp;labels=linux">I want it on Linux →</a></div>
+    </div>
+    <p class="hint" style="margin-top:18px">Star or watch <a href="https://github.com/ashfordeOU/monorail" style="color:inherit">the repository</a> to hear when they're ready.</p>
+  </section>
+
   <section id="faq" class="reveal">
     <div class="center"><div class="kicker">FAQ</div><h2>Good questions</h2></div>
     <div class="faq">
@@ -403,6 +453,7 @@ footer a:hover { color:var(--ink); }
       <details><summary>Does it work with multiple displays, projectors and Sidecar?</summary><p>Yes: each display gets its own strip, an unplugged display's windows come back when you reconnect, and Sidecar iPads fit every slide.</p></details>
       <details><summary>Which languages?</summary><p>English, German, French, Spanish, Japanese, Chinese (Simplified), Portuguese, Korean and Italian.</p></details>
       <details><summary>I use AeroSpace, yabai or Rectangle. Can I bring my setup?</summary><p>Yes. Settings → Basics → Import Settings… brings over your shortcuts, gaps, floating apps and workspace rules.</p></details>
+      <details><summary>Is there a Windows or Linux version?</summary><p>Not yet. Both are on the way, with the same strip, docking and shortcuts. Tell us which you'd use from the section above, and watch the repository to hear when they're ready.</p></details>
       <details><summary>Is anything behind a paywall?</summary><p>No. Docking, nesting, tab groups, saved views, URL commands and every display are free, with no window limits.</p></details>
       <details><summary>Can I script it?</summary><p>monorail:// links, a command-line tool, a local API, an MCP server for AI assistants, AppleScript and JavaScript scripts with a gallery.</p></details>
     </div>
@@ -627,12 +678,48 @@ footer a:hover { color:var(--ink); }
 
 <script>
 (() => {
+  const root = document.documentElement, btn = document.getElementById('themebtn');
+  const svg = d => `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const order = ['auto', 'light', 'dark'], icons = {
+    auto: svg('<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>'),
+    light: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+    dark: svg('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>') }, names = { auto: 'follows your system', light: 'light', dark: 'dark' };
+  const store = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+  function apply(mode) {
+    if (mode === 'auto') delete root.dataset.theme; else root.dataset.theme = mode;
+    btn.innerHTML = icons[mode]; btn.title = 'Theme: ' + names[mode]; btn.setAttribute('aria-pressed', mode !== 'auto');
+    const dark = mode === 'dark' || (mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', dark ? '#120914' : '#FFF8F3'));
+  }
+  let mode = root.dataset.theme || 'auto'; apply(mode);
+  btn.addEventListener('click', () => { mode = order[(order.indexOf(mode) + 1) % 3]; apply(mode); store('monorail-theme', mode === 'auto' ? null : mode); });
+  // Larger sizes only where they still fit the screen.
+  const all = [.85, .92, 1, 1.1, 1.2, 1.32];
+  const limit = () => innerWidth < 500 ? 1.1 : innerWidth < 900 ? 1.2 : 1.32;
+  let steps = all.filter(z => z <= limit());
+  addEventListener('resize', () => { const next = all.filter(z => z <= limit()); if (next.length !== steps.length) { steps = next; if (zoom > limit()) setZoom(limit()); } });
+  let zoom = parseFloat(getComputedStyle(root).getPropertyValue('--zoom')) || 1;
+  function setZoom(z) {
+    zoom = z; root.style.setProperty('--zoom', z); store('monorail-zoom', z === 1 ? null : z);
+    document.getElementById('smaller').disabled = z <= steps[0]; document.getElementById('bigger').disabled = z >= steps[steps.length - 1];
+    dispatchEvent(new Event('resize'));
+  }
+  const nearest = () => steps.reduce((a, b) => Math.abs(b - zoom) < Math.abs(a - zoom) ? b : a);
+  document.getElementById('smaller').addEventListener('click', () => { const i = steps.indexOf(nearest()); if (i > 0) setZoom(steps[i - 1]); });
+  document.getElementById('bigger').addEventListener('click', () => { const i = steps.indexOf(nearest()); if (i < steps.length - 1) setZoom(steps[i + 1]); });
+  setZoom(Math.min(nearest(), limit()));
+})();
+</script>
+<script>
+(() => {
   const mac = document.getElementById('dockmac'); if (!mac) return;
   const area = document.getElementById('dockarea'), shelf = document.getElementById('dockshelf');
   const preview = document.getElementById('dpreview'), cursor = document.getElementById('dcursor');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const apps = { 1: ['Safari', '--w1'], 2: ['Xcode', '--w6'], 3: ['Terminal', '--w8'], 4: ['Notes', '--w5'], 5: ['Slack', '--w2'] };
   let tree, floating, els = {}, busy = false;
+  // With the page's text size changed, screen pixels and layout pixels differ by this factor.
+  const Z = () => parseFloat(getComputedStyle(document.body).zoom) || 1;
 
   // The same model as the app: a leaf holds one window or a tab group; a split holds two parts.
   const leaf = (ids, a = 0) => ({ t: 'leaf', ids, a });
@@ -731,11 +818,11 @@ footer a:hover { color:var(--ink); }
   }
   function showPreview(hit) {
     if (!hit) return preview.classList.remove('show');
-    const a = area.getBoundingClientRect(), m = mac.getBoundingClientRect(), r = hit.r;
+    const a = area.getBoundingClientRect(), m = mac.getBoundingClientRect(), r = hit.r, z = Z();
     let p = { ...r };
     if (hit.edge === 'left') p.w = r.w / 2; if (hit.edge === 'right') { p.x = r.x + r.w / 2; p.w = r.w / 2; }
     if (hit.edge === 'top') p.h = r.h / 2; if (hit.edge === 'bottom') { p.y = r.y + r.h / 2; p.h = r.h / 2; }
-    Object.assign(preview.style, { left: (a.left - m.left + p.x + 4) + 'px', top: (a.top - m.top + p.y + 4) + 'px', width: (p.w - 8) + 'px', height: (p.h - 8) + 'px' });
+    Object.assign(preview.style, { left: ((a.left - m.left) / z + p.x + 4) + 'px', top: ((a.top - m.top) / z + p.y + 4) + 'px', width: (p.w - 8) + 'px', height: (p.h - 8) + 'px' });
     preview.textContent = hit.empty ? 'Tile here' : hit.edge === 'center' ? 'Tab group' : 'Dock here';
     preview.classList.add('show');
   }
@@ -753,15 +840,15 @@ footer a:hover { color:var(--ink); }
   function startDrag(e, id) {
     if (busy && e.isTrusted) return;
     e.preventDefault();
-    const el = els[id], m = mac.getBoundingClientRect(), a = area.getBoundingClientRect();
-    const start = el.getBoundingClientRect(), dx = e.clientX - start.left, dy = e.clientY - start.top;
+    const el = els[id], m = mac.getBoundingClientRect(), a = area.getBoundingClientRect(), z = Z();
+    const start = el.getBoundingClientRect(), dx = (e.clientX - start.left) / z, dy = (e.clientY - start.top) / z;
     mac.appendChild(el); el.classList.remove('mini', 'hidden'); el.classList.add('dragging');
-    Object.assign(el.style, { width: Math.max(start.width, m.width * .26) + 'px', height: Math.max(start.height, m.height * .3) + 'px' });
+    Object.assign(el.style, { width: Math.max(start.width, m.width * .26) / z + 'px', height: Math.max(start.height, m.height * .3) / z + 'px' });
     const move = ev => {
-      el.style.left = (ev.clientX - m.left - dx) + 'px'; el.style.top = (ev.clientY - m.top - dy) + 'px';
+      el.style.left = ((ev.clientX - m.left) / z - dx) + 'px'; el.style.top = ((ev.clientY - m.top) / z - dy) + 'px';
       const s = shelf.getBoundingClientRect(), overShelf = ev.clientY > s.top && ev.clientY < s.bottom;
       shelf.classList.toggle('hot', overShelf);
-      showPreview(overShelf ? null : target(ev.clientX - a.left, ev.clientY - a.top, id));
+      showPreview(overShelf ? null : target((ev.clientX - a.left) / z, (ev.clientY - a.top) / z, id));
       return overShelf;
     };
     move(e);
@@ -769,17 +856,17 @@ footer a:hover { color:var(--ink); }
       removeEventListener('pointermove', move); removeEventListener('pointerup', up);
       el.classList.remove('dragging'); el.style.width = el.style.height = '';
       const s = shelf.getBoundingClientRect(), overShelf = ev.clientY > s.top && ev.clientY < s.bottom;
-      drop(id, overShelf ? null : target(ev.clientX - a.left, ev.clientY - a.top, id), overShelf);
+      drop(id, overShelf ? null : target((ev.clientX - a.left) / z, (ev.clientY - a.top) / z, id), overShelf);
     };
     addEventListener('pointermove', move); addEventListener('pointerup', up);
     return { move, up };
   }
   function dragGap(e, sp, g) {
     e.preventDefault(); g.classList.add('active'); highlight(3);
-    const a = area.getBoundingClientRect();
-    els && Object.values(els).forEach(el => el.style.transition = 'none');
+    const a = area.getBoundingClientRect(), z = Z();
+    Object.values(els).forEach(el => el.style.transition = 'none');
     const move = ev => {
-      const r = sp.ax === 'h' ? (ev.clientX - a.left - sp.r.x) / sp.r.w : (ev.clientY - a.top - sp.r.y) / sp.r.h;
+      const r = sp.ax === 'h' ? ((ev.clientX - a.left) / z - sp.r.x) / sp.r.w : ((ev.clientY - a.top) / z - sp.r.y) / sp.r.h;
       tree = setRatio(tree, sp.path, r); render();
     };
     const up = () => {
@@ -804,7 +891,7 @@ footer a:hover { color:var(--ink); }
     for (let i = 1; i <= steps; i++) {
       const t = i / steps, k = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
       const x = from.x + (to.x - from.x) * k, y = from.y + (to.y - from.y) * k;
-      cursor.style.left = (x - 3) + 'px'; cursor.style.top = (y - 2) + 'px'; each && each(x, y);
+      const z = Z(); cursor.style.left = (x / z - 3) + 'px'; cursor.style.top = (y / z - 2) + 'px'; each && each(x, y);
       await new Promise(r => requestAnimationFrame(r));
     }
   }
@@ -812,7 +899,8 @@ footer a:hover { color:var(--ink); }
   function spot(id, fx, fy) {
     const m = mac.getBoundingClientRect(), a = area.getBoundingClientRect();
     const t = tiles(tree, { x: 0, y: 0, w: area.clientWidth, h: area.clientHeight }).find(t => t.id === id);
-    return { x: a.left - m.left + t.r.x + t.r.w * fx, y: a.top - m.top + t.r.y + t.r.h * fy };
+    const z = Z();
+    return { x: a.left - m.left + (t.r.x + t.r.w * fx) * z, y: a.top - m.top + (t.r.y + t.r.h * fy) * z };
   }
   async function scriptedDrag(id, to, fx, fy) {
     const m = mac.getBoundingClientRect();
@@ -833,12 +921,12 @@ footer a:hover { color:var(--ink); }
       highlight(3);
       const gap = area.querySelector('.dgap.h'); if (gap) {
         const m = mac.getBoundingClientRect(), b = gap.getBoundingClientRect(), a = area.getBoundingClientRect();
-        const p = { x: b.left - m.left + 7, y: b.top - m.top + b.height / 2 };
+        const z = Z(); const p = { x: b.left - m.left + 7 * z, y: b.top - m.top + b.height / 2 };
         await glide({ x: p.x - 50, y: p.y + 30 }, p, 400);
         const sp = splits(tree, { x: 0, y: 0, w: area.clientWidth, h: area.clientHeight })[0];
         for (const target of [.38, .6, .5]) {
-          const from = { ...p }; p.x = a.left - m.left + area.clientWidth * target;
-          await glide(from, p, 500, x => { tree = setRatio(tree, sp.path, (x - (a.left - m.left)) / area.clientWidth); render(); });
+          const from = { ...p }; p.x = a.left - m.left + area.clientWidth * z * target;
+          await glide(from, p, 500, x => { tree = setRatio(tree, sp.path, (x - (a.left - m.left)) / (area.clientWidth * z)); render(); });
         }
       }
       highlight(4); await wait(600);

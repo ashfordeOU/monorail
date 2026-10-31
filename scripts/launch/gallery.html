@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Monorail gallery</title>
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --card:#fff; --soft:#FBEFEA; --line:rgba(36,17,43,.10);
+  --pink:#E8437A; --plum:#8E3AB8; --w1:#5B8CFF; --w2:#B06BFF; --w3:#FF5F9E; --w4:#FF9445; --w5:#45D18C; --w6:#33CCDB; --w7:#FFCC40; --w8:#8E7CFF; }
+* { box-sizing:border-box; }
+html, body { margin:0; width:1270px; height:760px; overflow:hidden; font-family:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing:antialiased; }
+.slide { position:absolute; inset:0; padding:54px 64px; color:#fff; background:radial-gradient(1200px 700px at 85% -10%, rgba(255,120,160,.35), transparent 60%), linear-gradient(135deg,#2A1650,#5E2370 50%,#B23F6E); display:none; }
+.slide.on { display:block; }
+.kicker { font:700 15px/1 inherit; letter-spacing:.14em; text-transform:uppercase; color:#FFC3D6; }
+h1 { font-size:54px; line-height:1.04; letter-spacing:-1.6px; margin:14px 0 12px; max-width:760px; }
+h1 em { font-style:normal; background:linear-gradient(100deg,#FFB27A,#FF7AA8); -webkit-background-clip:text; background-clip:text; color:transparent; }
+p.sub { font-size:21px; line-height:1.4; color:rgba(255,255,255,.82); margin:0; max-width:620px; }
+.brand { position:absolute; right:56px; top:50px; display:flex; align-items:center; gap:10px; font:700 16px/1 inherit; color:rgba(255,255,255,.85); }
+.brand img { width:30px; height:30px; border-radius:8px; }
+.mac { position:absolute; border-radius:18px; overflow:hidden; background:linear-gradient(135deg,#3A2A6E,#7A2E78 55%,#C2456E); box-shadow:0 40px 90px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.12); }
+.menubar { position:absolute; inset:0 0 auto; height:26px; background:rgba(20,8,24,.35); display:flex; align-items:center; padding:0 14px; gap:16px; font:600 12px/1 inherit; }
+.menubar .r { margin-left:auto; display:flex; gap:12px; align-items:center; }
+.win { position:absolute; border-radius:11px; background:var(--card); box-shadow:0 14px 30px rgba(0,0,0,.3); overflow:hidden; display:flex; flex-direction:column; color:var(--ink); }
+.win .bar { height:24px; flex:0 0 24px; display:flex; align-items:center; gap:5px; padding:0 10px; background:var(--soft); font:600 11.5px/1 inherit; color:var(--muted); }
+.win .bar i { width:9px; height:9px; border-radius:50%; background:#FF5F57; } .win .bar i:nth-child(2){background:#FEBC2E} .win .bar i:nth-child(3){background:#28C840}
+.win .bar span { margin-left:6px; white-space:nowrap; }
+.win .body { flex:1; padding:12px; display:grid; gap:8px; align-content:start; background:linear-gradient(180deg, color-mix(in srgb, var(--a) 12%, transparent), transparent 60%); }
+.win .body b { display:block; height:10px; border-radius:5px; background:var(--a); width:52%; }
+.win .body s { display:block; height:7px; border-radius:4px; background:var(--line); text-decoration:none; }
+.win .body s:nth-child(3n) { width:78%; } .win .body s:nth-child(4n) { width:60%; }
+.win.focus { outline:3px solid #fff; outline-offset:2px; }
+.pill { position:absolute; left:50%; transform:translateX(-50%); height:24px; border-radius:999px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); display:flex; align-items:center; gap:4px; padding:0 10px; }
+.pill span { height:10px; border-radius:3px; background:rgba(255,255,255,.55); }
+.preview { position:absolute; border-radius:12px; background:rgba(232,67,122,.55); border:3px solid #fff; display:grid; place-items:center; font:800 20px/1 inherit; text-shadow:0 2px 8px rgba(0,0,0,.4); }
+.cursor { position:absolute; width:30px; height:30px; }
+.chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; }
+.chip { padding:9px 15px; border-radius:999px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); font:600 15px/1 inherit; }
+kbd { display:inline-block; padding:5px 9px; border-radius:8px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3); border-bottom-width:3px; font:700 17px/1 inherit; color:#fff; }
+.card { position:absolute; border-radius:18px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); padding:22px 24px; backdrop-filter:blur(8px); }
+.card h3 { margin:0 0 8px; font-size:22px; } .card p { margin:0; color:rgba(255,255,255,.8); font-size:16px; line-height:1.4; }
+.tabs { position:absolute; display:flex; gap:4px; }
+.tabs b { flex:1; padding:6px 10px; border-radius:8px 8px 0 0; background:rgba(255,255,255,.35); font:700 11.5px/1.2 inherit; color:#fff; }
+.tabs b.on { background:#fff; color:var(--ink); }
+.palette { position:absolute; border-radius:16px; background:rgba(255,255,255,.97); color:var(--ink); box-shadow:0 30px 80px rgba(0,0,0,.45); overflow:hidden; }
+.palette .q { padding:18px 20px; font-size:21px; border-bottom:1px solid var(--line); }
+.palette .q .c { display:inline-block; width:2px; height:22px; background:var(--pink); vertical-align:-4px; margin-left:2px; }
+.palette .r { margin:10px; padding:13px 15px; border-radius:11px; background:var(--pink); color:#fff; font:700 17px/1.2 inherit; }
+.palette .r2 { margin:0 10px 10px; padding:11px 15px; border-radius:11px; color:var(--muted); font:600 16px/1.2 inherit; }
+.toast { position:absolute; padding:12px 18px; border-radius:999px; background:rgba(36,17,43,.9); color:#fff; font:700 16px/1.2 inherit; box-shadow:0 14px 30px rgba(0,0,0,.35); white-space:nowrap; }
+.menu { position:absolute; width:300px; border-radius:12px; background:rgba(250,246,250,.97); color:var(--ink); box-shadow:0 26px 60px rgba(0,0,0,.45); padding:6px; font:500 15px/1 inherit; }
+.menu div { padding:9px 12px; border-radius:7px; display:flex; justify-content:space-between; }
+.menu div.h { background:var(--pink); color:#fff; } .menu div span { color:var(--muted); font-size:13px; } .menu div.h span { color:#fff; }
+.menu hr { border:0; border-top:1px solid var(--line); margin:5px 8px; }
+.src { position:absolute; width:300px; border-radius:16px; background:#fff; color:var(--ink); padding:18px 20px; box-shadow:0 20px 50px rgba(0,0,0,.35); }
+.src h4 { margin:0 0 6px; font-size:19px; } .src code { font:600 13px/1.4 ui-monospace, Menlo, monospace; color:var(--muted); }
+.swatch { position:absolute; width:188px; height:118px; border-radius:14px; overflow:hidden; box-shadow:0 14px 30px rgba(0,0,0,.35); }
+.swatch .bg { position:absolute; inset:0; }
+.swatch i { position:absolute; top:22%; bottom:26%; border-radius:6px; background:rgba(255,255,255,.92); }
+.swatch b { position:absolute; left:10px; bottom:8px; font:700 13px/1 inherit; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.5); }
+</style></head><body>
+
+<!-- 1 Hero -->
+<section class="slide" data-n="1">
+  <div class="kicker">Monorail by Ashforde®</div>
+  <h1>Every window rides <em>one rail</em></h1>
+  <p class="sub">The scrolling window manager for Mac. New windows slide in beside you, so nothing you're using ever shrinks.</p>
+  <div class="chips"><span class="chip">✓ Free, every feature</span><span class="chip">✓ No account</span><span class="chip">✓ macOS 13+ · Apple silicon &amp; Intel</span></div>
+  <div class="mac" style="left:250px;top:318px;width:1060px;height:420px">
+    <div class="menubar"><span></span><span>Xcode</span><span style="opacity:.7">File</span><span style="opacity:.7">Edit</span><div class="r"><span>▮▮▯▯</span><span>9:41</span></div></div>
+    <div class="win" style="--a:var(--w1);left:14px;top:44px;width:250px;height:310px"><div class="bar"><i></i><i></i><i></i><span>Safari</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s><s></s></div></div>
+    <div class="win focus" style="--a:var(--w6);left:278px;top:44px;width:330px;height:310px"><div class="bar"><i></i><i></i><i></i><span>Xcode — Engine.swift</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s><s></s><s></s><s></s></div></div>
+    <div class="win" style="--a:var(--w8);left:622px;top:44px;width:230px;height:310px"><div class="bar"><i></i><i></i><i></i><span>Terminal — claude</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s></div></div>
+    <div class="win" style="--a:var(--w2);left:866px;top:44px;width:250px;height:310px"><div class="bar"><i></i><i></i><i></i><span>Slack</span></div><div class="body"><b></b><s></s><s></s></div></div>
+    <div class="pill" style="bottom:22px;width:300px"><span style="width:12%"></span><span style="width:22%;background:#fff"></span><span style="width:16%"></span><span style="width:18%"></span><span style="width:14%"></span></div>
+  </div>
+</section>
+
+<!-- 2 Docking -->
+<section class="slide" data-n="2">
+  <div class="kicker">Dock anything</div>
+  <h1>Drop a window <em>where you want it</em></h1>
+  <p class="sub">Drag onto another window's edge and it docks beside it. Dock onto a docked window to split again, as deep as you like. Any apps.</p>
+  <div class="mac" style="left:110px;top:300px;width:1050px;height:420px">
+    <div class="menubar"><span></span><span>Finder</span><div class="r"><span>9:41</span></div></div>
+    <div class="win" style="--a:var(--w1);left:16px;top:42px;width:500px;height:362px"><div class="bar"><i></i><i></i><i></i><span>Safari — Docs</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s><s></s><s></s></div></div>
+    <div class="win" style="--a:var(--w6);left:528px;top:42px;width:506px;height:176px"><div class="bar"><i></i><i></i><i></i><span>Xcode</span></div><div class="body"><b></b><s></s><s></s><s></s></div></div>
+    <div class="win" style="--a:var(--w8);left:528px;top:230px;width:506px;height:174px"><div class="bar"><i></i><i></i><i></i><span>Terminal — claude</span></div><div class="body"><b></b><s></s><s></s><s></s></div></div>
+    <div class="preview" style="left:785px;top:234px;width:245px;height:166px">Dock here</div>
+    <div class="win" style="--a:var(--w5);left:850px;top:338px;width:170px;height:96px;opacity:.93;box-shadow:0 30px 60px rgba(0,0,0,.5)"><div class="bar"><i></i><i></i><i></i><span>Notes</span></div><div class="body"><b></b><s></s><s></s></div></div>
+    <svg class="cursor" style="left:905px;top:346px" viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.5-3.4-7.3L4 18z" fill="#fff" stroke="#24112B" stroke-width="1.4" stroke-linejoin="round"/></svg>
+  </div>
+</section>
+
+<!-- 3 Tabs + gap -->
+<section class="slide" data-n="3">
+  <div class="kicker">Tab groups · resize both</div>
+  <h1>Drop in the middle for <em>tabs</em>. Drag the gap to resize.</h1>
+  <p class="sub">Tab groups work across apps. Drag a tab out to tear it off. Dragging the gap between two windows resizes both at once.</p>
+  <div class="mac" style="left:110px;top:310px;width:1050px;height:410px">
+    <div class="menubar"><span></span><span>Slack</span><div class="r"><span>9:41</span></div></div>
+    <div class="tabs" style="left:16px;top:40px;width:560px"><b>Mail</b><b class="on">Slack</b><b>Messages</b></div>
+    <div class="win" style="--a:var(--w2);left:16px;top:68px;width:560px;height:326px"><div class="bar"><i></i><i></i><i></i><span>Slack — #launch</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s><s></s><s></s></div></div>
+    <div class="win" style="--a:var(--w4);left:594px;top:40px;width:440px;height:354px"><div class="bar"><i></i><i></i><i></i><span>Figma — Launch</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s></div></div>
+    <div style="position:absolute;left:581px;top:170px;width:8px;height:96px;border-radius:4px;background:#fff;box-shadow:0 0 0 6px rgba(255,255,255,.25)"></div>
+    <div style="position:absolute;left:540px;top:196px;font:800 30px/1 inherit;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4)">⟵</div>
+    <div style="position:absolute;left:600px;top:196px;font:800 30px/1 inherit;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4)">⟶</div>
+  </div>
+</section>
+
+<!-- 4 Say it + agents -->
+<section class="slide" data-n="4">
+  <div class="kicker">Understands you</div>
+  <h1>Type what you want. <em>It's done.</em></h1>
+  <p class="sub">The palette understands sentences, on your Mac. And when an AI coding agent is waiting for your approval, you hear about it.</p>
+  <div class="mac" style="left:110px;top:300px;width:1050px;height:420px">
+    <div class="menubar"><span></span><span>Terminal</span><div class="r"><span>9:41</span></div></div>
+    <div class="win" style="--a:var(--w2);left:16px;top:42px;width:330px;height:362px;filter:brightness(.7)"><div class="bar"><i></i><i></i><i></i><span>Slack</span></div><div class="body"><b></b><s></s><s></s><s></s></div></div>
+    <div class="win" style="--a:var(--w3);left:358px;top:42px;width:330px;height:362px;filter:brightness(.7)"><div class="bar"><i></i><i></i><i></i><span>Mail</span></div><div class="body"><b></b><s></s><s></s><s></s></div></div>
+    <div class="win" style="--a:var(--w8);left:700px;top:42px;width:334px;height:362px;filter:brightness(.7)"><div class="bar"><i></i><i></i><i></i><span>Terminal — claude</span></div><div class="body"><b></b><s></s><s></s><s></s></div></div>
+    <div class="palette" style="left:235px;top:70px;width:580px"><div class="q">slack and mail side by side on 2<span class="c"></span></div><div class="r">✦ Slack and Mail side by side on workspace 2</div><div class="r2">Go to workspace 2</div></div>
+    <div class="toast" style="left:560px;top:318px">🔔 Terminal: an agent is waiting for you</div>
+  </div>
+</section>
+
+<!-- 5 Saved views -->
+<section class="slide" data-n="5">
+  <div class="kicker">Saved views</div>
+  <h1>Nine places to jump back to. <em>Back and forward</em> too.</h1>
+  <p class="sub">Save where you are on each display, then come back in one keystroke. Step back and forward through where you've been, like a browser.</p>
+  <div style="position:absolute;left:64px;top:360px;display:grid;gap:16px;font:600 19px/1.3 inherit">
+    <div><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>1</kbd> &nbsp; save this view</div>
+    <div><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>1</kbd> &nbsp; come back to it</div>
+    <div><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>[</kbd> <kbd>]</kbd> &nbsp; back · forward</div>
+  </div>
+  <div class="mac" style="left:690px;top:280px;width:520px;height:420px">
+    <div class="menubar"><span></span><span>Monorail</span><div class="r"><span>▮▮▯</span><span>9:41</span></div></div>
+    <div class="menu" style="left:190px;top:32px"><div>Back <span>⌃⌥⌘[</span></div><div>Forward <span>⌃⌥⌘]</span></div><hr><div class="h">View 1 · Coding <span>⌃⌥⌘1</span></div><div>View 2 · Mail <span>⌃⌥⌘2</span></div><div>View 3 · Design <span>⌃⌥⌘3</span></div><hr><div>Save This View as 4</div></div>
+  </div>
+</section>
+
+<!-- 6 Import + free -->
+<section class="slide" data-n="6">
+  <div class="kicker">Switch in a minute</div>
+  <h1>Bring your setup. <em>Everything's free.</em></h1>
+  <p class="sub">Import shortcuts, gaps, floating apps and workspace rules. Docking, tab groups, saved views and URL commands have no paywall and no window limits.</p>
+  <div class="src" style="left:64px;top:380px"><h4>AeroSpace</h4><code>aerospace.toml</code></div>
+  <div class="src" style="left:64px;top:480px"><h4>yabai + skhd</h4><code>.yabairc · .skhdrc</code></div>
+  <div class="src" style="left:64px;top:580px"><h4>Rectangle</h4><code>shortcuts and gaps</code></div>
+  <div style="position:absolute;left:400px;top:520px;font:800 56px/1 inherit">→</div>
+  <div class="card" style="left:500px;top:380px;width:330px;height:300px">
+    <img src="../../assets/icon.png" style="width:56px;height:56px;border-radius:14px">
+    <h3 style="margin-top:14px">Imported from AeroSpace</h3>
+    <p>24 shortcuts · 4 floating apps · 3 workspace rules · gaps of 8 points</p>
+  </div>
+  <div class="card" style="left:860px;top:380px;width:350px;height:300px">
+    <h3>No Pro tier</h3>
+    <p>✓ Unlimited docked windows<br>✓ Tab groups<br>✓ Saved views<br>✓ Commands by URL<br>✓ Every display</p>
+  </div>
+</section>
+
+<!-- 7 Themes -->
+<section class="slide" data-n="7">
+  <div class="kicker">27 themes</div>
+  <h1>Make it <em>yours</em></h1>
+  <p class="sub">Classic, seasonal and unique themes for the focus border, slider and overview. Seasons changes with the year.</p>
+  <div id="swatches"></div>
+</section>
+
+<!-- 8 Trust -->
+<section class="slide" data-n="8">
+  <div class="kicker">Native · light · private</div>
+  <h1>Made for the Mac. <em>Barely there.</em></h1>
+  <p class="sub">Native Swift, no Electron. It stays out of the way until you need it.</p>
+  <div class="card" style="left:64px;top:330px;width:270px;height:200px"><h3>⚡ Under 0.1% CPU</h3><p>when idle, with no timers ticking. Measured on a MacBook.</p></div>
+  <div class="card" style="left:354px;top:330px;width:270px;height:200px"><h3>🔒 No account</h3><p>Window titles, apps and files never leave your Mac.</p></div>
+  <div class="card" style="left:644px;top:330px;width:270px;height:200px"><h3>☕ Stay Awake</h3><p>Keep the Mac awake for an hour, while downloading, or with the lid closed.</p></div>
+  <div class="card" style="left:934px;top:330px;width:270px;height:200px"><h3>🛡️ Safe sharing</h3><p>Private windows step aside when you share your screen.</p></div>
+  <div class="chips" style="position:absolute;left:64px;top:570px"><span class="chip">monorail:// links</span><span class="chip">CLI + live events</span><span class="chip">Local API</span><span class="chip">MCP for AI assistants</span><span class="chip">Raycast · Alfred · Stream Deck</span><span class="chip">9 languages</span></div>
+</section>
+
+<!-- 9 End card -->
+<section class="slide" data-n="9" style="text-align:center;padding-top:150px">
+  <img src="../../assets/icon.png" style="width:120px;height:120px;border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.4)">
+  <h1 style="margin:28px auto 12px;max-width:none">Monorail <span style="font-weight:500;opacity:.8">by Ashforde®</span></h1>
+  <p class="sub" style="margin:0 auto;max-width:none">Free for Mac · every feature · no account · Windows and Linux coming soon</p>
+  <div style="margin-top:34px;font:700 26px/1 inherit">ashfordeou.github.io/monorail</div>
+  <div style="margin-top:18px;font:600 18px/1 inherit;opacity:.8">Download the app, or install with Homebrew</div>
+</section>
+
+<div class="brand" id="brand"><img src="../../assets/icon.png" alt="">Monorail by Ashforde®</div>
+<script>
+const n = new URLSearchParams(location.search).get('shot') || '1';
+document.querySelector(`.slide[data-n="${n}"]`).classList.add('on');
+if (n === '9') document.getElementById('brand').style.display = 'none';
+const themes = [['Vivid','#5B8CFF','#FF5F9E'],['Aurora','#2BD9A3','#7B5CFF'],['Nord','#5E81AC','#88C0D0'],['Dracula','#BD93F9','#FF79C6'],['Synthwave','#FF2E97','#7B2FFF'],['Ember','#FF6A3D','#B5172E'],['Glacier','#7FD6FF','#3D6BFF'],['Spring','#7BD66B','#FF9ACD'],['Autumn','#E07A2E','#8C3B1F'],['Winter','#B8D8FF','#6A88C2'],['Holographic','#7AF0FF','#FF8AF0'],['Ink & Paper','#2B2B2B','#9A9A9A']];
+const box = document.getElementById('swatches');
+themes.forEach(([name, a, b], i) => {
+  const col = i % 6, row = Math.floor(i / 6);
+  box.insertAdjacentHTML('beforeend', `<div class="swatch" style="left:${64 + col * 200}px;top:${370 + row * 140}px"><div class="bg" style="background:linear-gradient(135deg,${a},${b})"></div><i style="left:8%;width:38%"></i><i style="left:50%;width:26%;outline:3px solid ${a};outline-offset:1px"></i><i style="left:80%;width:30%"></i><b>${name}</b></div>`);
+});
+</script>
+</body></html>

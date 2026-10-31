@@ -99,3 +99,56 @@ final class IntelligenceTests: XCTestCase {
         XCTAssertEqual(DisplayProfile.key(for: ["b", "a"]), "a+b")
     }
 }
+
+final class StripV12Tests: XCTestCase {
+    func strip(_ widths: [Double]) -> Strip {
+        Strip(columns: widths.enumerated().map { Column(windows: [WindowID($0.offset + 1)], width: $0.element) })
+    }
+
+    func testElasticFocusGrowsTheFocusedSlide() {
+        var config = LayoutConfig()
+        config.elasticFocus = 0.2
+        let s = strip([0.5, 0.5, 0.5])
+        XCTAssertEqual(s.elasticWidth(ofColumn: 0, config: config), 0.6, accuracy: 0.0001)
+        XCTAssertEqual(s.elasticWidth(ofColumn: 1, config: config), 0.45, accuracy: 0.0001)
+        XCTAssertEqual(s.elasticWidth(ofColumn: 1, config: LayoutConfig()), 0.5, accuracy: 0.0001)
+        XCTAssertGreaterThan(s.width(ofColumn: 0, config: config, viewportWidth: 1440),
+                             s.width(ofColumn: 1, config: config, viewportWidth: 1440))
+    }
+
+    func testTallSlideShowsActiveAndPeeksNext() {
+        var s = Strip(columns: [Column(windows: [1, 2, 3], width: 0.5)])
+        s.toggleTall()
+        XCTAssertTrue(s.columns[0].isTall)
+        let placements = s.layout(config: LayoutConfig(), viewport: Rect(x: 0, y: 0, width: 1440, height: 900))
+        let one = placements.first { $0.window == 1 }!, two = placements.first { $0.window == 2 }!
+        let three = placements.first { $0.window == 3 }!
+        XCTAssertFalse(one.isHiddenTab)
+        XCTAssertFalse(two.isHiddenTab)
+        XCTAssertTrue(three.isHiddenTab)
+        XCTAssertGreaterThan(two.frame.y, one.frame.y + one.frame.height - 1)
+        XCTAssertGreaterThan(one.frame.height, 700)
+        // Tall survives a round trip.
+        let data = try! JSONEncoder().encode(s)
+        XCTAssertTrue(try! JSONDecoder().decode(Strip.self, from: data).columns[0].isTall)
+    }
+}
+
+final class ThemeTests: XCTestCase {
+    func testEveryThemeIsGroupedOnce() {
+        let grouped = Theme.classic + Theme.seasonal + Theme.unique
+        XCTAssertEqual(Set(grouped), Set(Theme.allCases))
+        XCTAssertEqual(grouped.count, Theme.allCases.count)
+    }
+
+    func testSeasonsFollowTheCalendar() {
+        func date(_ m: Int) -> Date { Calendar(identifier: .gregorian).date(from: DateComponents(year: 2026, month: m, day: 10))! }
+        XCTAssertEqual(Theme.seasons.resolved(on: date(4)), .spring)
+        XCTAssertEqual(Theme.seasons.resolved(on: date(7)), .summer)
+        XCTAssertEqual(Theme.seasons.resolved(on: date(10)), .autumn)
+        XCTAssertEqual(Theme.seasons.resolved(on: date(1)), .winter)
+        XCTAssertEqual(Theme.seasons.resolved(on: date(12)), .festive)
+        XCTAssertEqual(Theme.seasons.resolved(on: date(7), southernHemisphere: true), .winter)
+        XCTAssertEqual(Theme.nord.resolved(), Theme.nord)
+    }
+}

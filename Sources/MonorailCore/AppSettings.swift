@@ -264,9 +264,12 @@ public struct WorkspaceConfig: Equatable, Hashable, Codable, Sendable {
     public var focusMode: Bool?
     /// New windows never open here; they go to the next workspace.
     public var closed: Bool?
+    /// Minutes a day before a gentle nudge (nil = no budget).
+    public var budgetMinutes: Int?
 
     public init(color: String? = nil, arrangement: Arrangement? = nil, gap: Double? = nil, focusMode: Bool? = nil,
-                closed: Bool? = nil) {
+                closed: Bool? = nil, budgetMinutes: Int? = nil) {
+        self.budgetMinutes = budgetMinutes
         self.color = color
         self.arrangement = arrangement
         self.gap = gap
@@ -311,6 +314,9 @@ public enum MenuBarStyle: String, Codable, CaseIterable, Sendable {
 /// Colours for the overview, the slider bar and workspace dots.
 public enum Theme: String, Codable, CaseIterable, Sendable {
     case vivid, ocean, sunset, forest, mono, ashforde
+    case aurora, nord, dracula, solarized, rosePine, mint, lavender, ember, glacier, sand, spring, summer, autumn, winter, festive, synthwave, phosphor, paper, nebula, holographic
+    /// Follows the season: spring, summer, autumn, winter, festive in December.
+    case seasons
 
     public var title: String {
         switch self {
@@ -320,6 +326,49 @@ public enum Theme: String, Codable, CaseIterable, Sendable {
         case .forest: return "Forest"
         case .mono: return "Monochrome"
         case .ashforde: return "Ashforde"
+        case .aurora: return "Aurora"
+        case .nord: return "Nord"
+        case .dracula: return "Dracula"
+        case .solarized: return "Solarized"
+        case .rosePine: return "Rosé Pine"
+        case .mint: return "Mint"
+        case .lavender: return "Lavender"
+        case .ember: return "Ember"
+        case .glacier: return "Glacier"
+        case .sand: return "Desert Sand"
+        case .spring: return "Spring Bloom"
+        case .summer: return "Summer Sun"
+        case .autumn: return "Autumn Leaves"
+        case .winter: return "Winter Frost"
+        case .festive: return "Festive"
+        case .synthwave: return "Synthwave"
+        case .phosphor: return "Phosphor Terminal"
+        case .paper: return "Ink & Paper"
+        case .nebula: return "Nebula"
+        case .holographic: return "Holographic"
+        case .seasons: return "Seasons (changes through the year)"
+        }
+    }
+}
+
+extension Theme {
+    /// The themes grouped for Settings.
+    public static let classic: [Theme] = [.vivid, .ocean, .sunset, .forest, .mono, .ashforde, .aurora, .nord, .dracula,
+                                          .solarized, .rosePine, .mint, .lavender, .ember, .glacier, .sand]
+    public static let seasonal: [Theme] = [.seasons, .spring, .summer, .autumn, .winter, .festive]
+    public static let unique: [Theme] = [.synthwave, .phosphor, .paper, .nebula, .holographic]
+
+    /// The theme to draw with: Seasons becomes the season's theme for `date`.
+    public func resolved(on date: Date = Date(), southernHemisphere: Bool = false) -> Theme {
+        guard self == .seasons else { return self }
+        var month = Calendar(identifier: .gregorian).component(.month, from: date)
+        if month == 12 { return .festive }
+        if southernHemisphere { month = (month + 5) % 12 + 1 }
+        switch month {
+        case 3...5: return .spring
+        case 6...8: return .summer
+        case 9...11: return .autumn
+        default: return .winter
         }
     }
 }
@@ -633,6 +682,24 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var webhookURL = ""
     /// Let other apps run actions with the org.ashforde.monorail.perform distributed notification.
     public var remoteCommands = false
+    /// Bring the window you usually go to next right beside the one you are in.
+    public var stageNextWindow = false
+    /// Suggest focus mode when you switch windows very often.
+    public var distractionNudges = true
+    /// New slides get a width that suits the app: ~100 columns of code, a page of text, a web page.
+    public var contentAwareWidths = false
+    /// Documents from these folders open in these workspaces.
+    public var pathRules: [PathRule] = []
+    /// Remember the layout for each set of displays and bring it back when they connect again.
+    public var displayProfiles = false
+    /// Tell me when an AI coding agent in a terminal is waiting for me.
+    public var agentAlerts = true
+    /// Slide a waiting agent's window into view.
+    public var agentBringIntoView = false
+    /// Suggest rules from the fixes you keep making.
+    public var ruleSuggestions = true
+    /// Widths Monorail noticed you keep giving apps (bundle ID → share), waiting to become rules.
+    public var suggestedRules: [String: Double] = [:]
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true
     /// After resizing a window in a slide, offer to rearrange the slide.
@@ -797,7 +864,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
-        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
     }
 
     public init(from decoder: Decoder) throws {
@@ -948,6 +1015,15 @@ public struct AppSettings: Equatable, Codable, Sendable {
         announceWindows = value(.announceWindows, d.announceWindows)
         webhookURL = value(.webhookURL, d.webhookURL)
         remoteCommands = value(.remoteCommands, d.remoteCommands)
+        stageNextWindow = value(.stageNextWindow, d.stageNextWindow)
+        distractionNudges = value(.distractionNudges, d.distractionNudges)
+        contentAwareWidths = value(.contentAwareWidths, d.contentAwareWidths)
+        pathRules = value(.pathRules, d.pathRules)
+        displayProfiles = value(.displayProfiles, d.displayProfiles)
+        agentAlerts = value(.agentAlerts, d.agentAlerts)
+        agentBringIntoView = value(.agentBringIntoView, d.agentBringIntoView)
+        ruleSuggestions = value(.ruleSuggestions, d.ruleSuggestions)
+        suggestedRules = value(.suggestedRules, d.suggestedRules)
         // Settings from before 1.1 get the narrow menu bar once.
         compactMenuBarApplied = (try? c.decodeIfPresent(Bool.self, forKey: .compactMenuBarApplied)) ?? false
         if !compactMenuBarApplied {

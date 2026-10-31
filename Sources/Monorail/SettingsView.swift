@@ -512,18 +512,9 @@ private struct AppearancePane: View {
                     .font(.callout).foregroundStyle(.secondary)
             }
             Section("Theme") {
-                Picker("Colours", selection: $store.settings.theme) {
-                    ForEach(Theme.allCases, id: \.self) { theme in
-                        HStack(spacing: 3) {
-                            ForEach(0..<5, id: \.self) { i in
-                                Circle().fill(WorkspaceColor.palette(theme)[i]).frame(width: 9, height: 9)
-                            }
-                            Text(theme.title).padding(.leading, 4)
-                        }
-                        .tag(theme)
-                    }
-                }
-                .pickerStyle(.radioGroup)
+                ThemeGrid(title: "Classic", themes: Theme.classic, selection: $store.settings.theme)
+                ThemeGrid(title: "Seasonal", themes: Theme.seasonal, selection: $store.settings.theme)
+                ThemeGrid(title: "Unique", themes: Theme.unique, selection: $store.settings.theme)
             }
             Section {
                 Picker("Lasts", selection: $store.settings.focusMinutes) {
@@ -1929,6 +1920,44 @@ private struct WorkspaceConfigSection: View {
         Binding(
             get: { config.wrappedValue.color.flatMap { Color(hex: $0) } ?? WorkspaceColor.palette(store.settings.theme)[0] },
             set: { config.wrappedValue.color = NSColor($0).hexString })
+    }
+}
+/// Theme swatches, one tile per theme.
+private struct ThemeGrid: View {
+    let title: String
+    let themes: [Theme]
+    @Binding var selection: Theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title.uppercased()).font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+                ForEach(themes, id: \.self) { theme in
+                    let backdrop = WorkspaceColor.backdrop(theme)
+                    Button { selection = theme } label: {
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack(spacing: 3) {
+                                ForEach(0..<6, id: \.self) { i in
+                                    Circle().fill(WorkspaceColor.palette(theme)[i]).frame(width: 10, height: 10)
+                                }
+                            }
+                            Text(theme.title).font(.system(size: 11, weight: .semibold)).lineLimit(1)
+                                .foregroundStyle(.white)
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(LinearGradient(colors: backdrop.gradient, startPoint: .topLeading, endPoint: .bottomTrailing),
+                                    in: RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(selection == theme ? Color.accentColor : Color.primary.opacity(0.12),
+                                          lineWidth: selection == theme ? 2.5 : 1))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(theme.title) theme")
+                    .accessibilityAddTraits(selection == theme ? .isSelected : [])
+                }
+            }
+        }
     }
 }
 #endif

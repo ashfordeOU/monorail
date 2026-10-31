@@ -26,6 +26,8 @@ public struct LayoutConfig: Equatable, Codable, Sendable {
     public var tabBarHeight: Double
     /// Which way the strip runs.
     public var direction: StripDirection
+    /// Elastic focus: how much the focused slide grows (0 = off, 0.2 = 20%).
+    public var elasticFocus: Double = 0
 
     public init(
         gap: Double = 8,
@@ -86,7 +88,7 @@ public struct LayoutConfig: Equatable, Codable, Sendable {
 
 extension LayoutConfig {
     enum CodingKeys: String, CodingKey {
-        case gap, edgeGap, parkSliver, widthPresets, defaultWidth, centerMode, tabBarHeight, direction
+        case gap, edgeGap, parkSliver, widthPresets, defaultWidth, centerMode, tabBarHeight, direction, elasticFocus
     }
 
     public init(from decoder: Decoder) throws {
@@ -102,5 +104,6 @@ extension LayoutConfig {
             tabBarHeight: (try? c.decodeIfPresent(Double.self, forKey: .tabBarHeight)) ?? d.tabBarHeight,
             direction: (try? c.decodeIfPresent(StripDirection.self, forKey: .direction)) ?? d.direction
         )
+        elasticFocus = (try? c.decodeIfPresent(Double.self, forKey: .elasticFocus)) ?? 0
     }
 }

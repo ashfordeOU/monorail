@@ -37,6 +37,9 @@ public struct Column: Equatable, Codable, Sendable {
     public var name: String?
     /// Locked slides keep their windows through smart pairs and never take new ones.
     public var isLocked = false
+    /// A tall slide: each window gets nearly the full height and the slide
+    /// scrolls up and down between them, with the next one peeking below.
+    public var isTall = false
 
     public init(
         windows: [WindowID],
@@ -77,7 +80,7 @@ public struct Column: Equatable, Codable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case windows, active, width, isFullWidth, isTabbed, arrangement, split, isGrid, pin, isCustom, customRows
-        case name, isLocked
+        case name, isLocked, isTall
     }
 
     public init(from decoder: Decoder) throws {
@@ -98,6 +101,7 @@ public struct Column: Equatable, Codable, Sendable {
         active = min(max(active, 0), max(windows.count - 1, 0))
         name = try c.decodeIfPresent(String.self, forKey: .name)
         isLocked = try c.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
+        isTall = try c.decodeIfPresent(Bool.self, forKey: .isTall) ?? false
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -114,6 +118,7 @@ public struct Column: Equatable, Codable, Sendable {
         try c.encodeIfPresent(customRows, forKey: .customRows)
         try c.encodeIfPresent(name, forKey: .name)
         if isLocked { try c.encode(isLocked, forKey: .isLocked) }
+        if isTall { try c.encode(isTall, forKey: .isTall) }
     }
 }
 
@@ -839,6 +844,13 @@ public struct Strip: Equatable, Codable, Sendable {
     // MARK: - Pinning and tabs
 
     /// Pins the focused column to `side`, or unpins it if it is already pinned there.
+    /// Turns the focused slide into a tall slide (or back).
+    public mutating func toggleTall() {
+        guard columns.indices.contains(focusedColumn) else { return }
+        columns[focusedColumn].isTall.toggle()
+        if columns[focusedColumn].isTall { columns[focusedColumn].isTabbed = false }
+    }
+
     public mutating func togglePin(_ side: PinSide) {
         guard columns.indices.contains(focusedColumn) else { return }
         columns[focusedColumn].pin = columns[focusedColumn].pin == side ? nil : side
@@ -889,7 +901,16 @@ public struct Strip: Equatable, Codable, Sendable {
 
     /// Width of column `index` in points.
     public func width(ofColumn index: Int, config: LayoutConfig, viewportWidth: Double) -> Double {
-        config.columnWidth(fraction: columns[index].effectiveWidth, viewportWidth: viewportWidth)
+        config.columnWidth(fraction: elasticWidth(ofColumn: index, config: config), viewportWidth: viewportWidth)
+    }
+
+    /// With elastic focus, the focused slide grows and the others give way.
+    public func elasticWidth(ofColumn index: Int, config: LayoutConfig) -> Double {
+        let column = columns[index]
+        let base = column.effectiveWidth
+        let e = min(max(config.elasticFocus, 0), 0.6)
+        guard e > 0, columns.count > 1, column.pin == nil, !column.isFullWidth else { return base }
+        return index == focusedColumn ? min(base * (1 + e), 1) : max(base * (1 - e * 0.5), LayoutConfig.minimumWidth)
     }
 
     /// The part of the usable width that scrolls: what pinned columns leave free.
@@ -1089,6 +1110,21 @@ public struct Strip: Equatable, Codable, Sendable {
                 for (row, window) in column.windows.enumerated() {
                     placements.append(
                         Placement(window: window, frame: frame, isParked: parked, isHiddenTab: row != column.active))
+                }
+                continue
+            }
+            if column.isTall, column.windows.count > 1 {
+                // The active window near full height; the next peeks in below; the rest wait behind them.
+                let peek = (columnFrame.height * 0.14).rounded()
+                let height = columnFrame.height - peek - config.gap
+                let top = Rect(x: columnFrame.x, y: columnFrame.y, width: columnFrame.width, height: height).rounded()
+                let below = Rect(x: columnFrame.x, y: columnFrame.y + height + config.gap,
+                                 width: columnFrame.width, height: height).rounded()
+                for (row, window) in column.windows.enumerated() {
+                    let after = row > column.active
+                    placements.append(Placement(
+                        window: window, frame: after ? below : top, isParked: parked,
+                        isHiddenTab: row < column.active || row > column.active + 1))
                 }
                 continue
             }

@@ -266,6 +266,8 @@ public struct WorkspaceConfig: Equatable, Hashable, Codable, Sendable {
     public var closed: Bool?
     /// Minutes a day before a gentle nudge (nil = no budget).
     public var budgetMinutes: Int?
+    /// A Shortcut to run on arriving (set a Focus, an audio device, Slack status…).
+    public var shortcut: String?
 
     public init(color: String? = nil, arrangement: Arrangement? = nil, gap: Double? = nil, focusMode: Bool? = nil,
                 closed: Bool? = nil, budgetMinutes: Int? = nil) {
@@ -275,6 +277,43 @@ public struct WorkspaceConfig: Equatable, Hashable, Codable, Sendable {
         self.gap = gap
         self.focusMode = focusMode
         self.closed = closed
+    }
+}
+
+/// Which key acts as the Monorail key (held for every shortcut, tapped for the palette).
+public enum MonorailKeySource: String, Codable, CaseIterable, Sendable {
+    case capsLock, rightCommand, rightOption, rightControl
+    /// The key's HID usage, for hidutil.
+    public var usage: Int {
+        switch self {
+        case .capsLock: return 0x7_0000_0039
+        case .rightCommand: return 0x7_0000_00E7
+        case .rightOption: return 0x7_0000_00E6
+        case .rightControl: return 0x7_0000_00E4
+        }
+    }
+    public var title: String {
+        switch self {
+        case .capsLock: return "Caps Lock"
+        case .rightCommand: return "Right ⌘ Command"
+        case .rightOption: return "Right ⌥ Option"
+        case .rightControl: return "Right ⌃ Control"
+        }
+    }
+}
+
+/// What a sound pack plays.
+public enum SoundPack: String, Codable, CaseIterable, Sendable {
+    case classic, soft, retro, silent
+    public var title: String { rawValue.capitalized }
+    /// Sounds for a slide change and a workspace change.
+    public var sounds: (slide: String?, workspace: String?) {
+        switch self {
+        case .classic: return ("Tink", "Pop")
+        case .soft: return ("Pop", "Purr")
+        case .retro: return ("Morse", "Bottle")
+        case .silent: return (nil, nil)
+        }
     }
 }
 
@@ -700,6 +739,50 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var ruleSuggestions = true
     /// Widths Monorail noticed you keep giving apps (bundle ID → share), waiting to become rules.
     public var suggestedRules: [String: Double] = [:]
+    /// The key that acts as the Monorail key.
+    public var monorailKeySource: MonorailKeySource = .capsLock
+    /// ⌃⌥⇧ + drag left, right, up or down for workspaces, the overview and the desktop.
+    public var mouseGestures = false
+    /// Run actions from a MIDI controller.
+    public var midiControl = false
+    /// MIDI note number → action name.
+    public var midiMap: [String: String] = [:]
+    /// Drive Monorail with a game controller.
+    public var gameController = false
+    /// A remote control page for your phone on the local network.
+    public var webRemote = false
+    /// The secret in the remote page link.
+    public var webRemoteToken = ""
+    /// Experimental: turn your head towards a display to focus it (uses the camera).
+    public var headFocus = false
+    /// Apps hidden during deep work (bundle IDs).
+    public var deepWorkApps: [String] = ["com.tinyspeck.slackmacgap", "com.apple.MobileSMS", "com.hnc.Discord", "com.apple.mail"]
+    /// Calendar events called Focus or Deep work turn deep work on.
+    public var deepWorkFromCalendar = false
+    /// Hide private apps while you share your screen.
+    public var safeScreenShare = true
+    /// Apps whose windows count as private (bundle IDs).
+    public var privateApps: [String] = ["com.apple.MobileSMS", "net.whatsapp.WhatsApp", "com.apple.mail", "com.apple.Passwords", "com.1password.1password"]
+    /// Blur private windows in the overview and previews.
+    public var privacyBlur = true
+    /// Dimming follows the pointer instead of focus.
+    public var dimFollowsPointer = false
+    /// On battery, animate at 30 fps and pause live previews.
+    public var energySaver = true
+    /// Your presenter notes (never shown in screen shares).
+    public var presenterNotes = ""
+    /// Keep a clipboard history for each workspace.
+    public var workspaceClipboard = true
+    /// A picture that drifts gently behind the strip as it scrolls (empty = off).
+    public var driftWallpaper = ""
+    /// Show slides and workspaces around the MacBook notch as you move.
+    public var notchHUD = false
+    /// The sounds Monorail plays.
+    public var soundPack: SoundPack = .classic
+    /// Keep crash and hang reports on this Mac so you can send them.
+    public var crashReports = false
+    /// Ask before an assistant or script closes windows.
+    public var confirmDestructiveAPI = true
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true
     /// After resizing a window in a slide, offer to rearrange the slide.
@@ -864,7 +947,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
-        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
     }
 
     public init(from decoder: Decoder) throws {
@@ -1015,6 +1098,28 @@ public struct AppSettings: Equatable, Codable, Sendable {
         announceWindows = value(.announceWindows, d.announceWindows)
         webhookURL = value(.webhookURL, d.webhookURL)
         remoteCommands = value(.remoteCommands, d.remoteCommands)
+        monorailKeySource = value(.monorailKeySource, d.monorailKeySource)
+        mouseGestures = value(.mouseGestures, d.mouseGestures)
+        midiControl = value(.midiControl, d.midiControl)
+        midiMap = value(.midiMap, d.midiMap)
+        gameController = value(.gameController, d.gameController)
+        webRemote = value(.webRemote, d.webRemote)
+        webRemoteToken = value(.webRemoteToken, d.webRemoteToken)
+        headFocus = value(.headFocus, d.headFocus)
+        deepWorkApps = value(.deepWorkApps, d.deepWorkApps)
+        deepWorkFromCalendar = value(.deepWorkFromCalendar, d.deepWorkFromCalendar)
+        safeScreenShare = value(.safeScreenShare, d.safeScreenShare)
+        privateApps = value(.privateApps, d.privateApps)
+        privacyBlur = value(.privacyBlur, d.privacyBlur)
+        dimFollowsPointer = value(.dimFollowsPointer, d.dimFollowsPointer)
+        energySaver = value(.energySaver, d.energySaver)
+        presenterNotes = value(.presenterNotes, d.presenterNotes)
+        workspaceClipboard = value(.workspaceClipboard, d.workspaceClipboard)
+        driftWallpaper = value(.driftWallpaper, d.driftWallpaper)
+        notchHUD = value(.notchHUD, d.notchHUD)
+        soundPack = value(.soundPack, d.soundPack)
+        crashReports = value(.crashReports, d.crashReports)
+        confirmDestructiveAPI = value(.confirmDestructiveAPI, d.confirmDestructiveAPI)
         stageNextWindow = value(.stageNextWindow, d.stageNextWindow)
         distractionNudges = value(.distractionNudges, d.distractionNudges)
         contentAwareWidths = value(.contentAwareWidths, d.contentAwareWidths)

@@ -108,3 +108,92 @@ public enum SlideMode {
         ("esc", "done"),
     ]
 }
+
+/// Vim mode: a persistent normal mode with counts ("3l"), "gg", "G", "dd" and friends.
+public struct VimMachine: Sendable {
+    public enum Result: Equatable, Sendable {
+        /// Run these actions (a count repeats one).
+        case actions([Action])
+        /// Waiting for the rest of a command ("3", "g", "d").
+        case pending
+        /// Leave vim mode.
+        case exit
+        /// Not for vim mode: let the app have it.
+        case passThrough
+    }
+
+    public private(set) var count = 0
+    private var prefix: UInt16?
+
+    public init() {}
+
+    public var pendingText: String {
+        (count > 0 ? String(count) : "") + (prefix == KeyCode.g ? "g" : prefix == KeyCode.d ? "d" : "")
+    }
+
+    public mutating func handle(keyCode: UInt16, modifiers: Modifiers) -> Result {
+        let shift = modifiers.contains(.shift)
+        if modifiers.contains(.command) || modifiers.contains(.option) { return reset(.passThrough) }
+        if modifiers == [.control] {
+            return keyCode == KeyCode.r ? reset(.actions([.redo])) : reset(.passThrough)
+        }
+        // Counts.
+        if !shift, let digit = KeyCode.digits.firstIndex(of: keyCode) {
+            count = min(count * 10 + digit + 1, 99)
+            return .pending
+        }
+        if keyCode == KeyCode.zero, !shift {
+            if count > 0 {
+                count = min(count * 10, 99)
+                return .pending
+            }
+            return reset(.actions([.focusFirst]))
+        }
+        // Two-key commands.
+        if let first = prefix {
+            prefix = nil
+            if first == KeyCode.g, keyCode == KeyCode.g, !shift { return reset(.actions([.focusFirst])) }
+            if first == KeyCode.d, keyCode == KeyCode.d, !shift { return reset(.actions(repeated(.closeSlide))) }
+            return reset(.pending)
+        }
+        switch keyCode {
+        case KeyCode.h, KeyCode.left: return reset(.actions(repeated(shift ? .moveLeft : .focusLeft)))
+        case KeyCode.l, KeyCode.right: return reset(.actions(repeated(shift ? .moveRight : .focusRight)))
+        case KeyCode.j, KeyCode.down: return reset(.actions(repeated(shift ? .moveDown : .focusDown)))
+        case KeyCode.k, KeyCode.up: return reset(.actions(repeated(shift ? .moveUp : .focusUp)))
+        case KeyCode.g:
+            if shift { return reset(.actions([.focusLast])) }
+            prefix = KeyCode.g
+            return .pending
+        case KeyCode.d:
+            prefix = KeyCode.d
+            return .pending
+        case KeyCode.digits[3] where shift: return reset(.actions([.focusLast]))  // $
+        case KeyCode.w: return reset(.actions(repeated(.nextWorkspace)))
+        case KeyCode.b: return reset(.actions(repeated(.previousWorkspace)))
+        case KeyCode.u: return reset(.actions(repeated(.undo)))
+        case KeyCode.slash: return reset(.actions([.commandPalette]))
+        case KeyCode.o: return reset(.actions([.overview]))
+        case KeyCode.f: return reset(.actions([.toggleFullWidth]))
+        case KeyCode.r: return reset(.actions([shift ? .cycleWidthBackward : .cycleWidth]))
+        case KeyCode.c: return reset(.actions([.center]))
+        case KeyCode.m: return reset(.actions([.makeMain]))
+        case KeyCode.t: return reset(.actions([.toggleFloat]))
+        case KeyCode.z: return reset(.actions([.zoomTile]))
+        case KeyCode.minus: return reset(.actions(repeated(.narrower)))
+        case KeyCode.equal: return reset(.actions(repeated(.wider)))
+        case KeyCode.i, KeyCode.escape: return reset(.exit)
+        default: return reset(.pending)  // normal mode swallows other keys
+        }
+    }
+
+    private func repeated(_ action: Action) -> [Action] {
+        Array(repeating: action, count: max(count, 1))
+    }
+
+    private mutating func reset(_ result: Result) -> Result {
+        count = 0
+        prefix = nil
+        return result
+    }
+}

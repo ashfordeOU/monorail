@@ -152,3 +152,22 @@ final class ThemeTests: XCTestCase {
         XCTAssertEqual(Theme.nord.resolved(), Theme.nord)
     }
 }
+
+final class VimTests: XCTestCase {
+    func testCountsAndCommands() {
+        var vim = VimMachine()
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.digits[2], modifiers: []), .pending)
+        XCTAssertEqual(vim.pendingText, "3")
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.l, modifiers: []), .actions([.focusRight, .focusRight, .focusRight]))
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.g, modifiers: []), .pending)
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.g, modifiers: []), .actions([.focusFirst]))
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.g, modifiers: [.shift]), .actions([.focusLast]))
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.d, modifiers: []), .pending)
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.d, modifiers: []), .actions([.closeSlide]))
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.h, modifiers: [.shift]), .actions([.moveLeft]))
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.r, modifiers: [.control]), .actions([.redo]))
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.zero, modifiers: []), .actions([.focusFirst]))
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.c, modifiers: [.command]), .passThrough)
+        XCTAssertEqual(vim.handle(keyCode: KeyCode.escape, modifiers: []), .exit)
+    }
+}

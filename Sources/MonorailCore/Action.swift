@@ -212,6 +212,11 @@ public enum Action: String, Codable, CaseIterable, Sendable {
     case mirrorWindow = "mirror-window"
     case guestMode = "guest-mode"
     case ultrawideCenter = "ultrawide-center"
+    case linkAcrossDisplays = "link-across-displays"
+    case cameraTile = "camera-tile"
+    case pairSync = "pair-sync"
+    case handoff = "handoff"
+    case clipboardHistory = "workspace-clipboard"
     case retile
     case undo
     case togglePause = "toggle-pause"
@@ -402,6 +407,11 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         case .mirrorWindow: return "Mirror this window on another display"
         case .guestMode: return "Guest mode"
         case .ultrawideCenter: return "Centre the main slide"
+        case .linkAcrossDisplays: return "Link this slide with the one on the other display"
+        case .cameraTile: return "Camera preview tile"
+        case .pairSync: return "Sync layout with a nearby Mac"
+        case .handoff: return "Continue this workspace on my other Mac"
+        case .clipboardHistory: return "This workspace’s clipboard"
         case .retile: return "Retile everything"
         case .undo: return "Undo last layout change"
         case .togglePause: return "Pause / resume"
@@ -473,7 +483,7 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         .tileAllFloating, .rescueWindows, .biggerGaps, .smallerGaps, .centerFloating, .lockSlide, .openIntoSlide,
         .nameSlide, .toggleFitMode,
         .slideToStart, .slideToEnd, .slideToNextWorkspace, .slideToPreviousWorkspace, .slideToEmptyWorkspace, .unpairSlide, .mergeNext, .mergePrevious, .nextTile, .previousTile, .mainTile, .widthQuarter, .widthThird, .widthHalf, .widthTwoThirds, .widthThreeQuarters, .scrollToStart, .scrollToEnd, .layoutSideBySide, .layoutUpDown, .layoutGrid, .layoutMainSide, .layoutMainBottom, .layoutSpiral, .layoutAccordion, .layoutTabs, .resetSplit, .hideApp, .minimizeWorkspace, .minimizeOthers, .renameWorkspace, .swapWorkspaceNext, .swapWorkspacePrevious, .mergeWorkspacePrevious, .quickLaunchBeside, .openLinkBeside, .copyLayout, .pasteLayout, .noteWindow, .locatePointer, .flashFocus, .toggleDim, .toggleBorder, .toggleSliderBar, .toggleAnimations, .pomodoro, .toggleQuietMode, .restart, .openSettings, .checkForUpdates,
-        .sortIntoProjects, .goToPredicted, .startIntent, .toggleElasticFocus, .addBookmark, .nextBookmark, .forkLayout, .keepFork, .discardFork, .groupWindow, .moveGroupToNextWorkspace, .showTimeline, .toggleTallColumn, .archiveWorkspace, .shareWorkspace, .toggleVimMode, .searchWindowText, .voiceCommand, .toggleDeepWork, .toggleReadingMode, .markPrivate, .shareSlide, .demoZoom, .toggleKeystrokes, .toggleAnnotate, .presenterNotes, .mirrorWindow, .guestMode, .ultrawideCenter,
+        .sortIntoProjects, .goToPredicted, .startIntent, .toggleElasticFocus, .addBookmark, .nextBookmark, .forkLayout, .keepFork, .discardFork, .groupWindow, .moveGroupToNextWorkspace, .showTimeline, .toggleTallColumn, .archiveWorkspace, .shareWorkspace, .toggleVimMode, .searchWindowText, .voiceCommand, .toggleDeepWork, .toggleReadingMode, .markPrivate, .shareSlide, .demoZoom, .toggleKeystrokes, .toggleAnnotate, .presenterNotes, .mirrorWindow, .guestMode, .ultrawideCenter, .linkAcrossDisplays, .cameraTile, .pairSync, .handoff, .clipboardHistory,
     ]
 
     /// The slide layout a "Slide layout: …" action sets (nil for tabs).

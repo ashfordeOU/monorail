@@ -558,7 +558,7 @@ search, so you can see which slide wants you.
 
 Drag any window by its title bar onto another window:
 
-- **Near an edge** (the outer third on each side) it docks on that side. The window you dropped onto
+- **Near an edge** (the outer 40% on each side, so only the centre fifth makes a tab group) it docks on that side. The window you dropped onto
   gives up half its space, and nothing else moves. A highlight shows where it will land before you let go.
 - **In the middle** the two become a **tab group** with a tab bar, even if they're different apps.
   Click a tab to switch, or drag a tab out to tear it off.

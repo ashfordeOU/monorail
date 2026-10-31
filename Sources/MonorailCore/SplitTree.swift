@@ -263,7 +263,7 @@ public indirect enum SplitTree: Hashable, Codable, Sendable {
 public enum DockZone {
     /// The point and `frame` in the same coordinates (y down). The outer `edgeShare` of each
     /// side docks on that side; the rest is the middle.
-    public static func edge(x: Double, y: Double, in frame: Rect, edgeShare: Double = 0.3) -> SplitTree.Edge? {
+    public static func edge(x: Double, y: Double, in frame: Rect, edgeShare: Double = 0.4) -> SplitTree.Edge? {
         guard frame.width > 0, frame.height > 0, frame.contains(x: x, y: y) else { return nil }
         let fx = (x - frame.x) / frame.width
         let fy = (y - frame.y) / frame.height

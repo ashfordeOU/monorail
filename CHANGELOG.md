@@ -4,6 +4,14 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.7.1] - 2026-11-01
+
+### Changed
+- **Bigger docking zones.** Dropping a window anywhere in the outer 40% of another window's side docks it there; only the middle fifth makes a tab group, so docking beside is easy to hit.
+
+### Added
+- The website has an interactive docking playground with a guided demo, and the README explains docking and undocking.
+
 ## [1.7.0] - 2026-11-01
 
 ### Added

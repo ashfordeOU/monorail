@@ -63,6 +63,9 @@ final class SplitTreeTests: XCTestCase {
         XCTAssertEqual(DockZone.edge(x: 95, y: 50, in: frame), .right)
         XCTAssertEqual(DockZone.edge(x: 50, y: 4, in: frame), .top)
         XCTAssertEqual(DockZone.edge(x: 50, y: 50, in: frame), .center)
+        // Edge zones are generous: 35% in from the side still docks.
+        XCTAssertEqual(DockZone.edge(x: 35, y: 50, in: frame), .left)
+        XCTAssertEqual(DockZone.edge(x: 50, y: 64, in: frame), .bottom)
         XCTAssertNil(DockZone.edge(x: 150, y: 50, in: frame))
     }
 

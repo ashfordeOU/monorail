@@ -186,3 +186,15 @@ final class WholeSlidesTests: XCTestCase {
         XCTAssertFalse(frames[1].isParked)
     }
 }
+
+final class FitWidthTests: XCTestCase {
+    func testFitNeverSqueezesBelowTheMinimum() {
+        let config = LayoutConfig()
+        XCTAssertEqual(config.fitWidth(slides: 2, viewportWidth: 1512), 0.5, accuracy: 0.0001)
+        XCTAssertEqual(config.fitWidth(slides: 3, viewportWidth: 1512), 1.0 / 3.0, accuracy: 0.0001)
+        // Ten slides on a 1512 pt screen: only three fit at 480 pt or more; the rest scroll.
+        XCTAssertEqual(config.fitWidth(slides: 10, viewportWidth: 1512), 1.0 / 3.0, accuracy: 0.0001)
+        XCTAssertEqual(config.fitWidth(slides: 10, viewportWidth: 3840), 1.0 / 7.0, accuracy: 0.0001)
+        XCTAssertEqual(config.fitWidth(slides: 1, viewportWidth: 800), 1, accuracy: 0.0001)
+    }
+}

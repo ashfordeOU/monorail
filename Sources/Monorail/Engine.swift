@@ -1648,6 +1648,8 @@ final class Engine {
         for display in displays {
             let key = currentKey(display)
             guard var strip = strips[key] else { continue }
+            // Fit mode sizes slides itself (and takes learned minimums into account).
+            let fit = settings.isFit(key.workspace)
             for column in strip.columns where column.windows.count == 1 && !column.isFullWidth {
                 let id = column.windows[0]
                 guard let window = windows[id], let target = window.lastApplied else { continue }
@@ -1661,6 +1663,8 @@ final class Engine {
                 let app = Self.appKey(window)
                 guard (minimumWidths[app] ?? 0) < Double(actual.width) - 4 else { continue }
                 minimumWidths[app] = Double(actual.width)
+                changed = true
+                guard !fit else { continue }
                 let config = layoutConfig(for: display)
                 let fraction = config.fraction(forColumnWidth: Double(actual.width), viewportWidth: viewport(of: display).width)
                 strip.setWidth(fraction, of: id)
@@ -4379,12 +4383,22 @@ final class Engine {
             let key = currentKey(display)
             guard settings.isFit(key.workspace), var strip = strips[key], !strip.isEmpty else { continue }
             let scrolling = strip.columns.filter { $0.pin == nil }.count
-            let width = 1 / Double(max(scrolling, 1))
+            let config = layoutConfig(for: display)
+            let viewportWidth = viewport(of: display).width
+            // Never squeeze slides narrower than apps can go: past that, the extra slides scroll.
+            let learned = strip.allWindows.compactMap { windows[$0].flatMap { minimumWidths[Self.appKey($0)] } }.max() ?? 0
+            let width = config.fitWidth(slides: scrolling, viewportWidth: Double(viewportWidth),
+                                        minimum: max(settings.fitMinimumWidth, learned))
+            let overflowing = abs(width - 1 / Double(max(scrolling, 1))) > 0.001
             guard strip.columns.contains(where: { $0.pin == nil && (abs($0.width - width) > 0.001 || $0.isFullWidth) })
-                || strip.scroll != 0
+                || (!overflowing && strip.scroll != 0)
             else { continue }
             strip.balance(width: width)
-            strip.clampScroll(config: layoutConfig(for: display), viewportWidth: viewport(of: display).width)
+            if overflowing {
+                strip.revealFocused(config: config, viewportWidth: viewportWidth)
+            } else {
+                strip.clampScroll(config: config, viewportWidth: viewportWidth)
+            }
             strips[key] = strip
         }
     }

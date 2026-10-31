@@ -787,6 +787,8 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var parkInCorner = true
     /// Hide slides that only partly fit on screen, instead of showing them cut off at the edge.
     public var wholeSlidesOnly = true
+    /// Fit mode never makes a slide narrower than this (points); extra slides scroll.
+    public var fitMinimumWidth = 480.0
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true
     /// After resizing a window in a slide, offer to rearrange the slide.
@@ -951,7 +953,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
-        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
     }
 
     public init(from decoder: Decoder) throws {
@@ -1102,6 +1104,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         announceWindows = value(.announceWindows, d.announceWindows)
         webhookURL = value(.webhookURL, d.webhookURL)
         remoteCommands = value(.remoteCommands, d.remoteCommands)
+        fitMinimumWidth = value(.fitMinimumWidth, d.fitMinimumWidth)
         wholeSlidesOnly = value(.wholeSlidesOnly, d.wholeSlidesOnly)
         parkInCorner = value(.parkInCorner, d.parkInCorner)
         monorailKeySource = value(.monorailKeySource, d.monorailKeySource)

@@ -82,6 +82,15 @@ public struct LayoutConfig: Equatable, Codable, Sendable {
         return max(fraction * (usable + gap) - gap, 1)
     }
 
+    /// Fit mode's share for each of `slides` slides: they all share the screen, but never
+    /// narrower than `minimum` points. With more slides than fit, as many as fit share it
+    /// and the rest scroll.
+    public func fitWidth(slides: Int, viewportWidth: Double, minimum: Double = 480) -> Double {
+        let usable = usableWidth(viewportWidth)
+        let fitting = max(Int(((usable + gap) / (max(minimum, 100) + gap)).rounded(.down)), 1)
+        return 1 / Double(min(max(slides, 1), fitting))
+    }
+
     /// Inverse of `columnWidth(fraction:viewportWidth:)`.
     public func fraction(forColumnWidth width: Double, viewportWidth: Double) -> Double {
         let usable = usableWidth(viewportWidth)

@@ -171,3 +171,18 @@ final class VimTests: XCTestCase {
         XCTAssertEqual(vim.handle(keyCode: KeyCode.escape, modifiers: []), .exit)
     }
 }
+
+final class WholeSlidesTests: XCTestCase {
+    func testPartlyVisibleNeighboursAreHidden() {
+        var strip = Strip(columns: [Column(windows: [1], width: 0.5), Column(windows: [2], width: 0.5), Column(windows: [3], width: 0.5)])
+        strip.focusColumn(at: 1)
+        strip.scroll = 300  // the first slide is partly off the left edge
+        var config = LayoutConfig()
+        let viewport = Rect(x: 0, y: 0, width: 1440, height: 900)
+        XCTAssertFalse(strip.columnFrames(config: config, viewport: viewport)[0].isParked)
+        config.wholeSlidesOnly = true
+        let frames = strip.columnFrames(config: config, viewport: viewport)
+        XCTAssertTrue(frames[0].isParked)
+        XCTAssertFalse(frames[1].isParked)
+    }
+}

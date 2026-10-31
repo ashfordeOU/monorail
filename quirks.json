@@ -13,7 +13,11 @@
     "com.todesktop.230313mzl4w4u92",
     "com.microsoft.VSCode",
     "net.whatsapp.WhatsApp",
-    "com.electron."
+    "com.electron.",
+    "org.mozilla.firefox",
+    "org.mozilla.firefoxdeveloperedition",
+    "app.zen-browser.zen",
+    "com.google.Chrome"
   ],
   "float": [
     "com.apple.calculator",

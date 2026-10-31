@@ -28,6 +28,9 @@ public struct LayoutConfig: Equatable, Codable, Sendable {
     public var direction: StripDirection
     /// Elastic focus: how much the focused slide grows (0 = off, 0.2 = 20%).
     public var elasticFocus: Double = 0
+    /// Slides that don't fit entirely on screen are hidden instead of cut off at the edge
+    /// (the focused slide always shows). Set by the engine from Settings, not saved here.
+    public var wholeSlidesOnly = false
 
     public init(
         gap: Double = 8,

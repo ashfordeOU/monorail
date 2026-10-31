@@ -1082,6 +1082,13 @@ public struct Strip: Equatable, Codable, Sendable {
                 } else if x >= areaMaxX {
                     x = viewport.maxX - config.parkSliver
                     parked = true
+                } else if config.wholeSlidesOnly, index != focusedColumn, x < areaMinX - 1 {
+                    // Partly off the left: hide it rather than show a cut-off strip.
+                    x = viewport.minX - w + config.parkSliver
+                    parked = true
+                } else if config.wholeSlidesOnly, index != focusedColumn, x + w > areaMaxX + 1 {
+                    x = viewport.maxX - config.parkSliver
+                    parked = true
                 }
             }
             if config.direction == .rightToLeft {

@@ -437,6 +437,7 @@ public enum Quirks {
         "com.tinyspeck.slackmacgap", "com.hnc.Discord", "com.microsoft.teams2", "notion.id", "com.spotify.client",
         "com.anthropic.claudefordesktop", "com.openai.chat", "md.obsidian", "com.figma.Desktop", "com.linear",
         "com.todesktop.230313mzl4w4u92", "com.microsoft.VSCode", "net.whatsapp.WhatsApp", "com.electron.",
+        "org.mozilla.firefox", "org.mozilla.firefoxdeveloperedition", "app.zen-browser.zen", "com.google.Chrome",
     ]
 
     /// The shape of quirks.json.

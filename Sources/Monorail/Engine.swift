@@ -1544,7 +1544,7 @@ final class Engine {
                 }
                 if placement.isParked {
                     parkedOnEdge[placement.window] = display.uuid
-                    if isEdgeShy(window) {
+                    if settings.parkInCorner || isEdgeShy(window) {
                         // This app won't sit almost off the edge (it stops with a strip
                         // showing, over its neighbour): park it in the corner instead.
                         frame = Rect(x: display.frame.maxX - 1, y: display.frame.maxY - 1,
@@ -1829,6 +1829,7 @@ final class Engine {
         let count = settings.smartGaps ? strips[key]?.allWindows.count ?? 0 : 2
         var config = settings.layout(for: display.uuid, displayWidth: Double(display.frame.width), windowCount: count)
         if let gap = settings.workspaceConfig(key.workspace).gap { config.gap = gap }
+        config.wholeSlidesOnly = settings.wholeSlidesOnly
         return config
     }
 

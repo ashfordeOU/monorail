@@ -63,6 +63,8 @@ struct SmartPane: View {
                     }
                     .pickerStyle(.segmented).labelsHidden().frame(width: 240)
                 }
+                Toggle("Whole slides only: hide slides that would be cut off at the screen edge", isOn: $store.settings.wholeSlidesOnly)
+                Toggle("Hide off-screen slides in the corner (no slivers at the edges)", isOn: $store.settings.parkInCorner)
                 Toggle("Dimming follows the pointer", isOn: $store.settings.dimFollowsPointer)
                 Toggle("Remember the layout for each set of displays", isOn: $store.settings.displayProfiles)
             } header: {

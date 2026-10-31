@@ -20,14 +20,26 @@ public struct SavedColumn: Equatable, Codable, Sendable {
     public var split: Double
     public var isTabbed: Bool
     public var pin: PinSide?
+    /// A nested slide's shape, its leaves numbered 1… by position in `windows`.
+    public var tree: SplitTree?
 
     public init(_ column: Column, fingerprint: (WindowID) -> WindowFingerprint?) {
-        windows = column.windows.compactMap(fingerprint)
+        var kept: [WindowID] = []
+        windows = column.windows.compactMap { id in
+            let print = fingerprint(id)
+            if print != nil { kept.append(id) }
+            return print
+        }
         width = column.width
         arrangement = column.arrangement
         split = column.split
         isTabbed = column.isTabbed
         pin = column.pin
+        if column.isNested, let shape = column.tree {
+            var numbers: [WindowID: WindowID] = [:]
+            for (index, id) in kept.enumerated() { numbers[id] = WindowID(index + 1) }
+            tree = shape.mapping(numbers)
+        }
     }
 }
 
@@ -105,9 +117,15 @@ public enum LayoutMatcher {
         return saved.enumerated().compactMap { c, column in
             let ids = assigned[c].compactMap { $0 }
             guard !ids.isEmpty else { return nil }
-            return Column(
+            var result = Column(
                 windows: ids, width: column.width, isTabbed: column.isTabbed,
                 arrangement: column.arrangement, split: column.split, pin: column.pin, isCustom: true)
+            if let shape = column.tree {
+                var map: [WindowID: WindowID] = [:]
+                for (index, id) in assigned[c].enumerated() { if let id { map[WindowID(index + 1)] = id } }
+                result.tree = shape.mapping(map)?.reconciled(with: ids)
+            }
+            return result
         }
     }
 }

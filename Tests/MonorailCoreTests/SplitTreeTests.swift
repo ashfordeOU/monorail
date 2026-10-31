@@ -111,3 +111,19 @@ final class ZoneTests: XCTestCase {
         XCTAssertEqual(three.frame(of: 2)!.width, 1.0 / 3, accuracy: 0.0001)
     }
 }
+
+final class NestedRestoreTests: XCTestCase {
+    func testNestedShapeSurvivesNewWindowIDs() {
+        var column = Column(windows: [1, 2, 3], width: 0.6)
+        column.tree = SplitTree.single(1).docking(2, onto: 1, edge: .right).docking(3, onto: 2, edge: .bottom)
+        let prints: [WindowID: WindowFingerprint] = [1: .init(app: "a", title: ""), 2: .init(app: "b", title: ""), 3: .init(app: "c", title: "")]
+        let saved = SavedColumn(column, fingerprint: { prints[$0] })
+        let data = try! JSONEncoder().encode(saved)
+        let decoded = try! JSONDecoder().decode(SavedColumn.self, from: data)
+        var used = Set<WindowID>()
+        let now: [(id: WindowID, fingerprint: WindowFingerprint)] = [(30, .init(app: "c", title: "")), (10, .init(app: "a", title: "")), (20, .init(app: "b", title: ""))]
+        let columns = LayoutMatcher.columns(for: [decoded], windows: now, used: &used)
+        XCTAssertEqual(columns.first?.tree?.frame(of: 10), Rect(x: 0, y: 0, width: 0.5, height: 1))
+        XCTAssertEqual(columns.first?.tree?.frame(of: 30), Rect(x: 0.5, y: 0.5, width: 0.5, height: 0.5))
+    }
+}

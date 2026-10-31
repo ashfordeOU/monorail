@@ -22,6 +22,11 @@ Stay Awake, and lighter on energy.
 - **A measuring script**, `scripts/measure-performance.sh`, that measures Monorail's own CPU, wake-ups, energy and memory, while idle and in use.
 
 ### Changed
+- **Far fewer wake-ups from window titles.** Terminals running AI agents, and browsers, animate their window titles many times a second, and Monorail used to wake for every change.
+  - Now it follows titles live only where they matter: apps with title rules, project grouping and tabbed slides.
+  - Other windows have their title read when you focus them or open the overview, palette or switcher.
+  - Live title changes are batched to at most one update a second.
+  - Measured on 1.2.0, with several terminals open, Monorail woke 18 times a second while idle.
 - **Timers can be grouped:** every repeating timer gives macOS some leeway, so its wake-ups are grouped with other apps' instead of waking the Mac separately.
 - **Monorail rests:** watching for screen sharing, AI agents, the clipboard and the Dock pauses completely while the screen is asleep or locked, or the screen saver is on.
 - **Half-rate on low power:** in Low Power Mode, or on battery with the energy saver on, those checks run half as often, animation drops to 30 fps and live previews pause.

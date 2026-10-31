@@ -236,6 +236,9 @@ final class Engine {
     }
 
     private func settingsDidChange(from old: AppSettings) {
+        if settings.appRules != old.appRules || settings.projects != old.projects {
+            DispatchQueue.main.async { [weak self] in self?.updateTitleObservation() }
+        }
         animator.curve = settings.animationCurve
         animator.framesPerSecond = settings.animationFPS
         guard isRunning, !isPaused else { return }
@@ -635,6 +638,9 @@ final class Engine {
         }
         if reveal { strip.revealFocused(config: config, viewportWidth: width) }
         learnWidth(after: action, in: strip)
+        if action == .toggleTabbed || action == .layoutTabs || action.directLayout != nil {
+            DispatchQueue.main.async { [weak self] in self?.updateTitleObservation() }
+        }
         if strip.focusedColumn != columnBefore {
             haptic()
             onUsage(.switched)
@@ -1487,6 +1493,7 @@ final class Engine {
 
     /// Every managed window on the current Spaces, tiled ones first.
     func allWindowSummaries() -> [WindowSummary] {
+        refreshTitles()
         let focused = focusedWindowID()
         var result: [WindowSummary] = []
         for display in displays {
@@ -2017,6 +2024,7 @@ final class Engine {
         )
         windows[id] = window
         observeWindow(element)
+        DispatchQueue.main.async { [weak self] in self?.updateTitleObservation() }
         // The scratchpad floats above every workspace.
         if id == scratchpad { return false }
         onUsage(.windowOpened)
@@ -2121,6 +2129,8 @@ final class Engine {
     private func forget(_ id: WindowID) {
         guard let window = windows[id] else { return }
         parkedOnEdge[id] = nil
+        titleObserved.remove(id)
+        titlesDirty.remove(id)
         remember(window)
         removeFromStrip(window)
         windows[id] = nil
@@ -2231,7 +2241,6 @@ final class Engine {
         kAXWindowDeminiaturizedNotification,
         kAXWindowMovedNotification,
         kAXWindowResizedNotification,
-        kAXTitleChangedNotification,
     ]
 
     private var refcon: UnsafeMutableRawPointer { Unmanaged.passUnretained(self).toOpaque() }
@@ -2260,6 +2269,70 @@ final class Engine {
         for name in Self.windowNotifications {
             AXObserverAddNotification(observer, element, name as CFString, refcon)
         }
+    }
+
+    // MARK: Titles (energy)
+
+    /// Windows whose title changes Monorail follows live. Others (most of them) have
+    /// their title read when it's needed: terminals and browsers that animate their
+    /// titles would otherwise wake Monorail many times a second.
+    private var titleObserved: Set<WindowID> = []
+    private var titlesDirty: Set<WindowID> = []
+    private var titleFlush: DispatchWorkItem?
+
+    private func needsLiveTitle(_ window: ManagedWindow) -> Bool {
+        if !settings.projects.isEmpty { return true }
+        if settings.appRules.contains(where: { $0.isTitleRule && $0.bundleID == window.bundleID }) { return true }
+        if let key = window.key, let strip = strips[key], let (c, _) = strip.locate(window.id), strip.columns[c].isTabbed {
+            return true
+        }
+        return false
+    }
+
+    /// Starts or stops following each window's title, as needed.
+    private func updateTitleObservation() {
+        for (id, window) in windows {
+            let wanted = needsLiveTitle(window)
+            guard wanted != titleObserved.contains(id), let observer = observers[window.pid] else { continue }
+            if wanted {
+                AXObserverAddNotification(observer, window.element, kAXTitleChangedNotification as CFString, refcon)
+                titleObserved.insert(id)
+            } else {
+                AXObserverRemoveNotification(observer, window.element, kAXTitleChangedNotification as CFString)
+                titleObserved.remove(id)
+            }
+        }
+    }
+
+    /// Reads the current titles of windows Monorail doesn't follow live (for the overview, palette and API).
+    private func refreshTitles() {
+        for (id, window) in windows where !titleObserved.contains(id) {
+            if let title = window.element.title { window.title = title }
+        }
+    }
+
+    /// Title changes arrive in bursts; handle them at most once a second.
+    private func titleChanged(_ id: WindowID) {
+        titlesDirty.insert(id)
+        guard titleFlush == nil else { return }
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.titleFlush = nil
+            let dirty = self.titlesDirty
+            self.titlesDirty.removeAll()
+            var tabbed = false
+            for id in dirty {
+                guard let window = self.windows[id] else { continue }
+                window.title = window.element.title ?? ""
+                self.applyTitleRule(window)
+                if let key = window.key, let strip = self.strips[key], let (c, _) = strip.locate(id), strip.columns[c].isTabbed {
+                    tabbed = true
+                }
+            }
+            if tabbed { self.updateOverlays() }
+        }
+        titleFlush = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: work)
     }
 
     private func stopObserving(_ pid: pid_t) {
@@ -2308,11 +2381,7 @@ final class Engine {
             userMovedOrResized(element, resized: notification == kAXWindowResizedNotification)
 
         case kAXTitleChangedNotification:
-            if let window = window(for: element) {
-                window.title = element.title ?? ""
-                applyTitleRule(window)
-            }
-            updateOverlays()
+            if let window = window(for: element) { titleChanged(window.id) }
 
         default:
             break
@@ -2342,6 +2411,7 @@ final class Engine {
             showingDesktop = false
             layout(animated: true)
         }
+        if let window = windows[id], !titleObserved.contains(id), let title = window.element.title { window.title = title }
         if let window = windows[id], focusHistory.dropLast().last != id { noteFocus(window) }
         if settings.announceWindows, let window = windows[id], focusHistory.dropLast().last != id {
             onAnnounce(window.title.isEmpty ? window.appName : "\(window.appName), \(window.title)")
@@ -4068,7 +4138,8 @@ final class Engine {
 
     /// Every managed window, for the API: where it is and what it shows.
     func windowList() -> [[String: Any]] {
-        windows.values.map { window in
+        refreshTitles()
+        return windows.values.map { window in
             var entry: [String: Any] = ["id": Int(window.id), "app": window.appName, "title": displayTitle(window),
                                         "floating": window.key == nil]
             if let bundleID = window.bundleID { entry["bundleID"] = bundleID }

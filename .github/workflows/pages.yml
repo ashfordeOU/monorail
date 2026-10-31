@@ -31,7 +31,13 @@ jobs:
           cp -R site/. public/
           cp -R assets/readme assets/launch public/assets/
           cp assets/icon.png public/assets/icon.png
+          cp site/index.html public/404.html
+          printf 'User-agent: *\nAllow: /\nSitemap: https://ashfordeou.github.io/monorail/sitemap.xml\n' > public/robots.txt
+          printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://ashfordeou.github.io/monorail/</loc></url></urlset>\n' > public/sitemap.xml
       - uses: actions/configure-pages@v5
+        with:
+          # Turns Pages on (source: GitHub Actions) the first time, if the token is allowed to.
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public

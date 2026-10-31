@@ -36,7 +36,7 @@ enum SelfTest {
         // Each language translates the Settings tabs.
         for (code, _) in Localization.languages where !code.isEmpty && code != "en" {
             Localization.choose(code)
-            check(L("General") != "General", "\(code) translates General")
+            check(L("Settings…") != "Settings…", "\(code) translates Settings…")
             check(L("Stay Awake") != "Stay Awake", "\(code) translates Stay Awake")
         }
         Localization.choose("en")

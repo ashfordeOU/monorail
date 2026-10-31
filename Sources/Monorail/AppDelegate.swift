@@ -3074,7 +3074,7 @@ extension AppDelegate {
                     SessionTabs.run("tell application \"TextEdit\" to repeat 3 times\nmake new document\nend repeat")
                 }
             }),
-            (4.0, { [self] in
+            (4.0, {
                 let windows = textEdit()
                 check(windows.count == 3, "sees three TextEdit windows (found \(windows.count))")
                 check(windows.allSatisfy { $0["floating"] as? Bool == false }, "tiles them")

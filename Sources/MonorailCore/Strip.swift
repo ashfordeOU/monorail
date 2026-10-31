@@ -943,6 +943,26 @@ public struct Strip: Equatable, Codable, Sendable {
         return true
     }
 
+    /// Evens out every split of the focused nested slide.
+    public mutating func balanceNested() {
+        guard columns.indices.contains(focusedColumn), let tree = columns[focusedColumn].tree else { return }
+        columns[focusedColumn].tree = tree.balanced
+    }
+
+    /// Gives the slide at `index` the zones from the zone editor, filled with its windows.
+    public mutating func applyZones(_ zones: SplitTree, toColumn index: Int) {
+        guard columns.indices.contains(index) else { return }
+        columns[index].isTabbed = false
+        columns[index].isCustom = true
+        columns[index].tree = zones.filling(columns[index].windows)
+    }
+
+    /// Moves the split nearest `window` on `axis` (positive grows it).
+    public mutating func adjustNested(_ window: WindowID, axis: SplitTree.Axis, by delta: Double) {
+        guard let (c, _) = locate(window), let tree = columns[c].tree else { return }
+        columns[c].tree = tree.adjusting(window, axis: axis, by: delta)
+    }
+
     /// Turns the focused slide into a nested one with the same tiles, ready to split further.
     public mutating func nestFocused() {
         guard columns.indices.contains(focusedColumn), columns[focusedColumn].tree == nil else { return }

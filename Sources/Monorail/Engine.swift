@@ -501,8 +501,8 @@ final class Engine {
             if action == .nestSlide {
                 strip.nestFocused()
                 onNotice("Drag windows onto each other’s edges to split this slide further")
-            } else if let tree = strip.columns[strip.focusedColumn].tree {
-                strip.columns[strip.focusedColumn].tree = tree.balanced
+            } else if strip.columns[strip.focusedColumn].tree != nil {
+                strip.balanceNested()
             } else {
                 strip.balance(width: strip.columns[strip.focusedColumn].width)
             }
@@ -1140,9 +1140,7 @@ final class Engine {
         guard let key = windows[id]?.key, var strip = strips[key], let (c, _) = strip.locate(id) else { return }
         recordHistory()
         strip.focus(id)
-        strip.columns[c].isTabbed = false
-        strip.columns[c].isCustom = true
-        strip.columns[c].tree = zones.filling(strip.columns[c].windows)
+        strip.applyZones(zones, toColumn: c)
         commit(strip, key)
         onStateChange()
     }
@@ -4660,9 +4658,7 @@ final class Engine {
             }
             let size = strip.columnFrames(config: config, viewport: viewport(of: display))[c].frame
             let span = handle.axis == .horizontal ? size.width : size.height
-            if let tree = strip.columns[c].tree {
-                strip.columns[c].tree = tree.adjusting(handle.first, axis: handle.axis, by: delta / max(span, 1))
-            }
+            strip.adjustNested(handle.first, axis: handle.axis, by: delta / max(span, 1))
         }
         strips[handle.key] = strip
         layout(animated: false)

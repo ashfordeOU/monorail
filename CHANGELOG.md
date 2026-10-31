@@ -4,11 +4,25 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [1.6.1] - 2026-11-01
+## [1.7.0] - 2026-11-01
 
 ### Added
-- **Basics in Settings.** Settings opens on one page with the options most people change: a starting style, opening at login, fit mode, grouping, gaps, animation, the slider bar, focus outline, theme, the Caps Lock key, usage counts and updates. Everything else is still in the sidebar and search.
-- **`Monorail --ui-test`** drives real windows end to end (tiling, pairing, undo, moving between workspaces), plus a **UI test** workflow for a self-hosted Mac runner. See docs/TESTING.md.
+- **Nested slides.** A slide can now be split inside splits, as deep as you like. Drag a window onto another window: near an edge it docks beside it (left, right, above or below), in the middle the two become a tab group, whatever the apps. A highlight shows where it will land. It works from floating windows too, and Undo puts things back. **⌃⌥G** returns a slide to the standard layouts.
+- **Tab groups inside slides**, with their own tab bar. Drag a tab out to tear it off; **Tear off** gives a window a slide of its own.
+- **Drag the gap between two windows** to resize both at once, inside a slide or between slides.
+- **Saved views.** **⌃⌥⌘⇧1…9** saves where you are on a display (workspace, position and window), **⌃⌥⌘1…9** comes back. Nine per display, kept across restarts.
+- **Back and forward** through where you've been, like a browser: **⌃⌥⌘[** and **⌃⌥⌘]**. Also in the menu bar under **Views**.
+- **Zone editor.** Settings → Apps → Custom slide layouts → **Design Zones…**: split any zone side by side or up and down, resize, remove, then use the layout on any slide.
+- **Import your settings** from AeroSpace, yabai and skhd, or Rectangle (Settings → Basics): shortcuts, gaps, floating apps and workspace rules.
+- **Tags.** Keep a window on several chosen workspaces (it follows you between them), and show another workspace's windows alongside this one until you switch away. Both are in the palette and Shortcuts.
+- **Live event stream.** `monorail subscribe` prints focus, workspace, action and alert events as JSON lines, for SketchyBar and scripts. It's a private socket in Monorail's folder; nothing listens on the network.
+- **App-colour tiles.** Without Screen Recording, the overview fills each window's tile with its app's own colour and icon.
+- **Basics in Settings**: one page with the options most people change.
+- **`Monorail --ui-test`** and a UI-test workflow for a self-hosted Mac.
+
+### Changed
+- Keyboard docking (**Dock onto the window on the left/right/above/below**) and **Even out the splits** can be bound in Settings → Shortcuts.
+- Nested slides keep their shape after Monorail or the Mac restarts.
 
 ## [1.6.0] - 2026-11-01
 

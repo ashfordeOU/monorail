@@ -12,7 +12,7 @@
 ![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-FF9E62)
 [![CI](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml/badge.svg)](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml)
 
-[Install](#install) · [What's new](#new-in-16) · [Getting started](#getting-started) · [Shortcuts](#keyboard-shortcuts) · [Automation](#automation) · [FAQ](#faq) · [Build from source](#build-from-source)
+[Install](#install) · [What's new](#new-in-17) · [Getting started](#getting-started) · [Shortcuts](#keyboard-shortcuts) · [Automation](#automation) · [FAQ](#faq) · [Build from source](#build-from-source)
 
 </div>
 
@@ -543,6 +543,16 @@ search, so you can see which slide wants you.
 - **Share layouts**: **Saved Layouts → Share Layout…** makes a `.monorail` file; double-click one on any Mac to add and apply it. Templates and app pairs share the same way.
 - **In your language**: menus, Settings tabs and the welcome tour in English, Deutsch, Français, Español and 日本語 (**Settings → General → Language**).
 - **Practice windows**: the welcome tour can open three practice windows, so you learn the moves without touching your work.
+
+### New in 1.7
+
+- **Nested slides:** drag a window onto another's edge to dock it beside, or onto its middle to make a tab group, any apps, as deep as you like. Drag the gap between two windows to resize both.
+- **Saved views:** **⌃⌥⌘⇧1…9** saves where you are, **⌃⌥⌘1…9** brings you back; **⌃⌥⌘[ ]** goes back and forward.
+- **Zone editor:** draw any slide layout in Settings → Apps → Design Zones….
+- **Import** your AeroSpace, yabai/skhd or Rectangle settings from Settings → Basics.
+- **Tags:** keep a window on chosen workspaces, or show another workspace alongside this one.
+- **`monorail subscribe`:** a live stream of events for menu bars and scripts.
+- **Basics** page in Settings, and app-colour tiles in the overview without Screen Recording.
 
 ### New in 1.6
 

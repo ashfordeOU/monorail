@@ -195,7 +195,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `usageNoticeShown` | Whether the one-time notice about anonymous usage counts was shown. | `false` |
 | `restoreBrowserTabs` | Snapshots also save and reopen browser tabs (Safari, Chrome, Arc, Brave, Edge) and Finder windows. | `false` |
 | `floatSuggestions` | Suggest always floating an app after you float its windows by hand a few times. | `true` |
-| `assistantModel` | The Claude model the optional assistant uses, with your own API key. | `"claude-haiku-5-5"` |
+| `assistantModel` | The Claude model the optional assistant uses, with your own API key. | `"claude-opus-5-5"` |
 | `keepWindowsInPlace` | Snap windows back when an app moves or resizes one by itself. | `true` |
 | `resizeAssist` | After resizing a window in a slide, offer to rearrange the slide. | `true` |
 | `pairLoneWindowsOnOpen` | Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). | `false` |

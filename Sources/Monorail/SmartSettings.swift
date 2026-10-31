@@ -213,6 +213,17 @@ struct SmartPane: View {
                 }
             }
             Section {
+                AssistantKeyRow()
+                Picker("Model", selection: $store.settings.assistantModel) {
+                    ForEach(Assistant.models, id: \.self) { Text($0).tag($0) }
+                }
+            } header: {
+                Text("Assistant (optional)")
+            } footer: {
+                Text("When Monorail doesn’t understand a sentence, Claude rewrites it as Monorail commands and you confirm before anything happens. Uses your own Anthropic API key, kept in your Keychain; only the sentence, the names of open apps and Monorail’s command list are sent, straight to Anthropic. Everything else stays on your Mac.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+            Section {
                 Toggle("Tell me when an AI coding agent is waiting for me", isOn: $store.settings.agentAlerts)
                 Toggle("Slide the waiting agent into view", isOn: $store.settings.agentBringIntoView)
                     .disabled(!store.settings.agentAlerts)
@@ -485,6 +496,34 @@ struct DevicesPane: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+/// Adds or removes the assistant's API key (stored in the Keychain, never in settings).
+struct AssistantKeyRow: View {
+    @State private var draft = ""
+    @State private var saved = Assistant.hasKey
+
+    var body: some View {
+        HStack {
+            if saved {
+                Label("API key saved in your Keychain", systemImage: "checkmark.seal")
+                Spacer()
+                Button("Remove") {
+                    Assistant.setKey(nil)
+                    saved = false
+                }
+            } else {
+                SecureField("Anthropic API key", text: $draft)
+                Button("Save") {
+                    Assistant.setKey(draft)
+                    draft = ""
+                    saved = Assistant.hasKey
+                }
+                .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty)
+                Link("Get a key", destination: URL(string: "https://platform.claude.com/settings/keys")!)
+            }
+        }
     }
 }
 

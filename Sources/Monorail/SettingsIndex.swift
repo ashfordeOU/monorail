@@ -184,6 +184,7 @@ enum SettingsIndex {
         ("Suggested rules", "smart"),
         ("Add Rule", "smart"),
         ("Dismiss", "smart"),
+        ("Model", "smart"),
         ("Tell me when an AI coding agent is waiting for me", "smart"),
         ("Slide the waiting agent into view", "smart"),
         ("Elastic focus", "smart"),

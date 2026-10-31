@@ -63,3 +63,15 @@ the Product Hunt launch). It takes about 30 minutes. Note anything that's off an
 
 Turn on **Settings → Devices & Sharing → Keep crash and hang reports on this Mac** for a week of normal use.
 Then press **Report a Problem…**: if there are reports, the folder opens so you can attach them to the issue.
+
+## End-to-end smoke test
+
+On a Mac with Monorail running and the local API on (Settings → Automation → Local API):
+
+```bash
+sh scripts/smoke-test.sh
+```
+
+It opens three TextEdit windows, checks that Monorail tiles them, pairs two, undoes, moves one to
+workspace 2, then closes them. It takes about 20 seconds and prints each check. Run it before a
+release, alongside `Monorail --self-test`.

@@ -56,8 +56,30 @@ struct SettingsView: View {
     let setPaused: (Bool) -> Void
     @State private var query = ""
 
+    /// The sidebar's groups, most-used first.
+    static let groups: [(String, [SettingsTab])] = [
+        (L("Essentials"), [.general, .layout, .shortcuts]),
+        (L("Make it yours"), [.appearance, .input, .apps]),
+        (L("Power"), [.smart, .automation, .devices, .awake]),
+        (L("Monorail"), [.insights, .about]),
+    ]
+
     var body: some View {
-        VStack(spacing: 0) {
+        HStack(spacing: 0) {
+            sidebar
+                .frame(width: 210)
+                .background(.regularMaterial)
+            Divider()
+            Group {
+                if query.isEmpty { pane(navigation.tab) } else { searchResults }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(width: 980, height: 700)
+    }
+
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                 TextField("Search settings", text: $query).textFieldStyle(.plain)
@@ -65,16 +87,59 @@ struct SettingsView: View {
                     Button { query = "" } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain).foregroundStyle(.secondary)
                 }
             }
-            .padding(.horizontal, 10).padding(.vertical, 6)
+            .padding(.horizontal, 9).padding(.vertical, 6)
             .background(RoundedRectangle(cornerRadius: 7).fill(Color.primary.opacity(0.06)))
-            .padding(.horizontal, 14).padding(.top, 10).padding(.bottom, 4)
-            if query.isEmpty {
-                tabs
-            } else {
-                searchResults
+            .padding(.horizontal, 10).padding(.top, 12).padding(.bottom, 6)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(Self.groups, id: \.0) { group in
+                        Text(group.0.uppercased())
+                            .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                            .padding(.horizontal, 12).padding(.top, 12).padding(.bottom, 2)
+                        ForEach(group.1) { tab in sidebarRow(tab) }
+                    }
+                }
+                .padding(.horizontal, 8).padding(.bottom, 12)
             }
         }
-        .frame(width: 980, height: 700)
+    }
+
+    private func sidebarRow(_ tab: SettingsTab) -> some View {
+        let selected = navigation.tab == tab && query.isEmpty
+        return Button {
+            navigation.tab = tab
+            query = ""
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: tab.symbol)
+                    .frame(width: 18)
+                    .foregroundStyle(selected ? Color.white : Color.accentColor)
+                Text(tab.title).foregroundStyle(selected ? Color.white : Color.primary)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 8).padding(.vertical, 5)
+            .background(RoundedRectangle(cornerRadius: 6).fill(selected ? Color.accentColor : Color.clear))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func pane(_ tab: SettingsTab) -> some View {
+        switch tab {
+        case .general: GeneralPane(store: store, isPaused: isPaused, setPaused: setPaused)
+        case .layout: LayoutPane(store: store)
+        case .input: InputPane(store: store)
+        case .appearance: AppearancePane(store: store)
+        case .apps: AppsPane(store: store)
+        case .smart: SmartPane(store: store)
+        case .devices: DevicesPane(store: store)
+        case .awake: StayAwakePane(store: store)
+        case .automation: AutomationPane(store: store)
+        case .insights: InsightsPane(store: store, stats: stats)
+        case .shortcuts: ShortcutsPane(store: store)
+        case .about: AboutPane()
+        }
     }
 
     private var searchResults: some View {
@@ -99,47 +164,6 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.plain)
             }
-        }
-    }
-
-    private var tabs: some View {
-        TabView(selection: $navigation.tab) {
-            GeneralPane(store: store, isPaused: isPaused, setPaused: setPaused)
-                .tabItem { Label(SettingsTab.general.title, systemImage: SettingsTab.general.symbol) }
-                .tag(SettingsTab.general)
-            LayoutPane(store: store)
-                .tabItem { Label(SettingsTab.layout.title, systemImage: SettingsTab.layout.symbol) }
-                .tag(SettingsTab.layout)
-            InputPane(store: store)
-                .tabItem { Label(SettingsTab.input.title, systemImage: SettingsTab.input.symbol) }
-                .tag(SettingsTab.input)
-            AppearancePane(store: store)
-                .tabItem { Label(SettingsTab.appearance.title, systemImage: SettingsTab.appearance.symbol) }
-                .tag(SettingsTab.appearance)
-            AppsPane(store: store)
-                .tabItem { Label(SettingsTab.apps.title, systemImage: SettingsTab.apps.symbol) }
-                .tag(SettingsTab.apps)
-            SmartPane(store: store)
-                .tabItem { Label(SettingsTab.smart.title, systemImage: SettingsTab.smart.symbol) }
-                .tag(SettingsTab.smart)
-            DevicesPane(store: store)
-                .tabItem { Label(SettingsTab.devices.title, systemImage: SettingsTab.devices.symbol) }
-                .tag(SettingsTab.devices)
-            StayAwakePane(store: store)
-                .tabItem { Label(SettingsTab.awake.title, systemImage: SettingsTab.awake.symbol) }
-                .tag(SettingsTab.awake)
-            AutomationPane(store: store)
-                .tabItem { Label(SettingsTab.automation.title, systemImage: SettingsTab.automation.symbol) }
-                .tag(SettingsTab.automation)
-            InsightsPane(store: store, stats: stats)
-                .tabItem { Label(SettingsTab.insights.title, systemImage: SettingsTab.insights.symbol) }
-                .tag(SettingsTab.insights)
-            ShortcutsPane(store: store)
-                .tabItem { Label(SettingsTab.shortcuts.title, systemImage: SettingsTab.shortcuts.symbol) }
-                .tag(SettingsTab.shortcuts)
-            AboutPane()
-                .tabItem { Label(SettingsTab.about.title, systemImage: SettingsTab.about.symbol) }
-                .tag(SettingsTab.about)
         }
     }
 }

@@ -888,8 +888,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             start(candidate)
             return true
         }
+        if Assistant.hasKey {
+            askAssistant(text)
+            return true
+        }
         toast.show("Didn’t catch that · try “Safari two thirds” or “Slack and Mail side by side on 2”")
         return false
+    }
+
+    /// Asks Claude (with the person's own key) to turn the sentence into known commands, then confirms.
+    private func askAssistant(_ text: String) {
+        toast.show("Asking Claude…")
+        let apps = runningAppNames()
+        Assistant.plan(for: text, apps: apps, actions: Action.allCases.map(\.title), model: store.settings.assistantModel) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .failure(let error):
+                self.toast.show(error.localizedDescription)
+            case .success(let plan):
+                let commands = plan.commands.compactMap { sentence in
+                    CommandParser.parse(sentence, apps: apps).map { (sentence, $0) }
+                }
+                guard !commands.isEmpty else {
+                    self.toast.show(plan.explanation.isEmpty ? "Claude couldn’t turn that into window commands" : plan.explanation)
+                    return
+                }
+                let alert = NSAlert()
+                alert.messageText = "Do this?"
+                alert.informativeText = commands.enumerated().map { "\($0.offset + 1). \(self.describe($0.element.1))" }
+                    .joined(separator: "\n") + (plan.explanation.isEmpty ? "" : "\n\n" + plan.explanation)
+                alert.addButton(withTitle: "Do It")
+                alert.addButton(withTitle: "Cancel")
+                NSApp.activate(ignoringOtherApps: true)
+                guard alert.runModal() == .alertFirstButtonReturn else { return }
+                for (index, command) in commands.enumerated() {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.45) { [weak self] in self?.run(command.1) }
+                }
+            }
+        }
     }
 
     private func describe(_ command: NaturalCommand) -> String {

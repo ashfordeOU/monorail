@@ -12,7 +12,7 @@
 ![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-FF9E62)
 [![CI](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml/badge.svg)](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml)
 
-[Install](#install) · [What's new](#new-in-12) · [Getting started](#getting-started) · [Shortcuts](#keyboard-shortcuts) · [Automation](#automation) · [FAQ](#faq) · [Build from source](#build-from-source)
+[Install](#install) · [What's new](#new-in-16) · [Getting started](#getting-started) · [Shortcuts](#keyboard-shortcuts) · [Automation](#automation) · [FAQ](#faq) · [Build from source](#build-from-source)
 
 </div>
 
@@ -543,6 +543,16 @@ search, so you can see which slide wants you.
 - **Share layouts**: **Saved Layouts → Share Layout…** makes a `.monorail` file; double-click one on any Mac to add and apply it. Templates and app pairs share the same way.
 - **In your language**: menus, Settings tabs and the welcome tour in English, Deutsch, Français, Español and 日本語 (**Settings → General → Language**).
 - **Practice windows**: the welcome tour can open three practice windows, so you learn the moves without touching your work.
+
+### New in 1.6
+
+- **Settings has a sidebar**, grouped into Essentials, Make it yours, Power and Monorail, with search at the top.
+- **Snapshots save browser tabs and Finder windows** if you turn it on (Settings → Smart), and reopen them when you restore.
+- **Share links:** **Layouts → Copy Share Link** makes a link with a web preview and an **Open in Monorail** button. Titles and tabs are never included.
+- **Assistant (optional):** with your own Anthropic API key, sentences Monorail doesn't understand go to Claude, which turns them into Monorail commands. You confirm before anything runs.
+- **Float suggestions:** float an app's windows by hand three times and Monorail offers to always float it.
+- **Anonymous usage counts** help us see which Macs and features to focus on. See [Privacy](#privacy) for exactly what's sent and how to turn it off.
+- **New licence:** the [Functional Source License](docs/LICENSING.md). Free to use and change; not for resale.
 
 ### New in 1.5
 
@@ -1188,7 +1198,7 @@ Yes, automatically:
 - **Display profiles:** these remember a layout for each set of displays (Settings → Smart).
 
 **Does Monorail use AI in the cloud?**
-No. Sentences, intents, predictions and suggestions all run on your Mac, with no account and no network. Voice commands use macOS's on-device speech recognition where your Mac supports it.
+Not unless you ask it to. Sentences, intents, predictions and suggestions all run on your Mac, with no account and no network. Voice commands use macOS's on-device speech recognition where your Mac supports it. If you add your own Anthropic API key in **Settings → Smart → Assistant**, sentences Monorail doesn't understand go to Claude, which turns them into Monorail commands that you confirm before anything runs. Only the sentence, the names of open apps and Monorail's command list are sent.
 
 **Is it free?**
 Yes, free to use, with no trial or subscription. The source is on GitHub under the [Functional Source License (FSL-1.1-ALv2)](LICENSE): you can read it, build it, change it and use it for anything except a competing product or service. Each release becomes Apache 2.0 two years after it ships. See [docs/LICENSING.md](docs/LICENSING.md).

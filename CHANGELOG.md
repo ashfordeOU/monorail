@@ -4,6 +4,23 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-11-01
+
+### Added
+- **Settings has a sidebar.** The twelve panes are grouped into Essentials, Make it yours, Power and Monorail, with search at the top.
+- **Snapshots can save browser tabs and Finder windows** (Settings → Smart). Safari, Chrome, Arc, Brave, Edge, Vivaldi and Finder. Restoring a snapshot reopens them if the app wasn't already open. Off by default; macOS asks once per app.
+- **Share links for layouts.** Layouts → Copy Share Link gives a link that opens a preview of the layout on the web, with **Open in Monorail**. Window titles and tabs are never included, and Monorail asks before adding a shared layout.
+- **Assistant (optional).** Add your own Anthropic API key in Settings → Smart → Assistant. Sentences Monorail doesn't understand go to Claude, which turns them into Monorail commands. You see them and confirm before anything runs. The key stays in your Keychain.
+- **Float suggestions.** Float an app's windows by hand three times and Monorail offers to always float that app.
+- **Anonymous usage counts** (on by default, easy to turn off). Once a day: Monorail and macOS versions, Mac model, chip, memory range, displays, language, install source and which features are on. Never window titles, app names, files or anything you type. Monorail tells you the first time, and **What's Sent…** in Settings → Devices & Sharing → Trust shows the exact data.
+- Smoke test script, app compatibility guide and beta-testing guide in `docs/`.
+
+### Changed
+- **New licence.** From 1.6.0 Monorail is under the Functional Source License (FSL-1.1-ALv2): free to use, read and change, but not to sell or offer as a competing product. Each release becomes Apache 2.0 after two years. Versions up to 1.5.2 stay under the AGPL. The Monorail name and icon are trademarks; see TRADEMARKS.md.
+- Quieter defaults: focus-mode nudges and the workspace clipboard are now off for new installs.
+- The updater accepts builds with the upcoming `org.ashforde.monorail` identifier, so a later release can switch to it without breaking automatic updates.
+- The website has a proper favicon and app icons.
+
 ## [1.5.2] - 2026-10-31
 
 ### Fixed

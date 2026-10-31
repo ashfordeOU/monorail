@@ -838,7 +838,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// Suggest always floating an app after you float its windows by hand a few times.
     public var floatSuggestions = true
     /// The Claude model the optional assistant uses, with your own API key.
-    public var assistantModel = "claude-haiku-5-5"
+    public var assistantModel = "claude-opus-5-5"
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true
     /// After resizing a window in a slide, offer to rearrange the slide.

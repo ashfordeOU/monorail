@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-187 settings.
+188 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -186,6 +186,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `awakeTriggers` | Things that start Stay Awake by themselves. | `[]` |
 | `awakeTriggersOn` | Automatic Stay Awake triggers are on. | `true` |
 | `awakeLockAfterMinutes` | During Stay Awake, still lock the screen after this many idle minutes (0 = never). | `0` |
+| `menuWindowsInline` | List the workspace’s windows right in the menu bar menu (otherwise they are in a Windows submenu). | `false` |
 | `keepWindowsInPlace` | Snap windows back when an app moves or resizes one by itself. | `true` |
 | `resizeAssist` | After resizing a window in a slide, offer to rearrange the slide. | `true` |
 | `pairLoneWindowsOnOpen` | Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). | `false` |

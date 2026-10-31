@@ -134,6 +134,7 @@ private struct GeneralPane: View {
                 Toggle("Pause tiling", isOn: $paused)
                     .onChange(of: paused) { setPaused($0) }
                 Toggle("Show column position in the menu bar", isOn: $store.settings.showColumnIndicator)
+                Toggle("List windows right in the menu (instead of a Windows submenu)", isOn: $store.settings.menuWindowsInline)
                 Picker("Menu bar shows", selection: $store.settings.menuBarStyle) {
                     ForEach(MenuBarStyle.allCases, id: \.self) { Text($0.title).tag($0) }
                 }

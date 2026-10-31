@@ -2270,8 +2270,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let windows = engine.activeStripWindows()
         if !windows.isEmpty {
             menu.addItem(.separator())
+            // Compact by default: the windows live in a submenu, so the menu stays short.
+            let list: NSMenu
+            if store.settings.menuWindowsInline {
+                list = menu
+            } else {
+                let parent = NSMenuItem(title: "Windows (\(windows.count))", action: nil, keyEquivalent: "")
+                parent.image = NSImage(systemSymbolName: "macwindow.on.rectangle", accessibilityDescription: nil)
+                list = NSMenu()
+                parent.submenu = list
+                menu.addItem(parent)
+            }
             for (index, window) in windows.enumerated() {
-                let title = window.title.isEmpty ? window.appName : "\(window.appName) — \(window.title)"
+                var title = window.title.isEmpty ? window.appName : "\(window.appName) — \(window.title)"
+                if title.count > 60 { title = String(title.prefix(59)) + "…" }
                 let entry = item("\(index + 1). \(title)", #selector(focusWindowFromMenu(_:)))
                 entry.tag = Int(window.id)
                 entry.state = window.isFocused ? .on : .off
@@ -2280,7 +2292,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     copy.size = NSSize(width: 16, height: 16)
                     return copy
                 }
-                menu.addItem(entry)
+                list.addItem(entry)
             }
         }
 

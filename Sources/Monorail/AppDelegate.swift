@@ -2328,6 +2328,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } else {
             button.title = statusExtra.map { " \($0)" } ?? ""
         }
+        // Stay Awake shows as a small cup in the icon, in the same style.
+        if awake.isOn, let image = button.image { button.image = StatusIcon.addingCup(to: image) }
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {

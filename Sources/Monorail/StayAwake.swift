@@ -27,13 +27,10 @@ final class StayAwake {
 
     var isOn: Bool { systemAssertion != 0 }
 
-    /// "☕ 0:45" for the menu bar, or nil when off.
+    /// The time left ("0:45") for the menu bar, next to the cup drawn into the icon; nil when there's none to show.
     var menuBarText: String? {
-        guard isOn else { return nil }
-        if case .until(let date)? = session, settings().awakeShowTime {
-            return "☕ " + AwakeFormat.clock(Int(date.timeIntervalSinceNow.rounded(.up)))
-        }
-        return "☕"
+        guard isOn, case .until(let date)? = session, settings().awakeShowTime else { return nil }
+        return AwakeFormat.clock(Int(date.timeIntervalSinceNow.rounded(.up)))
     }
 
     var statusText: String {

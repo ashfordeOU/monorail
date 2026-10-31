@@ -4,6 +4,11 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.5.1] - 2026-10-31
+
+### Changed
+- **Stay Awake's menu bar cup matches the rest of the icon.** It's a small monochrome cup with a wisp of steam, drawn into the Monorail icon like the slide markers, instead of a colour emoji. It follows light and dark menu bars, and the time left stays beside it.
+
 ## [1.5.0] - 2026-10-31
 
 ### Added

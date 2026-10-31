@@ -101,4 +101,38 @@ enum StatusIcon {
         return image
     }
 }
+extension StatusIcon {
+    /// The icon with a small cup beside it while Stay Awake is on, drawn in the same
+    /// monochrome style as the rest of the menu bar (a template image, so it follows light and dark).
+    static func addingCup(to base: NSImage) -> NSImage {
+        let cupWidth: CGFloat = 13, gap: CGFloat = 4
+        let size = NSSize(width: base.size.width + gap + cupWidth, height: max(base.size.height, 16))
+        let image = NSImage(size: size, flipped: false) { _ in
+            base.draw(in: NSRect(x: 0, y: (size.height - base.size.height) / 2, width: base.size.width, height: base.size.height))
+            NSColor.black.setStroke()
+            NSColor.black.setFill()
+            let x = base.size.width + gap
+            // The cup: a rounded body, a handle and a saucer.
+            let body = NSBezierPath(roundedRect: NSRect(x: x + 0.5, y: 4.5, width: 8.5, height: 7), xRadius: 2, yRadius: 2)
+            body.fill()
+            let handle = NSBezierPath()
+            handle.appendArc(withCenter: NSPoint(x: x + 9.6, y: 8), radius: 2.1, startAngle: -80, endAngle: 80)
+            handle.lineWidth = 1.3
+            handle.stroke()
+            let saucer = NSBezierPath(roundedRect: NSRect(x: x - 0.5, y: 2, width: 11.5, height: 1.4), xRadius: 0.7, yRadius: 0.7)
+            saucer.fill()
+            // A wisp of steam.
+            let steam = NSBezierPath()
+            steam.move(to: NSPoint(x: x + 4.8, y: 12.6))
+            steam.curve(to: NSPoint(x: x + 4.8, y: 15.4), controlPoint1: NSPoint(x: x + 3.6, y: 13.6), controlPoint2: NSPoint(x: x + 6, y: 14.4))
+            steam.lineWidth = 1.1
+            steam.lineCapStyle = .round
+            steam.stroke()
+            return true
+        }
+        image.isTemplate = true
+        image.accessibilityDescription = (base.accessibilityDescription ?? "Monorail") + " · Stay Awake on"
+        return image
+    }
+}
 #endif

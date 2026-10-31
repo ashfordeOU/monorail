@@ -84,6 +84,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var notesSave: DispatchWorkItem?
     private var dimMonitor: Any?
     private let awake = StayAwake()
+    let usage = UsageLog()
     private var awakeTicker: Timer?
     private var scriptsOn = false
     private let statusMenu = NSMenu()
@@ -135,7 +136,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         input.stop()
         trackpad.stop()
         engine.shutdown()
+        usage.awake(false)
         awake.shutdown()
+        usage.save()
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
@@ -307,6 +310,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         engine.onResizeMode = { [weak self] on in self?.setResizeMode(on) }
         engine.onStripZoom = { [weak self] in self?.stripZoom.toggle() }
         engine.onWindowOpened = { [weak self] id, app, title in
+            self?.usage.windowManaged()
             self?.scripts.emit("windowOpened", ["id": Int(id), "app": app, "title": title])
         }
         stripZoom.mapProvider = { [weak self] in
@@ -524,12 +528,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: Stay Awake
 
     private func wireUpAwake() {
+        engine.onActionPerformed = { [weak self] action in self?.usage.action(action) }
+        UsageBridge.log = usage
         awake.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         awake.onChange = { [weak self] on, why in
             guard let self else { return }
             if self.store.settings.awakeNotify { self.toast.show(why) }
             if self.store.settings.awakeSound { NSSound(named: on ? "Purr" : "Pop")?.play() }
             self.postWebhook(on ? "stay_awake_on" : "stay_awake_off", ["status": self.awake.statusText])
+            self.usage.awake(on)
             self.awakeTicker?.invalidate()
             self.awakeTicker = on ? Timer.every(20) { [weak self] _ in self?.updateStatusItem() } : nil
             self.updateStatusItem()
@@ -554,17 +561,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func awakeMenu() -> NSMenuItem {
-        let parent = NSMenuItem(title: awake.isOn ? "Stay Awake · \(awake.statusText)" : "Stay Awake", action: nil, keyEquivalent: "")
+        let parent = NSMenuItem(title: awake.isOn ? L("Stay Awake") + " · \(awake.statusText)" : L("Stay Awake"), action: nil, keyEquivalent: "")
         parent.image = NSImage(systemSymbolName: awake.isOn ? "cup.and.saucer.fill" : "cup.and.saucer", accessibilityDescription: nil)
         let menu = NSMenu()
         if awake.isOn {
-            menu.addItem(item("End Stay Awake", #selector(endAwakeFromMenu), action: .toggleAwake))
+            menu.addItem(item(L("End Stay Awake"), #selector(endAwakeFromMenu), action: .toggleAwake))
             menu.addItem(.separator())
         }
         let header = NSMenuItem(title: "Keep this Mac awake…", action: nil, keyEquivalent: "")
         header.isEnabled = false
         menu.addItem(header)
-        let indefinitely = item("Until I end it", #selector(awakeForMinutesFromMenu(_:)))
+        let indefinitely = item(L("Until I end it"), #selector(awakeForMinutesFromMenu(_:)))
         indefinitely.tag = 0
         menu.addItem(indefinitely)
         for (title, minutes) in [("For 15 minutes", 15), ("For 30 minutes", 30), ("For 1 hour", 60), ("For 2 hours", 120),
@@ -606,7 +613,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(entry)
         }
         menu.addItem(.separator())
-        menu.addItem(item("Stay Awake Settings…", #selector(showAwakeSettingsFromMenu)))
+        menu.addItem(item(L("Stay Awake Settings…"), #selector(showAwakeSettingsFromMenu)))
         parent.submenu = menu
         return parent
     }
@@ -2248,7 +2255,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(item("Grant Accessibility Access…", #selector(showWelcomeFromMenu)))
         }
         menu.addItem(awakeMenu())
-        let animate = item("Animate Windows", #selector(toggleAnimationsFromMenu), action: .toggleAnimations)
+        let animate = item(L("Animate Windows"), #selector(toggleAnimationsFromMenu), action: .toggleAnimations)
         animate.state = store.settings.animate ? .on : .off
         animate.toolTip = "Off: windows move instantly. Everything else works the same, and it saves energy."
         menu.addItem(animate)

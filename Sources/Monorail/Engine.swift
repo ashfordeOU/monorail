@@ -262,7 +262,11 @@ final class Engine {
 
     // MARK: - Actions
 
+    /// Every action run, for the usage log (counts only).
+    var onActionPerformed: (Action) -> Void = { _ in }
+
     func perform(_ requested: Action) {
+        onActionPerformed(requested)
         let action = visual(requested)
         switch action {
         case .togglePause:
@@ -2054,8 +2058,11 @@ final class Engine {
             // like next to their main window, which may be waiting off screen.
             let remembered = settings.rememberFloatingPositions && !element.hasFixedSize
                 ? floatingFrames[Self.appKey(window)] : nil
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-                self?.placeFloating(element, remembered: remembered)
+            // Twice: some apps position their panel a moment after it appears.
+            for delay in [0.15, 0.8] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    self?.placeFloating(element, remembered: delay < 0.5 ? remembered : nil)
+                }
             }
             return false
         }
@@ -2133,6 +2140,7 @@ final class Engine {
         parkedOnEdge[id] = nil
         titleObserved.remove(id)
         titlesDirty.remove(id)
+        inViewChecks.removeValue(forKey: id)?.cancel()
         remember(window)
         removeFromStrip(window)
         windows[id] = nil
@@ -2207,16 +2215,45 @@ final class Engine {
 
     /// Puts a new dialog (say, a file picker) over the window that opened it,
     /// centred near its top like a sheet, instead of wherever it appeared.
+    private var inViewChecks: [WindowID: DispatchWorkItem] = [:]
+
+    /// A floating window that an app (or a drag) left mostly off screen comes back into view,
+    /// once it has stopped moving and the mouse is up.
+    private func keepFloatingInView(_ id: WindowID) {
+        inViewChecks[id]?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, let window = self.windows[id], window.key == nil else { return }
+            self.inViewChecks[id] = nil
+            if NSEvent.pressedMouseButtons != 0 {
+                self.keepFloatingInView(id)
+                return
+            }
+            self.placeFloating(window.element, remembered: nil, lenient: true)
+        }
+        inViewChecks[id] = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: work)
+    }
+
     /// Staggers floating windows that open together (Get Info on several files).
     private var floatCascade = 0
     private var lastFloatPlaced = Date.distantPast
 
     /// Makes sure a floating window is fully on screen: left alone if it already is,
     /// otherwise centred (and staggered) on the display you're working on.
-    private func placeFloating(_ element: AXUIElement, remembered: CGRect?) {
-        guard isRunning, !isPaused, !element.isFullScreen, let frame = element.frame else { return }
+    private func placeFloating(_ element: AXUIElement, remembered: CGRect?, lenient: Bool = false) {
+        guard isRunning, !isPaused, !element.isFullScreen, !element.isMinimized, let frame = element.frame else { return }
         func fits(_ rect: CGRect) -> Bool {
-            displays.contains { $0.visibleFrame.insetBy(dx: -2, dy: -2).contains(rect) }
+            if displays.contains(where: { $0.visibleFrame.insetBy(dx: -2, dy: -2).contains(rect) }) { return true }
+            guard lenient else { return false }
+            // Moved by hand or by the app later: fine as long as its title bar can be reached
+            // and most of it shows.
+            let titleBar = CGRect(x: rect.minX + 40, y: rect.minY, width: max(rect.width - 80, 1), height: 24)
+            let shown = displays.reduce(0.0) { total, display in
+                let part = display.frame.intersection(rect)
+                return total + (part.isNull ? 0 : Double(part.width * part.height))
+            }
+            return displays.contains { $0.visibleFrame.intersects(titleBar) && $0.visibleFrame.contains(CGPoint(x: titleBar.midX, y: titleBar.midY)) }
+                && shown >= Double(rect.width * rect.height) * 0.6
         }
         if let remembered, fits(remembered), abs(remembered.width - frame.width) < 2 || !element.hasFixedSize {
             element.setFrame(remembered)
@@ -2256,7 +2293,10 @@ final class Engine {
             .max { $0.appliedAt < $1.appliedAt }
         guard let parent = (owner ?? lastTiledFocus.flatMap { windows[$0] })?.lastApplied,
             let display = display(containing: CGRect(parent))
-        else { return }
+        else {
+            placeFloating(element, remembered: nil)
+            return
+        }
         let visible = display.visibleFrame
         var x = parent.midX - Double(frame.width) / 2
         var y = parent.y + min(48, max(parent.height - Double(frame.height), 0) / 2)
@@ -2439,7 +2479,7 @@ final class Engine {
             }
             return
         }
-        if windows[id]?.key != nil { lastTiledFocus = id }
+        if windows[id]?.key != nil { lastTiledFocus = id } else if id != scratchpad { keepFloatingInView(id) }
         if focusHistory.last != id {
             focusHistory.removeAll { $0 == id }
             focusHistory.append(id)
@@ -2493,11 +2533,14 @@ final class Engine {
     /// column width; dropping a dragged window moves its column to where it
     /// was dropped. Either way the layout is re-applied after mouse-up.
     private func userMovedOrResized(_ element: AXUIElement, resized: Bool) {
-        if settings.rememberFloatingPositions, let window = window(for: element), window.key == nil,
-            window.id != scratchpad, let frame = element.frame
-        {
-            floatingFrames[Self.appKey(window)] = frame
-            scheduleSave()
+        if let window = window(for: element), window.key == nil, window.id != scratchpad {
+            if settings.rememberFloatingPositions, let frame = element.frame,
+                displays.contains(where: { $0.visibleFrame.insetBy(dx: -2, dy: -2).contains(frame) })
+            {
+                floatingFrames[Self.appKey(window)] = frame
+                scheduleSave()
+            }
+            keepFloatingInView(window.id)
         }
         if !resized, !animator.isRunning, NSEvent.pressedMouseButtons != 0, let window = window(for: element),
             CACurrentMediaTime() - window.appliedAt > 0.3

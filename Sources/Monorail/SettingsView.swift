@@ -1881,8 +1881,9 @@ private struct AboutPane: View {
             Button("Copy Diagnostics") { NotificationCenter.default.post(name: .monorailCopyDiagnostics, object: nil) }
                 .help("A short report (no window titles) to paste into a bug report")
             Button("Show Log") { LogViewer.show() }
-            Text("Energy: \(EnergyReport.summary)").font(.caption).foregroundStyle(.secondary)
-                .help("CPU time Monorail has used since it opened. Monorail rests while your screen sleeps or is locked.")
+            if let log = UsageBridge.log {
+                UsageSection(log: log).frame(maxWidth: 620)
+            }
             Button("Reveal settings file") {
                 NSWorkspace.shared.activateFileViewerSelecting([SettingsStore.fileURL])
             }

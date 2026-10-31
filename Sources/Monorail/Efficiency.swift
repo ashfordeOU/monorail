@@ -1,5 +1,6 @@
 #if os(macOS)
 import AppKit
+import MonorailCore
 
 extension Timer {
     /// A repeating timer that lets macOS group its wake-ups with others (saves energy):
@@ -58,6 +59,101 @@ enum EnergyReport {
             }
         }
         return result == KERN_SUCCESS ? Double(info.resident_size) / 1_048_576 : nil
+    }
+}
+/// Monorail's own usage, kept on this Mac (Settings → About → Usage): how long it runs,
+/// what it costs, and which actions you use. Counts only: no window titles or app names.
+final class UsageLog: ObservableObject {
+    struct Stored: Codable {
+        var firstLaunch = Date()
+        var launches = 0
+        var runningSeconds: Double = 0
+        var cpuSeconds: Double = 0
+        var actions: [String: Int] = [:]
+        var windowsManaged = 0
+        var workspaceSwitches = 0
+        var slideSwitches = 0
+        var awakeSeconds: Double = 0
+        var versions: [String] = []
+        var lastVersion = ""
+    }
+
+    static var url: URL { SettingsStore.directory.appendingPathComponent("usage.json") }
+    @Published private(set) var stored = Stored()
+    private let sessionStart = Date()
+    private var savedRunning: Double = 0
+    private var savedCPU: Double = 0
+    private var awakeSince: Date?
+    private var timer: Timer?
+
+    init() {
+        if let data = try? Data(contentsOf: Self.url), let old = try? JSONDecoder().decode(Stored.self, from: data) {
+            stored = old
+        }
+        savedRunning = stored.runningSeconds
+        savedCPU = stored.cpuSeconds
+        stored.launches += 1
+        let version = Bundle.main.shortVersion
+        if stored.lastVersion != version {
+            stored.versions.append(version)
+            stored.lastVersion = version
+        }
+        timer = Timer.every(300) { [weak self] _ in self?.save() }
+    }
+
+    func action(_ action: Action) {
+        stored.actions[action.rawValue, default: 0] += 1
+        if action.workspaceNumber != nil || action == .nextWorkspace || action == .previousWorkspace { stored.workspaceSwitches += 1 }
+        if [.focusLeft, .focusRight].contains(action) || action.columnNumber != nil { stored.slideSwitches += 1 }
+    }
+
+    func windowManaged() { stored.windowsManaged += 1 }
+
+    func awake(_ on: Bool) {
+        if on, awakeSince == nil { awakeSince = Date() }
+        if !on, let since = awakeSince {
+            stored.awakeSeconds += Date().timeIntervalSince(since)
+            awakeSince = nil
+        }
+    }
+
+    /// Totals including this session.
+    var totalRunning: Double { savedRunning + Date().timeIntervalSince(sessionStart) }
+    var totalCPU: Double { savedCPU + EnergyReport.cpuSeconds }
+    var totalAwake: Double { stored.awakeSeconds + (awakeSince.map { Date().timeIntervalSince($0) } ?? 0) }
+
+    var topActions: [(String, Int)] {
+        stored.actions.sorted { $0.value > $1.value }.prefix(8).map { (Action(rawValue: $0.key)?.title ?? $0.key, $0.value) }
+    }
+
+    func save() {
+        stored.runningSeconds = totalRunning
+        stored.cpuSeconds = totalCPU
+        try? FileManager.default.createDirectory(at: SettingsStore.directory, withIntermediateDirectories: true)
+        if let data = try? JSONEncoder().encode(stored) { try? data.write(to: Self.url, options: .atomic) }
+        objectWillChange.send()
+    }
+
+    func reset() {
+        stored = Stored()
+        savedRunning = 0
+        savedCPU = -EnergyReport.cpuSeconds
+        save()
+    }
+
+    /// The usage as plain text, to copy into a bug report.
+    var text: String {
+        func hours(_ s: Double) -> String { String(format: "%.1f h", s / 3600) }
+        var lines = [
+            "Monorail usage since \(DateFormatter.localizedString(from: stored.firstLaunch, dateStyle: .medium, timeStyle: .none))",
+            "Launches: \(stored.launches) · running \(hours(totalRunning)) · CPU \(String(format: "%.0f s", totalCPU)) (\(String(format: "%.2f%%", totalCPU / max(totalRunning, 1) * 100)) on average)",
+            "Windows managed: \(stored.windowsManaged) · slide switches: \(stored.slideSwitches) · workspace switches: \(stored.workspaceSwitches)",
+            "Stay Awake: \(hours(totalAwake)) · versions: \(stored.versions.joined(separator: ", "))",
+            "This session: \(EnergyReport.summary)",
+            "Most used:",
+        ]
+        lines += topActions.map { "  \($0.0): \($0.1)" }
+        return lines.joined(separator: "\n")
     }
 }
 #endif

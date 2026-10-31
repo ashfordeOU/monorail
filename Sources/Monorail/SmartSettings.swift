@@ -4,6 +4,58 @@ import MonorailCore
 import SwiftUI
 
 /// What the Settings panes can ask the running app for (set by AppDelegate).
+/// The usage log, for Settings → About.
+enum UsageBridge {
+    static var log: UsageLog?
+}
+
+/// Settings → About → Usage: how Monorail has been used and what it costs, all on this Mac.
+struct UsageSection: View {
+    @ObservedObject var log: UsageLog
+    @State private var refresh = Date()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Usage").font(.headline)
+                Text("since \(log.stored.firstLaunch.formatted(date: .abbreviated, time: .omitted)) · kept on this Mac").font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                Button("Copy") {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(log.text, forType: .string)
+                }
+                Button("Reset") { log.reset() }
+            }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .leading), count: 4), spacing: 10) {
+                stat("\(log.stored.launches)", "launches")
+                stat(String(format: "%.1f h", log.totalRunning / 3600), "running")
+                stat(String(format: "%.2f%%", log.totalCPU / max(log.totalRunning, 1) * 100), "average CPU")
+                stat(String(format: "%.0f MB", EnergyReport.residentMegabytes ?? 0), "memory now")
+                stat("\(log.stored.windowsManaged)", "windows managed")
+                stat("\(log.stored.slideSwitches)", "slide switches")
+                stat("\(log.stored.workspaceSwitches)", "workspace switches")
+                stat(String(format: "%.1f h", log.totalAwake / 3600), "kept awake")
+            }
+            if !log.topActions.isEmpty {
+                Text("Most used: " + log.topActions.prefix(5).map { "\($0.0) (\($0.1))" }.joined(separator: " · "))
+                    .font(.caption).foregroundStyle(.secondary).lineLimit(2)
+            }
+            Text("This session: \(EnergyReport.summary)").font(.caption).foregroundStyle(.secondary)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(0.05)))
+        .id(refresh)
+        .onReceive(Timer.publish(every: 5, on: .main, in: .common).autoconnect()) { refresh = $0 }
+    }
+
+    private func stat(_ value: String, _ label: String) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(value).font(.system(size: 17, weight: .semibold, design: .rounded)).monospacedDigit()
+            Text(label).font(.caption).foregroundStyle(.secondary)
+        }
+    }
+}
+
 enum SmartBridge {
     static var remoteURL: () -> URL? = { nil }
     static var remoteQR: () -> NSImage? = { nil }

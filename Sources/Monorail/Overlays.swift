@@ -28,14 +28,28 @@ final class Overlays {
 
     /// Hides the overlays that track window positions (while windows move).
     func hideTransient() {
+        drawn = nil
         border?.orderOut(nil)
         dimPanels.forEach { $0.orderOut(nil) }
     }
 
     func hideAll() {
+        drawn = nil
         hideTransient()
         tabPanels.forEach { $0.orderOut(nil) }
     }
+
+    /// What was drawn last time, so unchanged overlays aren't redrawn (saves energy).
+    private struct Drawn: Equatable {
+        var focusedID: WindowID?
+        var focusedFrame: CGRect?
+        var inactive: [WindowID]
+        var inactiveFrames: [CGRect]
+        var bars: [TabBarModel]
+        var border: Bool, color: String, color2: String, gradient: Bool, width: Double, glow: Bool
+        var dim: Bool, dimAmount: Double
+    }
+    private var drawn: Drawn?
 
     func update(
         focused: (WindowID, CGRect)?,
@@ -43,6 +57,17 @@ final class Overlays {
         tabBars: [TabBarModel],
         settings: AppSettings
     ) {
+        let now = Drawn(
+            focusedID: focused?.0, focusedFrame: focused?.1, inactive: inactive.map(\.0), inactiveFrames: inactive.map(\.1),
+            bars: tabBars, border: settings.focusBorder, color: settings.focusBorderColor, color2: settings.focusBorderColor2,
+            gradient: settings.focusBorderGradient, width: settings.focusBorderWidth, glow: settings.focusGlow,
+            dim: settings.dimInactive, dimAmount: settings.dimAmount)
+        // Window order can change without anything moving, so re-order (cheap) but skip redrawing.
+        if now == drawn {
+            if let (id, _) = focused, settings.focusBorder { border?.order(.above, relativeTo: Int(id)) }
+            return
+        }
+        drawn = now
         updateBorder(focused: focused, settings: settings)
         updateDimming(inactive: settings.dimInactive ? inactive : [], amount: settings.dimAmount)
         updateTabBars(tabBars)

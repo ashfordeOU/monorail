@@ -4586,7 +4586,8 @@ final class Engine {
     private func fitWorkspacesInView() {
         for display in displays {
             let key = currentKey(display)
-            guard settings.isFit(key.workspace), var strip = strips[key], !strip.isEmpty else { continue }
+            let sidecar = settings.sidecarFit && Self.isSidecar(display)
+            guard settings.isFit(key.workspace) || sidecar, var strip = strips[key], !strip.isEmpty else { continue }
             let scrolling = strip.columns.filter { $0.pin == nil }.count
             let config = layoutConfig(for: display)
             let viewportWidth = viewport(of: display).width
@@ -4609,6 +4610,12 @@ final class Engine {
             }
             strips[key] = strip
         }
+    }
+
+    /// An iPad used as a display (Sidecar): small, so slides fit on it rather than scroll.
+    static func isSidecar(_ display: Display) -> Bool {
+        let name = display.name.lowercased()
+        return name.contains("sidecar") || name.contains("ipad")
     }
 
     /// A workspace's name: the user's, or (with auto names) its apps', or "Workspace n".

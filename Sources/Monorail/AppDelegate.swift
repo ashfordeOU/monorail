@@ -60,17 +60,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let calendarFocus = CalendarFocus()
     private let midi = MIDIControl()
     private let gamepad = GameControllerInput()
-    private let voice = VoiceCommands()
-    private let headFocus = HeadFocus()
-    private let webRemote = WebRemote()
-    private let pairSync = PairSync()
-    private let slideShare = ScreenMirror()
-    private let windowMirror = ScreenMirror()
-    private let demoLens = ScreenMirror()
+    // Made the first time they're used (most people never touch them), so launch stays light.
+    private lazy var voice: VoiceCommands = {
+        let voice = VoiceCommands()
+        voice.onState = { [weak self] text in self?.toast.show(text) }
+        voice.onText = { [weak self] text in self?.say(text) }
+        return voice
+    }()
+    private var headFocusMade = false
+    private lazy var headFocus: HeadFocus = {
+        self.headFocusMade = true
+        let head = HeadFocus()
+        head.onTurn = { [weak self] _ in self?.engine.perform(.focusNextDisplay) }
+        return head
+    }()
+    private var webRemoteMade = false
+    private lazy var webRemote: WebRemote = {
+        self.webRemoteMade = true
+        let remote = WebRemote()
+        remote.perform = { [weak self] name in if let action = Action(rawValue: name) { self?.engine.perform(action) } }
+        remote.status = { [weak self] in
+            guard let status = self?.engine.status() else { return "" }
+            return "Workspace \(status.workspace) · slide \(status.focusedColumn) of \(status.columnCount)"
+        }
+        return remote
+    }()
+    private var pairSyncMade = false
+    private lazy var pairSync: PairSync = {
+        self.pairSyncMade = true
+        let sync = PairSync()
+        sync.onStatus = { [weak self] text in self?.toast.show(text) }
+        sync.onLayout = { [weak self] json in _ = self?.engine.applyLayoutJSON(json) }
+        return sync
+    }()
+    private lazy var slideShare = ScreenMirror()
+    private lazy var windowMirror = ScreenMirror()
+    private lazy var demoLens = ScreenMirror()
     private let annotation = AnnotationOverlay()
     private let keystrokes = KeystrokeOverlay()
     private let presenterNotesPanel = PresenterNotes()
-    private let cameraTile = CameraTile()
+    private lazy var cameraTile = CameraTile()
     private var timelineWindow: NSWindow?
     private var safeMode = false
     private var guestOn = false
@@ -422,6 +451,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func wireUpV12() {
         engine.onAgentWaiting = { [weak self] id, app in
             guard let self else { return }
+            self.tipOnce("agent", "you can turn agent alerts off, or have the agent's slide come into view, in Settings → Smart")
             self.toast.show("\(app): an agent is waiting for you · ⌃⌥/ then “agent”")
             NSSound(named: "Glass")?.play()
             self.postWebhook("agent_waiting", ["id": Int(id), "app": app])
@@ -443,8 +473,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.stateChangedV12()
         }
         palette.dynamic = { [weak self] query in self?.dynamicCommands(query) ?? [] }
-        SmartBridge.remoteURL = { [weak self] in self?.webRemote.url }
-        SmartBridge.remoteQR = { [weak self] in self?.webRemote.qrCode() }
+        SmartBridge.remoteURL = { [weak self] in self?.webRemoteMade == true ? self?.webRemote.url : nil }
+        SmartBridge.remoteQR = { [weak self] in self?.webRemoteMade == true ? self?.webRemote.qrCode() : nil }
         SmartBridge.learnMIDINote = { [weak self] handler in
             self?.midiLearn = handler
             self?.toast.show("Press a pad or key on your MIDI controller")
@@ -477,16 +507,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if let name = self.store.settings.midiMap[String(note)], let action = Action(rawValue: name) { self.engine.perform(action) }
         }
         gamepad.perform = { [weak self] action in self?.engine.perform(action) }
-        voice.onState = { [weak self] text in self?.toast.show(text) }
-        voice.onText = { [weak self] text in self?.say(text) }
-        headFocus.onTurn = { [weak self] _ in self?.engine.perform(.focusNextDisplay) }
-        webRemote.perform = { [weak self] name in if let action = Action(rawValue: name) { self?.engine.perform(action) } }
-        webRemote.status = { [weak self] in
-            guard let status = self?.engine.status() else { return "" }
-            return "Workspace \(status.workspace) · slide \(status.focusedColumn) of \(status.columnCount)"
-        }
-        pairSync.onStatus = { [weak self] text in self?.toast.show(text) }
-        pairSync.onLayout = { [weak self] json in _ = self?.engine.applyLayoutJSON(json) }
         presenterNotesPanel.text = { [weak self] in self?.store.settings.presenterNotes ?? "" }
         presenterNotesPanel.save = { [weak self] text in
             self?.notesSave?.cancel()
@@ -528,7 +548,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: Stay Awake
 
     private func wireUpAwake() {
-        engine.onActionPerformed = { [weak self] action in self?.usage.action(action) }
+        engine.onActionPerformed = { [weak self] action in
+            guard let self else { return }
+            self.usage.action(action)
+            let steps = (self.usage.stored.actions["focus-left"] ?? 0) + (self.usage.stored.actions["focus-right"] ?? 0)
+            if steps == 30 { self.tipOnce("slide-mode", "tap the right ⌥ key on its own for slide mode, then just use the arrow keys") }
+            if action == .overview, (self.usage.stored.actions["overview"] ?? 0) == 1 {
+                self.tipOnce("overview", "drag a window onto another to pair them, or between slides to give it its own")
+            }
+            if action == .commandPalette, (self.usage.stored.actions["command-palette"] ?? 0) == 3 {
+                self.tipOnce("sentences", "the palette understands sentences: try “Safari two thirds” or “how do I keep my Mac awake?”")
+            }
+        }
         whatsNew.tryAction = { [weak self] action in
             if action == .commandPalette { self?.palette.show() } else { self?.engine.perform(action) }
         }
@@ -540,6 +571,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if self.store.settings.awakeSound { NSSound(named: on ? "Purr" : "Pop")?.play() }
             self.postWebhook(on ? "stay_awake_on" : "stay_awake_off", ["status": self.awake.statusText])
             self.usage.awake(on)
+            if on { self.tipOnce("awake", "Stay Awake ends by itself at 10% battery, and can start on its own: Settings → Stay Awake → triggers") }
             self.awakeTicker?.invalidate()
             self.awakeTicker = on ? Timer.every(20) { [weak self] _ in self?.updateStatusItem() } : nil
             self.updateStatusItem()
@@ -734,14 +766,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         input.mouseGestures = settings.mouseGestures
         midi.setEnabled(settings.midiControl)
         gamepad.setEnabled(settings.gameController)
-        headFocus.setEnabled(settings.headFocus)
+        if settings.headFocus || headFocusMade { headFocus.setEnabled(settings.headFocus) }
         if settings.webRemote, settings.webRemoteToken.isEmpty {
             var changed = settings
             changed.webRemoteToken = Self.randomToken()
             DispatchQueue.main.async { [weak self] in self?.store.settings = changed }
         }
-        webRemote.token = settings.webRemoteToken
-        webRemote.setEnabled(settings.webRemote && !settings.webRemoteToken.isEmpty, port: UInt16(clamping: settings.apiPort + 1))
+        if settings.webRemote || webRemoteMade {
+            webRemote.token = settings.webRemoteToken
+            webRemote.setEnabled(settings.webRemote && !settings.webRemoteToken.isEmpty, port: UInt16(clamping: settings.apiPort + 1))
+        }
         shareWatch.setEnabled(settings.safeScreenShare)
         workspaceClipboard.setEnabled(settings.workspaceClipboard)
         calendarFocus.setEnabled(settings.deepWorkFromCalendar)
@@ -799,7 +833,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 }
             }
         }
-        if pairSync.isOn, Date().timeIntervalSince(lastSyncSent) > 1, let json = engine.layoutJSON() {
+        if pairSyncMade, pairSync.isOn, Date().timeIntervalSince(lastSyncSent) > 1, let json = engine.layoutJSON() {
             lastSyncSent = Date()
             pairSync.send(json)
         }
@@ -944,8 +978,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func dynamicCommands(_ query: String) -> [PaletteCommand] {
-        guard query.split(separator: " ").count >= 2 else { return [] }
         var list: [PaletteCommand] = []
+        // Ask Monorail: "how do I keep my Mac awake?"
+        if HelpIndex.isQuestion(query) {
+            for (n, answer) in HelpIndex.answers(for: query).enumerated() {
+                list.append(PaletteCommand(id: "help-\(n)", title: answer.question, subtitle: answer.answer,
+                                           symbol: "questionmark.circle", keywords: query) { [weak self] in
+                    self?.openHelpTarget(answer.target)
+                })
+            }
+        }
+        guard query.split(separator: " ").count >= 2 else { return list }
         if let command = CommandParser.parse(query, apps: runningAppNames()) {
             list.append(PaletteCommand(id: "say", title: "Do it: \(describe(command))", subtitle: "From what you typed",
                                        symbol: "sparkles", keywords: query) { [weak self] in self?.run(command) })
@@ -958,8 +1001,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return list
     }
 
+    private func openHelpTarget(_ target: HelpIndex.Target) {
+        switch target {
+        case .action(let action):
+            if action == .commandPalette { palette.show() } else { engine.perform(action) }
+        case .settings(let id):
+            if let tab = SettingsTab(rawValue: id) { navigation.tab = tab }
+            showSettings()
+        }
+    }
+
     private func v12PaletteCommands() -> [PaletteCommand] {
         var list: [PaletteCommand] = []
+        if engine.snapshots.contains(where: { $0.name == Self.beforeMeeting }) {
+            list.append(PaletteCommand(id: "after-meeting", title: "After the meeting: put things back",
+                                       subtitle: "The layout from before your call", symbol: "arrow.uturn.backward",
+                                       keywords: "meeting call after restore back") { [weak self] in
+                self?.engine.restoreSnapshot(named: Self.beforeMeeting)
+            })
+        }
         for id in engine.waitingAgents {
             let name = engine.allWindowSummaries().first { $0.id == id }?.appName ?? "Agent"
             list.append(PaletteCommand(id: "agent-\(id)", title: "Go to the waiting agent (\(name))", subtitle: "Needs your approval",
@@ -1765,8 +1825,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func joinMeeting(_ title: String, _ link: URL) {
         if let profile = store.settings.meetingProfile { engine.switchProfile(to: profile) }
-        NSWorkspace.shared.open(link)
-        toast.show("Joining “\(title)”")
+        guard store.settings.meetingLayout,
+            let notes = NSWorkspace.shared.urlForApplication(withBundleIdentifier: store.settings.meetingNotesApp)
+        else {
+            NSWorkspace.shared.open(link)
+            toast.show("Joining “\(title)”")
+            return
+        }
+        // Keep the layout to come back to, open the notes app, then the call beside it.
+        engine.saveSnapshot(named: Self.beforeMeeting, quiet: true)
+        NSWorkspace.shared.openApplication(at: notes, configuration: NSWorkspace.OpenConfiguration())
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            guard let self else { return }
+            let notesWindow = self.engine.focusedWindowID()
+            NSWorkspace.shared.open(link)
+            self.pairWhenFocusChanges(from: notesWindow)
+            self.toast.show("Joining “\(title)” with your notes beside it · ⌃⌥/ then “after the meeting” puts things back")
+        }
+    }
+
+    static let beforeMeeting = "Before the meeting"
+
+    /// A tip, once ever.
+    private func tipOnce(_ id: String, _ text: String) {
+        guard !store.settings.seenTips.contains(id) else { return }
+        var settings = store.settings
+        settings.seenTips.append(id)
+        store.settings = settings
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in self?.toast.show("Tip · " + text) }
     }
 
     // MARK: Sharing layouts

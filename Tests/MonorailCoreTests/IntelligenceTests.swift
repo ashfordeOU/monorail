@@ -262,3 +262,14 @@ final class AwakeTests: XCTestCase {
         XCTAssertEqual(AwakeSession.until(now.addingTimeInterval(1800)).describe(now: now), "for 30 min")
     }
 }
+
+final class HelpTests: XCTestCase {
+    func testAnswers() {
+        XCTAssertEqual(HelpIndex.answers(for: "how do I keep my mac awake?").first?.target, .settings("awake"))
+        XCTAssertEqual(HelpIndex.answers(for: "how can I turn off animations").first?.target, .action(.toggleAnimations))
+        XCTAssertEqual(HelpIndex.answers(for: "hide private windows when sharing").first?.target, .settings("devices"))
+        XCTAssertTrue(HelpIndex.isQuestion("how do I float an app"))
+        XCTAssertFalse(HelpIndex.isQuestion("safari two thirds"))
+        XCTAssertTrue(HelpIndex.answers(for: "how").isEmpty)
+    }
+}

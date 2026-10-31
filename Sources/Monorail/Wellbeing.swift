@@ -73,7 +73,7 @@ final class ScreenShareWatch {
         ("FaceTime", "sharing"),
         ("Google Chrome", "is sharing"), ("Arc", "is sharing"), ("Safari", "is sharing"), ("Brave Browser", "is sharing"),
         ("Microsoft Edge", "is sharing"), ("Firefox", "sharing indicator"),
-        ("screencaptureui", nil), ("Screen Sharing", nil),
+        // Not screencaptureui (⌘⇧5 screenshots) or the Screen Sharing app (viewing another Mac).
     ]
 
     func setEnabled(_ on: Bool) {

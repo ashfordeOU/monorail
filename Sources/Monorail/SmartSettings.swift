@@ -13,6 +13,8 @@ enum UsageBridge {
 struct UsageSection: View {
     @ObservedObject var log: UsageLog
     @State private var refresh = Date()
+    @State private var checking = false
+    @State private var energy: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -41,6 +43,18 @@ struct UsageSection: View {
                     .font(.caption).foregroundStyle(.secondary).lineLimit(2)
             }
             Text("This session: \(EnergyReport.summary)").font(.caption).foregroundStyle(.secondary)
+            HStack {
+                Button(checking ? "Measuring for 30 seconds… keep using your Mac as usual" : "Check Energy") {
+                    checking = true
+                    energy = nil
+                    EnergyCheck.run { result in
+                        energy = result
+                        checking = false
+                    }
+                }
+                .disabled(checking)
+                if let energy { Text(energy).font(.caption).textSelection(.enabled) }
+            }
         }
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(0.05)))
@@ -69,6 +83,88 @@ enum ProblemReport {
         if let url = components.url { NSWorkspace.shared.open(url) }
         try? FileManager.default.createDirectory(at: CrashReporter.folder, withIntermediateDirectories: true)
         if !CrashReporter.reports.isEmpty { NSWorkspace.shared.open(CrashReporter.folder) }
+    }
+}
+
+/// Ready-made scripts from the repository, installed with one click (Settings → Automation).
+final class ScriptGallery: ObservableObject {
+    struct Entry: Codable, Identifiable, Hashable {
+        var file: String
+        var name: String
+        var description: String
+        var id: String { file }
+    }
+
+    static let base = "https://raw.githubusercontent.com/ashfordeOU/monorail/main/extensions/scripts/"
+    @Published var entries: [Entry] = []
+    @Published var message = ""
+
+    func load() {
+        guard entries.isEmpty, let url = URL(string: Self.base + "index.json") else { return }
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            let list = data.flatMap { try? JSONDecoder().decode([Entry].self, from: $0) } ?? []
+            DispatchQueue.main.async {
+                self.entries = list
+                if list.isEmpty { self.message = "Couldn’t load the gallery. Check your connection." }
+            }
+        }.resume()
+    }
+
+    func isInstalled(_ entry: Entry) -> Bool {
+        FileManager.default.fileExists(atPath: ScriptHost.folder.appendingPathComponent(entry.file).path)
+    }
+
+    func install(_ entry: Entry) {
+        guard let url = URL(string: Self.base + entry.file) else { return }
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            DispatchQueue.main.async {
+                guard let data, !data.isEmpty else {
+                    self.message = "Couldn’t download \(entry.name)"
+                    return
+                }
+                try? FileManager.default.createDirectory(at: ScriptHost.folder, withIntermediateDirectories: true)
+                try? data.write(to: ScriptHost.folder.appendingPathComponent(entry.file))
+                NotificationCenter.default.post(name: .monorailReloadScripts, object: nil)
+                self.message = "Installed \(entry.name). Turn on Scripts above if it's off."
+                self.objectWillChange.send()
+            }
+        }.resume()
+    }
+}
+
+/// The script gallery's list.
+struct ScriptGallerySection: View {
+    @StateObject private var gallery = ScriptGallery()
+
+    var body: some View {
+        Section {
+            ForEach(gallery.entries) { entry in
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(entry.name).fontWeight(.medium)
+                        Text(entry.description).font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if gallery.isInstalled(entry) {
+                        Label("Installed", systemImage: "checkmark.circle.fill").foregroundStyle(.green).font(.caption)
+                    } else {
+                        Button("Install") { gallery.install(entry) }
+                    }
+                }
+            }
+            if gallery.entries.isEmpty && gallery.message.isEmpty { ProgressView().controlSize(.small) }
+            if !gallery.message.isEmpty { Text(gallery.message).font(.caption).foregroundStyle(.secondary) }
+            Button("Open the Scripts Folder") {
+                try? FileManager.default.createDirectory(at: ScriptHost.folder, withIntermediateDirectories: true)
+                NSWorkspace.shared.open(ScriptHost.folder)
+            }
+        } header: {
+            Text("Script gallery")
+        } footer: {
+            Text("Ready-made scripts from the Monorail repository. They're plain JavaScript you can read and change in the Scripts folder.")
+                .font(.callout).foregroundStyle(.secondary)
+        }
+        .onAppear { gallery.load() }
     }
 }
 
@@ -135,6 +231,9 @@ struct SmartPane: View {
                 Toggle("Hide off-screen slides in the corner (no slivers at the edges)", isOn: $store.settings.parkInCorner)
                 Toggle("Dimming follows the pointer", isOn: $store.settings.dimFollowsPointer)
                 Toggle("Remember the layout for each set of displays", isOn: $store.settings.displayProfiles)
+                Toggle("On a Sidecar iPad, fit every slide on screen", isOn: $store.settings.sidecarFit)
+                Toggle("When a call opens from my calendar, put my notes beside it", isOn: $store.settings.meetingLayout)
+                    .help("Your layout is kept: after the call, ⌃⌥/ then “after the meeting” puts it back")
             } header: {
                 Text("The strip")
             } footer: {

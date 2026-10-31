@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monorail by Ashforde® · the scrolling window manager for Mac</title>
+<meta name="description" content="Every window rides one rail. Monorail is a free, open-source scrolling window manager for macOS: nothing ever shrinks, it understands plain sentences, keeps your Mac awake, and hides private windows when you share.">
+<meta property="og:title" content="Monorail by Ashforde®">
+<meta property="og:description" content="The scrolling window manager for Mac that understands you. Free and open source.">
+<meta property="og:image" content="assets/launch/01-hero.png">
+<link rel="icon" href="assets/icon.png">
+<style>
+  :root { --ink:#2A1430; --muted:#7A5A70; --coral:#FF9E62; --pink:#F66270; --plum:#D63A80; --bg:#FFF7F2; --card:#fff; }
+  @media (prefers-color-scheme: dark) { :root { --ink:#F6ECF3; --muted:#C2A7B8; --bg:#160B1C; --card:#22132B; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font: 17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  a { color: var(--plum); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  header { background: linear-gradient(135deg,#2A1430,#6B1F5C 55%,#F66270); color:#fff; padding: 28px 0 56px; }
+  nav { display:flex; align-items:center; gap:18px; font-weight:600; }
+  nav img { width:34px; height:34px; border-radius:8px; }
+  nav .spacer { flex:1; }
+  nav a { color:#fff; text-decoration:none; opacity:.85; }
+  h1 { font-size: clamp(36px, 6vw, 64px); line-height:1.05; margin: 42px 0 14px; letter-spacing:-1px; }
+  .lede { font-size: clamp(18px, 2.2vw, 22px); max-width: 720px; opacity:.92; }
+  .cta { display:flex; flex-wrap:wrap; gap:12px; margin: 28px 0 8px; }
+  .button { display:inline-block; padding: 13px 22px; border-radius: 999px; font-weight:700; text-decoration:none; }
+  .primary { background:#fff; color:#2A1430; }
+  .ghost { border: 1.5px solid rgba(255,255,255,.7); color:#fff; }
+  code.install { display:block; margin-top:14px; background: rgba(0,0,0,.25); color:#fff; padding: 10px 14px; border-radius: 10px; font-size: 14px; overflow-x:auto; white-space:nowrap; }
+  .hero { margin-top: 36px; border-radius: 22px; width: 100%; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+  section { padding: 64px 0 8px; }
+  h2 { font-size: 32px; margin: 0 0 10px; letter-spacing:-.4px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 22px; }
+  .card { background: var(--card); border-radius: 18px; padding: 20px; box-shadow: 0 10px 30px rgba(42,20,48,.08); }
+  .card h3 { margin: 0 0 6px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .shot { width:100%; border-radius: 18px; margin-top: 18px; }
+  .numbers { display:flex; flex-wrap:wrap; gap: 28px; margin-top: 18px; }
+  .numbers b { display:block; font-size: 34px; color: var(--plum); }
+  footer { padding: 60px 0 40px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <nav>
+      <img src="assets/icon.png" alt="">
+      <span>Monorail <span style="opacity:.7;font-weight:500">by Ashforde®</span></span>
+      <span class="spacer"></span>
+      <a href="#features">Features</a>
+      <a href="https://github.com/ashfordeOU/monorail#readme">Docs</a>
+      <a href="https://github.com/ashfordeOU/monorail">GitHub</a>
+    </nav>
+    <h1>Every window rides one rail.</h1>
+    <p class="lede">Monorail is a scrolling window manager for your Mac. New windows slide in next to the one you're using, and nothing else ever shrinks. Tell it what you want in plain words. Free and open source.</p>
+    <div class="cta">
+      <a class="button primary" href="https://github.com/ashfordeOU/monorail/releases/latest">Download for Mac</a>
+      <a class="button ghost" href="https://github.com/ashfordeOU/monorail">View on GitHub</a>
+    </div>
+    <code class="install">brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail &amp;&amp; brew install --cask monorail</code>
+    <img class="hero" src="assets/readme/banner.svg" alt="Windows on a strip that runs past the edges of the screen">
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="features">
+    <h2>Why people switch</h2>
+    <div class="grid">
+      <div class="card"><h3>🚝 Nothing shrinks</h3><p>New windows join the strip instead of squeezing the rest. Your editor stays the size you left it.</p></div>
+      <div class="card"><h3>🗣️ Say it</h3><p>“Slack and Mail side by side on 3.” “Safari two thirds.” “How do I keep my Mac awake?” All on your Mac, no cloud.</p></div>
+      <div class="card"><h3>🤖 Made for AI agents</h3><p>A chime when Claude Code or Codex waits for your approval. Assistants can drive Monorail over MCP.</p></div>
+      <div class="card"><h3>🛡️ Private when sharing</h3><p>Private windows step aside the moment you share your screen in Zoom, Teams or Meet.</p></div>
+      <div class="card"><h3>☕ Stay Awake</h3><p>Keep your Mac awake for an hour, while downloading, with the lid closed, or by itself with triggers.</p></div>
+      <div class="card"><h3>🎨 27 themes</h3><p>Classics, seasonal themes, Seasons that follows the year, and one-of-a-kind looks.</p></div>
+    </div>
+    <img class="shot" src="assets/readme/smart.svg" alt="The command palette carrying out a sentence">
+  </section>
+
+  <section>
+    <h2>Every workspace on one canvas</h2>
+    <p>⌃⌥O shows all of your workspaces and slides. Drag windows between them, pair them, close them.</p>
+    <img class="shot" src="assets/readme/overview.svg" alt="The overview">
+  </section>
+
+  <section>
+    <h2>Light on your battery</h2>
+    <p>Measured on a 14-core MacBook Pro, on battery, while idle:</p>
+    <div class="numbers">
+      <div><b>0.09%</b>of one core</div>
+      <div><b>0</b>wake-ups a second</div>
+      <div><b>47 MB</b>of memory</div>
+    </div>
+    <p>Settings → About → Check Energy measures it on your own Mac.</p>
+  </section>
+
+  <section>
+    <h2>And a lot more</h2>
+    <img class="shot" src="assets/readme/new-in-1.2.svg" alt="A grid of features">
+    <img class="shot" src="assets/readme/themes.svg" alt="27 themes">
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    Monorail by Ashforde® · © Ashforde OÜ · Free software under the GNU AGPL v3.0 ·
+    <a href="https://github.com/ashfordeOU/monorail/blob/main/CHANGELOG.md">What's new</a> ·
+    <a href="https://github.com/ashfordeOU/monorail/issues">Report an issue</a>
+  </div>
+</footer>
+</body>
+</html>

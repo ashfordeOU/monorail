@@ -61,6 +61,45 @@ enum EnergyReport {
         return result == KERN_SUCCESS ? Double(info.resident_size) / 1_048_576 : nil
     }
 }
+/// A 30-second measurement of Monorail's own CPU, wake-ups and energy, from macOS's
+/// per-process counters (the same ones Activity Monitor uses). Settings → About → Check Energy.
+enum EnergyCheck {
+    struct Sample {
+        var cpu: Double       // seconds
+        var wakeups: UInt64
+        var energy: UInt64    // nanojoules
+        var at: Date
+    }
+
+    static func sample() -> Sample? {
+        var info = rusage_info_v4()
+        let ok = withUnsafeMutablePointer(to: &info) { pointer in
+            pointer.withMemoryRebound(to: rusage_info_t?.self, capacity: 1) { proc_pid_rusage(getpid(), RUSAGE_INFO_V4, $0) }
+        }
+        guard ok == 0 else { return nil }
+        var timebase = mach_timebase_info_data_t()
+        mach_timebase_info(&timebase)
+        let ticks = Double(info.ri_user_time + info.ri_system_time)
+        let seconds = ticks * Double(timebase.numer) / Double(timebase.denom) / 1_000_000_000
+        return Sample(cpu: seconds, wakeups: info.ri_pkg_idle_wkups + info.ri_interrupt_wkups,
+                      energy: info.ri_billed_energy, at: Date())
+    }
+
+    /// Measures for `seconds`, then reports CPU %, wake-ups a second and average power.
+    static func run(seconds: Double = 30, completion: @escaping (String) -> Void) {
+        guard let start = sample() else { return completion("Couldn’t read the energy counters") }
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+            guard let end = sample() else { return completion("Couldn’t read the energy counters") }
+            let elapsed = max(end.at.timeIntervalSince(start.at), 1)
+            let cpu = (end.cpu - start.cpu) / elapsed * 100
+            let wakeups = Double(end.wakeups &- start.wakeups) / elapsed
+            let milliwatts = Double(end.energy &- start.energy) / elapsed / 1_000_000
+            let verdict = cpu < 0.5 && wakeups < 3 ? "Excellent" : cpu < 2 && wakeups < 10 ? "Good" : "Higher than it should be"
+            completion(String(format: "%@: %.2f%% CPU · %.1f wake-ups a second · %.1f mW over %.0f s", verdict, cpu, wakeups, milliwatts, elapsed))
+        }
+    }
+}
+
 /// Monorail's own usage, kept on this Mac (Settings → About → Usage): how long it runs,
 /// what it costs, and which actions you use. Counts only: no window titles or app names.
 final class UsageLog: ObservableObject {

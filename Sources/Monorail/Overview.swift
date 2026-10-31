@@ -789,7 +789,7 @@ final class OverviewController {
         model.strips = engine.overview(onlyApp: onlyApp)
         model.selection = nil
         model.editing = nil
-        model.thumbnails = [:]
+        // Last time's previews show straight away; fresh ones replace them as they arrive.
         model.loadThumbnails()
         if OverviewStyle.live && !OverviewStyle.iconsOnly { model.startLiveRefresh() }
         let panel = self.panel ?? makePanel()

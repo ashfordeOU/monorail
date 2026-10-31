@@ -20,6 +20,7 @@ final class StayAwake {
     private var closedLidOn = false
     private var cpuTicks: (busy: UInt64, total: UInt64)?
     private var networkBytes: (bytes: UInt64, at: Date)?
+    private var thriftTick = false
     var settings: () -> AppSettings = { AppSettings() }
     /// Called when Stay Awake turns on or off, or its session changes.
     var onChange: (_ on: Bool, _ why: String) -> Void = { _, _ in }
@@ -86,6 +87,11 @@ final class StayAwake {
 
     private func evaluate(announce: Bool = false) {
         let settings = self.settings()
+        // Triggers only (no session running): on low power, check half as often.
+        if session == nil, !announce, Dormancy.isThrifty {
+            thriftTick.toggle()
+            if thriftTick { return }
+        }
         // Nothing to watch: no session, nothing on, no triggers. Costs nothing.
         if session == nil, !isOn, !announce, !settings.awakeTriggersOn || settings.awakeTriggers.allSatisfy({ !$0.isEnabled }) {
             return

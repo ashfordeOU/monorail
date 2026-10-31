@@ -43,7 +43,18 @@ final class UsageStats: ObservableObject {
         var pairMinutes: [String: Int] = [:]
         var dismissed: [String] = []
         var announced: [String] = []
+        /// Today's timeline: runs of minutes in one workspace (start and end minute of the day).
+        var timeline: [String: [Segment]]? = [:]
     }
+
+    struct Segment: Codable, Equatable {
+        var start: Int
+        var end: Int
+        var workspace: String
+    }
+
+    /// Today's runs of time per workspace, for the timeline in Insights.
+    var todayTimeline: [Segment] { stored.timeline?[Self.dayKey()] ?? [] }
 
     @Published private var stored = Stored()
     var isEnabled = true
@@ -131,6 +142,24 @@ final class UsageStats: ObservableObject {
         day.workspaceMinutes[workspace, default: 0] += 1
         if let app { day.appMinutes[app, default: 0] += 1 }
         stored.days[key] = day
+        // The timeline: extend the current run, or start a new one.
+        let parts = Calendar.current.dateComponents([.hour, .minute], from: Date())
+        let minute = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+        var runs = stored.timeline?[key] ?? []
+        if var last = runs.last, last.workspace == workspace, minute - last.end <= 2 {
+            last.end = minute + 1
+            runs[runs.count - 1] = last
+        } else {
+            runs.append(Segment(start: minute, end: minute + 1, workspace: workspace))
+        }
+        var timeline = stored.timeline ?? [:]
+        timeline[key] = runs
+        // Keep a week.
+        if let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) {
+            let oldest = Self.dayKey(cutoff)
+            timeline = timeline.filter { $0.key >= oldest }
+        }
+        stored.timeline = timeline
         scheduleSave()
     }
 
@@ -222,6 +251,9 @@ private struct TimeSection: View {
         let time = stats.time(days: week ? 7 : 1)
         let total = max(time.workspaces.map(\.1).reduce(0, +), 1)
         Section {
+            if !stats.todayTimeline.isEmpty {
+                TimelineBar(segments: stats.todayTimeline)
+            }
             Picker("", selection: $week) {
                 Text("Today").tag(false)
                 Text("This week").tag(true)
@@ -249,6 +281,48 @@ private struct TimeSection: View {
         } header: {
             Text("Where the time went")
         }
+    }
+}
+
+/// Today on one line: each workspace's runs of time, from midnight to midnight.
+private struct TimelineBar: View {
+    let segments: [UsageStats.Segment]
+
+    var body: some View {
+        let names = Array(Set(segments.map(\.workspace))).sorted()
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Today's timeline").font(.callout).fontWeight(.medium)
+            GeometryReader { geometry in
+                let scale = geometry.size.width / 1440
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4).fill(Color.primary.opacity(0.06))
+                    ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                        let index = names.firstIndex(of: segment.workspace) ?? 0
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(WorkspaceColor.color(index))
+                            .frame(width: max(CGFloat(segment.end - segment.start) * scale, 2))
+                            .offset(x: CGFloat(segment.start) * scale)
+                            .help("\(segment.workspace) · \(String(format: "%02d:%02d", segment.start / 60, segment.start % 60))–\(String(format: "%02d:%02d", segment.end / 60, segment.end % 60))")
+                    }
+                }
+            }
+            .frame(height: 16)
+            HStack {
+                ForEach(["0:00", "6:00", "12:00", "18:00", "24:00"], id: \.self) { label in
+                    Text(label).font(.caption2).foregroundStyle(.secondary)
+                    if label != "24:00" { Spacer() }
+                }
+            }
+            HStack(spacing: 10) {
+                ForEach(Array(names.prefix(6).enumerated()), id: \.offset) { index, name in
+                    HStack(spacing: 4) {
+                        Circle().fill(WorkspaceColor.color(index)).frame(width: 7, height: 7)
+                        Text(name).font(.caption)
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 4)
     }
 }
 

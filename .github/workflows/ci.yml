@@ -55,6 +55,9 @@ jobs:
         run: scripts/ci-import-signing-cert.sh
       - name: Build app
         run: scripts/build-app.sh
+      - name: Self-test
+        # Builds every Settings pane and checks actions, themes, languages and defaults (no permissions needed).
+        run: dist/Monorail.app/Contents/MacOS/Monorail --self-test
       - name: Check signature
         run: |
           codesign --display --requirements - dist/Monorail.app 2>&1 | tee requirement.txt

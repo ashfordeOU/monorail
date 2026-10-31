@@ -4,6 +4,29 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-10-31
+
+### Added
+- **Ask Monorail.** Type a question in the command palette (“how do I keep my Mac awake?”) and get the answer, with a button to the right action or setting.
+- **Search in Settings.** A search field at the top of Settings finds any option and takes you to its pane. The index is generated from the Settings source, so it covers every option.
+- **Check Energy** (Settings → About): a 30-second measurement of Monorail's own CPU, wake-ups and power, from macOS's per-process counters.
+- **Session timeline in Insights.** Today on one line, coloured by workspace.
+- **Meeting layout.** When a call opens from your calendar, your notes app goes beside it, and **After the meeting** in the palette puts your layout back.
+- **Sidecar.** On a Sidecar iPad, every slide fits on screen.
+- **Script gallery** (Settings → Automation): install ready-made scripts with one click. It starts with an IDE layout, halves and thirds, calls getting their own workspace, focus hours and a morning setup.
+- **Tips** that show once, at the moment they're useful: slide mode, dragging in the overview, sentences in the palette, Stay Awake and agent alerts.
+- **Homebrew:** `brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail && brew install --cask monorail`. The cask updates itself with every release.
+- **A website** in `site/`, published to GitHub Pages by its own workflow.
+- **Self-test.** `Monorail --self-test` builds every Settings pane and checks every action, theme, language and default. CI runs it on every build.
+
+### Changed
+- **Lighter launch.** Voice commands, the phone remote, layout sync, head focus, the camera tile and the screen mirrors are created only when first used.
+- **The overview opens with last time's previews** and replaces them as fresh ones arrive.
+- **Stay Awake triggers** are checked half as often in Low Power Mode or on battery when no session is running.
+
+### Fixed
+- **Screenshots don't hide your windows.** Taking a screenshot (⌘⇧5) or viewing another Mac with Screen Sharing no longer counts as sharing your screen, so private windows are no longer hidden.
+
 ## [1.4.0] - 2026-10-31
 
 ### Added

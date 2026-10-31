@@ -18,7 +18,7 @@
 
 ---
 
-**Monorail by Ashforde®** is a scrolling window manager for your Mac. **Version 1.4 is here.** It keeps floating windows in view, shows your usage in About, and speaks nine languages. 1.3 added Stay Awake, Amphetamine-style, and 1.2 added this: you can tell it what you want in plain words, it learns how you work, it tells you when an AI agent needs you, it keeps private windows out of screen shares, and it comes in 27 themes.
+**Monorail by Ashforde®** is a scrolling window manager for your Mac. **Version 1.5 is here:** you can ask it questions, search Settings, and install it with Homebrew. **1.4:** It keeps floating windows in view, shows your usage in About, and speaks nine languages. 1.3 added Stay Awake, Amphetamine-style, and 1.2 added this: you can tell it what you want in plain words, it learns how you work, it tells you when an AI agent needs you, it keeps private windows out of screen shares, and it comes in 27 themes.
 
 Grid tilers squeeze every new window into the space that's already there.
 **Monorail does the opposite.** Each window is a column on a horizontal strip
@@ -245,6 +245,13 @@ floating camera tile.
 > automatically once an Apple Developer ID is added). The first time you open Monorail,
 > macOS may say it can't verify the developer. Open **System Settings → Privacy & Security**
 > and click **Open Anyway**. The Terminal installer below avoids this step.
+
+### Homebrew
+
+```bash
+brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail
+brew install --cask monorail
+```
 
 ### Terminal
 
@@ -536,6 +543,14 @@ search, so you can see which slide wants you.
 - **Share layouts**: **Saved Layouts → Share Layout…** makes a `.monorail` file; double-click one on any Mac to add and apply it. Templates and app pairs share the same way.
 - **In your language**: menus, Settings tabs and the welcome tour in English, Deutsch, Français, Español and 日本語 (**Settings → General → Language**).
 - **Practice windows**: the welcome tour can open three practice windows, so you learn the moves without touching your work.
+
+### New in 1.5
+
+- **Ask Monorail:** type “how do I…?” in the palette. **Search** at the top of Settings finds any option.
+- **Check Energy** in About measures Monorail's own CPU, wake-ups and power in 30 seconds.
+- **A session timeline** in Insights, a **meeting layout** that puts your notes beside calls, and **Sidecar** iPads that fit every slide.
+- **A script gallery** with one-click installs, **Homebrew**, and timely **tips**.
+- **Lighter:** heavy features load only when first used. The overview opens with last time's previews, and screenshots no longer count as screen sharing.
 
 ### New in 1.4
 

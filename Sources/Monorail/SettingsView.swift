@@ -54,8 +54,55 @@ struct SettingsView: View {
     @ObservedObject var stats: UsageStats
     let isPaused: () -> Bool
     let setPaused: (Bool) -> Void
+    @State private var query = ""
 
     var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                TextField("Search settings", text: $query).textFieldStyle(.plain)
+                if !query.isEmpty {
+                    Button { query = "" } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain).foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 10).padding(.vertical, 6)
+            .background(RoundedRectangle(cornerRadius: 7).fill(Color.primary.opacity(0.06)))
+            .padding(.horizontal, 14).padding(.top, 10).padding(.bottom, 4)
+            if query.isEmpty {
+                tabs
+            } else {
+                searchResults
+            }
+        }
+        .frame(width: 980, height: 700)
+    }
+
+    private var searchResults: some View {
+        let results = SettingsIndex.search(query)
+        return List {
+            if results.isEmpty {
+                Text("No settings match “\(query)”. Try the command palette (⌃⌥/) for actions.").foregroundStyle(.secondary)
+            }
+            ForEach(Array(results.enumerated()), id: \.offset) { _, entry in
+                Button {
+                    if let tab = SettingsTab(rawValue: entry.tab) { navigation.tab = tab }
+                    query = ""
+                } label: {
+                    HStack {
+                        Text(entry.label).lineLimit(2)
+                        Spacer()
+                        if let tab = SettingsTab(rawValue: entry.tab) {
+                            Label(tab.title, systemImage: tab.symbol).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var tabs: some View {
         TabView(selection: $navigation.tab) {
             GeneralPane(store: store, isPaused: isPaused, setPaused: setPaused)
                 .tabItem { Label(SettingsTab.general.title, systemImage: SettingsTab.general.symbol) }
@@ -94,7 +141,6 @@ struct SettingsView: View {
                 .tabItem { Label(SettingsTab.about.title, systemImage: SettingsTab.about.symbol) }
                 .tag(SettingsTab.about)
         }
-        .frame(width: 980, height: 680)
     }
 }
 
@@ -1332,6 +1378,7 @@ private struct AutomationPane: View {
                     .font(.callout).foregroundStyle(.secondary)
             }
             WorkspaceConfigSection(store: store)
+            ScriptGallerySection()
             Section {
                 ForEach($store.settings.autoRules) { $rule in
                     VStack(alignment: .leading, spacing: 8) {

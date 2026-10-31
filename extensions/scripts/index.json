@@ -1,0 +1,7 @@
+[
+  { "file": "ide-layout.js", "name": "IDE layout", "description": "A palette command: wide editor plus two narrow panes (60 / 20 / 20)." },
+  { "file": "halves-and-thirds.js", "name": "Halves and thirds", "description": "Palette commands to put every slide at half or a third of the screen." },
+  { "file": "zoom-to-workspace.js", "name": "Calls get their own workspace", "description": "Zoom, Teams, FaceTime and Webex windows move to workspace 3 as they open." },
+  { "file": "focus-hours.js", "name": "Focus hours", "description": "Focus mode turns on when you go to a workspace named Deep." },
+  { "file": "say-on-launch.js", "name": "Morning setup", "description": "A palette command that arranges Mail, Calendar, Slack and Notes with sentences." }
+]

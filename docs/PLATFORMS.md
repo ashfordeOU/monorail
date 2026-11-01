@@ -107,6 +107,7 @@ The scheduled check-ins work through this list in order and tick items off.
 - [x] `WindowSystem` protocol in a new MonorailEngine module, with a fake implementation for tests
 - [ ] Move platform-free engine logic into MonorailEngine (in small, tested steps; the Mac app keeps working)
   - [x] Step 1: keeping floating windows and dialogs on screen (`OnScreen`), used by the Mac app, with tests
+  - [x] Step 2: focus history (`FocusHistory`: back to the last window, quick launch, where focus goes next), with tests
 - [ ] macOS backend implements WindowSystem
 - [ ] `core-ts/`: TypeScript project skeleton running the golden tests (split trees first)
 - [ ] Generators for C# and TypeScript definitions

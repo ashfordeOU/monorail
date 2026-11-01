@@ -2649,9 +2649,7 @@ final class Engine {
                                                   "workspace": (window.key?.workspace).map { $0 % Self.profileStride + 1 } ?? 0,
                                                   "floating": window.key == nil])
             }
-            focusHistory.removeAll { $0 == id }
-            focusHistory.append(id)
-            if focusHistory.count > 30 { focusHistory.removeFirst() }
+            focusHistory.record(id)
         }
         if showingDesktop, windows[id]?.key != nil {
             // Going to a window brings everything back.
@@ -2659,8 +2657,8 @@ final class Engine {
             layout(animated: true)
         }
         if let window = windows[id], !titleObserved.contains(id), let title = window.element.title { window.title = title }
-        if let window = windows[id], focusHistory.dropLast().last != id { noteFocus(window) }
-        if settings.announceWindows, let window = windows[id], focusHistory.dropLast().last != id {
+        if let window = windows[id], focusHistory.previous != id { noteFocus(window) }
+        if settings.announceWindows, let window = windows[id], focusHistory.previous != id {
             onAnnounce(window.title.isEmpty ? window.appName : "\(window.appName), \(window.title)")
         }
         if let zoomed, zoomed != id {
@@ -3975,12 +3973,13 @@ final class Engine {
     // MARK: - Window history
 
     /// Windows in the order they were focused, most recent last.
-    private var focusHistory: [WindowID] = []
+    /// Shared with the other platforms (MonorailEngine.FocusHistory).
+    private var focusHistory = FocusHistory()
 
     /// Back to the window you were on before this one (again to come back).
     private func focusLastWindow() {
         let current = focusedWindowID()
-        guard let previous = focusHistory.reversed().first(where: { $0 != current && windows[$0] != nil }) else {
+        guard let previous = focusHistory.back(from: current, isAlive: { windows[$0] != nil }) else {
             onNotice("No earlier window")
             return
         }
@@ -3996,7 +3995,7 @@ final class Engine {
             return
         }
         let mine = windows.values.filter { $0.bundleID == bundleID }
-        if let recent = focusHistory.reversed().first(where: { id in mine.contains { $0.id == id } }) ?? mine.first?.id {
+        if let recent = focusHistory.recentFirst.first(where: { id in mine.contains { $0.id == id } }) ?? mine.first?.id {
             focusAndReveal(recent)
         } else if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
             NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
@@ -4351,7 +4350,7 @@ final class Engine {
     func recentSlides(_ limit: Int = 8) -> [(title: String, window: WindowID)] {
         var seen: [String] = []
         var result: [(title: String, window: WindowID)] = []
-        for id in focusHistory.reversed() {
+        for id in focusHistory.recentFirst {
             guard let key = windows[id]?.key, let strip = strips[key], let (c, _) = strip.locate(id) else { continue }
             let mark = "\(key.display)|\(key.workspace)|\(strip.columns[c].windows.sorted())"
             guard !seen.contains(mark) else { continue }
@@ -4951,7 +4950,7 @@ final class Engine {
     /// The focused window and the one before it trade places.
     private func swapWithRecent() {
         guard let id = focusedWindowID(), let key = windows[id]?.key,
-            let other = focusHistory.reversed().first(where: { $0 != id && windows[$0]?.key == key }),
+            let other = focusHistory.recentFirst.first(where: { $0 != id && windows[$0]?.key == key }),
             var strip = strips[key]
         else {
             onNotice("No earlier window on this strip")
@@ -5732,7 +5731,7 @@ final class Engine {
     /// Links the focused slide with the last slide you used on another display.
     private func linkAcrossDisplays() {
         guard let id = focusedWindowID(), let key = windows[id]?.key,
-            let other = focusHistory.reversed().first(where: { windows[$0]?.key.map { $0.display != key.display } == true })
+            let other = focusHistory.recentFirst.first(where: { windows[$0]?.key.map { $0.display != key.display } == true })
         else {
             onNotice("Use a window on the other display first, then link")
             return

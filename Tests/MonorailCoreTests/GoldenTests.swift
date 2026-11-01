@@ -73,4 +73,59 @@ final class GoldenTests: XCTestCase {
             }
         }
     }
+
+    /// A command as plain data, in the golden files' shape (workspaces counted from 1, as people say them).
+    func describe(_ command: NaturalCommand?) -> Any {
+        guard let command else { return NSNull() }
+        func opt(_ value: Any?) -> Any { value ?? NSNull() }
+        switch command {
+        case .pair(let apps, let arrangement, let workspace):
+            return ["pair": ["apps": apps, "arrangement": arrangement.rawValue, "workspace": opt(workspace.map { $0 + 1 })]]
+        case .width(let app, let share): return ["width": ["app": opt(app), "share": share]]
+        case .moveTo(let app, let workspace): return ["moveTo": ["app": opt(app), "workspace": workspace + 1]]
+        case .switchTo(let workspace): return ["switchTo": ["workspace": workspace + 1]]
+        case .open(let app): return ["open": ["app": app]]
+        case .focusMode(let on): return ["focusMode": on]
+        case .action(let action): return ["action": action.rawValue]
+        }
+    }
+
+    func testSentences() throws {
+        let data = try Data(contentsOf: Self.folder.appendingPathComponent("sentences.json"))
+        let file = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let apps = file["apps"] as? [String] ?? []
+        let cases = try XCTUnwrap(file["cases"] as? [[String: Any]])
+        XCTAssertFalse(cases.isEmpty)
+        for item in cases {
+            let text = item["text"] as? String ?? ""
+            let got = describe(CommandParser.parse(text, apps: apps))
+            let want = item["expect"] ?? NSNull()
+            // Compare as JSON, so numbers and nulls match the same way in every language.
+            let encode = { (value: Any) -> String in
+                guard JSONSerialization.isValidJSONObject(["v": value]),
+                    let data = try? JSONSerialization.data(withJSONObject: ["v": value], options: [.sortedKeys])
+                else { return "\(value)" }
+                return String(decoding: data, as: UTF8.self)
+            }
+            XCTAssertEqual(encode(got), encode(want), text)
+        }
+    }
+
+    func testAeroSpaceImport() throws {
+        let toml = try String(contentsOf: Self.folder.appendingPathComponent("import-aerospace.toml"), encoding: .utf8)
+        let data = try Data(contentsOf: Self.folder.appendingPathComponent("import-aerospace.expect.json"))
+        let want = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let plan = ConfigImport.aeroSpace(toml)
+        XCTAssertEqual(plan.gap, (want["gap"] as? NSNumber)?.doubleValue)
+        XCTAssertEqual(plan.floatApps, want["floatApps"] as? [String])
+        let rules = (want["workspaceApps"] as? [[Any]] ?? []).map { "\($0[0])=\($0[1])" }
+        XCTAssertEqual(plan.workspaceApps.map { "\($0.app)=\($0.workspace)" }, rules)
+        func names(_ mods: Modifiers) -> [String] {
+            [(Modifiers.control, "control"), (.option, "option"), (.shift, "shift"), (.command, "command")]
+                .filter { mods.contains($0.0) }.map(\.1)
+        }
+        let bindings = (want["bindings"] as? [[Any]] ?? []).map { "\($0[0])|\($0[1])|\(($0[2] as? [String] ?? []).joined(separator: "+"))" }
+        XCTAssertEqual(plan.bindings.map { "\($0.action.rawValue)|\($0.shortcut.keyCode)|\(names($0.shortcut.modifiers).joined(separator: "+"))" }, bindings)
+        XCTAssertEqual(plan.skipped.count, (want["skipped"] as? NSNumber)?.intValue)
+    }
 }

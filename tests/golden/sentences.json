@@ -1,0 +1,15 @@
+{
+  "apps": ["Slack", "Mail", "Safari", "Visual Studio Code", "Figma"],
+  "cases": [
+    {"text": "Slack and Mail side by side on 3", "expect": {"pair": {"apps": ["Slack", "Mail"], "arrangement": "columns", "workspace": 3}}},
+    {"text": "figma and safari stacked", "expect": {"pair": {"apps": ["Figma", "Safari"], "arrangement": "stack", "workspace": null}}},
+    {"text": "Safari two thirds", "expect": {"width": {"app": "Safari", "share": 0.6666666666666666}}},
+    {"text": "make this half", "expect": {"width": {"app": null, "share": 0.5}}},
+    {"text": "move mail to workspace two", "expect": {"moveTo": {"app": "Mail", "workspace": 2}}},
+    {"text": "go to workspace 4", "expect": {"switchTo": {"workspace": 4}}},
+    {"text": "open visual studio code", "expect": {"open": {"app": "Visual Studio Code"}}},
+    {"text": "focus mode on", "expect": {"focusMode": true}},
+    {"text": "undo", "expect": {"action": "undo"}},
+    {"text": "xyzzy", "expect": null}
+  ]
+}

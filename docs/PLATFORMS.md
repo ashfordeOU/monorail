@@ -103,7 +103,7 @@ The scheduled check-ins work through this list in order and tick items off.
 - [ ] CI: build and test MonorailCore on Windows (workflow added: `.github/workflows/platforms.yml`; tick once green)
 - [x] `spec/actions.json` and `spec/settings.json` generated from the Swift sources, with a CI check
 - [x] `spec/parity.md`: every feature marked shared, adapted or OS-only
-- [ ] More golden files: strip moves, the sentence parser, settings import
+- [ ] More golden files: strip moves (sentence parser and AeroSpace import done)
 - [ ] `WindowSystem` protocol in a new MonorailEngine module, with a fake implementation for tests
 - [ ] Move platform-free engine logic into MonorailEngine (in small, tested steps; the Mac app keeps working)
 - [ ] macOS backend implements WindowSystem

@@ -1,0 +1,18 @@
+# my config
+[gaps]
+inner.horizontal = 12
+[mode.main.binding]
+alt-h = 'focus left'
+alt-shift-l = "move right"
+alt-3 = 'workspace 3'
+alt-shift-2 = 'move-node-to-workspace 2'
+alt-f = 'fullscreen'
+alt-x = 'exec-and-forget open -a Terminal'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = "com.tinyspeck.slackmacgap"
+run = ['move-node-to-workspace 4']

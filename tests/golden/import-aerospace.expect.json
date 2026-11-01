@@ -1,0 +1,13 @@
+{
+  "gap": 12,
+  "floatApps": ["com.apple.finder"],
+  "workspaceApps": [["com.tinyspeck.slackmacgap", 4]],
+  "bindings": [
+    ["focus-left", 4, ["option"]],
+    ["move-right", 37, ["option", "shift"]],
+    ["workspace-3", 20, ["option"]],
+    ["move-to-workspace-2", 19, ["option", "shift"]],
+    ["full-width", 3, ["option"]]
+  ],
+  "skipped": 1
+}

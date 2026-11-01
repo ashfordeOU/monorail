@@ -8,6 +8,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 - **File pickers stay on screen.** "Choose Files to Upload" and other open and save panels that an app opens bigger than the screen (often a size remembered from a larger display) are now shrunk to fit and kept fully visible, including when the app reopens the same panel or moves it a moment after it appears.
+- **Monorail's Settings window fits your screen.** It opens at a size that fits the display it appears on, centred, and can now be resized (down to 640 × 440). Its other windows are kept on screen the same way.
 - Importing settings from a file saved on Windows (with Windows line endings) now works.
 
 ## [1.7.4] - 2026-11-01

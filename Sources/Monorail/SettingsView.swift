@@ -77,7 +77,8 @@ struct SettingsView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: 980, height: 700)
+        // A comfortable size where it fits; the window shrinks to smaller screens and can be resized.
+        .frame(minWidth: 640, idealWidth: 980, maxWidth: .infinity, minHeight: 440, idealHeight: 700, maxHeight: .infinity)
     }
 
     private var sidebar: some View {

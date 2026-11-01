@@ -3030,8 +3030,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NotificationCenter.default.addObserver(
                 forName: NSWindow.willCloseNotification, object: window, queue: .main
             ) { [weak self] _ in self?.store.stopRecording() }
-            window.styleMask = [.titled, .closable, .miniaturizable]
+            window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+            window.contentMinSize = NSSize(width: 640, height: 440)
             window.isReleasedWhenClosed = false
+            window.setFrameAutosaveName("MonorailSettings")
             window.center()
             settingsWindow = window
         }
@@ -3066,8 +3068,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func present(_ window: NSWindow) {
+        fitOnScreen(window)
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
+    }
+
+    /// Monorail's own windows always fit the screen they open on (the one with the pointer):
+    /// smaller screens get a smaller window, and nothing hangs off an edge.
+    private func fitOnScreen(_ window: NSWindow) {
+        let mouse = NSEvent.mouseLocation
+        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(mouse) }) ?? NSScreen.main else { return }
+        let visible = screen.visibleFrame.insetBy(dx: 16, dy: 16)
+        var frame = window.frame
+        let tooBig = frame.width > visible.width || frame.height > visible.height
+        frame.size.width = min(frame.width, visible.width)
+        frame.size.height = min(frame.height, visible.height)
+        // Already fully on this screen and not too big: leave it where the person put it.
+        if !tooBig, visible.insetBy(dx: -16, dy: -16).contains(window.frame) { return }
+        frame.origin.x = visible.midX - frame.width / 2
+        frame.origin.y = visible.midY - frame.height / 2
+        window.setFrame(frame, display: true)
     }
 }
 

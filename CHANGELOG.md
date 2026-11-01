@@ -4,7 +4,7 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.7.10] - 2026-11-01
 
 ### Fixed
 - **The app icon fills its shape on macOS 26.** macOS Tahoe draws app icons itself and put Monorail's on a grey plate. Monorail now ships its icon in Apple's new format as well (built from `assets/AppIcon.icon`), so it takes the full rounded-square shape and the system's light and depth like other apps. macOS 13 to 15 keep the same icon as before.

@@ -1,0 +1,12 @@
+[
+  {"name": "far left docks left", "frame": [0, 0, 100, 100], "point": [5, 50], "expect": "left"},
+  {"name": "far right docks right", "frame": [0, 0, 100, 100], "point": [95, 50], "expect": "right"},
+  {"name": "near top docks top", "frame": [0, 0, 100, 100], "point": [50, 4], "expect": "top"},
+  {"name": "near bottom docks bottom", "frame": [0, 0, 100, 100], "point": [50, 90], "expect": "bottom"},
+  {"name": "middle makes tabs", "frame": [0, 0, 100, 100], "point": [50, 50], "expect": "center"},
+  {"name": "35% in still docks", "frame": [0, 0, 100, 100], "point": [35, 50], "expect": "left"},
+  {"name": "41% in is the middle", "frame": [0, 0, 100, 100], "point": [41, 50], "expect": "center"},
+  {"name": "outside has no zone", "frame": [0, 0, 100, 100], "point": [150, 50], "expect": null},
+  {"name": "offset frame", "frame": [200, 100, 400, 300], "point": [580, 250], "expect": "right"},
+  {"name": "wide window, near top", "frame": [0, 0, 1000, 200], "point": [500, 30], "expect": "top"}
+]

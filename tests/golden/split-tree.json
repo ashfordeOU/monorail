@@ -1,0 +1,79 @@
+[
+  {
+    "name": "dock to any depth",
+    "start": 1,
+    "ops": [{"dock": [2, 1, "right"]}, {"dock": [3, 2, "bottom"]}, {"dock": [4, 3, "left"]}],
+    "expect": {"tiles": [
+      {"window": 1, "frame": [0, 0, 0.5, 1], "hidden": false},
+      {"window": 2, "frame": [0.5, 0, 0.5, 0.5], "hidden": false},
+      {"window": 4, "frame": [0.5, 0.5, 0.25, 0.5], "hidden": false},
+      {"window": 3, "frame": [0.75, 0.5, 0.25, 0.5], "hidden": false}
+    ]}
+  },
+  {
+    "name": "left and top go first",
+    "start": 1,
+    "ops": [{"dock": [2, 1, "left"]}, {"dock": [3, 1, "top"]}],
+    "expect": {"tiles": [
+      {"window": 2, "frame": [0, 0, 0.5, 1], "hidden": false},
+      {"window": 3, "frame": [0.5, 0, 0.5, 0.5], "hidden": false},
+      {"window": 1, "frame": [0.5, 0.5, 0.5, 0.5], "hidden": false}
+    ]}
+  },
+  {
+    "name": "centre makes a tab group; activate switches",
+    "start": 1,
+    "ops": [{"dock": [2, 1, "right"]}, {"dock": [3, 2, "center"]}, {"activate": 2}],
+    "expect": {"tiles": [
+      {"window": 1, "frame": [0, 0, 0.5, 1], "hidden": false},
+      {"window": 2, "frame": [0.5, 0, 0.5, 1], "hidden": false},
+      {"window": 3, "frame": [0.5, 0, 0.5, 1], "hidden": true}
+    ]}
+  },
+  {
+    "name": "removing collapses the split",
+    "start": 1,
+    "ops": [{"dock": [2, 1, "right"]}, {"dock": [3, 2, "bottom"]}, {"remove": 2}],
+    "expect": {"tiles": [
+      {"window": 1, "frame": [0, 0, 0.5, 1], "hidden": false},
+      {"window": 3, "frame": [0.5, 0, 0.5, 1], "hidden": false}
+    ]}
+  },
+  {
+    "name": "a window already in the tree moves",
+    "start": 1,
+    "ops": [{"dock": [2, 1, "right"]}, {"dock": [1, 2, "bottom"]}],
+    "expect": {"tiles": [
+      {"window": 2, "frame": [0, 0, 1, 0.5], "hidden": false},
+      {"window": 1, "frame": [0, 0.5, 1, 0.5], "hidden": false}
+    ]}
+  },
+  {
+    "name": "resizing moves only the bordering split",
+    "start": 1,
+    "ops": [{"dock": [2, 1, "right"]}, {"dock": [3, 2, "bottom"]}, {"resize": [1, [0, 0, 0.7, 1]]}],
+    "expect": {"tiles": [
+      {"window": 1, "frame": [0, 0, 0.7, 1], "hidden": false},
+      {"window": 2, "frame": [0.7, 0, 0.3, 0.5], "hidden": false},
+      {"window": 3, "frame": [0.7, 0.5, 0.3, 0.5], "hidden": false}
+    ]}
+  },
+  {
+    "name": "ratios stay between 0.1 and 0.9",
+    "start": 1,
+    "ops": [{"dock": [2, 1, "right"]}, {"adjust": [1, "horizontal", 5]}],
+    "expect": {"tiles": [
+      {"window": 1, "frame": [0, 0, 0.9, 1], "hidden": false},
+      {"window": 2, "frame": [0.9, 0, 0.1, 1], "hidden": false}
+    ]}
+  },
+  {
+    "name": "even out",
+    "start": 1,
+    "ops": [{"dock": [2, 1, "right"]}, {"adjust": [1, "horizontal", 0.2]}, {"balance": true}],
+    "expect": {"tiles": [
+      {"window": 1, "frame": [0, 0, 0.5, 1], "hidden": false},
+      {"window": 2, "frame": [0.5, 0, 0.5, 1], "hidden": false}
+    ]}
+  }
+]

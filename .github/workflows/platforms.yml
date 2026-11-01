@@ -1,0 +1,32 @@
+name: Platforms
+
+# The cross-platform groundwork (docs/PLATFORMS.md): MonorailCore and the shared golden tests on
+# Windows, alongside the Mac and Linux jobs in CI. Kept separate so it never blocks a Mac release.
+on:
+  push:
+    branches: ["**"]
+    tags-ignore: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: platforms-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  core-windows:
+    name: Core tests (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: compnerd/gha-setup-swift@main
+        with:
+          branch: swift-6.1-release
+          tag: 6.1-RELEASE
+      - name: Toolchain
+        run: swift --version
+      - name: Build and test MonorailCore
+        run: swift test --filter MonorailCoreTests

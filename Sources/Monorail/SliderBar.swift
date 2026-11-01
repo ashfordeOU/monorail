@@ -70,6 +70,8 @@ final class SliderBarController {
         return nil
     }
     private static let margin: CGFloat = 6
+    /// True when a bar at this frame (AppKit coordinates) should step aside for now.
+    var stepAside: (CGRect) -> Bool = { _ in false }
 
     /// Refreshes the bars. Called whenever the strips change.
     func update() {
@@ -99,6 +101,8 @@ final class SliderBarController {
             let empty = map.tiles.isEmpty
             if map.barMode == .off {
                 bar.panel.orderOut(nil)
+            } else if stepAside(bar.panel.frame) {
+                if bar.panel.isVisible { fadeOut(bar.panel) }
             } else if map.barMode == .always {
                 show(bar.panel)
             } else if empty {
@@ -107,7 +111,7 @@ final class SliderBarController {
         }
         if changed {
             let moving = bars.values.filter {
-                $0.model.map?.barMode == .whileMoving && !($0.model.map?.tiles.isEmpty ?? true)
+                $0.model.map?.barMode == .whileMoving && !($0.model.map?.tiles.isEmpty ?? true) && !stepAside($0.panel.frame)
             }
             for bar in moving { show(bar.panel) }
             if !moving.isEmpty { scheduleHide() }
@@ -152,6 +156,13 @@ final class SliderBarController {
                 self.preview.hide()
             }
         }
+    }
+
+    private func fadeOut(_ panel: NSPanel) {
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.2
+            panel.animator().alphaValue = 0
+        }, completionHandler: { panel.orderOut(nil) })
     }
 
     private func show(_ panel: NSPanel) {

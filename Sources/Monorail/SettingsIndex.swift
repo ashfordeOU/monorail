@@ -92,6 +92,7 @@ enum SettingsIndex {
         ("Show the slider bar", "appearance"),
         ("Show it", "appearance"),
         ("Position", "appearance"),
+        ("Step aside for videos and windows in front of it", "appearance"),
         ("Window titles on the slides", "appearance"),
         ("Compact", "appearance"),
         ("Opacity", "appearance"),

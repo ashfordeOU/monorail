@@ -118,6 +118,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let dockPreview = DockPreview()
     private let gapHandles = GapHandles()
     private var awakeTicker: Timer?
+    private var barAsideTimer: Timer?
     private var scriptsOn = false
     private let statusMenu = NSMenu()
     private let navigation = SettingsNavigation()
@@ -274,6 +275,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             togglePause: { [weak self] in self?.engine.togglePause() },
             openSettings: { [weak self] in self?.showSettings() }
         )
+        sliderBar.stepAside = { [weak self] frame in
+            guard let self, self.store.settings.sliderBarStepsAside else { return false }
+            return BarAside.shouldHide(frame)
+        }
+        // Check again when apps change, and now and then while a bar is always shown (videos start and stop).
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self?.sliderBar.update() }
+        }
+        barAsideTimer = Timer.every(4) { [weak self] _ in
+            guard let self, self.store.settings.sliderBarStepsAside, self.store.settings.sliderBar == .always else { return }
+            self.sliderBar.update()
+        }
         sliderBar.mapsProvider = { [weak self] in
             guard let self, !self.engine.isPresenting else { return [] }
             return self.engine.miniMaps()

@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-199 settings.
+200 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -198,6 +198,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `assistantModel` | The Claude model the optional assistant uses, with your own API key. | `"claude-opus-5-5"` |
 | `dragToDock` | Drag a window onto another window: near an edge docks it beside, the middle makes a tab group (any apps). | `true` |
 | `gapHandles` | Drag the gap between two windows to resize both at once. | `true` |
+| `sliderBarStepsAside` | The slider bar steps aside while a video plays or when the window in front covers its spot. | `true` |
 | `keepWindowsInPlace` | Snap windows back when an app moves or resizes one by itself. | `true` |
 | `resizeAssist` | After resizing a window in a slide, offer to rearrange the slide. | `true` |
 | `pairLoneWindowsOnOpen` | Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). | `false` |

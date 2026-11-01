@@ -4,6 +4,11 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.7.2] - 2026-11-01
+
+### Fixed
+- **The slider bar no longer covers video controls.** It steps aside while a video plays, and while the window in front (a video player, a floating window) covers its spot, then comes back. Turn it off in Settings → Appearance → Slider bar.
+
 ## [1.7.1] - 2026-11-01
 
 ### Changed

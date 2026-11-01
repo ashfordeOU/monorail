@@ -100,7 +100,7 @@ The scheduled check-ins work through this list in order and tick items off.
 - [x] Write this plan
 - [x] `spec/README.md`: how the spec works, and the first behaviour pages (strip, slides, docking, saved views)
 - [x] `tests/golden/`: format and the first files (split trees and dock zones), run by the Swift tests
-- [ ] CI: build and test MonorailCore on Windows (workflow added: `.github/workflows/platforms.yml`; tick once green)
+- [x] CI: build and test MonorailCore on Windows (`.github/workflows/platforms.yml`; all 147 tests pass on Windows, after fixing Windows line endings in settings import)
 - [x] `spec/actions.json` and `spec/settings.json` generated from the Swift sources, with a CI check
 - [x] `spec/parity.md`: every feature marked shared, adapted or OS-only
 - [ ] More golden files: strip moves (sentence parser and AeroSpace import done)

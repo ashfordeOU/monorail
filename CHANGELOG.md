@@ -4,6 +4,11 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **Installer windows keep their size.** The window a downloaded disk image opens in Finder (an app next to an Applications shortcut, like Keeper's or Monorail's own installer) was tiled and stretched around its fixed-size background. Finder windows of mounted read-only disk images now float at the size they open with. ⌃⌥T still tiles one if you want it.
+
 ## [1.7.10] - 2026-11-01
 
 ### Fixed

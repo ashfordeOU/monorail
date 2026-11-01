@@ -92,3 +92,13 @@ final class PeerTests: XCTestCase {
         XCTAssertFalse(PeerHello.isFromKeeper(URL(string: "monorail://focus-mode/on?from=raycast")!))
     }
 }
+
+final class InstallerWindowTests: XCTestCase {
+    func testDiskImageWindowsFloat() {
+        let volumes: Set<String> = ["Keeper by Ashforde®", "Monorail"]
+        XCTAssertTrue(InstallerWindows.isDiskImageWindow(bundleID: "com.apple.finder", title: "Keeper by Ashforde®", readOnlyVolumes: volumes))
+        XCTAssertFalse(InstallerWindows.isDiskImageWindow(bundleID: "com.apple.finder", title: "Downloads", readOnlyVolumes: volumes))
+        XCTAssertFalse(InstallerWindows.isDiskImageWindow(bundleID: "com.apple.Safari", title: "Monorail", readOnlyVolumes: volumes))
+        XCTAssertFalse(InstallerWindows.isDiskImageWindow(bundleID: "com.apple.finder", title: nil, readOnlyVolumes: volumes))
+    }
+}

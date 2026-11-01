@@ -2103,6 +2103,10 @@ final class Engine {
         let app = NSRunningApplication(processIdentifier: pid)
         guard pid == ownPID || (app?.activationPolicy == .regular && app?.isHidden == false) else { return false }
         guard !Self.isSystemUI(app?.bundleIdentifier) else { return false }
+        // A disk image's installer window keeps its own size and floats.
+        guard force || !InstallerWindows.isDiskImageWindow(bundleID: app?.bundleIdentifier, title: element.title,
+                                                          readOnlyVolumes: Self.readOnlyVolumeNames())
+        else { return false }
         // Keeper's Island, widgets, overlays and quick windows are Keeper's to place; only its
         // ordinary windows tile (even ⌃⌥T can't tile an overlay).
         guard !Companions.isKeeperUnmanaged(bundleID: app?.bundleIdentifier, title: element.title, isStandard: true,
@@ -5054,6 +5058,18 @@ final class Engine {
             if let id = element.windowID, windows[id]?.key != nil { continue }
             placeFloating(element, remembered: nil, lenient: true)
         }
+    }
+
+    /// Names of mounted read-only volumes (disk images, mostly), as Finder titles their windows.
+    private static func readOnlyVolumeNames() -> Set<String> {
+        let keys: [URLResourceKey] = [.volumeIsReadOnlyKey, .volumeNameKey]
+        let urls = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: keys, options: [.skipHiddenVolumes]) ?? []
+        return Set(urls.compactMap { url in
+            guard url.path.hasPrefix("/Volumes/"), let values = try? url.resourceValues(forKeys: Set(keys)),
+                values.volumeIsReadOnly == true
+            else { return nil }
+            return values.volumeName ?? url.lastPathComponent
+        })
     }
 
     /// Whether a window sits on the normal window layer (not a floating panel, HUD or menu bar widget).

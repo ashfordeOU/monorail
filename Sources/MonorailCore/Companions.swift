@@ -50,6 +50,18 @@ public enum Companions {
     }
 }
 
+// MARK: - Installer windows
+
+public enum InstallerWindows {
+    /// A Finder window showing a mounted, read-only disk image (an app's installer: the app next
+    /// to an Applications shortcut on a fixed-size background). It floats at its own size; tiling
+    /// would stretch it around a picture that doesn't grow.
+    public static func isDiskImageWindow(bundleID: String?, title: String?, readOnlyVolumes: Set<String>) -> Bool {
+        guard bundleID == "com.apple.finder", let title, !title.isEmpty else { return false }
+        return readOnlyVolumes.contains(title)
+    }
+}
+
 // MARK: - The handshake with Keeper
 
 /// What Keeper tells Monorail about itself (`POST /peer`; Keeper's `PeerHello`).

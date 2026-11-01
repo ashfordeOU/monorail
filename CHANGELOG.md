@@ -4,7 +4,7 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.7.8] - 2026-11-01
 
 ### Added
 - **Works hand in hand with Keeper.** Monorail recognises Keeper by Ashforde and leaves everything Keeper places itself exactly where Keeper puts it: the Island at the notch, desktop widgets, Quick Search, Quick Terminal, Capture, the tray popover, guides and HUDs. They're never tiled, centred, moved or snapped back. Keeper's main window tiles like any other app's.

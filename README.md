@@ -292,6 +292,9 @@ Monorail and [Keeper](https://github.com/ashfordeOU/keeper) by Ashforde are made
 tiles Keeper's main window like any other and leaves everything Keeper places itself where Keeper puts it:
 the Island at the notch, desktop widgets, Quick Search, Quick Terminal, Capture and its HUDs.
 
+- **Nothing to set up.** With Monorail 1.7.9 or later and Keeper 0.1.0 or later, Keeper turns on
+  working with Monorail the first time it finds it (you can turn that off in Keeper → Settings →
+  Features). Keeping each other's windows in place works either way.
 - **They know each other.** Keeper says hello through the local API (`POST /peer`) and reads
   `GET /hello`; `state.json` includes focus mode, presentation mode, Stay Awake and pause, so
   Keeper can follow along.

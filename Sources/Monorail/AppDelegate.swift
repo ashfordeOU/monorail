@@ -8,6 +8,15 @@ import UniformTypeIdentifiers
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let store = SettingsStore()
     private lazy var engine = Engine(settings: store.settings)
+    /// Keeper (or another Ashforde app) that said hello through the local API.
+    private var peer: PeerHello?
+    /// The peer, while it's still running.
+    private var activePeer: PeerHello? {
+        guard let peer, let app = NSRunningApplication(processIdentifier: peer.pid), !app.isTerminated,
+            app.bundleIdentifier == peer.bundleID
+        else { return nil }
+        return peer
+    }
     private let input = InputMonitor()
     private let trackpad = TrackpadSwipe.shared
     private let switcher = SwitcherController()
@@ -212,9 +221,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     engine.runTemplate(template)
                 }
             case "presentation-mode" where argument == "on" || argument == "off":
-                engine.setPresenting(argument == "on")
+                engine.setPresenting(argument == "on", byPeer: PeerHello.isFromKeeper(url))
             case "focus-mode" where argument == "on" || argument == "off":
-                engine.setFocusMode(argument == "on")
+                engine.setFocusMode(argument == "on", byPeer: PeerHello.isFromKeeper(url))
             case "focus-app":
                 // monorail://focus-app/Safari: the app's most recent window.
                 if let window = engine.allWindowSummaries().first(where: {
@@ -228,12 +237,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             case "import": importLink(url.pathComponents.dropFirst().joined(separator: "/"))
             case "awake":
                 // monorail://awake (toggle), awake/on, awake/off, awake/90 (minutes), awake/downloading
+                let fromKeeper = PeerHello.isFromKeeper(url)
                 switch argument.lowercased() {
                 case "", "toggle": awake.toggle()
-                case "on": awake.start(minutes: store.settings.awakeDefaultMinutes)
+                case "on": awake.start(minutes: store.settings.awakeDefaultMinutes, fromPeer: fromKeeper)
                 case "off": awake.end()
                 case "downloading": awake.start(.whileDownloading)
-                default: if let minutes = Int(argument) { awake.start(minutes: minutes) }
+                default: if let minutes = Int(argument) { awake.start(minutes: minutes, fromPeer: fromKeeper) }
                 }
             case "pomodoro": performAppAction(.pomodoro)
             default:
@@ -596,6 +606,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         UsageBridge.log = usage
         awake.settings = { [weak self] in self?.store.settings ?? AppSettings() }
+        // Keeper owns staying awake while it runs and says so: a session started here goes to it.
+        awake.forwardToPeer = { [weak self] session in
+            guard let self, let peer = self.activePeer, peer.owns.awake,
+                let link = PeerHello.awakeLink(for: session), let url = URL(string: link)
+            else { return false }
+            NSWorkspace.shared.open(url)
+            self.toast.show("\(peer.app) keeps your Mac awake")
+            return true
+        }
+        engine.peerOverlays = { [weak self] in self?.activePeer?.overlays ?? [] }
         awake.onChange = { [weak self] on, why in
             guard let self else { return }
             if self.store.settings.awakeNotify { self.toast.show(why) }
@@ -603,6 +623,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self.postWebhook(on ? "stay_awake_on" : "stay_awake_off", ["status": self.awake.statusText])
             self.usage.awake(on)
             if on { self.tipOnce("awake", "Stay Awake ends by itself at 10% battery, and can start on its own: Settings → Stay Awake → triggers") }
+            self.integrations.update({ [weak self] in self?.currentState() }, settings: self.store.settings)
             self.awakeTicker?.invalidate()
             self.awakeTicker = on ? Timer.every(20) { [weak self] _ in self?.updateStatusItem() } : nil
             self.updateStatusItem()
@@ -2114,6 +2135,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         func int(_ key: String) -> Int? { (body[key] as? Int) ?? (body[key] as? String).flatMap { Int($0) } }
         func text(_ key: String) -> String? { body[key] as? String }
         switch (method, path.first ?? "") {
+        case ("GET", "hello"):
+            // Who's here, for Keeper (and any other Ashforde app) to find out on start-up.
+            var hello: [String: Any] = [
+                "app": "Monorail", "bundleID": Bundle.main.bundleIdentifier ?? BundleIDs.current,
+                "version": Bundle.main.shortVersion, "api": 1,
+                "focusMode": engine.isFocusMode, "presenting": engine.isPresenting, "awake": awake.isOn,
+                "paused": engine.isPaused, "peer": NSNull(),
+            ]
+            if let peer = activePeer { hello["peer"] = ["app": peer.app, "bundleID": peer.bundleID, "version": peer.version] }
+            return hello
+        case ("POST", "peer"):
+            guard let hello = PeerHello.decode(body),
+                NSRunningApplication(processIdentifier: hello.pid)?.bundleIdentifier == hello.bundleID
+            else { return ["error": "Not an Ashforde app that is running"] }
+            peer = hello
+            return ["ok": true]
         case ("GET", "state"):
             guard let state = currentState(), let data = try? JSONEncoder().encode(state),
                 let object = try? JSONSerialization.jsonObject(with: data)
@@ -2230,7 +2267,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case ("GET", "awake"):
             return ["on": awake.isOn, "status": awake.statusText]
         case ("POST", "awake"):
-            if text("state") == "off" { awake.end() } else if let minutes = int("minutes") { awake.start(minutes: minutes) } else {
+            if text("state") == "off" { awake.end() } else if let minutes = int("minutes") {
+                awake.start(minutes: minutes, fromPeer: text("from")?.lowercased() == "keeper")
+            } else {
                 awake.toggle()
             }
             return ["on": awake.isOn, "status": awake.statusText]
@@ -2331,7 +2370,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             workspace: status.workspace, workspaceName: store.settings.workspaceName(status.workspace - 1),
             workspaceCount: engine.workspaceCount, profile: engine.profileName,
             slide: status.focusedColumn, slides: status.columnCount,
-            app: focused?.appName, title: focused?.title, focusMode: engine.isFocusMode)
+            app: focused?.appName, title: focused?.title, focusMode: engine.isFocusMode,
+            presenting: engine.isPresenting, awake: awake.isOn, paused: engine.isPaused)
     }
 
     /// Runs an auto rule: its profile, then its layout.

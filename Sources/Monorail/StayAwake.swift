@@ -51,13 +51,19 @@ final class StayAwake {
 
     // MARK: Sessions
 
-    func start(_ session: AwakeSession) {
+    /// While Keeper owns staying awake, a session started here goes to Keeper instead
+    /// (returns true when it took it). Only starts are handed over, never the end.
+    var forwardToPeer: (AwakeSession) -> Bool = { _ in false }
+
+    /// `fromPeer`: Keeper asked for it, so it's never handed back.
+    func start(_ session: AwakeSession, fromPeer: Bool = false) {
+        if !isOn, !fromPeer, forwardToPeer(session) { return }
         self.session = session
         evaluate(announce: true)
     }
 
-    func start(minutes: Int) {
-        start(minutes > 0 ? .until(Date().addingTimeInterval(Double(minutes) * 60)) : .indefinitely)
+    func start(minutes: Int, fromPeer: Bool = false) {
+        start(minutes > 0 ? .until(Date().addingTimeInterval(Double(minutes) * 60)) : .indefinitely, fromPeer: fromPeer)
     }
 
     /// Ends a manual session (triggers may still keep the Mac awake).

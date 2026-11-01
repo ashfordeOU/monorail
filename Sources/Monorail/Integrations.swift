@@ -17,6 +17,10 @@ final class Integrations {
         var app: String?
         var title: String?
         var focusMode: Bool
+        /// Presentation mode, Stay Awake and tiling paused (Keeper follows these).
+        var presenting: Bool?
+        var awake: Bool?
+        var paused: Bool?
     }
 
     static var stateURL: URL { SettingsStore.directory.appendingPathComponent("state.json") }

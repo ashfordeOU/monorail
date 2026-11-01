@@ -150,6 +150,8 @@ final class Engine {
     private let animator = Animator()
     private let writer = WindowWriter()
     private let overlays = Overlays()
+    /// Overlay titles Keeper announced in its hello (beyond the built-in list).
+    var peerOverlays: () -> [String] = { [] }
     /// macOS's own permission and password prompts, kept in front and centred.
     private let systemPrompts = SystemPrompts()
     private var lastApplyTime: CFTimeInterval = 0
@@ -2101,8 +2103,12 @@ final class Engine {
         let app = NSRunningApplication(processIdentifier: pid)
         guard pid == ownPID || (app?.activationPolicy == .regular && app?.isHidden == false) else { return false }
         guard !Self.isSystemUI(app?.bundleIdentifier) else { return false }
-        // Keeper's Island, widgets and quick windows are Keeper's to place; only its main window tiles.
-        guard !(Companions.isKeeper(app?.bundleIdentifier) && element.element(kAXCloseButtonAttribute) == nil) else { return false }
+        // Keeper's Island, widgets, overlays and quick windows are Keeper's to place; only its
+        // ordinary windows tile (even ⌃⌥T can't tile an overlay).
+        guard !Companions.isKeeperUnmanaged(bundleID: app?.bundleIdentifier, title: element.title, isStandard: true,
+                                            hasTitleBar: element.element(kAXCloseButtonAttribute) != nil,
+                                            announced: peerOverlays())
+        else { return false }
         // ⌃⌥T (force) can still tile a window the dialog heuristic got wrong.
         guard force || !Self.looksLikeDialog(element) else { return false }
 
@@ -3706,12 +3712,20 @@ final class Engine {
     private var focusTimer: Timer?
     private(set) var focusEnds: Date?
 
-    func setFocusMode(_ on: Bool) {
+    /// `byPeer`: Keeper started or ended it (a `?from=keeper` link). Keeper then owns the timer
+    /// and the notices, so Monorail only dims, and the mode ends when Keeper (or you) ends it.
+    func setFocusMode(_ on: Bool, byPeer: Bool = false) {
         guard on != isFocusMode else { return }
         isFocusMode = on
         focusTimer?.invalidate()
         focusTimer = nil
         focusEnds = nil
+        if byPeer {
+            updateOverlays()
+            onStateChange()
+            if on { onUsage(.focusSession) }
+            return
+        }
         if on, settings.focusMinutes > 0 {
             let minutes = settings.focusMinutes
             focusEnds = Date().addingTimeInterval(Double(minutes) * 60)
@@ -4738,12 +4752,13 @@ final class Engine {
     /// While presenting, Monorail's own overlays and notices stay out of sight.
     private(set) var isPresenting = false
 
-    func setPresenting(_ on: Bool) {
+    /// `byPeer`: Keeper switched it (its Stage), and says so itself.
+    func setPresenting(_ on: Bool, byPeer: Bool = false) {
         guard on != isPresenting else { return }
         // Say so before the notices go quiet, or after they come back.
-        if on { onNotice("Presentation mode · overlays hidden") }
+        if on, !byPeer { onNotice("Presentation mode · overlays hidden") }
         isPresenting = on
-        if !on { onNotice("Presentation mode off") }
+        if !on, !byPeer { onNotice("Presentation mode off") }
         updateOverlays()
         onStateChange()
     }
@@ -5061,7 +5076,8 @@ final class Engine {
         let bundleID = NSRunningApplication(processIdentifier: pid)?.bundleIdentifier
         let hasTitleBar = element.element(kAXCloseButtonAttribute) != nil || element.bool("AXModal") == true
         // Panels above modal panels, and Keeper's Island, widgets and quick windows (see Companions).
-        if Companions.leavesAlone(bundleID: bundleID, hasTitleBar: hasTitleBar, layer: element.windowID.flatMap(Self.windowLayer)) {
+        if Companions.leavesAlone(bundleID: bundleID, hasTitleBar: hasTitleBar, layer: element.windowID.flatMap(Self.windowLayer),
+                                  title: Companions.isKeeper(bundleID) ? element.title : nil, announced: peerOverlays()) {
             return true
         }
         guard !hasTitleBar else { return false }

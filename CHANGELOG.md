@@ -4,6 +4,14 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Monorail and Keeper talk to each other.** Keeper says hello through the local API (`POST /peer`, answered by `GET /hello`), and `state.json` now includes presentation mode, Stay Awake and pause as well as focus mode, so Keeper follows along.
+- **One owner per mode.** Focus and presentation mode started by Keeper (`monorail://focus-mode/on?from=keeper`) run without Monorail's own timer, notices or sounds; they end when Keeper ends them or you turn them off in Monorail.
+- **One Stay Awake hold.** While Keeper keeps your Mac awake, a Stay Awake session you start in Monorail (for a while, or until you end it) goes to Keeper instead of adding a second hold. Sessions tied to an app or a download stay with Monorail.
+- Keeper's overlays (the Island, Glance, Voice, cues, the launcher, Stage, widgets, the wallpaper, Quick Connect, the guide and the sharing bar) are never managed by their titles too, and so is any other window Keeper announces.
+
 ## [1.7.8] - 2026-11-01
 
 ### Added

@@ -292,6 +292,20 @@ Monorail and [Keeper](https://github.com/ashfordeOU/keeper) by Ashforde are made
 tiles Keeper's main window like any other and leaves everything Keeper places itself where Keeper puts it:
 the Island at the notch, desktop widgets, Quick Search, Quick Terminal, Capture and its HUDs.
 
+- **They know each other.** Keeper says hello through the local API (`POST /peer`) and reads
+  `GET /hello`; `state.json` includes focus mode, presentation mode, Stay Awake and pause, so
+  Keeper can follow along.
+- **One owner per mode.** When Keeper starts focus or presentation mode (links ending in
+  `?from=keeper`), Keeper runs the timer and the notices; Monorail only dims or hides its overlays,
+  and the mode ends when Keeper or you end it.
+- **One Stay Awake hold.** While Keeper keeps the Mac awake, a Stay Awake started in Monorail goes
+  to Keeper (`keeper://awake`), so there's never a second hold.
+- The `keeper-overlay-*` float rules Keeper adds to Monorail's settings are kept for Monorail
+  versions before 1.7.8; newer versions know Keeper's windows by themselves.
+
+The whole picture, both sides, is in Keeper's
+[docs/KEEPER-MONORAIL.md](https://github.com/ashfordeOU/keeper/blob/main/docs/KEEPER-MONORAIL.md).
+
 ## Getting started
 
 When Monorail first opens, a short welcome tour walks you through granting
@@ -844,6 +858,9 @@ The same API serves the extensions in this repository and your own scripts:
 ```bash
 curl -H "Authorization: Bearer $(cat ~/Library/Application\ Support/Monorail/api-token)" http://127.0.0.1:4767/windows
 ```
+
+`GET /hello` says who's running (version, focus mode, presentation, Stay Awake, paused, and the
+peer app if one said hello); Ashforde's own apps announce themselves with `POST /peer`.
 
 ### Scripts
 

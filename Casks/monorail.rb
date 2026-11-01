@@ -1,6 +1,6 @@
 cask "monorail" do
-  version "1.7.2"
-  sha256 "d0d7b28ef54fe92517c3f8f6715206ff2dab5466af0b40690fdaaef8bbcb95d1"
+  version "1.7.3"
+  sha256 "c6ff9a443d26abe4af4a2d0d10c95510bb3c26a2d68c5074b90cbca680aaac40"
 
   url "https://github.com/ashfordeOU/monorail/releases/download/v#{version}/Monorail-#{version}.dmg"
   name "Monorail by Ashforde®"

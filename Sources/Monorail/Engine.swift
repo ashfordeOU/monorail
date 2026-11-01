@@ -5080,6 +5080,10 @@ final class Engine {
                                   title: Companions.isKeeper(bundleID) ? element.title : nil, announced: peerOverlays()) {
             return true
         }
+        // Keeper's panels (anything but a standard window) are Keeper's to place, title bar or not.
+        if Companions.isKeeper(bundleID), let subrole = element.subrole, subrole != kAXStandardWindowSubrole as String {
+            return true
+        }
         guard !hasTitleBar else { return false }
         // Small and up against the menu bar: a drop-down that belongs there. (A big file picker
         // hanging off the top is still brought back.)

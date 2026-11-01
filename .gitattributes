@@ -1,0 +1,3 @@
+# The golden test data must read the same on every OS.
+tests/golden/** text eol=lf
+spec/** text eol=lf

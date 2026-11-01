@@ -74,7 +74,8 @@ public enum ConfigImport {
     // MARK: AeroSpace (aerospace.toml)
 
     /// Reads an AeroSpace `aerospace.toml`.
-    public static func aeroSpace(_ text: String) -> ImportPlan {
+    public static func aeroSpace(_ raw: String) -> ImportPlan {
+        let text = normalisedLines(raw)
         var plan = ImportPlan(source: "AeroSpace")
         var section = ""
         var detectedApp: String?
@@ -165,7 +166,8 @@ public enum ConfigImport {
     // MARK: yabai + skhd
 
     /// Reads `.yabairc` (gaps and app rules) and `.skhdrc` (shortcuts that call yabai).
-    public static func yabai(yabairc: String, skhdrc: String) -> ImportPlan {
+    public static func yabai(yabairc rawYabairc: String, skhdrc rawSkhdrc: String) -> ImportPlan {
+        let yabairc = normalisedLines(rawYabairc), skhdrc = normalisedLines(rawSkhdrc)
         var plan = ImportPlan(source: "yabai")
         for raw in yabairc.split(separator: "\n") {
             let line = stripComment(String(raw), marker: "#").trimmingCharacters(in: .whitespaces)
@@ -273,6 +275,11 @@ public enum ConfigImport {
     }
 
     // MARK: Helpers
+
+    /// Windows (\r\n) and old Mac (\r) line endings become \n, so files saved anywhere read the same.
+    static func normalisedLines(_ text: String) -> String {
+        text.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
+    }
 
     static func stripComment(_ line: String, marker: Character = "#") -> String {
         var inQuote: Character?

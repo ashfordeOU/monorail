@@ -69,4 +69,14 @@ final class ConfigImportTests: XCTestCase {
         XCTAssertEqual(Set(plan.bindings.map(\.action)), [.snapLeftHalf, .snapMaximize])
         XCTAssertEqual(plan.bindings.first { $0.action == .snapLeftHalf }?.shortcut.modifiers, [.control, .option])
     }
+
+    func testWindowsLineEndings() {
+        let toml = "[gaps]\r\ninner.horizontal = 6\r\n[mode.main.binding]\r\nalt-h = 'focus left'\r\n"
+        let plan = ConfigImport.aeroSpace(toml)
+        XCTAssertEqual(plan.gap, 6)
+        XCTAssertEqual(plan.bindings.map(\.action), [.focusLeft])
+        let yabai = ConfigImport.yabai(yabairc: "yabai -m config window_gap 4\r\n", skhdrc: "alt - h : yabai -m window --focus west\r\n")
+        XCTAssertEqual(yabai.gap, 4)
+        XCTAssertEqual(yabai.bindings.map(\.action), [.focusLeft])
+    }
 }

@@ -4429,8 +4429,8 @@ final class Engine {
 
     /// Nine saved views per display (keyed by display name).
     private var savedViews: [String: [Int: SavedView]] = [:]
-    private var viewHistory: [(display: String, view: SavedView)] = []
-    private var viewFuture: [(display: String, view: SavedView)] = []
+    /// Back and forward through views (shared with the other platforms: MonorailEngine.NavigationHistory).
+    private var viewHistory = NavigationHistory<(display: String, view: SavedView)>()
     private var restoringView = false
     /// Workspaces each window is also kept on (besides wherever it is now).
     private(set) var windowTags: [WindowID: Set<Int>] = [:]
@@ -4446,9 +4446,7 @@ final class Engine {
     private func recordView(from key: StripKey) {
         guard !restoringView, let display = display(for: key) else { return }
         let strip = strips[key]
-        viewHistory.append((display.name, SavedView(workspace: key.workspace, scroll: strip?.scroll ?? 0, window: strip?.focusedWindow)))
-        if viewHistory.count > 50 { viewHistory.removeFirst() }
-        viewFuture.removeAll()
+        viewHistory.leave((display.name, SavedView(workspace: key.workspace, scroll: strip?.scroll ?? 0, window: strip?.focusedWindow)))
     }
 
     private func show(_ view: SavedView, on displayName: String) {
@@ -4477,12 +4475,10 @@ final class Engine {
     private func stepView(back: Bool) {
         guard let (name, here) = currentView() else { return }
         if back {
-            guard let previous = viewHistory.popLast() else { return onNotice("Nothing to go back to") }
-            viewFuture.append((name, here))
+            guard let previous = viewHistory.back(from: (name, here)) else { return onNotice("Nothing to go back to") }
             show(previous.view, on: previous.display)
         } else {
-            guard let next = viewFuture.popLast() else { return onNotice("Nothing to go forward to") }
-            viewHistory.append((name, here))
+            guard let next = viewHistory.forward(from: (name, here)) else { return onNotice("Nothing to go forward to") }
             show(next.view, on: next.display)
         }
         haptic()
@@ -4498,8 +4494,7 @@ final class Engine {
     private func goToView(_ n: Int) {
         guard let (name, here) = currentView() else { return }
         guard let view = savedViews[name]?[n] else { return onNotice("No view \(n) yet · ⌃⌥⌘⇧\(n) saves one") }
-        viewHistory.append((name, here))
-        viewFuture.removeAll()
+        viewHistory.leave((name, here))
         show(view, on: name)
     }
 

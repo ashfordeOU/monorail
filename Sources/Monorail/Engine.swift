@@ -5013,22 +5013,37 @@ final class Engine {
     /// other workspaces are off screen on purpose and are left to the layout.
     func keepEverythingOnScreen() {
         guard settings.keepEverythingOnScreen, isRunning, !isPaused else { return }
-        for app in NSWorkspace.shared.runningApplications where app.activationPolicy != .prohibited && !app.isHidden {
+        for app in NSWorkspace.shared.runningApplications where app.activationPolicy == .regular && !app.isHidden {
             keepOnScreen(pid: app.processIdentifier)
         }
     }
 
     /// One app's untiled windows and dialogs back in view when they can't be reached.
+    /// Only ordinary apps' ordinary windows: menu bar and notch apps, and panels or widgets that
+    /// float above other windows (often tucked under the menu bar on purpose), are never moved.
     private func keepOnScreen(pid: pid_t) {
-        guard settings.keepEverythingOnScreen, isRunning, !isPaused, pid != ownPID, !displays.isEmpty else { return }
+        guard settings.keepEverythingOnScreen, isRunning, !isPaused, pid != ownPID, !displays.isEmpty,
+            let app = NSRunningApplication(processIdentifier: pid), app.activationPolicy == .regular,
+            !Self.isSystemUI(app.bundleIdentifier)
+        else { return }
         for element in AXUIElement.application(pid).windows {
             guard element.role == kAXWindowRole, !element.isMinimized, !element.isFullScreen,
-                let frame = element.frame, frame.width > 40, frame.height > 40
+                let frame = element.frame, frame.width > 40, frame.height > 40,
+                let id = element.windowID, Self.isOnNormalLayer(id),
+                element.element(kAXCloseButtonAttribute) != nil || element.bool("AXModal") == true
             else { continue }
             // Tiled windows are placed by the layout, including the ones parked off screen.
             if let id = element.windowID, windows[id]?.key != nil { continue }
             placeFloating(element, remembered: nil, lenient: true)
         }
+    }
+
+    /// Whether a window sits on the normal window layer (not a floating panel, HUD or menu bar widget).
+    private static func isOnNormalLayer(_ id: WindowID) -> Bool {
+        guard let info = (CGWindowListCopyWindowInfo(.optionIncludingWindow, CGWindowID(id)) as? [[String: Any]])?.first,
+            let layer = info[kCGWindowLayer as String] as? Int
+        else { return false }
+        return layer == 0
     }
 
     /// When something goes wrong: every window of every app back on screen, then a fresh layout.

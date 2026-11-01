@@ -7,6 +7,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Fixed
+- **Menu bar and notch apps are left alone.** Since 1.7.7, keeping windows on screen could move the panel of a notch or menu bar app (one that tucks under the camera at the top of the screen) into the middle of the screen. Now only ordinary apps' ordinary windows and dialogs are brought back into view; floating panels, HUDs and widgets are never moved.
 - **macOS prompts always come to the front.** Permission prompts ("… would like to access…"), password and Touch ID prompts, and "Are you sure you want to open…" now come in front of every window, centred on the screen you're using. If another app covers one, it's brought back on top. Until you answer, Monorail doesn't move focus to other windows and hides its window borders and tab bars. Turn it off with "Keep macOS permission and password prompts in front, centred" in Settings.
 
 ### Changed

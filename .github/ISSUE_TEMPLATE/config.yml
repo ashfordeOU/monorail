@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Monorail website
+    url: https://ashfordeou.github.io/monorail/
+    about: Interactive demos, shortcuts and the FAQ.

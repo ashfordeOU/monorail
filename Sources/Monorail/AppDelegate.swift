@@ -479,6 +479,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NSSound(named: "Glass")?.play()
             self.postWebhook("agent_waiting", ["id": Int(id), "app": app])
         }
+        engine.onDocked = { [weak self] in self?.practice.record(.dockRight) }
         engine.onDockPreview = { [weak self] rect, edge in self?.dockPreview.show(rect, edge: edge) }
         gapHandles.handles = { [weak self] in self?.engine.gapHandles() ?? [] }
         gapHandles.drag = { [weak self] handle, delta, ended in self?.engine.dragGap(handle, by: delta, ended: ended) }
@@ -1140,6 +1141,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return list
     }
 
+    /// 1.7.3: mouse buttons 4 and 5 go back to the apps (they're Back and Forward in browsers
+    /// and Finder). Done once; people who want them to step slides can turn it on again.
+    private func migrateMouseButtons() {
+        let key = "MonorailMouseButtonsReturned"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        guard store.settings.mouseButtonsStep, store.settings.hasCompletedOnboarding else { return }
+        var settings = store.settings
+        settings.mouseButtonsStep = false
+        store.settings = settings
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+            self?.toast.show("Your mouse's Back and Forward buttons work in apps again · stepping slides with them is in Settings → Motion & Input")
+        }
+    }
+
     private func startTelemetry() {
         telemetry.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         telemetry.usage = { [weak self] in self?.usage.stored }
@@ -1553,6 +1569,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         store.watchFile()
         autoRules.start()
         startTelemetry()
+        migrateMouseButtons()
         EventStream.shared.start()
         // After an update: what changed. (Not on a first install.)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
@@ -2657,7 +2674,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         // Views: back and forward like a browser, and the saved views of this display.
         let views = NSMenu()
-        for (title, action) in [("Back", Action.viewBack), ("Forward", Action.viewForward)] {
+        for (title, action) in [(L("Back"), Action.viewBack), (L("Forward"), Action.viewForward)] {
             let entry = item(title, #selector(performMenuAction(_:)), action: action)
             entry.representedObject = action.rawValue
             views.addItem(entry)
@@ -2697,6 +2714,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         menu.addItem(.separator())
         menu.addItem(item(L("Settings…"), #selector(showSettingsFromMenu), key: ","))
+        menu.addItem(item(L("Send Feedback…"), #selector(sendFeedbackFromMenu)))
         menu.addItem(shortcutsMenu())
         menu.addItem(item(L("Welcome Tour…"), #selector(showWelcomeFromMenu)))
         menu.addItem(item(L("What’s New") + "…", #selector(showWhatsNewFromMenu)))
@@ -2940,6 +2958,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         return "Monorail is running"
     }
+
+    @objc private func sendFeedbackFromMenu() { afterMenu { _ in ProblemReport.feedback() } }
 
     @objc private func performMenuAction(_ sender: NSMenuItem) {
         guard let raw = sender.representedObject as? String, let action = Action(rawValue: raw) else { return }

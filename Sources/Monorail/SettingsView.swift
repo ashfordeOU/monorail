@@ -1858,6 +1858,7 @@ private struct ZoneEditor: View {
                             }
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Zone \(position(of: tile.window))\(tile.window == selected ? ", selected" : "")")
                         .frame(width: max(f.width * geometry.size.width - 6, 8), height: max(f.height * geometry.size.height - 6, 8))
                         .offset(x: f.minX * geometry.size.width + 3, y: f.minY * geometry.size.height + 3)
                     }

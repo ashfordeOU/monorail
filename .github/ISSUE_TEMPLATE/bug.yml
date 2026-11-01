@@ -1,0 +1,25 @@
+name: Problem
+description: Something isn't working as it should.
+title: "Problem: "
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can we see it happen?
+      placeholder: "1. Open Terminal\n2. Press ⌘N twice\n3. …"
+  - type: input
+    id: version
+    attributes:
+      label: Monorail and macOS version
+      description: Settings → Smart → Trust → Report a Problem… fills this in for you.

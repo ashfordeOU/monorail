@@ -26,6 +26,8 @@ final class PracticeTracker: ObservableObject {
              hint: "In slide mode press F   (or ⌃⌥F)"),
         Task(title: "Open the overview", actions: [.overview],
              hint: "In slide mode press O   (or ⌃⌥O)"),
+        Task(title: "Dock a window onto another", actions: [.dockLeft, .dockRight, .dockUp, .dockDown],
+             hint: "Drag a window by its title bar onto another window’s edge; the middle makes tabs"),
     ]
 
     /// The first task not done yet.

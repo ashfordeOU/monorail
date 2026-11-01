@@ -4,6 +4,19 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.7.3] - 2026-11-01
+
+### Added
+- **The welcome tour ends with docking:** a sixth practice step, "Dock a window onto another".
+- **Send Feedback…** in the menu bar opens a short feedback form with your versions filled in.
+- Labels for VoiceOver on the gap handles and the zone editor, and the new menu items in all nine languages.
+- A launch test checklist in `docs/LAUNCH-QA.md`.
+
+### Changed
+- **Your mouse's Back and Forward buttons belong to your apps again.** They used to step through slides everywhere, which got in the way of Back in browsers and Finder. Turn it back on in Settings → Motion & Input. (Monorail switches it off once after updating, and tells you.)
+- The Monday summary notification is off for new installs (Settings → General).
+- Website: a welcome for visitors from Product Hunt, a comparison table, and download buttons that go straight to the latest DMG with its version and size.
+
 ## [1.7.2] - 2026-11-01
 
 ### Fixed

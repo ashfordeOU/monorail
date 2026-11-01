@@ -103,10 +103,10 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `workspaceNotes` | A line of notes per workspace (by its number from 0). | `[:]` |
 | `autoNameWorkspaces` | Workspaces without a name take their apps' names. | `true` |
 | `betaUpdates` | Get early (beta) versions as well as final ones. | `false` |
-| `weeklySummary` | A notification on Monday mornings with last week's Insights. | `true` |
+| `weeklySummary` | A notification on Monday mornings with last week's Insights. | `false` |
 | `lastSeenVersion` | The version whose What's New was last shown. | `""` |
 | `hotCorners` | Screen corners: top-left, top-right, bottom-left, bottom-right. | `[.none, .none, .none, .none]` |
-| `mouseButtonsStep` | Mouse buttons 4 and 5 (back and forward) step through slides. | `true` |
+| `mouseButtonsStep` | Mouse buttons 4 and 5 (back and forward) step through slides. | `false` |
 | `scrollResizes` | ⌃⌥ + scroll over a window changes its slide's width. | `true` |
 | `shiftScrollSwitchesWorkspace` | ⇧ + scroll over the slider bar switches workspace. | `true` |
 | `middleClickZoom` | ⌥ + middle-click a window zooms it. | `true` |

@@ -683,14 +683,14 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// Get early (beta) versions as well as final ones.
     public var betaUpdates = false
     /// A notification on Monday mornings with last week's Insights.
-    public var weeklySummary = true
+    public var weeklySummary = false
     /// The version whose What's New was last shown.
     public var lastSeenVersion = ""
     // 1.1
     /// Screen corners: top-left, top-right, bottom-left, bottom-right.
     public var hotCorners: [HotCorner] = [.none, .none, .none, .none]
     /// Mouse buttons 4 and 5 (back and forward) step through slides.
-    public var mouseButtonsStep = true
+    public var mouseButtonsStep = false
     /// ⌃⌥ + scroll over a window changes its slide's width.
     public var scrollResizes = true
     /// ⇧ + scroll over the slider bar switches workspace.

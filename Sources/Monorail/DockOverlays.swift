@@ -134,6 +134,10 @@ final class GapHandles {
         private var last: CGPoint?
         private var hovering = false
 
+        override func isAccessibilityElement() -> Bool { true }
+        override func accessibilityRole() -> NSAccessibility.Role? { .splitter }
+        override func accessibilityLabel() -> String? { "Gap between two windows: drag to resize both" }
+
         override func resetCursorRects() {
             addCursorRect(bounds, cursor: handle?.axis == .vertical ? .resizeUpDown : .resizeLeftRight)
         }

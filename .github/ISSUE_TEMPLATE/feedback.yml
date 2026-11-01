@@ -1,0 +1,22 @@
+name: Idea or feedback
+description: Something you'd like Monorail to do, or how it's working for you.
+title: "Idea: "
+labels: [feedback]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: Describe what you'd like Monorail to do, or what felt off.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: How would it help?
+      description: A moment from your day where this would make a difference.
+  - type: input
+    id: version
+    attributes:
+      label: Monorail and macOS version
+      placeholder: "Monorail 1.7.3 · macOS 15.1"

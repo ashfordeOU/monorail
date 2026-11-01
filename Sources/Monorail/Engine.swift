@@ -135,6 +135,8 @@ final class Engine {
     var onWindowDrag: (WindowID) -> Void = { _ in }
     /// While dragging onto another window: where it would land (nil hides the preview).
     var onDockPreview: (CGRect?, SplitTree.Edge?) -> Void = { _, _ in }
+    /// A window was docked (by dragging or the keyboard), for the welcome tour.
+    var onDocked: () -> Void = {}
     /// Something worth counting for Insights happened.
     var onUsage: (UsageEvent) -> Void = { _ in }
 
@@ -4566,6 +4568,7 @@ final class Engine {
         layout(animated: true)
         scheduleSave()
         onStateChange()
+        onDocked()
     }
 
     /// Keyboard docking: the focused window onto its neighbour in `direction`, on the near edge.

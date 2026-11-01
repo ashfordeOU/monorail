@@ -72,6 +72,17 @@ struct UsageSection: View {
 
 /// A bug report on GitHub, filled in with what helps (no window titles or personal data).
 enum ProblemReport {
+    /// An idea or feedback, with the version filled in.
+    static func feedback() {
+        let info = ProcessInfo.processInfo
+        var components = URLComponents(string: "https://github.com/ashfordeOU/monorail/issues/new")!
+        components.queryItems = [
+            URLQueryItem(name: "template", value: "feedback.yml"),
+            URLQueryItem(name: "version", value: "Monorail \(Bundle.main.shortVersion) · macOS \(info.operatingSystemVersion.majorVersion).\(info.operatingSystemVersion.minorVersion)"),
+        ]
+        if let url = components.url { NSWorkspace.shared.open(url) }
+    }
+
     static func open() {
         let info = ProcessInfo.processInfo
         var body = "**What happened?**\n\n\n**What did you expect?**\n\n\n---\n"

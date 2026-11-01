@@ -4,7 +4,7 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.7.9] - 2026-11-01
 
 ### Added
 - **Monorail and Keeper talk to each other.** Keeper says hello through the local API (`POST /peer`, answered by `GET /hello`), and `state.json` now includes presentation mode, Stay Awake and pause as well as focus mode, so Keeper follows along.

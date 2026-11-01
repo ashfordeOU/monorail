@@ -28,8 +28,8 @@ make run    # build dist/Monorail.app and open it
 
 Every commit on `main` is signed with Ashforde's commit-signing key and shows as Verified on
 GitHub. Maintainers push to the `incoming` branch; the **Sign and land** workflow signs the new
-commits with the `COMMIT_SIGNING_KEY` secret and moves them onto `main`. Pull requests are signed
-the same way when they're merged. **Re-sign history** (run by hand) can check, or redo, the
+commits with the `COMMIT_SIGNING_KEY` secret and moves them onto `main`. Pull requests merged on
+GitHub are signed by GitHub itself. **Re-sign history** (run by hand) can check, or redo, the
 whole history.
 
 ## Releases

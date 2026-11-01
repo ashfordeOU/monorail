@@ -868,7 +868,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var dragToDock = true
     /// Drag the gap between two windows to resize both at once.
     public var gapHandles = true
-    /// The slider bar steps aside while a video plays or when the window in front covers its spot.
+    /// The slider bar steps aside for full-screen apps and for a playing video underneath it.
     public var sliderBarStepsAside = true
     /// Snap windows back when an app moves or resizes one by itself.
     public var keepWindowsInPlace = true

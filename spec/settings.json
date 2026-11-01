@@ -1140,7 +1140,7 @@
       "key": "sliderBarStepsAside",
       "type": "Bool",
       "default": "true",
-      "about": "The slider bar steps aside while a video plays or when the window in front covers its spot."
+      "about": "The slider bar steps aside for full-screen apps and for a playing video underneath it."
     },
     {
       "key": "keepWindowsInPlace",

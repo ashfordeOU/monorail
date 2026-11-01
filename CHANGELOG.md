@@ -7,7 +7,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [1.7.6] - 2026-11-01
 
 ### Fixed
-- **The slider bar shows again.** Since 1.7.2 it could stay hidden, mostly in "Only while sliding" mode: the rule that makes it step aside for windows in front of it also counted your tiled windows, which sit under the bar by design. Now only floating windows (like a video player) and video playback make it step aside, and audio players no longer count as video.
+- **The slider bar shows again.** Since 1.7.2 it could stay hidden, mostly in "Only while sliding" mode: the rule that made it step aside for windows in front of it also counted your tiled windows, which sit under the bar by design.
+- **The slider bar steps aside only for full-screen apps and videos.** It hides while any app fills the whole screen (including a player's or browser's own full screen) and while a playing video's window is under it; at all other times it shows. Native macOS full screen never shows it. The setting is now called "Step aside for full-screen apps and videos".
 
 ## [1.7.5] - 2026-11-01
 

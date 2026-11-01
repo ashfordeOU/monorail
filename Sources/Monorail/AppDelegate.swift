@@ -277,7 +277,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         )
         sliderBar.stepAside = { [weak self] frame in
             guard let self, self.store.settings.sliderBarStepsAside else { return false }
-            return BarAside.shouldHide(frame) { [weak self] id in self?.engine.isTiled(WindowID(id)) ?? false }
+            return BarAside.shouldHide(frame)
         }
         // Check again when apps change, and now and then while a bar is always shown (videos start and stop).
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] _ in

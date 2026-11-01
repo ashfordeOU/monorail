@@ -657,8 +657,8 @@ private struct AppearancePane: View {
                         Text("Bottom of the screen").tag(SliderBarEdge.bottom)
                         Text("Top of the screen").tag(SliderBarEdge.top)
                     }
-                    Toggle("Step aside for videos and windows in front of it", isOn: $store.settings.sliderBarStepsAside)
-                        .help("Hides while a video plays, or while the window in front covers the bar's spot, like a video player's controls")
+                    Toggle("Step aside for full-screen apps and videos", isOn: $store.settings.sliderBarStepsAside)
+                        .help("Hides while any app fills the screen, and while a playing video is underneath it, like a player's controls")
                     Toggle("Window titles on the slides", isOn: $store.settings.sliderTitles)
                     Toggle("Compact", isOn: $store.settings.compactSlider)
                     LabeledContent("Opacity") {

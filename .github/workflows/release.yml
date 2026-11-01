@@ -116,12 +116,24 @@ jobs:
           fi
       - name: Update the Homebrew cask
         if: env.SKIP != '1'
+        env:
+          SIGNING_KEY: ${{ secrets.COMMIT_SIGNING_KEY }}
         run: |
           version="${TAG#v}"
           sum="$(shasum -a 256 "dist/Monorail-${version}.dmg" | cut -d' ' -f1)"
           sed -i '' -e "s/^  version \".*\"/  version \"${version}\"/" -e "s/^  sha256 .*/  sha256 \"${sum}\"/" Casks/monorail.rb
           git config user.name "ashfordeOU"
           git config user.email "236818772+ashfordeOU@users.noreply.github.com"
+          # Signed with Ashforde's key (the COMMIT_SIGNING_KEY secret), so it shows as Verified.
+          if [ -n "${SIGNING_KEY:-}" ]; then
+            key="$RUNNER_TEMP/signing_key"
+            install -m 600 /dev/null "$key"
+            printf '%s\n' "$SIGNING_KEY" > "$key"
+            trap 'rm -f "$key"' EXIT
+            git config gpg.format ssh
+            git config user.signingkey "$key"
+            git config commit.gpgsign true
+          fi
           # MacPorts and Nix: the same version and the release zip's checksums.
           zip="dist/Monorail-${version}.zip"
           zsha="$(shasum -a 256 "$zip" | cut -d' ' -f1)"

@@ -8,6 +8,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 - **The slider bar no longer covers video controls.** It steps aside while a video plays, and while the window in front (a video player, a floating window) covers its spot, then comes back. Turn it off in Settings → Appearance → Slider bar.
+- **Full-screen apps stay clear.** The slider bar and its preview no longer appear over apps in native full screen.
 
 ## [1.7.1] - 2026-11-01
 

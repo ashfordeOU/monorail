@@ -202,7 +202,7 @@ final class SliderBarController {
         panel.hidesOnDeactivate = false
         panel.isReleasedWhenClosed = false
         panel.becomesKeyOnlyIfNeeded = true
-        panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
+        panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
         let view = SliderBarView(model: model, actions: actions) { [weak self] in self?.scheduleHide() }
         model.$hoveredTile
             .removeDuplicates { $0?.id == $1?.id && $0?.windows == $1?.windows }
@@ -703,7 +703,7 @@ final class SlidePreview {
         panel.hasShadow = true
         panel.level = .popUpMenu
         panel.hidesOnDeactivate = false
-        panel.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle, .fullScreenAuxiliary]
+        panel.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle]
         let view = PreviewView(
             model: model,
             commands: { [weak self] in
@@ -758,7 +758,7 @@ final class NameTip {
         panel.hasShadow = true
         panel.level = .popUpMenu
         panel.ignoresMouseEvents = true
-        panel.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle, .fullScreenAuxiliary]
+        panel.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle]
         let host = NSHostingView(rootView: TipView(model: model))
         panel.contentView = host
         return panel

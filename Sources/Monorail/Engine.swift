@@ -2101,6 +2101,8 @@ final class Engine {
         let app = NSRunningApplication(processIdentifier: pid)
         guard pid == ownPID || (app?.activationPolicy == .regular && app?.isHidden == false) else { return false }
         guard !Self.isSystemUI(app?.bundleIdentifier) else { return false }
+        // Keeper's Island, widgets and quick windows are Keeper's to place; only its main window tiles.
+        guard !(Companions.isKeeper(app?.bundleIdentifier) && element.element(kAXCloseButtonAttribute) == nil) else { return false }
         // ⌃⌥T (force) can still tile a window the dialog heuristic got wrong.
         guard force || !Self.looksLikeDialog(element) else { return false }
 
@@ -5055,10 +5057,14 @@ final class Engine {
     /// notch and menu bar widgets, HUDs), and title-bar-less panels that sit up against the menu
     /// bar on purpose (a notch app's drop-down, say).
     private func isLeftAlone(_ element: AXUIElement, frame: CGRect) -> Bool {
-        if let id = element.windowID, let layer = Self.windowLayer(id), layer > Int(CGWindowLevelForKey(.modalPanelWindow)) {
+        var pid: pid_t = 0
+        AXUIElementGetPid(element, &pid)
+        let bundleID = NSRunningApplication(processIdentifier: pid)?.bundleIdentifier
+        let hasTitleBar = element.element(kAXCloseButtonAttribute) != nil || element.bool("AXModal") == true
+        // Panels above modal panels, and Keeper's Island, widgets and quick windows (see Companions).
+        if Companions.leavesAlone(bundleID: bundleID, hasTitleBar: hasTitleBar, layer: element.windowID.flatMap(Self.windowLayer)) {
             return true
         }
-        let hasTitleBar = element.element(kAXCloseButtonAttribute) != nil || element.bool("AXModal") == true
         guard !hasTitleBar else { return false }
         // Small and up against the menu bar: a drop-down that belongs there. (A big file picker
         // hanging off the top is still brought back.)

@@ -286,6 +286,12 @@ to skip the question, or use **Check for Updates…** in the menu any time.
 - Apple silicon or Intel (universal binary)
 - A trackpad, only if you want swipe gestures
 
+### Works with Keeper
+
+Monorail and [Keeper](https://github.com/ashfordeOU/keeper) by Ashforde are made to run together. Monorail
+tiles Keeper's main window like any other and leaves everything Keeper places itself where Keeper puts it:
+the Island at the notch, desktop widgets, Quick Search, Quick Terminal, Capture and its HUDs.
+
 ## Getting started
 
 When Monorail first opens, a short welcome tour walks you through granting

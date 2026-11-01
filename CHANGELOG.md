@@ -6,6 +6,9 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Works hand in hand with Keeper.** Monorail recognises Keeper by Ashforde and leaves everything Keeper places itself exactly where Keeper puts it: the Island at the notch, desktop widgets, Quick Search, Quick Terminal, Capture, the tray popover, guides and HUDs. They're never tiled, centred, moved or snapped back. Keeper's main window tiles like any other app's.
+
 ### Fixed
 - **Menu bar and notch apps are left alone.** Since 1.7.7, keeping windows on screen could move the panel of a notch or menu bar app (one that tucks under the camera at the top of the screen) into the middle of the screen. Now only ordinary apps' ordinary windows and dialogs are brought back into view; floating panels, HUDs and widgets are never moved. The same goes for placing new dialogs: panels above the normal window layer, and small panels without a title bar that sit against the menu bar, stay exactly where their app puts them.
 - **macOS prompts always come to the front.** Permission prompts ("… would like to access…"), password and Touch ID prompts, and "Are you sure you want to open…" now come in front of every window, centred on the screen you're using. If another app covers one, it's brought back on top. Until you answer, Monorail doesn't move focus to other windows and hides its window borders and tab bars. Turn it off with "Keep macOS permission and password prompts in front, centred" in Settings.

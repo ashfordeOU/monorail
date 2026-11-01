@@ -3238,7 +3238,7 @@ final class Engine {
             wholeSlideApps: roomyApps.sorted(), sticky: Array(stickyWindows), appWidths: appWidths,
             floatingFrames: floatingFrames, windowNotes: windowNotes.filter { windows[$0.key] != nil },
             projectHomes: projectHomes, savedViews: savedViews,
-            tags: windowTags.filter { windows[$0.key] != nil && !$0.value.isEmpty })
+            tags: windowTags.keeping { windows[$0] != nil })
         do {
             try FileManager.default.createDirectory(at: SettingsStore.directory, withIntermediateDirectories: true)
             let data = try JSONEncoder().encode(state)
@@ -3272,7 +3272,7 @@ final class Engine {
         windowNotes = state.windowNotes ?? [:]
         projectHomes = state.projectHomes ?? [:]
         savedViews = state.savedViews ?? [:]
-        windowTags = state.tags ?? [:]
+        windowTags = WorkspaceTags(state.tags ?? [:])
         lastSession = state.session ?? []
         lastSessionLoaded = Date()
         savedLayouts = (try? Data(contentsOf: Self.layoutsURL))
@@ -3958,9 +3958,9 @@ final class Engine {
         }
         stickyWindows = stickyWindows.filter { windows[$0] != nil || windowMemory[$0] != nil }
         // Tagged windows follow you between the workspaces they're tagged with.
-        for (id, tags) in windowTags where tags.contains(key.workspace) {
-            guard let window = windows[id], let from = window.key, from.screen == key.screen, from != key,
-                tags.contains(from.workspace), !stickyWindows.contains(id)
+        for id in windowTags.windows(taggedWith: key.workspace) {
+            guard let window = windows[id], let from = window.key, from.screen == key.screen,
+                windowTags.follows(id, from: from.workspace, to: key.workspace), !stickyWindows.contains(id)
             else { continue }
             let width = strips[from].flatMap { strip in strip.locate(id).map { strip.columns[$0.column].width } } ?? 0.5
             removeFromStrip(window)
@@ -4433,7 +4433,8 @@ final class Engine {
     private var viewHistory = NavigationHistory<(display: String, view: SavedView)>()
     private var restoringView = false
     /// Workspaces each window is also kept on (besides wherever it is now).
-    private(set) var windowTags: [WindowID: Set<Int>] = [:]
+    /// Shared with the other platforms (MonorailEngine.WorkspaceTags).
+    private(set) var windowTags = WorkspaceTags()
     /// Windows brought in from other workspaces to show alongside, by the workspace shown.
     private var combined: [StripKey: [Int: [WindowID]]] = [:]
 
@@ -4507,16 +4508,12 @@ final class Engine {
     private func toggleTag(_ index: Int) {
         guard index >= 0, index < workspaceLimit, let id = focusedWindowID(), let window = windows[id], let key = window.key else { return }
         let workspace = base + index
-        var tags = windowTags[id] ?? []
-        if tags.contains(workspace) {
-            tags.remove(workspace)
-            onNotice("\(window.appName) no longer kept on workspace \(index + 1)")
+        let result = windowTags.toggle(id, workspace: workspace, current: key.workspace)
+        if result.added {
+            onNotice("\(window.appName) is kept on workspaces \(result.tags.sorted().map { String($0 - base + 1) }.joined(separator: ", "))")
         } else {
-            tags.insert(workspace)
-            tags.insert(key.workspace)
-            onNotice("\(window.appName) is kept on workspaces \(tags.sorted().map { String($0 - base + 1) }.joined(separator: ", "))")
+            onNotice("\(window.appName) no longer kept on workspace \(index + 1)")
         }
-        windowTags[id] = tags.count > 1 ? tags : nil
         scheduleSave()
         onStateChange()
     }

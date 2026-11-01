@@ -1,0 +1,107 @@
+# One-off: signs every commit on main and every tag with Ashforde's commit-signing key
+# (COMMIT_SIGNING_KEY), so GitHub shows all of them as Verified. Authors, committers,
+# dates, messages and file contents stay exactly as they were; only signatures are added,
+# so every commit ID changes. Then it checks, on GitHub itself, that every commit on main
+# and every tag's commit is Verified, and fails listing any that isn't.
+name: Re-sign history
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "re-sign main" to rewrite main and every tag'
+        required: true
+      verify_only:
+        description: "Only check that every commit is Verified (rewrite nothing)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sign-and-land
+  cancel-in-progress: false
+
+jobs:
+  resign:
+    if: inputs.confirm == 're-sign main' && !inputs.verify_only
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Sign every commit and tag
+        env:
+          SIGNING_KEY: ${{ secrets.COMMIT_SIGNING_KEY }}
+          FILTER_BRANCH_SQUELCH_WARNING: "1"
+        run: |
+          set -euo pipefail
+          if [ -z "$SIGNING_KEY" ]; then echo "::error::The COMMIT_SIGNING_KEY secret is not set."; exit 1; fi
+          key="$RUNNER_TEMP/signing_key"
+          install -m 600 /dev/null "$key"
+          printf '%s\n' "$SIGNING_KEY" > "$key"
+          trap 'rm -f "$key"' EXIT
+          git config user.name ashfordeOU
+          git config user.email 236818772+ashfordeOU@users.noreply.github.com
+          git config gpg.format ssh
+          git config user.signingkey "$key"
+          printf '236818772+ashfordeOU@users.noreply.github.com namespaces="git" %s\n' "$(ssh-keygen -y -f "$key")" > "$RUNNER_TEMP/allowed_signers"
+          git config gpg.ssh.allowedSignersFile "$RUNNER_TEMP/allowed_signers"
+          git fetch --tags --force origin
+          git checkout -B main origin/main
+          before="$(git rev-list --count main)"
+          git tag > "$RUNNER_TEMP/tags.txt"
+          # Keeps every author, committer, date, message and tree; only adds the signature.
+          git filter-branch -f --commit-filter 'git commit-tree -S "$@"' --tag-name-filter cat -- main --tags
+          after="$(git rev-list --count main)"
+          [ "$before" = "$after" ] || { echo "::error::commit count changed ($before -> $after)"; exit 1; }
+          # Every commit must carry a good signature from exactly this key.
+          bad=0
+          for c in $(git rev-list main); do
+            git verify-commit "$c" > /dev/null 2>&1 || { echo "::error::not signed: $c"; bad=$((bad + 1)); }
+          done
+          while read -r t; do
+            [ -n "$t" ] || continue
+            git verify-commit "$(git rev-list -n1 "$t")" > /dev/null 2>&1 || { echo "::error::tag $t points at an unsigned commit"; bad=$((bad + 1)); }
+          done < "$RUNNER_TEMP/tags.txt"
+          [ "$bad" = 0 ] || exit 1
+          echo "Signed $after commits and $(wc -l < "$RUNNER_TEMP/tags.txt") tags; every one checks out locally."
+          git push --force origin main
+          git push --force origin main:refs/heads/incoming
+          git push --force origin --tags
+
+  verify:
+    needs: resign
+    if: always() && inputs.confirm == 're-sign main' && (needs.resign.result == 'success' || inputs.verify_only)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every commit on main and every tag is Verified on GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          owner="${GITHUB_REPOSITORY%/*}"; name="${GITHUB_REPOSITORY#*/}"
+          sleep 20
+          cursor=""; total=0; bad=0
+          while :; do
+            after=""; [ -n "$cursor" ] && after=", after: \"$cursor\""
+            page="$(gh api graphql -f query="{ repository(owner: \"$owner\", name: \"$name\") { ref(qualifiedName: \"refs/heads/main\") { target { ... on Commit { history(first: 100$after) { pageInfo { hasNextPage endCursor } nodes { oid messageHeadline signature { isValid state } } } } } } } }")"
+            echo "$page" | jq -r '.data.repository.ref.target.history.nodes[] | "\(.oid) \(.signature.isValid // false) \(.signature.state // "UNSIGNED") \(.messageHeadline)"' > page.txt
+            total=$((total + $(wc -l < page.txt)))
+            while read -r oid ok state rest; do
+              if [ "$ok" != "true" ] || [ "$state" != "VALID" ]; then echo "::error::not Verified ($state): $oid $rest"; bad=$((bad + 1)); fi
+            done < page.txt
+            [ "$(echo "$page" | jq -r '.data.repository.ref.target.history.pageInfo.hasNextPage')" = "true" ] || break
+            cursor="$(echo "$page" | jq -r '.data.repository.ref.target.history.pageInfo.endCursor')"
+          done
+          tags=0
+          for t in $(gh api "repos/$GITHUB_REPOSITORY/tags?per_page=100" --paginate --jq '.[].name'); do
+            sha="$(gh api "repos/$GITHUB_REPOSITORY/commits/$t" --jq '.sha')"
+            v="$(gh api "repos/$GITHUB_REPOSITORY/commits/$sha" --jq '"\(.commit.verification.verified) \(.commit.verification.reason)"')"
+            tags=$((tags + 1))
+            case "$v" in "true valid") ;; *) echo "::error::tag $t ($sha) not Verified: $v"; bad=$((bad + 1)) ;; esac
+          done
+          echo "Checked $total commits on main and $tags tags: $bad not Verified."
+          [ "$bad" = 0 ]

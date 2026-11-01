@@ -860,7 +860,9 @@ curl -H "Authorization: Bearer $(cat ~/Library/Application\ Support/Monorail/api
 ```
 
 `GET /hello` says who's running (version, focus mode, presentation, Stay Awake, paused, and the
-peer app if one said hello); Ashforde's own apps announce themselves with `POST /peer`.
+peer app if one said hello); Ashforde's own apps announce themselves with `POST /peer`. Monorail
+writes `api-port` afresh every time its API starts (launch, restart, update) and deletes it when
+the API stops, so other apps can watch that file to know when to say hello again.
 
 ### Scripts
 

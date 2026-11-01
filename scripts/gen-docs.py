@@ -35,6 +35,69 @@ def actions():
     return "\n".join(lines) + "\n"
 
 
+def spec_actions():
+    """spec/actions.json: every action's name, title and whether it has a default key (all platforms)."""
+    import json
+    src = read("Sources/MonorailCore/Action.swift")
+    enum = src[src.index("public enum Action"):]
+    titles = dict(re.findall(r'case \.(\w+): return "([^"]+)"', enum))
+    block = enum[enum.index("unboundByDefault"):]
+    block = block[:block.index("\n    ]") if "\n    ]" in block else len(block)]
+    unbound = set(re.findall(r"\.(\w+)", block))
+    numbered = re.compile(r"^(workspace|move-to-workspace|column|view|save-view|tag|combine)-[1-9]$")
+    items = []
+    for name, raw in re.findall(r"^    case (\w+)(?: = \"([^\"]+)\")?\s*$", enum, re.M):
+        raw = raw or name
+        bound = name not in unbound and not re.match(r"^(tag|combine)-", raw)
+        title = titles.get(name)
+        n = re.search(r"(\d)$", raw)
+        if not title and n:
+            templates = {"workspace": "Switch to workspace {}", "move-to-workspace": "Move window to workspace {}",
+                         "column": "Focus column {}", "view": "Go to saved view {}", "save-view": "Save this view as {}",
+                         "tag": "Also keep this window on workspace {}", "combine": "Show workspace {} alongside this one"}
+            prefix = raw.rsplit("-", 1)[0]
+            title = templates.get(prefix, raw).format(n.group(1))
+        items.append({"name": raw, "title": title or raw, "defaultKey": bound, "numbered": bool(numbered.match(raw))})
+    return json.dumps({"generatedFrom": "Sources/MonorailCore/Action.swift", "count": len(items), "actions": items},
+                      indent=2, ensure_ascii=False) + "\n"
+
+
+def spec_settings():
+    """spec/settings.json: every setting's key, type, default (as written in Swift) and meaning."""
+    import json
+    src = read("Sources/MonorailCore/AppSettings.swift")
+    body = src[src.index("public struct AppSettings"):]
+    body = body[:body.index("enum CodingKeys")]
+    items, doc = [], []
+    for line in body.splitlines():
+        line = line.strip()
+        if line.startswith("///"):
+            doc.append(line[3:].strip())
+            continue
+        m = re.match(r"public var (\w+)(?:: ([^=]+))?(?: = (.+))?$", line)
+        if m and "{" not in line:
+            name, kind, default = m.group(1), (m.group(2) or "").strip(), (m.group(3) or "").strip()
+            if not kind:
+                if default in ("true", "false"):
+                    kind = "Bool"
+                elif re.fullmatch(r"-?\d+", default):
+                    kind = "Int"
+                elif re.fullmatch(r"-?\d+\.\d+", default):
+                    kind = "Double"
+                elif default.startswith('"'):
+                    kind = "String"
+                elif re.fullmatch(r"(\w+)\(\)", default):
+                    kind = default[:-2]
+                elif default.startswith("AppSettings.") or default.startswith("."):
+                    kind = "Constant"
+                else:
+                    kind = "?"
+            items.append({"key": name, "type": kind, "default": default or None, "about": " ".join(doc)})
+        doc = []
+    return json.dumps({"generatedFrom": "Sources/MonorailCore/AppSettings.swift", "count": len(items), "settings": items},
+                      indent=2, ensure_ascii=False) + "\n"
+
+
 def settings():
     src = read("Sources/MonorailCore/AppSettings.swift")
     body = src[src.index("public struct AppSettings"):]
@@ -118,7 +181,8 @@ enum SettingsIndex {{
 
 def main():
     outputs = {"docs/ACTIONS.md": actions(), "docs/SETTINGS.md": settings(),
-               "Sources/Monorail/SettingsIndex.swift": settings_index()}
+               "Sources/Monorail/SettingsIndex.swift": settings_index(),
+               "spec/actions.json": spec_actions(), "spec/settings.json": spec_settings()}
     stale = []
     for path, text in outputs.items():
         full = os.path.join(ROOT, path)

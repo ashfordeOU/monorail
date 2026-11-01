@@ -9,8 +9,8 @@ pull request as the code.
 | [`strip.md`](strip.md) | The strip, slides, widths, focus and scrolling |
 | [`docking.md`](docking.md) | Docking windows onto each other, nested splits, tab groups, resizing |
 | [`views.md`](views.md) | Saved views, back and forward |
-| `actions.json`, `settings.json` | Every action and setting, generated from the Swift sources (coming next) |
-| `parity.md` | Which features are shared, adapted per OS, or OS-only (coming next) |
+| `actions.json`, `settings.json` | Every action and setting, generated from the Swift sources by `scripts/gen-docs.py` |
+| [`parity.md`](parity.md) | Which features are shared, adapted per OS, or OS-only, and their status |
 
 ## Rules
 

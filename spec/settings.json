@@ -1,0 +1,1206 @@
+{
+  "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
+  "count": 200,
+  "settings": [
+    {
+      "key": "layout",
+      "type": "LayoutConfig",
+      "default": "LayoutConfig()",
+      "about": ""
+    },
+    {
+      "key": "animate",
+      "type": "Bool",
+      "default": "true",
+      "about": "Animate windows into place instead of jumping."
+    },
+    {
+      "key": "animationDuration",
+      "type": "Double",
+      "default": "0.2",
+      "about": "Animation length in seconds."
+    },
+    {
+      "key": "modifierSwipe",
+      "type": "Bool",
+      "default": "true",
+      "about": "Scroll the strip with the mouse wheel or trackpad while holding `scrollModifier`."
+    },
+    {
+      "key": "scrollModifier",
+      "type": "Modifiers",
+      "default": "[.option]",
+      "about": "Keys to hold while scrolling to move the strip instead of the app under the pointer."
+    },
+    {
+      "key": "scrollOverMenuBar",
+      "type": "Bool",
+      "default": "true",
+      "about": "Scrolling over the menu bar moves the strip, no keys needed."
+    },
+    {
+      "key": "showNavigationArrows",
+      "type": "Bool",
+      "default": "false",
+      "about": "Show clickable ‹ › buttons in the menu bar."
+    },
+    {
+      "key": "slideTrigger",
+      "type": "SlideTrigger",
+      "default": ".rightOption",
+      "about": "Tapping this key on its own turns on slide mode."
+    },
+    {
+      "key": "swipeFingers",
+      "type": "SwipeFingers",
+      "default": ".off",
+      "about": "Scroll the strip with a three- or four-finger swipe."
+    },
+    {
+      "key": "swipeSensitivity",
+      "type": "Double",
+      "default": "1.0",
+      "about": "Multiplier applied to swipe distance."
+    },
+    {
+      "key": "invertSwipe",
+      "type": "Bool",
+      "default": "false",
+      "about": "Flip the swipe direction."
+    },
+    {
+      "key": "mouseFollowsFocus",
+      "type": "Bool",
+      "default": "false",
+      "about": "Move the mouse pointer to the centre of a window focused from the keyboard."
+    },
+    {
+      "key": "focusFollowsMouse",
+      "type": "Bool",
+      "default": "false",
+      "about": "Focus the window under the mouse pointer."
+    },
+    {
+      "key": "keepHeights",
+      "type": "Bool",
+      "default": "false",
+      "about": "Windows in single-window columns keep their own height, top aligned."
+    },
+    {
+      "key": "focusBorder",
+      "type": "Bool",
+      "default": "false",
+      "about": "Draw a coloured border around the focused window."
+    },
+    {
+      "key": "focusBorderWidth",
+      "type": "Double",
+      "default": "3.0",
+      "about": ""
+    },
+    {
+      "key": "focusBorderColor",
+      "type": "String",
+      "default": "\"#4C8DFF\"",
+      "about": "Hex colour of the focus border, e.g. \"#4C8DFF\"."
+    },
+    {
+      "key": "dimInactive",
+      "type": "Bool",
+      "default": "false",
+      "about": "Darken tiled windows that do not have focus."
+    },
+    {
+      "key": "dimAmount",
+      "type": "Double",
+      "default": "0.2",
+      "about": "Opacity of the dimming overlay, 0...1."
+    },
+    {
+      "key": "showColumnIndicator",
+      "type": "Bool",
+      "default": "true",
+      "about": "Show \"3/8\" (focused column / columns) next to the menu bar icon."
+    },
+    {
+      "key": "newWindowPosition",
+      "type": "Strip.InsertPosition",
+      "default": ".afterFocused",
+      "about": "Where newly opened windows join the strip."
+    },
+    {
+      "key": "appRules",
+      "type": "[AppRule]",
+      "default": "AppSettings.defaultAppRules",
+      "about": "Per-app rules."
+    },
+    {
+      "key": "keymap",
+      "type": "Keymap",
+      "default": ".default",
+      "about": ""
+    },
+    {
+      "key": "sliderBar",
+      "type": "SliderBarMode",
+      "default": ".whileMoving",
+      "about": "The slider bar: a mini-map of the strip you can drag to slide."
+    },
+    {
+      "key": "sliderBarEdge",
+      "type": "SliderBarEdge",
+      "default": ".bottom",
+      "about": ""
+    },
+    {
+      "key": "iconOpensSlider",
+      "type": "Bool",
+      "default": "true",
+      "about": "Clicking the menu bar icon shows the slider; right-click shows the menu."
+    },
+    {
+      "key": "groupByApp",
+      "type": "Bool",
+      "default": "true",
+      "about": "Group windows into full-screen slides by app as they open."
+    },
+    {
+      "key": "tilesPerSlide",
+      "type": "Int",
+      "default": "2",
+      "about": "Windows per slide when grouping, unless an app rule says otherwise."
+    },
+    {
+      "key": "hotEdges",
+      "type": "Bool",
+      "default": "false",
+      "about": "Push the pointer against the left or right screen edge to slide."
+    },
+    {
+      "key": "customLayouts",
+      "type": "[CustomLayout]",
+      "default": "[",
+      "about": "Slide layouts designed in Settings."
+    },
+    {
+      "key": "appPairs",
+      "type": "[AppPair]",
+      "default": "[]",
+      "about": "Saved app pairs."
+    },
+    {
+      "key": "profiles",
+      "type": "[String]",
+      "default": "[\"Default\"]",
+      "about": "Profiles: whole sets of workspaces (\"Work\", \"Home\")."
+    },
+    {
+      "key": "dynamicWorkspaces",
+      "type": "Bool",
+      "default": "false",
+      "about": "Show only the workspaces in use, plus one empty one."
+    },
+    {
+      "key": "hapticFeedback",
+      "type": "Bool",
+      "default": "true",
+      "about": "A light tap on Force Touch trackpads when the strip settles."
+    },
+    {
+      "key": "pinchForOverview",
+      "type": "Bool",
+      "default": "true",
+      "about": "Hold ⌥ and pinch on the trackpad to open (pinch in) or close the overview."
+    },
+    {
+      "key": "attentionMarkers",
+      "type": "Bool",
+      "default": "true",
+      "about": "Red dots on slides whose apps show a badge in the Dock."
+    },
+    {
+      "key": "snapPicker",
+      "type": "Bool",
+      "default": "true",
+      "about": "Dragging a window to the top of the screen shows layouts to drop it into."
+    },
+    {
+      "key": "focusMinutes",
+      "type": "Int",
+      "default": "25",
+      "about": "Focus mode: how long it lasts (0 = until turned off) and how dark the rest gets."
+    },
+    {
+      "key": "focusDim",
+      "type": "Double",
+      "default": "0.6",
+      "about": ""
+    },
+    {
+      "key": "displayOverrides",
+      "type": "[String: DisplayOverride]",
+      "default": "[:]",
+      "about": "Overrides per display, by display UUID."
+    },
+    {
+      "key": "theme",
+      "type": "Theme",
+      "default": ".vivid",
+      "about": ""
+    },
+    {
+      "key": "syncThroughICloud",
+      "type": "Bool",
+      "default": "false",
+      "about": "Keep settings, layouts and app pairs in iCloud Drive, shared by your Macs."
+    },
+    {
+      "key": "threeFingerTapOverview",
+      "type": "Bool",
+      "default": "false",
+      "about": "A three-finger tap on the trackpad opens the overview."
+    },
+    {
+      "key": "peekWithOption",
+      "type": "Bool",
+      "default": "true",
+      "about": "Hold ⌥ while hovering a slide in the slider to peek at it full size."
+    },
+    {
+      "key": "collectStats",
+      "type": "Bool",
+      "default": "true",
+      "about": "Count switches and pairings on this Mac, for Insights and suggestions."
+    },
+    {
+      "key": "autoRules",
+      "type": "[AutoRule]",
+      "default": "[]",
+      "about": "Profile and layout changes by time of day or Wi-Fi network."
+    },
+    {
+      "key": "smartGaps",
+      "type": "Bool",
+      "default": "false",
+      "about": "No gaps around a lone window; wider gaps on big displays."
+    },
+    {
+      "key": "launchSlots",
+      "type": "[String: String]",
+      "default": "[:]",
+      "about": "Quick launch: a letter opens or focuses an app (by bundle ID)."
+    },
+    {
+      "key": "menuBarShowsApp",
+      "type": "Bool",
+      "default": "false",
+      "about": "The menu bar shows the focused app's name next to the position."
+    },
+    {
+      "key": "modifierDrag",
+      "type": "Bool",
+      "default": "true",
+      "about": "Hold ⌃⌥ and drag anywhere in a window to move it; right-drag to resize."
+    },
+    {
+      "key": "titleBarSwipes",
+      "type": "Bool",
+      "default": "false",
+      "about": "Two-finger swipes on a window's title bar: left and right move its slide, up toggles full width, down minimises."
+    },
+    {
+      "key": "focusBorderGradient",
+      "type": "Bool",
+      "default": "false",
+      "about": "The focus border fades from its colour into a second one."
+    },
+    {
+      "key": "focusBorderColor2",
+      "type": "String",
+      "default": "\"#FF5F9E\"",
+      "about": ""
+    },
+    {
+      "key": "workspaceWallpapers",
+      "type": "[String: String]",
+      "default": "[:]",
+      "about": "A desktop picture per workspace (index → file path)."
+    },
+    {
+      "key": "liveReloadSettings",
+      "type": "Bool",
+      "default": "true",
+      "about": "Watch settings.json and pick up changes made in a text editor."
+    },
+    {
+      "key": "publishState",
+      "type": "Bool",
+      "default": "false",
+      "about": "Write state.json and post a notification on changes, for SketchyBar and other status bars."
+    },
+    {
+      "key": "eventScript",
+      "type": "String",
+      "default": "\"\"",
+      "about": "A script run on events (workspace and focus changes), with details in environment variables."
+    },
+    {
+      "key": "followReduceMotion",
+      "type": "Bool",
+      "default": "true",
+      "about": "Skip animations when macOS's Reduce Motion or Low Power Mode is on."
+    },
+    {
+      "key": "resizeHUD",
+      "type": "Bool",
+      "default": "true",
+      "about": "While resizing by hand, show the window's size."
+    },
+    {
+      "key": "rememberWidths",
+      "type": "Bool",
+      "default": "true",
+      "about": "New windows of an app open at the width you last gave it."
+    },
+    {
+      "key": "centerLoneWindow",
+      "type": "Double",
+      "default": "0.0",
+      "about": "A lone window sits centred at this share of the screen (0 = off)."
+    },
+    {
+      "key": "autoGrowFocus",
+      "type": "Double",
+      "default": "0.0",
+      "about": "The focused one of two windows in a slide grows to this share (0 = off)."
+    },
+    {
+      "key": "projects",
+      "type": "[String]",
+      "default": "[]",
+      "about": "Windows whose titles name one of these projects gather in one workspace."
+    },
+    {
+      "key": "templates",
+      "type": "[WorkspaceTemplate]",
+      "default": "[]",
+      "about": "Workspace templates."
+    },
+    {
+      "key": "meetingHelper",
+      "type": "Bool",
+      "default": "false",
+      "about": "Before a calendar event with a meeting link: open it and switch profile."
+    },
+    {
+      "key": "meetingProfile",
+      "type": "Int?",
+      "default": null,
+      "about": ""
+    },
+    {
+      "key": "verticalWorkspaceSwipes",
+      "type": "Bool",
+      "default": "false",
+      "about": "Three- or four-finger vertical swipes switch workspace (sliding up or down)."
+    },
+    {
+      "key": "pinchZoomsStrip",
+      "type": "Bool",
+      "default": "true",
+      "about": "⌥ + pinch zooms out on the strip (instead of opening the overview)."
+    },
+    {
+      "key": "localAPI",
+      "type": "Bool",
+      "default": "false",
+      "about": "A local API (and MCP server) for other apps and AI assistants."
+    },
+    {
+      "key": "apiPort",
+      "type": "Int",
+      "default": "4767",
+      "about": ""
+    },
+    {
+      "key": "scripts",
+      "type": "Bool",
+      "default": "false",
+      "about": "Run JavaScript plugins from the Scripts folder."
+    },
+    {
+      "key": "language",
+      "type": "String",
+      "default": "\"\"",
+      "about": "Interface language: empty follows macOS."
+    },
+    {
+      "key": "openNextToSameApp",
+      "type": "Bool",
+      "default": "false",
+      "about": "New windows open right after their app's other windows."
+    },
+    {
+      "key": "openIntoFocusedSlide",
+      "type": "Bool",
+      "default": "false",
+      "about": "New windows join the focused slide (toggled by an action)."
+    },
+    {
+      "key": "workspaceHUD",
+      "type": "Bool",
+      "default": "true",
+      "about": "Show the workspace's name in the middle of the screen when switching."
+    },
+    {
+      "key": "sliderTitles",
+      "type": "Bool",
+      "default": "false",
+      "about": "Window titles on the slider bar's tiles, and a smaller bar."
+    },
+    {
+      "key": "compactSlider",
+      "type": "Bool",
+      "default": "false",
+      "about": ""
+    },
+    {
+      "key": "menuBarStyle",
+      "type": "MenuBarStyle",
+      "default": ".mini",
+      "about": ""
+    },
+    {
+      "key": "compactMenuBarApplied",
+      "type": "Bool",
+      "default": "true",
+      "about": "Set once the narrower 1.1 menu bar has been applied to older settings."
+    },
+    {
+      "key": "quietMode",
+      "type": "Bool",
+      "default": "false",
+      "about": "No pop-up notices (confirmations, tips)."
+    },
+    {
+      "key": "slideSound",
+      "type": "Bool",
+      "default": "false",
+      "about": "A soft click as the strip lands on a slide."
+    },
+    {
+      "key": "announceChanges",
+      "type": "Bool",
+      "default": "true",
+      "about": "VoiceOver says which slide and workspace you moved to."
+    },
+    {
+      "key": "rememberFloatingPositions",
+      "type": "Bool",
+      "default": "true",
+      "about": "Floating windows go back where you last put them, per app."
+    },
+    {
+      "key": "autoSnapshot",
+      "type": "Bool",
+      "default": "true",
+      "about": "Take a \"Last session\" snapshot on quit and before sleep."
+    },
+    {
+      "key": "dailyBackups",
+      "type": "Bool",
+      "default": "true",
+      "about": "Keep a copy of the settings each day (the last seven)."
+    },
+    {
+      "key": "skipAnimationsOnBattery",
+      "type": "Bool",
+      "default": "false",
+      "about": "Skip animations while running on battery."
+    },
+    {
+      "key": "cheatSheetOnHold",
+      "type": "Bool",
+      "default": "true",
+      "about": "Hold ⌃⌥ for a moment to see a cheat sheet of shortcuts."
+    },
+    {
+      "key": "focusFollowsMouseDelay",
+      "type": "Double",
+      "default": "0.15",
+      "about": "Focus follows mouse waits this long (seconds) before switching."
+    },
+    {
+      "key": "capsLockKey",
+      "type": "Bool",
+      "default": "false",
+      "about": "Caps Lock becomes the Monorail key: hold it instead of ⌃⌥."
+    },
+    {
+      "key": "fitByDefault",
+      "type": "Bool",
+      "default": "false",
+      "about": "Fit mode: every slide shares the screen. On for all workspaces, or just some; `fitExceptions` lists workspaces (absolute numbers) that differ."
+    },
+    {
+      "key": "fitExceptions",
+      "type": "[Int]",
+      "default": "[]",
+      "about": ""
+    },
+    {
+      "key": "workspaceNotes",
+      "type": "[String: String]",
+      "default": "[:]",
+      "about": "A line of notes per workspace (by its number from 0)."
+    },
+    {
+      "key": "autoNameWorkspaces",
+      "type": "Bool",
+      "default": "true",
+      "about": "Workspaces without a name take their apps' names."
+    },
+    {
+      "key": "betaUpdates",
+      "type": "Bool",
+      "default": "false",
+      "about": "Get early (beta) versions as well as final ones."
+    },
+    {
+      "key": "weeklySummary",
+      "type": "Bool",
+      "default": "false",
+      "about": "A notification on Monday mornings with last week's Insights."
+    },
+    {
+      "key": "lastSeenVersion",
+      "type": "String",
+      "default": "\"\"",
+      "about": "The version whose What's New was last shown."
+    },
+    {
+      "key": "hotCorners",
+      "type": "[HotCorner]",
+      "default": "[.none, .none, .none, .none]",
+      "about": "Screen corners: top-left, top-right, bottom-left, bottom-right."
+    },
+    {
+      "key": "mouseButtonsStep",
+      "type": "Bool",
+      "default": "false",
+      "about": "Mouse buttons 4 and 5 (back and forward) step through slides."
+    },
+    {
+      "key": "scrollResizes",
+      "type": "Bool",
+      "default": "true",
+      "about": "⌃⌥ + scroll over a window changes its slide's width."
+    },
+    {
+      "key": "shiftScrollSwitchesWorkspace",
+      "type": "Bool",
+      "default": "true",
+      "about": "⇧ + scroll over the slider bar switches workspace."
+    },
+    {
+      "key": "middleClickZoom",
+      "type": "Bool",
+      "default": "true",
+      "about": "⌥ + middle-click a window zooms it."
+    },
+    {
+      "key": "focusGlow",
+      "type": "Bool",
+      "default": "false",
+      "about": "The focus border glows, and can take the app icon's colour."
+    },
+    {
+      "key": "borderFromAppIcon",
+      "type": "Bool",
+      "default": "false",
+      "about": ""
+    },
+    {
+      "key": "focusFlash",
+      "type": "Bool",
+      "default": "false",
+      "about": "A quick highlight of the focused window when focus moves by keyboard."
+    },
+    {
+      "key": "sliderOpacity",
+      "type": "Double",
+      "default": "1.0",
+      "about": "The slider bar's opacity and size (0.8, 1 or 1.25)."
+    },
+    {
+      "key": "sliderScale",
+      "type": "Double",
+      "default": "1.0",
+      "about": ""
+    },
+    {
+      "key": "plainOverview",
+      "type": "Bool",
+      "default": "false",
+      "about": "The overview's backdrop: colourful, or plain."
+    },
+    {
+      "key": "overviewIconsOnly",
+      "type": "Bool",
+      "default": "false",
+      "about": "The overview with app icons only (no live previews)."
+    },
+    {
+      "key": "menuBarShowsTitle",
+      "type": "Bool",
+      "default": "false",
+      "about": "The menu bar shows the focused window's title."
+    },
+    {
+      "key": "noticePosition",
+      "type": "NoticePosition",
+      "default": ".top",
+      "about": "Where notices appear and for how long (seconds)."
+    },
+    {
+      "key": "noticeDuration",
+      "type": "Double",
+      "default": "1.8",
+      "about": ""
+    },
+    {
+      "key": "pomodoroFocus",
+      "type": "Int",
+      "default": "25",
+      "about": "Pomodoro: focus and break lengths in minutes."
+    },
+    {
+      "key": "pomodoroBreak",
+      "type": "Int",
+      "default": "5",
+      "about": ""
+    },
+    {
+      "key": "breakReminderMinutes",
+      "type": "Int",
+      "default": "0",
+      "about": "Remind to rest your eyes every so many minutes (0 = off)."
+    },
+    {
+      "key": "dailyFocusGoal",
+      "type": "Int",
+      "default": "0",
+      "about": "A daily focus goal in minutes (0 = none), shown in Insights."
+    },
+    {
+      "key": "workspaceConfigs",
+      "type": "[String: WorkspaceConfig]",
+      "default": "[:]",
+      "about": "Settings per workspace, by absolute workspace number."
+    },
+    {
+      "key": "autoParkHours",
+      "type": "Int",
+      "default": "0",
+      "about": "Park a workspace you haven't visited for this many hours (0 = never)."
+    },
+    {
+      "key": "floatSmallerThan",
+      "type": "Double",
+      "default": "0.0",
+      "about": "Windows smaller than this (points, either side) float on their own (0 = off)."
+    },
+    {
+      "key": "floatSettingsWindows",
+      "type": "Bool",
+      "default": "true",
+      "about": "Settings and preferences windows float."
+    },
+    {
+      "key": "pauseForApps",
+      "type": "[String]",
+      "default": "[]",
+      "about": "Tiling pauses while one of these apps (bundle IDs) is in front."
+    },
+    {
+      "key": "retileAfterWake",
+      "type": "Bool",
+      "default": "true",
+      "about": "Lay everything out again after the Mac wakes."
+    },
+    {
+      "key": "animationCurve",
+      "type": "AnimationCurve",
+      "default": ".smooth",
+      "about": ""
+    },
+    {
+      "key": "animationFPS",
+      "type": "Int",
+      "default": "60",
+      "about": "Animation frames per second: 30, 60 or 120."
+    },
+    {
+      "key": "rescueAfterCrash",
+      "type": "Bool",
+      "default": "true",
+      "about": "Bring every window back after Monorail quit unexpectedly."
+    },
+    {
+      "key": "clickSound",
+      "type": "String",
+      "default": "\"Tink\"",
+      "about": "The click sound for slide changes."
+    },
+    {
+      "key": "announceWindows",
+      "type": "Bool",
+      "default": "false",
+      "about": "VoiceOver also says which window got focus."
+    },
+    {
+      "key": "webhookURL",
+      "type": "String",
+      "default": "\"\"",
+      "about": "POST events as JSON to this address (empty = off)."
+    },
+    {
+      "key": "remoteCommands",
+      "type": "Bool",
+      "default": "false",
+      "about": "Let other apps run actions with the org.ashforde.monorail.perform distributed notification."
+    },
+    {
+      "key": "stageNextWindow",
+      "type": "Bool",
+      "default": "false",
+      "about": "Bring the window you usually go to next right beside the one you are in."
+    },
+    {
+      "key": "distractionNudges",
+      "type": "Bool",
+      "default": "false",
+      "about": "Suggest focus mode when you switch windows very often."
+    },
+    {
+      "key": "contentAwareWidths",
+      "type": "Bool",
+      "default": "false",
+      "about": "New slides get a width that suits the app: ~100 columns of code, a page of text, a web page."
+    },
+    {
+      "key": "pathRules",
+      "type": "[PathRule]",
+      "default": "[]",
+      "about": "Documents from these folders open in these workspaces."
+    },
+    {
+      "key": "displayProfiles",
+      "type": "Bool",
+      "default": "false",
+      "about": "Remember the layout for each set of displays and bring it back when they connect again."
+    },
+    {
+      "key": "agentAlerts",
+      "type": "Bool",
+      "default": "true",
+      "about": "Tell me when an AI coding agent in a terminal is waiting for me."
+    },
+    {
+      "key": "agentBringIntoView",
+      "type": "Bool",
+      "default": "false",
+      "about": "Slide a waiting agent's window into view."
+    },
+    {
+      "key": "ruleSuggestions",
+      "type": "Bool",
+      "default": "true",
+      "about": "Suggest rules from the fixes you keep making."
+    },
+    {
+      "key": "suggestedRules",
+      "type": "[String: Double]",
+      "default": "[:]",
+      "about": "Widths Monorail noticed you keep giving apps (bundle ID → share), waiting to become rules."
+    },
+    {
+      "key": "monorailKeySource",
+      "type": "MonorailKeySource",
+      "default": ".capsLock",
+      "about": "The key that acts as the Monorail key."
+    },
+    {
+      "key": "mouseGestures",
+      "type": "Bool",
+      "default": "false",
+      "about": "⌃⌥⇧ + drag left, right, up or down for workspaces, the overview and the desktop."
+    },
+    {
+      "key": "midiControl",
+      "type": "Bool",
+      "default": "false",
+      "about": "Run actions from a MIDI controller."
+    },
+    {
+      "key": "midiMap",
+      "type": "[String: String]",
+      "default": "[:]",
+      "about": "MIDI note number → action name."
+    },
+    {
+      "key": "gameController",
+      "type": "Bool",
+      "default": "false",
+      "about": "Drive Monorail with a game controller."
+    },
+    {
+      "key": "webRemote",
+      "type": "Bool",
+      "default": "false",
+      "about": "A remote control page for your phone on the local network."
+    },
+    {
+      "key": "webRemoteToken",
+      "type": "String",
+      "default": "\"\"",
+      "about": "The secret in the remote page link."
+    },
+    {
+      "key": "headFocus",
+      "type": "Bool",
+      "default": "false",
+      "about": "Experimental: turn your head towards a display to focus it (uses the camera)."
+    },
+    {
+      "key": "deepWorkApps",
+      "type": "[String]",
+      "default": "[\"com.tinyspeck.slackmacgap\", \"com.apple.MobileSMS\", \"com.hnc.Discord\", \"com.apple.mail\"]",
+      "about": "Apps hidden during deep work (bundle IDs)."
+    },
+    {
+      "key": "deepWorkFromCalendar",
+      "type": "Bool",
+      "default": "false",
+      "about": "Calendar events called Focus or Deep work turn deep work on."
+    },
+    {
+      "key": "safeScreenShare",
+      "type": "Bool",
+      "default": "true",
+      "about": "Hide private apps while you share your screen."
+    },
+    {
+      "key": "privateApps",
+      "type": "[String]",
+      "default": "[\"com.apple.MobileSMS\", \"net.whatsapp.WhatsApp\", \"com.apple.mail\", \"com.apple.Passwords\", \"com.1password.1password\"]",
+      "about": "Apps whose windows count as private (bundle IDs)."
+    },
+    {
+      "key": "privacyBlur",
+      "type": "Bool",
+      "default": "true",
+      "about": "Blur private windows in the overview and previews."
+    },
+    {
+      "key": "dimFollowsPointer",
+      "type": "Bool",
+      "default": "false",
+      "about": "Dimming follows the pointer instead of focus."
+    },
+    {
+      "key": "energySaver",
+      "type": "Bool",
+      "default": "true",
+      "about": "On battery, animate at 30 fps and pause live previews."
+    },
+    {
+      "key": "presenterNotes",
+      "type": "String",
+      "default": "\"\"",
+      "about": "Your presenter notes (never shown in screen shares)."
+    },
+    {
+      "key": "workspaceClipboard",
+      "type": "Bool",
+      "default": "false",
+      "about": "Keep a clipboard history for each workspace."
+    },
+    {
+      "key": "driftWallpaper",
+      "type": "String",
+      "default": "\"\"",
+      "about": "A picture that drifts gently behind the strip as it scrolls (empty = off)."
+    },
+    {
+      "key": "notchHUD",
+      "type": "Bool",
+      "default": "false",
+      "about": "Show slides and workspaces around the MacBook notch as you move."
+    },
+    {
+      "key": "soundPack",
+      "type": "SoundPack",
+      "default": ".classic",
+      "about": "The sounds Monorail plays."
+    },
+    {
+      "key": "crashReports",
+      "type": "Bool",
+      "default": "false",
+      "about": "Keep crash and hang reports on this Mac so you can send them."
+    },
+    {
+      "key": "confirmDestructiveAPI",
+      "type": "Bool",
+      "default": "true",
+      "about": "Ask before an assistant or script closes windows."
+    },
+    {
+      "key": "parkInCorner",
+      "type": "Bool",
+      "default": "true",
+      "about": "Slides off screen wait hidden in the corner (no slivers at the screen edges)."
+    },
+    {
+      "key": "wholeSlidesOnly",
+      "type": "Bool",
+      "default": "true",
+      "about": "Hide slides that only partly fit on screen, instead of showing them cut off at the edge."
+    },
+    {
+      "key": "fitMinimumWidth",
+      "type": "Double",
+      "default": "480.0",
+      "about": "Fit mode never makes a window narrower than this (points; a pair needs twice as much); extra slides scroll."
+    },
+    {
+      "key": "awakeKeepDisplayOn",
+      "type": "Bool",
+      "default": "true",
+      "about": "Stay Awake keeps the display on too (otherwise only the Mac stays awake and the display may sleep)."
+    },
+    {
+      "key": "awakeAllowScreenSaver",
+      "type": "Bool",
+      "default": "false",
+      "about": "Let the screen saver start during a Stay Awake session (the Mac still stays awake)."
+    },
+    {
+      "key": "awakeDefaultMinutes",
+      "type": "Int",
+      "default": "0",
+      "about": "How long Stay Awake lasts when toggled on (0 = until you end it)."
+    },
+    {
+      "key": "awakeBatteryCutoff",
+      "type": "Int",
+      "default": "10",
+      "about": "End Stay Awake when the battery drops to this percent on battery power (0 = never)."
+    },
+    {
+      "key": "awakeMoveCursor",
+      "type": "Bool",
+      "default": "false",
+      "about": "During Stay Awake, nudge the pointer now and then so chat apps don’t mark you away."
+    },
+    {
+      "key": "awakeMoveCursorMinutes",
+      "type": "Int",
+      "default": "4",
+      "about": "How often the pointer is nudged (minutes)."
+    },
+    {
+      "key": "awakeDriveAlive",
+      "type": "Bool",
+      "default": "false",
+      "about": "During Stay Awake, keep external drives from spinning down."
+    },
+    {
+      "key": "awakeClosedLid",
+      "type": "Bool",
+      "default": "false",
+      "about": "During Stay Awake, keep running with the lid closed, even without an external display (asks for your password)."
+    },
+    {
+      "key": "awakeNotify",
+      "type": "Bool",
+      "default": "true",
+      "about": "Show a notice when Stay Awake starts and ends."
+    },
+    {
+      "key": "awakeSound",
+      "type": "Bool",
+      "default": "false",
+      "about": "Play a sound when Stay Awake starts and ends."
+    },
+    {
+      "key": "awakeShowTime",
+      "type": "Bool",
+      "default": "true",
+      "about": "Show the time left in the menu bar."
+    },
+    {
+      "key": "awakeOnLaunch",
+      "type": "Bool",
+      "default": "false",
+      "about": "Start Stay Awake when Monorail opens."
+    },
+    {
+      "key": "awakeTriggers",
+      "type": "[AwakeTrigger]",
+      "default": "[]",
+      "about": "Things that start Stay Awake by themselves."
+    },
+    {
+      "key": "awakeTriggersOn",
+      "type": "Bool",
+      "default": "true",
+      "about": "Automatic Stay Awake triggers are on."
+    },
+    {
+      "key": "awakeLockAfterMinutes",
+      "type": "Int",
+      "default": "0",
+      "about": "During Stay Awake, still lock the screen after this many idle minutes (0 = never)."
+    },
+    {
+      "key": "menuWindowsInline",
+      "type": "Bool",
+      "default": "false",
+      "about": "List the workspace’s windows right in the menu bar menu (otherwise they are in a Windows submenu)."
+    },
+    {
+      "key": "meetingLayout",
+      "type": "Bool",
+      "default": "false",
+      "about": "When a call opens from your calendar, put your notes app beside it (and keep your layout to bring back afterwards)."
+    },
+    {
+      "key": "meetingNotesApp",
+      "type": "String",
+      "default": "\"com.apple.Notes\"",
+      "about": "The notes app put beside calls (bundle ID)."
+    },
+    {
+      "key": "sidecarFit",
+      "type": "Bool",
+      "default": "true",
+      "about": "On a Sidecar iPad, every slide fits on screen."
+    },
+    {
+      "key": "seenTips",
+      "type": "[String]",
+      "default": "[]",
+      "about": "Tips already shown."
+    },
+    {
+      "key": "shareUsageStats",
+      "type": "Bool",
+      "default": "true",
+      "about": "Send anonymous daily usage counts (version, macOS, Mac model, features on). Never titles, apps or files."
+    },
+    {
+      "key": "usageNoticeShown",
+      "type": "Bool",
+      "default": "false",
+      "about": "Whether the one-time notice about anonymous usage counts was shown."
+    },
+    {
+      "key": "restoreBrowserTabs",
+      "type": "Bool",
+      "default": "false",
+      "about": "Snapshots also save and reopen browser tabs (Safari, Chrome, Arc, Brave, Edge) and Finder windows."
+    },
+    {
+      "key": "floatSuggestions",
+      "type": "Bool",
+      "default": "true",
+      "about": "Suggest always floating an app after you float its windows by hand a few times."
+    },
+    {
+      "key": "assistantModel",
+      "type": "String",
+      "default": "\"claude-opus-5-5\"",
+      "about": "The Claude model the optional assistant uses, with your own API key."
+    },
+    {
+      "key": "dragToDock",
+      "type": "Bool",
+      "default": "true",
+      "about": "Drag a window onto another window: near an edge docks it beside, the middle makes a tab group (any apps)."
+    },
+    {
+      "key": "gapHandles",
+      "type": "Bool",
+      "default": "true",
+      "about": "Drag the gap between two windows to resize both at once."
+    },
+    {
+      "key": "sliderBarStepsAside",
+      "type": "Bool",
+      "default": "true",
+      "about": "The slider bar steps aside while a video plays or when the window in front covers its spot."
+    },
+    {
+      "key": "keepWindowsInPlace",
+      "type": "Bool",
+      "default": "true",
+      "about": "Snap windows back when an app moves or resizes one by itself."
+    },
+    {
+      "key": "resizeAssist",
+      "type": "Bool",
+      "default": "true",
+      "about": "After resizing a window in a slide, offer to rearrange the slide."
+    },
+    {
+      "key": "pairLoneWindowsOnOpen",
+      "type": "Bool",
+      "default": "false",
+      "about": "Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A)."
+    },
+    {
+      "key": "slideArrangement",
+      "type": "Arrangement",
+      "default": ".grid",
+      "about": "Layout of new slides, unless an app rule says otherwise."
+    },
+    {
+      "key": "workspaceCount",
+      "type": "Int",
+      "default": "4",
+      "about": "Workspaces per display (1...9). Each has its own strip."
+    },
+    {
+      "key": "workspaceNames",
+      "type": "[String]",
+      "default": "[]",
+      "about": "Names for workspaces, by index; empty or missing means \"Workspace N\"."
+    },
+    {
+      "key": "checkForUpdates",
+      "type": "Bool",
+      "default": "true",
+      "about": "Look for new versions on GitHub once a day."
+    },
+    {
+      "key": "installUpdatesAutomatically",
+      "type": "Bool",
+      "default": "false",
+      "about": "Install new versions without asking (Monorail relaunches itself)."
+    },
+    {
+      "key": "rulesVersion",
+      "type": "Constant",
+      "default": "AppSettings.currentRulesVersion",
+      "about": "Bumped when new default app rules ship, so existing settings pick them up once."
+    },
+    {
+      "key": "hasCompletedOnboarding",
+      "type": "Bool",
+      "default": "false",
+      "about": "Set once the welcome tour has been shown."
+    }
+  ]
+}

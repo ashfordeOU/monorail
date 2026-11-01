@@ -4,6 +4,12 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.7.5] - 2026-11-01
+
+### Fixed
+- **File pickers stay on screen.** "Choose Files to Upload" and other open and save panels that an app opens bigger than the screen (often a size remembered from a larger display) are now shrunk to fit and kept fully visible, including when the app reopens the same panel or moves it a moment after it appears.
+- Importing settings from a file saved on Windows (with Windows line endings) now works.
+
 ## [1.7.4] - 2026-11-01
 
 ### Added

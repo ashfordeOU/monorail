@@ -2409,8 +2409,13 @@ final class Engine {
 
     private func centerDialog(_ element: AXUIElement, pid: pid_t) {
         guard isRunning, !isPaused, element.role == kAXWindowRole, let id = element.windowID, windows[id] == nil,
-            !placedDialogs.contains(id), !element.isFullScreen, let frame = element.frame
+            !element.isFullScreen, let frame = element.frame
         else { return }
+        // Apps reuse their file pickers: one shown again is only kept on screen, not moved again.
+        if placedDialogs.contains(id) {
+            if let display = display(containing: frame) ?? displays.first { keepDialogOnScreen(element, display: display) }
+            return
+        }
         placedDialogs.insert(id)
         if placedDialogs.count > 200 { placedDialogs.removeAll() }
 
@@ -2424,10 +2429,39 @@ final class Engine {
             return
         }
         let visible = display.visibleFrame
-        var x = parent.midX - Double(frame.width) / 2
-        var y = parent.y + min(48, max(parent.height - Double(frame.height), 0) / 2)
-        x = min(max(x, Double(visible.minX)), Double(visible.maxX - frame.width))
-        y = min(max(y, Double(visible.minY)), Double(visible.maxY - frame.height))
+        // A dialog bigger than the screen (apps restore sizes saved on a larger display) is shrunk to fit.
+        let size = fittedDialogSize(element, frame.size, in: visible)
+        var x = parent.midX - Double(size.width) / 2
+        var y = parent.y + min(48, max(parent.height - Double(size.height), 0) / 2)
+        x = min(max(x, Double(visible.minX)), Double(visible.maxX - size.width))
+        y = min(max(y, Double(visible.minY)), Double(visible.maxY - size.height))
+        element.setPosition(CGPoint(x: x, y: y))
+        // Some apps move or resize their panel a moment after it appears: keep it on screen.
+        for delay in [0.3, 1.0] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.keepDialogOnScreen(element, display: display)
+            }
+        }
+    }
+
+    /// The size a dialog may have on `visible`: its own, or smaller if it doesn't fit (when the app lets it be resized).
+    private func fittedDialogSize(_ element: AXUIElement, _ size: CGSize, in visible: CGRect) -> CGSize {
+        let margin: CGFloat = 16
+        let fitted = CGSize(width: min(size.width, visible.width - margin * 2), height: min(size.height, visible.height - margin * 2))
+        guard fitted != size, element.isSettable(kAXSizeAttribute) else { return size }
+        element.setSize(fitted)
+        return element.frame?.size ?? fitted
+    }
+
+    /// Pulls a dialog fully onto its display, shrinking it first if it's too big.
+    private func keepDialogOnScreen(_ element: AXUIElement, display: Display) {
+        guard isRunning, !isPaused, let frame = element.frame, !element.isFullScreen else { return }
+        let visible = display.frame.intersects(frame) ? display.visibleFrame
+            : (self.display(containing: frame)?.visibleFrame ?? display.visibleFrame)
+        guard !visible.insetBy(dx: -2, dy: -2).contains(frame) else { return }
+        let size = fittedDialogSize(element, frame.size, in: visible)
+        let x = min(max(frame.minX, visible.minX), visible.maxX - size.width)
+        let y = min(max(frame.minY, visible.minY), visible.maxY - size.height)
         element.setPosition(CGPoint(x: x, y: y))
     }
 

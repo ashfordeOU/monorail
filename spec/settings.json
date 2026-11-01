@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 201,
+  "count": 202,
   "settings": [
     {
       "key": "layout",
@@ -1147,6 +1147,12 @@
       "type": "Bool",
       "default": "true",
       "about": "Floating windows and dialogs that end up off screen (a display unplugged, a size saved on a bigger screen, waking from sleep) come back into view on their own."
+    },
+    {
+      "key": "systemPromptsInFront",
+      "type": "Bool",
+      "default": "true",
+      "about": "macOS permission, password and security prompts always come to the front, centred on your screen, and Monorail holds focus changes until they are answered."
     },
     {
       "key": "keepWindowsInPlace",

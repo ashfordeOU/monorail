@@ -1,6 +1,7 @@
 #if os(macOS)
 import AppKit
 import MonorailCore
+import MonorailEngine
 import os
 
 let log = Logger(subsystem: BundleIDs.current, category: "engine")
@@ -149,6 +150,8 @@ final class Engine {
     private let animator = Animator()
     private let writer = WindowWriter()
     private let overlays = Overlays()
+    /// macOS's own permission and password prompts, kept in front and centred.
+    private let systemPrompts = SystemPrompts()
     private var lastApplyTime: CFTimeInterval = 0
     private var enhancedUIRestore: Set<pid_t> = []
     private var workspaceTokens: [NSObjectProtocol] = []
@@ -169,6 +172,9 @@ final class Engine {
             self?.updateOverlays()
         }
         overlays.onSelectWindow = { [weak self] id in self?.focusAndReveal(id) }
+        systemPrompts.isEnabled = { [weak self] in self?.settings.systemPromptsInFront ?? false }
+        systemPrompts.onChange = { [weak self] _ in self?.updateOverlays() }
+        systemPrompts.start()
         overlays.onDropTab = { [weak self] id, point in self?.dropTab(id, at: point) }
         // The app's own move/resize notifications arrive after the write lands;
         // stamping the time then keeps them from looking like the user's moves.
@@ -1809,7 +1815,7 @@ final class Engine {
 
     private func updateOverlays() {
         defer { onOverlaysUpdated() }
-        guard isRunning, !isPaused, !isPresenting else {
+        guard isRunning, !isPaused, !isPresenting, !systemPrompts.isUp else {
             overlays.hideAll()
             return
         }
@@ -1890,6 +1896,11 @@ final class Engine {
 
     private func focus(_ id: WindowID, warpMouse: Bool) {
         guard let window = windows[id] else { return }
+        // A macOS permission or password prompt is waiting: it stays in front until answered.
+        if systemPrompts.isUp {
+            systemPrompts.check()
+            if systemPrompts.isUp { return }
+        }
         window.element.set(kAXMainAttribute, kCFBooleanTrue)
         window.element.raise()
         AXUIElement.application(window.pid).set(kAXFrontmostAttribute, kCFBooleanTrue)
@@ -2365,18 +2376,11 @@ final class Engine {
     /// otherwise centred (and staggered) on the display you're working on.
     private func placeFloating(_ element: AXUIElement, remembered: CGRect?, lenient: Bool = false) {
         guard isRunning, !isPaused, !element.isFullScreen, !element.isMinimized, let frame = element.frame else { return }
+        // The rules are shared with the other platforms (MonorailEngine.OnScreen).
+        let visibleAreas = displays.map { Rect($0.visibleFrame) }
         func fits(_ rect: CGRect) -> Bool {
-            if displays.contains(where: { $0.visibleFrame.insetBy(dx: -2, dy: -2).contains(rect) }) { return true }
-            guard lenient else { return false }
-            // Moved by hand or by the app later: fine as long as its title bar can be reached
-            // and most of it shows.
-            let titleBar = CGRect(x: rect.minX + 40, y: rect.minY, width: max(rect.width - 80, 1), height: 24)
-            let shown = displays.reduce(0.0) { total, display in
-                let part = display.frame.intersection(rect)
-                return total + (part.isNull ? 0 : Double(part.width * part.height))
-            }
-            return displays.contains { $0.visibleFrame.intersects(titleBar) && $0.visibleFrame.contains(CGPoint(x: titleBar.midX, y: titleBar.midY)) }
-                && shown >= Double(rect.width * rect.height) * 0.6
+            lenient ? OnScreen.isReachable(Rect(rect), visibleAreas: visibleAreas, displayFrames: displays.map { Rect($0.frame) })
+                : OnScreen.isFullyShown(Rect(rect), on: visibleAreas)
         }
         if let remembered, fits(remembered), abs(remembered.width - frame.width) < 2 || !element.hasFixedSize {
             element.setFrame(remembered)
@@ -2388,25 +2392,16 @@ final class Engine {
         let parent = visibleParent(of: pid)
         guard let display = parent.flatMap({ self.display(containing: $0) }) ?? activeContext()?.0 ?? displayUnderMouse() ?? displays.first
         else { return }
-        let visible = display.visibleFrame
-        // Over the app's own window when it's on screen, otherwise the middle of the display.
-        let anchor = parent ?? visible
         if Date().timeIntervalSince(lastFloatPlaced) > 3 { floatCascade = 0 }
         lastFloatPlaced = Date()
-        let offset = CGFloat(floatCascade % 8) * 26
+        // Over the app's own window when it's on screen, otherwise the middle of the display.
+        let target = CGRect(OnScreen.placement(for: Rect(frame), visible: Rect(display.visibleFrame), parent: parent.map(Rect.init),
+                                               cascade: floatCascade, resizable: !element.hasFixedSize))
         floatCascade += 1
-        var size = frame.size
-        if (size.width > visible.width || size.height > visible.height), !element.hasFixedSize {
-            size = CGSize(width: min(size.width, visible.width - 40), height: min(size.height, visible.height - 40))
-        }
-        var x = anchor.midX - size.width / 2 + offset
-        var y = (parent != nil ? anchor.minY + min(60, max(anchor.height - size.height, 0) / 2) : anchor.midY - size.height / 2) + offset
-        x = min(max(x, visible.minX), max(visible.maxX - size.width, visible.minX))
-        y = min(max(y, visible.minY), max(visible.maxY - size.height, visible.minY))
-        if size != frame.size {
-            element.setFrame(CGRect(x: x, y: y, width: size.width, height: size.height))
+        if target.size != frame.size {
+            element.setFrame(target)
         } else {
-            element.setPosition(CGPoint(x: x, y: y))
+            element.setPosition(target.origin)
         }
     }
 
@@ -2449,8 +2444,8 @@ final class Engine {
 
     /// The size a dialog may have on `visible`: its own, or smaller if it doesn't fit (when the app lets it be resized).
     private func fittedDialogSize(_ element: AXUIElement, _ size: CGSize, in visible: CGRect) -> CGSize {
-        let margin: CGFloat = 16
-        let fitted = CGSize(width: min(size.width, visible.width - margin * 2), height: min(size.height, visible.height - margin * 2))
+        let fit = OnScreen.fittedSize(width: size.width, height: size.height, in: Rect(visible))
+        let fitted = CGSize(width: fit.width, height: fit.height)
         guard fitted != size, element.isSettable(kAXSizeAttribute) else { return size }
         element.setSize(fitted)
         return element.frame?.size ?? fitted
@@ -2463,9 +2458,8 @@ final class Engine {
             : (self.display(containing: frame)?.visibleFrame ?? display.visibleFrame)
         guard !visible.insetBy(dx: -2, dy: -2).contains(frame) else { return }
         let size = fittedDialogSize(element, frame.size, in: visible)
-        let x = min(max(frame.minX, visible.minX), visible.maxX - size.width)
-        let y = min(max(frame.minY, visible.minY), visible.maxY - size.height)
-        element.setPosition(CGPoint(x: x, y: y))
+        let target = OnScreen.clamped(Rect(x: frame.minX, y: frame.minY, width: size.width, height: size.height), into: Rect(visible))
+        element.setPosition(CGPoint(x: target.x, y: target.y))
     }
 
     // MARK: - Accessibility notifications

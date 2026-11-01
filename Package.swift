@@ -18,7 +18,7 @@ let package = Package(
         // The macOS app: Accessibility engine, input, menu bar and settings.
         .executableTarget(
             name: "Monorail",
-            dependencies: ["MonorailCore"],
+            dependencies: ["MonorailCore", "MonorailEngine"],
             linkerSettings: [
                 .linkedFramework("AppKit", .when(platforms: [.macOS])),
                 .linkedFramework("ApplicationServices", .when(platforms: [.macOS])),

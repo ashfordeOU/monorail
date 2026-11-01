@@ -4,6 +4,14 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **macOS prompts always come to the front.** Permission prompts ("… would like to access…"), password and Touch ID prompts, and "Are you sure you want to open…" now come in front of every window, centred on the screen you're using. If another app covers one, it's brought back on top. Until you answer, Monorail doesn't move focus to other windows and hides its window borders and tab bars. Turn it off with "Keep macOS permission and password prompts in front, centred" in Settings.
+
+### Changed
+- The rules for keeping windows on screen now live in the shared engine that the Windows and Linux versions will use.
+
 ## [1.7.7] - 2026-11-01
 
 ### Added

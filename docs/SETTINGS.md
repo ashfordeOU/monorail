@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-201 settings.
+202 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -200,6 +200,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `gapHandles` | Drag the gap between two windows to resize both at once. | `true` |
 | `sliderBarStepsAside` | The slider bar steps aside for full-screen apps and for a playing video underneath it. | `true` |
 | `keepEverythingOnScreen` | Floating windows and dialogs that end up off screen (a display unplugged, a size saved on a bigger screen, waking from sleep) come back into view on their own. | `true` |
+| `systemPromptsInFront` | macOS permission, password and security prompts always come to the front, centred on your screen, and Monorail holds focus changes until they are answered. | `true` |
 | `keepWindowsInPlace` | Snap windows back when an app moves or resizes one by itself. | `true` |
 | `resizeAssist` | After resizing a window in a slide, offer to rearrange the slide. | `true` |
 | `pairLoneWindowsOnOpen` | Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). | `false` |

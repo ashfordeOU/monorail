@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Renders the Monorail app icon to assets/icon.png (1024x1024).
+"""Renders the Monorail app icon: assets/icon.png (1024x1024, for macOS 13-15) and
+assets/AppIcon.icon (Icon Composer's format, for macOS 26, which shapes and lights
+the icon itself; an icon that isn't one of these gets a grey plate there).
 
 The design is an "M" built from three windows on a warm coral tile: the
 outer two stand tall, the middle one has slid down out of place, leaving a
@@ -61,27 +63,15 @@ def soft(canvas, mask, color, blur, offset=(0, 0), opacity=1.0, clip=None):
     canvas.alpha_composite(layer, offset)
 
 
-def render(path):
-    canvas = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+TILE_STOPS = [
+    (0.0, (255, 158, 98, 255)),
+    (0.5, (246, 98, 112, 255)),
+    (1.0, (214, 58, 128, 255)),
+]
 
-    # Tile: Apple's grid puts an 824pt rounded square in 1024.
-    tile_box = (s(100), s(100), s(924), s(924))
-    tile = rounded_mask(tile_box, s(186))
-    # Nothing is drawn outside the tile: macOS shrinks icons whose artwork
-    # (even a soft shadow) spills past its rounded-square shape onto a grey plate.
-    composite(canvas, tile, gradient((SIZE, SIZE), [
-        (0.0, (255, 158, 98, 255)),
-        (0.5, (246, 98, 112, 255)),
-        (1.0, (214, 58, 128, 255)),
-    ]))
-    # Light from the top-left, shade toward the bottom.
-    light = Image.new("L", (SIZE, SIZE), 0)
-    ImageDraw.Draw(light).ellipse((s(-60), s(-140), s(700), s(520)), fill=255)
-    soft(canvas, light, (255, 236, 210, 255), s(130), opacity=0.32, clip=tile)
-    shade = Image.new("L", (SIZE, SIZE), 0)
-    ImageDraw.Draw(shade).ellipse((s(380), s(560), s(1180), s(1240)), fill=255)
-    soft(canvas, shade, (120, 20, 90, 255), s(150), opacity=0.35, clip=tile)
 
+def draw_windows(canvas, tile):
+    """The M: two tall windows and the middle one slid down, with its trace."""
     radius = s(40)
     top, bottom = 268, 756
     left = (s(226), s(top), s(386), s(bottom))
@@ -118,6 +108,36 @@ def render(path):
     draw.rounded_rectangle((middle[0] + s(30), middle[3] - s(52), middle[2] - s(30), middle[3] - s(36)),
                            radius=s(8), fill=(255, 158, 98, 255))
 
+
+def render(path, glyph=False):
+    """The full icon, or with `glyph` only the three windows on a clear, full-bleed canvas
+    (the foreground layer of the macOS 26 icon; the system draws the tile)."""
+    canvas = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+
+    # Tile: Apple's grid puts an 824pt rounded square in 1024.
+    tile_box = (s(100), s(100), s(924), s(924))
+    tile = rounded_mask(tile_box, s(186))
+    if glyph:
+        draw_windows(canvas, tile)
+        # The layer covers the whole icon on macOS 26: scale the tile area up to the canvas.
+        canvas = canvas.crop(tile_box).resize((1024, 1024), Image.LANCZOS)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        canvas.save(path)
+        print(f"Wrote {path}")
+        return
+    # Nothing is drawn outside the tile: macOS shrinks icons whose artwork
+    # (even a soft shadow) spills past its rounded-square shape onto a grey plate.
+    composite(canvas, tile, gradient((SIZE, SIZE), TILE_STOPS))
+    # Light from the top-left, shade toward the bottom.
+    light = Image.new("L", (SIZE, SIZE), 0)
+    ImageDraw.Draw(light).ellipse((s(-60), s(-140), s(700), s(520)), fill=255)
+    soft(canvas, light, (255, 236, 210, 255), s(130), opacity=0.32, clip=tile)
+    shade = Image.new("L", (SIZE, SIZE), 0)
+    ImageDraw.Draw(shade).ellipse((s(380), s(560), s(1180), s(1240)), fill=255)
+    soft(canvas, shade, (120, 20, 90, 255), s(150), opacity=0.35, clip=tile)
+
+    draw_windows(canvas, tile)
+
     # Fine highlight around the tile edge.
     edge = Image.new("L", (SIZE, SIZE), 0)
     ImageDraw.Draw(edge).rounded_rectangle(tile_box, radius=s(186), outline=255, width=s(3))
@@ -132,6 +152,37 @@ def render(path):
     print(f"Wrote {path}")
 
 
+def icon_bundle(path):
+    """assets/AppIcon.icon: Icon Composer's format. macOS 26 masks it to its own shape,
+    fills it with the gradient and adds its light and depth; the build compiles it
+    into Assets.car (Xcode 26's actool) next to the classic AppIcon.icns."""
+    import json
+    assets = os.path.join(path, "Assets")
+    os.makedirs(assets, exist_ok=True)
+    render(os.path.join(assets, "windows.png"), glyph=True)
+
+    def color(rgba):
+        return "srgb:" + ",".join(f"{c / 255:.5f}" for c in rgba)
+
+    doc = {
+        "fill": {
+            "linear-gradient": [color(TILE_STOPS[0][1]), color(TILE_STOPS[-1][1])],
+            "orientation": {"start": {"x": 0.25, "y": 0.0}, "stop": {"x": 0.75, "y": 1.0}},
+        },
+        "groups": [{
+            "layers": [{"image-name": "windows.png", "name": "windows"}],
+            "shadow": {"kind": "neutral", "opacity": 0.5},
+            "translucency": {"enabled": False, "value": 0.5},
+        }],
+        "supported-platforms": {"circles": ["watchOS"], "squares": "shared"},
+    }
+    with open(os.path.join(path, "icon.json"), "w") as f:
+        json.dump(doc, f, indent=2)
+        f.write("\n")
+    print(f"Wrote {path}")
+
+
 if __name__ == "__main__":
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     render(sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "assets", "icon.png"))
+    icon_bundle(os.path.join(root, "assets", "AppIcon.icon"))

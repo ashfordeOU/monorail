@@ -53,6 +53,27 @@ for size in 16 32 128 256 512; do
 done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 
+# macOS 26 draws app icons itself from Icon Composer's format and puts any other icon on a
+# grey plate. With Xcode 26 or later, compile assets/AppIcon.icon into Assets.car; macOS 13-15
+# keep using AppIcon.icns. Without it (older Xcode, or actool refuses), the build goes on
+# with the classic icon only.
+if [ -d assets/AppIcon.icon ] && xcrun --find actool > /dev/null 2>&1; then
+    ICON_OUT="$(mktemp -d)"
+    if xcrun actool assets/AppIcon.icon --compile "$ICON_OUT" --app-icon AppIcon \
+        --platform macosx --target-device mac --minimum-deployment-target 13.0 \
+        --output-partial-info-plist "$ICON_OUT/partial.plist" > "$ICON_OUT/actool.log" 2>&1 \
+        && [ -f "$ICON_OUT/Assets.car" ]
+    then
+        cp "$ICON_OUT/Assets.car" "$APP/Contents/Resources/Assets.car"
+        /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$APP/Contents/Info.plist" > /dev/null 2>&1 || true
+        /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$APP/Contents/Info.plist"
+        echo "    macOS 26 icon compiled (Assets.car)"
+    else
+        echo "::warning::macOS 26 icon not compiled (needs Xcode 26's actool); using AppIcon.icns only"
+        cat "$ICON_OUT/actool.log" || true
+    fi
+fi
+
 echo "==> Signing"
 if [ -n "${SIGN_IDENTITY:-}" ]; then
     # Apple's timestamp server only serves Apple-issued certificates.

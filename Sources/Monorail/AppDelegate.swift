@@ -754,6 +754,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                      NSWorkspace.sessionDidBecomeActiveNotification] {
             workspace.addObserver(forName: name, object: nil, queue: .main) { _ in Dormancy.isDormant = false }
         }
+        // A display unplugged or rearranged: Monorail's own windows come back into view.
+        NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil,
+                                               queue: .main) { [weak self] _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self?.refitOwnWindows() }
+        }
         let distributed = DistributedNotificationCenter.default()
         for (name, dormant) in [("com.apple.screenIsLocked", true), ("com.apple.screensaver.didstart", true),
                                 ("com.apple.screenIsUnlocked", false), ("com.apple.screensaver.didstop", false)] {
@@ -3071,6 +3076,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         fitOnScreen(window)
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
+    }
+
+    /// Monorail's open windows that no screen shows fully any more are fitted again.
+    private func refitOwnWindows() {
+        for window in NSApp.windows where window.isVisible && window.styleMask.contains(.titled) {
+            let shown = NSScreen.screens.contains { $0.visibleFrame.insetBy(dx: -2, dy: -2).contains(window.frame) }
+            if !shown { fitOnScreen(window) }
+        }
     }
 
     /// Monorail's own windows always fit the screen they open on (the one with the pointer):

@@ -4,6 +4,14 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.7.7] - 2026-11-01
+
+### Added
+- **Every window and dialog stays reachable.** Floating windows and dialogs that end up off screen come back into view by themselves: after a display is unplugged or rearranged, after the Mac wakes, and whenever an app comes forward. Tiled windows waiting in other workspaces are left where the layout puts them. Turn it off with "Keep every window and dialog on screen" in Settings. Monorail's own windows refit too when displays change.
+- **Press kit** on the website (`/press`): fact sheet, a description to copy, screenshots, the icon, the demo video and one zip with everything.
+- **Download stats** on the website (`/stats`): live download counts per release and per file type, straight from GitHub. The anonymous usage counts stay private.
+- Launch-day answers for common questions, in `docs/launch/REPLIES.md`.
+
 ## [1.7.6] - 2026-11-01
 
 ### Fixed

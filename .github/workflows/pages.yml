@@ -5,7 +5,7 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "assets/**", ".github/workflows/pages.yml"]
+    paths: ["site/**", "assets/**", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -33,7 +33,17 @@ jobs:
           cp assets/icon.png public/assets/icon.png
           cp site/index.html public/404.html
           printf 'User-agent: *\nAllow: /\nSitemap: https://ashfordeou.github.io/monorail/sitemap.xml\n' > public/robots.txt
-          printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://ashfordeou.github.io/monorail/</loc></url></urlset>\n' > public/sitemap.xml
+          base=https://ashfordeou.github.io/monorail
+          printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>%s/</loc></url><url><loc>%s/press/</loc></url><url><loc>%s/stats/</loc></url></urlset>\n' "$base" "$base" "$base" > public/sitemap.xml
+          # The press kit: screenshots, icon, the docking GIF and the fact sheet, in one zip.
+          kit=$(mktemp -d)/Monorail-press-kit
+          mkdir -p "$kit/screenshots"
+          cp assets/launch/v17/0*.png "$kit/screenshots/"
+          cp assets/launch/v17/docking.gif "$kit/"
+          cp assets/icon.png "$kit/monorail-icon-1024.png"
+          cp site/icons/icon-512.png "$kit/monorail-icon-512.png"
+          cp docs/launch/FACT-SHEET.md "$kit/FACT-SHEET.md"
+          (cd "$(dirname "$kit")" && zip -qr "$GITHUB_WORKSPACE/public/press/monorail-press-kit.zip" Monorail-press-kit)
       - uses: actions/configure-pages@v5
         with:
           # Turns Pages on (source: GitHub Actions) the first time, if the token is allowed to.

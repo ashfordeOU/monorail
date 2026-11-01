@@ -775,7 +775,7 @@ A hundred new capabilities. Every new action is listed in Settings → Shortcuts
 - **Rules**: give an app a home display; **Never Manage This App** from any window's right-click menu.
 - **Looks**: the workspace's name shows as you switch, the overview has search and a card-size slider, the slider bar can show window titles or be compact, the menu bar can show a dot per slide or just the workspace number, quiet mode hides notices, and an optional soft click plays as you slide.
 - **Accessibility**: VoiceOver announces the slide and workspace you move to.
-- **Safety nets**: **Rescue Windows** in the menu brings every window back on screen if anything ever gets lost; a "Last session" snapshot is kept on quit and sleep; settings are backed up daily (seven kept, restore in **Settings → General**); **Copy Diagnostics** in About makes a bug report easy.
+- **Safety nets**: floating windows and dialogs come back on screen by themselves when a display is unplugged or after sleep, and **Rescue Windows** in the menu brings every window back if anything ever gets lost; a "Last session" snapshot is kept on quit and sleep; settings are backed up daily (seven kept, restore in **Settings → General**); **Copy Diagnostics** in About makes a bug report easy.
 - **Battery**: animations can step aside on battery.
 - **Insights** export as CSV.
 

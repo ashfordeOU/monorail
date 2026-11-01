@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 200,
+  "count": 201,
   "settings": [
     {
       "key": "layout",
@@ -1141,6 +1141,12 @@
       "type": "Bool",
       "default": "true",
       "about": "The slider bar steps aside for full-screen apps and for a playing video underneath it."
+    },
+    {
+      "key": "keepEverythingOnScreen",
+      "type": "Bool",
+      "default": "true",
+      "about": "Floating windows and dialogs that end up off screen (a display unplugged, a size saved on a bigger screen, waking from sleep) come back into view on their own."
     },
     {
       "key": "keepWindowsInPlace",

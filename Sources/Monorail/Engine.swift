@@ -3134,7 +3134,10 @@ final class Engine {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.retile() }
             }
         }
-        on(NSWorkspace.screensDidWakeNotification) { [weak self] _ in self?.scheduleSync(after: 1.0) }
+        on(NSWorkspace.screensDidWakeNotification) { [weak self] _ in
+            self?.scheduleSync(after: 1.0)
+            self?.scheduleOnScreenSweep(after: 3.0)
+        }
         on(NSWorkspace.sessionDidBecomeActiveNotification) { [weak self] _ in self?.scheduleSync(after: 1.0) }
         on(NSWorkspace.willSleepNotification) { [weak self] _ in
             guard let self else { return }
@@ -3144,6 +3147,11 @@ final class Engine {
         }
         on(NSApplication.didChangeScreenParametersNotification, in: .default) { [weak self] _ in
             self?.scheduleSync(after: 0.5)
+            self?.scheduleOnScreenSweep(after: 1.5)
+        }
+        on(NSWorkspace.didActivateApplicationNotification) { [weak self] note in
+            guard let self, let pid = app(note)?.processIdentifier, pid != self.ownPID else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in self?.keepOnScreen(pid: pid) }
         }
     }
 
@@ -4993,6 +5001,40 @@ final class Engine {
         recordHistory()
         for window in floating { tile(window) }
         onNotice("Tiled \(floating.count) floating windows")
+    }
+
+    // MARK: Never off screen
+
+    private var onScreenSweep: DispatchWorkItem?
+
+    private func scheduleOnScreenSweep(after delay: TimeInterval) {
+        onScreenSweep?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.keepEverythingOnScreen() }
+        onScreenSweep = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
+    /// Every floating window and dialog of every app is reachable: after a display is unplugged
+    /// or rearranged, after waking, or when an app comes forward. Tiled windows waiting in
+    /// other workspaces are off screen on purpose and are left to the layout.
+    func keepEverythingOnScreen() {
+        guard settings.keepEverythingOnScreen, isRunning, !isPaused else { return }
+        for app in NSWorkspace.shared.runningApplications where app.activationPolicy != .prohibited && !app.isHidden {
+            keepOnScreen(pid: app.processIdentifier)
+        }
+    }
+
+    /// One app's untiled windows and dialogs back in view when they can't be reached.
+    private func keepOnScreen(pid: pid_t) {
+        guard settings.keepEverythingOnScreen, isRunning, !isPaused, pid != ownPID, !displays.isEmpty else { return }
+        for element in AXUIElement.application(pid).windows {
+            guard element.role == kAXWindowRole, !element.isMinimized, !element.isFullScreen,
+                let frame = element.frame, frame.width > 40, frame.height > 40
+            else { continue }
+            // Tiled windows are placed by the layout, including the ones parked off screen.
+            if let id = element.windowID, windows[id]?.key != nil { continue }
+            placeFloating(element, remembered: nil, lenient: true)
+        }
     }
 
     /// When something goes wrong: every window of every app back on screen, then a fresh layout.

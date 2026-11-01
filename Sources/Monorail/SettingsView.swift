@@ -384,6 +384,8 @@ private struct LayoutPane: View {
                     ForEach(StripDirection.allCases, id: \.self) { Text($0.title).tag($0) }
                 }
                 Toggle("Keep windows in place when an app resizes or moves them itself", isOn: $store.settings.keepWindowsInPlace)
+                Toggle("Keep every window and dialog on screen", isOn: $store.settings.keepEverythingOnScreen)
+                    .help("Floating windows and dialogs that end up off screen (a display unplugged, a size saved on a bigger screen) come back into view.")
                 Toggle("Drag a window onto another to dock it beside (edges) or tab them together (middle)", isOn: $store.settings.dragToDock)
                     .help("Works with any apps, in any slide or from floating. Undo puts it back.")
                 Toggle("Drag the gap between two windows to resize both", isOn: $store.settings.gapHandles)

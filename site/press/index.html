@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monorail Press Kit</title>
+<meta name="description" content="Press kit for Monorail by Ashforde®, the scrolling window manager for Mac: facts, screenshots, logos and video.">
+<link rel="icon" href="../favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="../icons/icon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta property="og:title" content="Monorail press kit">
+<meta property="og:description" content="Facts, screenshots, logos and video for Monorail by Ashforde®.">
+<meta property="og:image" content="https://ashfordeou.github.io/monorail/assets/launch/v17/01-hero.png">
+<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --plum:#D63A80; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; } }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+main { max-width:1040px; margin:0 auto; padding:32px 16px 72px; }
+a { color:var(--plum); }
+.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
+.brand img { width:30px; height:30px; border-radius:8px; }
+.top nav { display:flex; gap:16px; font-size:15px; }
+.top nav a { color:var(--muted); text-decoration:none; }
+h1 { font-size:clamp(32px, 6vw, 52px); line-height:1.05; letter-spacing:-.025em; margin:48px 0 10px; }
+h2 { font-size:24px; letter-spacing:-.01em; margin:56px 0 14px; }
+.lede { font-size:19px; color:var(--muted); max-width:720px; margin:0; }
+.muted { color:var(--muted); }
+.card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; }
+.facts { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
+.facts .card b { display:block; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600; margin-bottom:4px; }
+.copy { position:relative; }
+.copy p { margin:0 0 12px; }
+.copy p:last-of-type { margin-bottom:0; }
+.copybtn { position:absolute; top:12px; right:12px; font:600 13px/1 inherit; padding:8px 12px; border-radius:999px; border:1px solid var(--line); background:var(--soft); color:var(--ink); cursor:pointer; }
+.gallery { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
+.shot { margin:0; background:var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+.shot img { display:block; width:100%; aspect-ratio:2540/1520; object-fit:cover; background:var(--soft); }
+.shot figcaption { display:flex; justify-content:space-between; gap:8px; padding:10px 14px; font-size:14px; }
+.shot figcaption a { white-space:nowrap; }
+.logos { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; }
+.logo { text-align:center; }
+.logo .pad { border-radius:14px; padding:24px; display:flex; align-items:center; justify-content:center; }
+.logo .light { background:#FFF8F3; } .logo .dark { background:#120914; }
+.logo img { width:96px; height:96px; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:999px; font-weight:600; text-decoration:none; border:1px solid var(--line); color:var(--ink); background:var(--card); }
+.btn.primary { background:var(--ink); color:var(--bg); border-color:transparent; }
+.actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+ul.tight { margin:0; padding-left:20px; } ul.tight li { margin:4px 0; }
+video { width:100%; border-radius:16px; border:1px solid var(--line); background:#000; display:block; }
+footer { margin-top:64px; font-size:14px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <a class="brand" href="../"><img src="../assets/icon.png" alt="">Monorail <span class="muted" style="font-weight:500">by Ashforde®</span></a>
+    <nav><a href="../">Home</a><a href="../stats/">Downloads</a><a href="https://github.com/ashfordeOU/monorail">GitHub</a></nav>
+  </div>
+
+  <h1>Press kit</h1>
+  <p class="lede">Everything you need to write about Monorail: the facts, a description you can copy, screenshots, the icon and a demo video. All images may be used in coverage of Monorail.</p>
+  <div class="actions">
+    <a class="btn primary" href="monorail-press-kit.zip" download>Download everything (.zip)</a>
+    <a class="btn" href="https://github.com/ashfordeOU/monorail/releases/latest">Latest release</a>
+  </div>
+
+  <h2>Fact sheet</h2>
+  <div class="facts">
+    <div class="card"><b>Product</b>Monorail by Ashforde®, a scrolling window manager for Mac</div>
+    <div class="card"><b>Developer</b>Ashforde OÜ</div>
+    <div class="card"><b>Platforms</b>macOS 13 Ventura or later, Apple silicon and Intel. Windows and Linux planned.</div>
+    <div class="card"><b>Price</b>Free, every feature, no window limits or Pro tier</div>
+    <div class="card"><b>Licence</b>Source available on GitHub (FSL-1.1-ALv2; each version becomes Apache 2.0 after two years)</div>
+    <div class="card"><b>Latest version</b><span id="ver">See the latest release</span></div>
+    <div class="card"><b>Privacy</b>No account. One permission (Accessibility). Anonymous daily counts, off with one switch.</div>
+    <div class="card"><b>Install</b>Download from the site, Homebrew, Nix, or a .pkg for IT teams</div>
+  </div>
+
+  <h2>About Monorail</h2>
+  <div class="card copy" id="short">
+    <button class="copybtn" data-copy="short">Copy</button>
+    <p><b>One line:</b> Monorail is a free scrolling window manager for Mac: every window rides one endless strip, so new windows never squeeze the rest.</p>
+  </div>
+  <div class="card copy" id="long" style="margin-top:12px">
+    <button class="copybtn" data-copy="long">Copy</button>
+    <p>Monorail by Ashforde® is a scrolling window manager for macOS. Most tiling window managers shrink every window when a new one opens. Monorail puts each window on a slide in a horizontal strip that runs past the edges of the screen: a new window slides in beside the one you're using, and nothing else changes size. Moving focus glides the strip along.</p>
+    <p>Windows can be dragged onto each other to dock side by side or form tab groups across any apps, nested as deep as you like. Saved views return the screen to an arrangement with one shortcut, and back and forward work like a browser. Plain-language commands such as “Slack and Mail side by side” are understood on the Mac, and Monorail chimes when an AI coding agent in a terminal is waiting for approval. It imports AeroSpace, yabai and Rectangle setups.</p>
+    <p>Monorail is native Swift, free with no paid tier, and its source is on GitHub. It needs no account and only the Accessibility permission.</p>
+  </div>
+
+  <h2>Highlights</h2>
+  <div class="card">
+    <ul class="tight">
+      <li><b>Scrolling strip:</b> windows never shrink to make room; the strip scrolls instead.</li>
+      <li><b>Dock anything:</b> drag a window onto another's edge to split, or its middle to tab, across apps.</li>
+      <li><b>Saved views</b> (⌃⌥⌘1–9) with back and forward through where you've been.</li>
+      <li><b>Say it:</b> a command palette that understands sentences, processed on the Mac.</li>
+      <li><b>AI agent alerts:</b> a chime when Claude Code or Codex needs you.</li>
+      <li><b>Switch in a minute:</b> imports AeroSpace, yabai/skhd and Rectangle configurations.</li>
+      <li><b>27 themes</b>, safe screen sharing, presentation tools and a scripting API.</li>
+    </ul>
+  </div>
+
+  <h2>Screenshots</h2>
+  <p class="muted">2540 × 1520 PNG. Click to open full size.</p>
+  <div class="gallery" id="gallery"></div>
+
+  <h2>Video</h2>
+  <video controls preload="none" poster="../assets/launch/v17/01-hero.png" src="../assets/launch/v17/monorail-demo.mp4"></video>
+  <p class="muted" style="font-size:15px">85-second tour, 1080p. <a href="../assets/launch/v17/monorail-demo.mp4" download>Download MP4</a> · <a href="../assets/launch/v17/docking.gif">Docking GIF</a></p>
+
+  <h2>Icon</h2>
+  <div class="logos">
+    <div class="logo"><div class="pad light"><img src="../assets/icon.png" alt="Monorail icon on light"></div><p><a href="../assets/icon.png" download>PNG, 1024 px</a></p></div>
+    <div class="logo"><div class="pad dark"><img src="../assets/icon.png" alt="Monorail icon on dark"></div><p><a href="../icons/icon-512.png" download>PNG, 512 px</a></p></div>
+  </div>
+
+  <h2>Names and usage</h2>
+  <div class="card">
+    <ul class="tight">
+      <li>Write <b>Monorail</b> (one word, capital M). On first mention: <b>Monorail by Ashforde®</b>.</li>
+      <li>Please don't alter the icon or combine it with other marks.</li>
+      <li>Monorail, Monorail by Ashforde and the icon are trademarks of Ashforde OÜ; Ashforde® is a registered trademark. <a href="https://github.com/ashfordeOU/monorail/blob/main/TRADEMARKS.md">Trademark policy</a>.</li>
+    </ul>
+  </div>
+
+  <h2>Contact</h2>
+  <p>For interviews, review builds or questions, <a href="https://github.com/ashfordeOU/monorail/issues/new?title=Press%20enquiry&labels=press">open a press enquiry</a> and we'll reply quickly.</p>
+
+  <footer>© Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ.</footer>
+</main>
+<script>
+(function () {
+  var shots = [
+    ['01-hero', 'Every window rides one rail'], ['02-dock', 'Drop a window where you want it'],
+    ['03-tabs-resize', 'Tab groups and two-window resize'], ['04-say-it', 'Plain-language commands and agent alerts'],
+    ['05-saved-views', 'Saved views, back and forward'], ['06-import-free', 'Imports AeroSpace, yabai, Rectangle'],
+    ['07-themes', '27 themes'], ['08-native-private', 'Native, light, private'], ['09-end', 'End card']
+  ];
+  var g = document.getElementById('gallery');
+  shots.forEach(function (s) {
+    var src = '../assets/launch/v17/' + s[0] + '.png';
+    var f = document.createElement('figure'); f.className = 'shot';
+    var a = document.createElement('a'); a.href = src;
+    var img = document.createElement('img'); img.src = src; img.alt = s[1]; img.loading = 'lazy';
+    a.appendChild(img); f.appendChild(a);
+    var c = document.createElement('figcaption');
+    var t = document.createElement('span'); t.textContent = s[1];
+    var d = document.createElement('a'); d.href = src; d.download = ''; d.textContent = 'Download';
+    c.appendChild(t); c.appendChild(d); f.appendChild(c); g.appendChild(f);
+  });
+  document.querySelectorAll('.copybtn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var box = document.getElementById(b.dataset.copy).cloneNode(true);
+      box.querySelector('.copybtn').remove();
+      var text = Array.prototype.map.call(box.querySelectorAll('p'), function (p) { return p.textContent; }).join('\n\n').replace(/^One line: /, '');
+      try { navigator.clipboard.writeText(text).then(function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); }); } catch (e) {}
+    });
+  });
+  fetch('https://api.github.com/repos/ashfordeOU/monorail/releases/latest').then(function (r) { return r.ok ? r.json() : null; }).then(function (r) {
+    if (r && r.tag_name) document.getElementById('ver').textContent = r.tag_name.replace(/^v/, '') + ' (' + new Date(r.published_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) + ')';
+  }).catch(function () {});
+})();
+</script>
+</body>
+</html>

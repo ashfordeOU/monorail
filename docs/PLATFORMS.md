@@ -104,7 +104,7 @@ The scheduled check-ins work through this list in order and tick items off.
 - [x] `spec/actions.json` and `spec/settings.json` generated from the Swift sources, with a CI check
 - [x] `spec/parity.md`: every feature marked shared, adapted or OS-only
 - [x] More golden files: strip moves, the sentence parser, AeroSpace import
-- [ ] `WindowSystem` protocol in a new MonorailEngine module, with a fake implementation for tests
+- [x] `WindowSystem` protocol in a new MonorailEngine module, with a fake implementation for tests
 - [ ] Move platform-free engine logic into MonorailEngine (in small, tested steps; the Mac app keeps working)
 - [ ] macOS backend implements WindowSystem
 - [ ] `core-ts/`: TypeScript project skeleton running the golden tests (split trees first)

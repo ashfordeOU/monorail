@@ -28,5 +28,5 @@ jobs:
           tag: 6.1-RELEASE
       - name: Toolchain
         run: swift --version
-      - name: Build and test MonorailCore
-        run: swift test --filter MonorailCoreTests
+      - name: Build and test MonorailCore and MonorailEngine
+        run: swift test --filter "Monorail(Core|Engine)Tests"

@@ -2278,6 +2278,23 @@ final class Engine {
 
     /// Open and save panels, alerts and other dialogs: modal windows, or ones
     /// without minimise and full-screen buttons. They float instead of tiling.
+    /// Apps like Terminal announce a new window before it's finished: its buttons, subrole or
+    /// size arrive a moment later, so it first looks like a dialog. Look again shortly after,
+    /// and tile it once it looks like a real window.
+    private func adoptLater(_ element: AXUIElement, pid: pid_t) {
+        // The window's ID can also arrive late, so it's read again each time.
+        guard NSRunningApplication(processIdentifier: pid)?.activationPolicy == .regular else { return }
+        for delay in [0.25, 0.7, 1.5] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                guard let self, self.isRunning, !self.isPaused, element.role == kAXWindowRole,
+                    let id = element.windowID, self.windows[id] == nil
+                else { return }
+                let frontmost = NSWorkspace.shared.frontmostApplication?.processIdentifier == pid
+                if self.adopt(element, pid: pid, focus: frontmost) { self.layout(animated: true) }
+            }
+        }
+    }
+
     private static func looksLikeDialog(_ element: AXUIElement) -> Bool {
         if element.bool("AXModal") == true { return true }
         return element.element(kAXMinimizeButtonAttribute) == nil && element.element("AXFullScreenButton") == nil
@@ -2541,6 +2558,7 @@ final class Engine {
                 layout(animated: true)
             } else {
                 centerDialog(element, pid: pid)
+                adoptLater(element, pid: pid)
             }
 
         case kAXFocusedWindowChangedNotification:
@@ -2583,6 +2601,7 @@ final class Engine {
                 layout(animated: true)
             } else {
                 centerDialog(windowElement, pid: pid)
+                adoptLater(windowElement, pid: pid)
             }
             return
         }

@@ -128,4 +128,45 @@ final class GoldenTests: XCTestCase {
         XCTAssertEqual(plan.bindings.map { "\($0.action.rawValue)|\($0.shortcut.keyCode)|\(names($0.shortcut.modifiers).joined(separator: "+"))" }, bindings)
         XCTAssertEqual(plan.skipped.count, (want["skipped"] as? NSNumber)?.intValue)
     }
+
+    func testStrip() throws {
+        for item in try load("strip.json") {
+            let name = item["name"] as? String ?? "?"
+            var strip = Strip()
+            func id(_ any: Any?) -> WindowID? { (any as? NSNumber).map { WindowID($0.intValue) } }
+            func direction(_ any: Any?) -> Direction? { (any as? String).flatMap(Direction.init(rawValue:)) }
+            for op in item["ops"] as? [[String: Any]] ?? [] {
+                if let insert = op["insert"] as? [Any], let w = id(insert.first), let width = (insert[1] as? NSNumber)?.doubleValue {
+                    let position = insert.count > 2 ? (insert[2] as? String).flatMap(Strip.InsertPosition.init(rawValue:)) ?? .afterFocused : .afterFocused
+                    strip.insert(w, width: width, position: position)
+                } else if let w = id(op["focus"]) {
+                    strip.focus(w)
+                } else if let d = direction(op["moveFocus"]) {
+                    strip.moveFocus(d)
+                } else if let d = direction(op["moveFocused"]) {
+                    strip.moveFocused(d)
+                } else if op["consumeIntoLeft"] != nil {
+                    strip.consumeIntoLeft()
+                } else if op["consumeIntoRight"] != nil {
+                    strip.consumeIntoRight()
+                } else if op["expel"] != nil {
+                    strip.expel()
+                } else if let w = id(op["remove"]) {
+                    strip.remove(w)
+                } else if let dock = op["dock"] as? [Any], dock.count == 3, let w = id(dock[0]), let onto = id(dock[1]),
+                    let edge = (dock[2] as? String).flatMap(SplitTree.Edge.init(rawValue:))
+                {
+                    strip.dock(w, onto: onto, edge: edge)
+                } else if let w = id(op["tearOff"]) {
+                    strip.tearOff(w, width: 0.5)
+                } else {
+                    XCTFail("\(name): unknown operation \(op)")
+                }
+            }
+            let expect = item["expect"] as? [String: Any] ?? [:]
+            let slides = (expect["slides"] as? [[NSNumber]] ?? []).map { $0.map { WindowID($0.intValue) } }
+            XCTAssertEqual(strip.columns.map { Set($0.windows) }, slides.map { Set($0) }, name)
+            if let focused = id(expect["focused"]) { XCTAssertEqual(strip.focusedWindow, focused, name) }
+        }
+    }
 }

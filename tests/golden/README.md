@@ -8,6 +8,7 @@ exactly. Rectangles are `[x, y, width, height]` in unit coordinates; compare wit
 |---|---|---|
 | `dock-zones.json` | Which zone a pointer over a window chooses | `spec/docking.md` |
 | `split-tree.json` | Docking, tabs, removing, resizing and evening out nested slides | `spec/docking.md` |
+| `strip.json` | Opening, focusing, moving, consuming, removing, docking and tearing off on the strip (slides compared as sets of windows) | `spec/strip.md` |
 | `sentences.json` | What typed sentences mean (workspaces counted from 1) | the command palette |
 | `import-aerospace.toml` + `.expect.json` | Importing an AeroSpace setup: gaps, floating apps, workspace rules, shortcuts (key codes are macOS virtual key codes) | settings import |
 

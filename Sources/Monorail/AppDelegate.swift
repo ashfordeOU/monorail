@@ -1602,7 +1602,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func apply(_ original: AppSettings) {
-        let settings = adjustedV12(original)
+        let settings = Edition.restrict(adjustedV12(original))
         let syncWasOn = engine.settings.syncThroughICloud
         let liveReloadWasOn = engine.settings.liveReloadSettings
         engine.settings = settings
@@ -2718,7 +2718,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(shortcutsMenu())
         menu.addItem(item(L("Welcome Tour…"), #selector(showWelcomeFromMenu)))
         menu.addItem(item(L("What’s New") + "…", #selector(showWhatsNewFromMenu)))
-        menu.addItem(item(L("Check for Updates…"), #selector(checkForUpdates)))
+        if !Edition.isAppStore { menu.addItem(item(L("Check for Updates…"), #selector(checkForUpdates))) }
         menu.addItem(item("About \(Brand.full)", #selector(showAbout)))
         menu.addItem(.separator())
         menu.addItem(item(L("Quit Monorail"), #selector(quit), key: "q"))

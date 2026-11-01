@@ -218,7 +218,7 @@ private struct BasicsPane: View {
                 Text("Look")
             }
             Section {
-                Toggle("Use Caps Lock as the Monorail key", isOn: $store.settings.capsLockKey)
+                Toggle("Use Caps Lock as the Monorail key", isOn: $store.settings.capsLockKey).hiddenInAppStore()
                     .help("Hold Caps Lock instead of ⌃⌥; tap it for the command palette")
                 LabeledContent("Shortcuts") {
                     Button("Change Shortcuts…") { navigation.tab = .shortcuts }
@@ -228,7 +228,7 @@ private struct BasicsPane: View {
             }
             Section {
                 Toggle("Share anonymous usage counts", isOn: $store.settings.shareUsageStats)
-                Toggle("Check for updates automatically", isOn: $store.settings.checkForUpdates)
+                Toggle("Check for updates automatically", isOn: $store.settings.checkForUpdates).hiddenInAppStore()
             } header: {
                 Text("Privacy and updates")
             } footer: {
@@ -265,7 +265,7 @@ private struct GeneralPane: View {
                 Toggle("Every slide fits on screen in every workspace (fit mode)", isOn: $store.settings.fitByDefault)
                     .help("Turn it on or off for one workspace from the overview or the menu bar")
                 Toggle("Workspaces without a name take their apps’ names", isOn: $store.settings.autoNameWorkspaces)
-                Toggle("Use Caps Lock as the Monorail key (hold it instead of ⌃⌥; tap for the palette)", isOn: $store.settings.capsLockKey)
+                Toggle("Use Caps Lock as the Monorail key (hold it instead of ⌃⌥; tap for the palette)", isOn: $store.settings.capsLockKey).hiddenInAppStore()
                     .help("Caps Lock goes back to normal when you quit Monorail or turn this off")
                 Toggle("A summary of your week on Monday mornings", isOn: $store.settings.weeklySummary)
                 Picker("Language", selection: $store.settings.language) {
@@ -311,10 +311,10 @@ private struct GeneralPane: View {
                 }
                 Toggle("Only show workspaces in use, plus one empty one", isOn: $store.settings.dynamicWorkspaces)
                 Toggle("Red dots on windows whose apps have a badge in the Dock", isOn: $store.settings.attentionMarkers)
-                Toggle("Check for updates automatically", isOn: $store.settings.checkForUpdates)
-                Toggle("Install updates automatically", isOn: $store.settings.installUpdatesAutomatically)
+                Toggle("Check for updates automatically", isOn: $store.settings.checkForUpdates).hiddenInAppStore()
+                Toggle("Install updates automatically", isOn: $store.settings.installUpdatesAutomatically).hiddenInAppStore()
                     .disabled(!store.settings.checkForUpdates)
-                Toggle("Get beta versions too (early, may have rough edges)", isOn: $store.settings.betaUpdates)
+                Toggle("Get beta versions too (early, may have rough edges)", isOn: $store.settings.betaUpdates).hiddenInAppStore()
                     .disabled(!store.settings.checkForUpdates)
                 Picker("New windows open", selection: $store.settings.newWindowPosition) {
                     Text("Next to the focused window").tag(Strip.InsertPosition.afterFocused)
@@ -1104,7 +1104,7 @@ private struct APISection: View {
 
     var body: some View {
         Section {
-            Toggle("Local API on this Mac only (needed by the MCP server and the Raycast extension)", isOn: $store.settings.localAPI)
+            Toggle("Local API on this Mac only (needed by the MCP server and the Raycast extension)", isOn: $store.settings.localAPI).hiddenInAppStore()
             if store.settings.localAPI {
                 LabeledContent("Address") {
                     Text("http://127.0.0.1:\(store.settings.apiPort)").font(.system(.callout, design: .monospaced)).textSelection(.enabled)
@@ -1632,7 +1632,7 @@ private struct AutomationPane: View {
             }
             APISection(store: store)
             Section {
-                Toggle("Run JavaScript plugins from the Scripts folder", isOn: $store.settings.scripts)
+                Toggle("Run JavaScript plugins from the Scripts folder", isOn: $store.settings.scripts).hiddenInAppStore()
                 HStack {
                     Button("Open Scripts Folder") {
                         try? FileManager.default.createDirectory(at: ScriptHost.folder, withIntermediateDirectories: true)

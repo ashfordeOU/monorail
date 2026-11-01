@@ -78,11 +78,11 @@ jobs:
       - name: Notarise
         if: env.SKIP != '1' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
         run: |
-          for file in dist/*.dmg; do
+          for file in dist/*.dmg dist/*.pkg; do
             xcrun notarytool submit "$file" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
             xcrun stapler staple "$file"
           done
-          (cd dist && shasum -a 256 *.zip *.dmg > SHA256SUMS)
+          (cd dist && shasum -a 256 *.zip *.dmg *.pkg > SHA256SUMS)
           echo "NOTARISED=1" >> "$GITHUB_ENV"
       - name: Release notes
         if: env.SKIP != '1'
@@ -109,9 +109,9 @@ jobs:
         if: env.SKIP != '1'
         run: |
           if gh release view "$TAG" > /dev/null 2>&1; then
-            gh release upload "$TAG" dist/*.zip dist/*.dmg dist/SHA256SUMS --clobber
+            gh release upload "$TAG" dist/*.zip dist/*.dmg dist/*.pkg dist/SHA256SUMS --clobber
           else
-            gh release create "$TAG" dist/*.zip dist/*.dmg dist/SHA256SUMS \
+            gh release create "$TAG" dist/*.zip dist/*.dmg dist/*.pkg dist/SHA256SUMS \
               --title "Monorail ${TAG#v}" --notes-file notes.md --target "$GITHUB_SHA"
           fi
       - name: Update the Homebrew cask
@@ -122,7 +122,17 @@ jobs:
           sed -i '' -e "s/^  version \".*\"/  version \"${version}\"/" -e "s/^  sha256 .*/  sha256 \"${sum}\"/" Casks/monorail.rb
           git config user.name "ashfordeOU"
           git config user.email "236818772+ashfordeOU@users.noreply.github.com"
-          git add Casks/monorail.rb
-          git commit -m "Homebrew cask: Monorail ${version}" || exit 0
+          # MacPorts and Nix: the same version and the release zip's checksums.
+          zip="dist/Monorail-${version}.zip"
+          zsha="$(shasum -a 256 "$zip" | cut -d' ' -f1)"
+          zrmd="$(openssl dgst -rmd160 "$zip" | awk '{print $NF}')"
+          zsize="$(stat -f%z "$zip")"
+          zsri="sha256-$(openssl dgst -sha256 -binary "$zip" | base64)"
+          sed -i '' -E -e "s/^(github.setup +ashfordeOU monorail )[0-9.]+ v/\1${version} v/" \
+            -e "s/(rmd160 +)[0-9a-f]+/\1${zrmd}/" -e "s/(sha256 +)[0-9a-f]+/\1${zsha}/" -e "s/(size +)[0-9]+/\1${zsize}/" \
+            packaging/macports/aqua/monorail/Portfile
+          sed -i '' -E -e "s/^(  version = \")[^\"]+/\1${version}/" -e "s#(hash = \")sha256-[^\"]+#\1${zsri}#" packaging/nix/monorail.nix
+          git add Casks/monorail.rb packaging/macports/aqua/monorail/Portfile packaging/nix/monorail.nix
+          git commit -m "Packages: Monorail ${version}" || exit 0
           git fetch origin main && git rebase origin/main
           git push origin HEAD:main

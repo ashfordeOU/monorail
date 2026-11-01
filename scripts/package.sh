@@ -9,9 +9,10 @@ APP="dist/Monorail.app"
 
 ZIP="dist/Monorail-${VERSION}.zip"
 DMG="dist/Monorail-${VERSION}.dmg"
+PKG="dist/Monorail-${VERSION}.pkg"
 # MacSlider 0.2.x updaters look for "MacSlider-*.zip" holding MacSlider.app.
 LEGACY_ZIP="dist/MacSlider-${VERSION}.zip"
-rm -f "$ZIP" "$DMG" "$LEGACY_ZIP" dist/SHA256SUMS
+rm -f "$ZIP" "$DMG" "$PKG" "$LEGACY_ZIP" dist/SHA256SUMS
 
 echo "==> $ZIP"
 ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
@@ -41,5 +42,24 @@ else
     rm -rf "$STAGING"
 fi
 
-(cd dist && shasum -a 256 "$(basename "$ZIP")" "$(basename "$DMG")" "$(basename "$LEGACY_ZIP")" > SHA256SUMS)
+echo "==> $PKG (for MDM: Jamf, Kandji, Mosyle, Intune, Munki)"
+# Installs into /Applications. Signed when a Developer ID Installer identity is available.
+PKG_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Contents/Info.plist")"
+UNSIGNED="$(mktemp -d)/Monorail.pkg"
+# Always into /Applications, even if a copy sits elsewhere (installers "relocate" by default).
+ROOT="$(mktemp -d)"
+ditto "$APP" "$ROOT/Monorail.app"
+COMPONENTS="$(mktemp -d)/components.plist"
+pkgbuild --analyze --root "$ROOT" "$COMPONENTS" > /dev/null
+/usr/libexec/PlistBuddy -c "Set :0:BundleIsRelocatable false" "$COMPONENTS"
+pkgbuild --root "$ROOT" --component-plist "$COMPONENTS" --install-location /Applications \
+    --identifier "$PKG_ID" --version "$VERSION" "$UNSIGNED" > /dev/null
+rm -rf "$ROOT"
+if [ -n "${INSTALLER_IDENTITY:-}" ]; then
+    productbuild --package "$UNSIGNED" --sign "$INSTALLER_IDENTITY" --timestamp "$PKG" > /dev/null
+else
+    productbuild --package "$UNSIGNED" "$PKG" > /dev/null
+fi
+
+(cd dist && shasum -a 256 "$(basename "$ZIP")" "$(basename "$DMG")" "$(basename "$PKG")" "$(basename "$LEGACY_ZIP")" > SHA256SUMS)
 cat dist/SHA256SUMS

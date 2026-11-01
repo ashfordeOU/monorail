@@ -1,0 +1,42 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           github 1.0
+
+github.setup        ashfordeOU monorail 1.7.3 v
+github.tarball_from releases
+revision            0
+
+name                monorail
+categories          aqua
+platforms           {darwin >= 22}
+supported_archs     arm64 x86_64
+license             Restrictive/Distributable
+maintainers         nomaintainer
+
+description         Scrolling window manager for macOS
+long_description    Monorail by Ashforde® puts every window on one endless strip, so new windows \
+                    slide in beside you and nothing you're using ever shrinks. Drag windows onto \
+                    each other to dock or tab them, type what you want in plain words, and save \
+                    views to jump back to.
+homepage            https://ashfordeou.github.io/monorail/
+
+# A universal, signed app from the release (building needs the full Xcode toolchain).
+distname            Monorail-${version}
+use_zip             yes
+extract.mkdir       yes
+checksums           rmd160  ecd342a21be8544f3dbf7692b0922c389f507985 \
+                    sha256  f9afcd5a3e0a9422ff48f08631e040625495bd6971c1fd3183e668cbed1fd7b8 \
+                    size    6634342
+
+use_configure       no
+build               {}
+
+destroot {
+    copy ${worksrcpath}/Monorail.app ${destroot}${applications_dir}/Monorail.app
+}
+
+notes "
+Open Monorail from Applications and allow Accessibility access when asked.
+Monorail updates itself; MacPorts upgrades it too when the port is updated.
+"

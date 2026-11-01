@@ -1,0 +1,27 @@
+Description: Downloads the latest Monorail by Ashforde® installer package from GitHub.
+Identifier: com.github.ashfordeOU.download.Monorail
+MinimumVersion: "2.3"
+
+Input:
+  NAME: Monorail
+
+Process:
+  - Processor: GitHubReleasesInfoProvider
+    Arguments:
+      github_repo: ashfordeOU/monorail
+      asset_regex: ^Monorail-[0-9.]+\.pkg$
+
+  - Processor: URLDownloader
+    Arguments:
+      filename: "%NAME%-%version%.pkg"
+
+  - Processor: EndOfCheckPhase
+
+  # Once releases are signed with a Developer ID Installer certificate, uncomment to check it:
+  # - Processor: CodeSignatureVerifier
+  #   Arguments:
+  #     input_path: "%pathname%"
+  #     expected_authority_names:
+  #       - "Developer ID Installer: Ashforde OÜ (TEAMID)"
+  #       - Developer ID Certification Authority
+  #       - Apple Root CA

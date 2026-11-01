@@ -201,7 +201,7 @@ struct SmartPane: View {
                 Toggle("Suggest focus mode when I’m switching a lot", isOn: $store.settings.distractionNudges)
                 Toggle("Suggest rules from the fixes I keep making", isOn: $store.settings.ruleSuggestions)
                 Toggle("Suggest always floating apps I keep floating", isOn: $store.settings.floatSuggestions)
-                Toggle("Snapshots save browser tabs and Finder windows", isOn: $store.settings.restoreBrowserTabs)
+                Toggle("Snapshots save browser tabs and Finder windows", isOn: $store.settings.restoreBrowserTabs).hiddenInAppStore()
                     .help("Safari, Chrome, Arc, Brave, Edge, Vivaldi and Finder. macOS asks once per app. Tabs reopen when you restore a snapshot and the app wasn't already open.")
                 Toggle("Give new slides a width that suits the app", isOn: $store.settings.contentAwareWidths)
                     .help("About 100 columns for code and terminals, a page for documents, a web page for browsers")
@@ -377,7 +377,7 @@ struct DevicesPane: View {
                 Picker("Monorail key", selection: $store.settings.monorailKeySource) {
                     ForEach(MonorailKeySource.allCases, id: \.self) { Text($0.title).tag($0) }
                 }
-                Toggle("Use it (hold for every shortcut, tap for the palette)", isOn: $store.settings.capsLockKey)
+                Toggle("Use it (hold for every shortcut, tap for the palette)", isOn: $store.settings.capsLockKey).hiddenInAppStore()
                 Toggle("⌃⌥⇧ + drag: left/right switch workspace, up overview, down desktop", isOn: $store.settings.mouseGestures)
                 Toggle("Game controller: d-pad slides, shoulders switch workspace, A overview, B undo", isOn: $store.settings.gameController)
                 Toggle("Experimental: turn your head towards a display to focus it", isOn: $store.settings.headFocus)
@@ -416,7 +416,7 @@ struct DevicesPane: View {
                     .font(.callout).foregroundStyle(.secondary)
             }
             Section {
-                Toggle("Phone remote on this network", isOn: $store.settings.webRemote)
+                Toggle("Phone remote on this network", isOn: $store.settings.webRemote).hiddenInAppStore()
                 if store.settings.webRemote {
                     HStack(alignment: .top, spacing: 16) {
                         if let qr = SmartBridge.remoteQR() {

@@ -1,0 +1,13 @@
+Description: Copies the latest Monorail installer package into the AutoPkg cache, ready for Munki, Jamf or another MDM.
+Identifier: com.github.ashfordeOU.pkg.Monorail
+ParentRecipe: com.github.ashfordeOU.download.Monorail
+MinimumVersion: "2.3"
+
+Input:
+  NAME: Monorail
+
+Process:
+  - Processor: PkgCopier
+    Arguments:
+      source_pkg: "%pathname%"
+      pkg_path: "%RECIPE_CACHE_DIR%/%NAME%-%version%.pkg"

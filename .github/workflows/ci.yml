@@ -58,6 +58,9 @@ jobs:
       - name: Self-test
         # Builds every Settings pane and checks actions, themes, languages and defaults (no permissions needed).
         run: dist/Monorail.app/Contents/MacOS/Monorail --self-test
+      - name: App Store edition compiles
+        # The sandboxed edition (docs/APP-STORE.md) leaves features out with #if APPSTORE; keep it building.
+        run: swift build -Xswiftc -DAPPSTORE --scratch-path .build-appstore
       - name: Check signature
         run: |
           codesign --display --requirements - dist/Monorail.app 2>&1 | tee requirement.txt

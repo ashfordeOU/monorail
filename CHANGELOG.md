@@ -4,6 +4,12 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.7.4] - 2026-11-01
+
+### Added
+- **More ways to install:** every release now includes a `.pkg` installer for MDM tools (Jamf, Kandji, Mosyle, Intune, Munki), and the repository has an Installomator label, AutoPkg recipes, a MacPorts Portfile and a Nix flake (`nix profile install github:ashfordeOU/monorail`). Their versions and checksums update with each release.
+- **The Mac App Store edition** can now be built (`scripts/build-appstore.sh`): sandboxed, with its own identifier, leaving out what the sandbox doesn't allow. See docs/APP-STORE.md.
+
 ## [1.7.3] - 2026-11-01
 
 ### Added

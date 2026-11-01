@@ -60,6 +60,8 @@ final class Updater: ObservableObject {
 
     /// Looks up the latest release. User-initiated checks always report back.
     func check(userInitiated: Bool) {
+        // The App Store keeps the App Store edition up to date.
+        guard !Edition.isAppStore else { return }
         var request = URLRequest(url: betaChannel ? Self.allReleasesURL : Self.apiURL, timeoutInterval: 15)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         URLSession.shared.dataTask(with: request) { [weak self] data, _, error in

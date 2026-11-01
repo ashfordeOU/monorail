@@ -10,10 +10,18 @@ cd "$(dirname "$0")/.."
 VERSION="$(tr -d '[:space:]' < VERSION)"
 BUILD="${BUILD_NUMBER:-$(git rev-list --count HEAD 2>/dev/null || echo 1)}"
 APP="dist/Monorail.app"
+# APPSTORE=1 builds the Mac App Store edition (sandboxed, no self-updater; see docs/APP-STORE.md).
+SWIFT_FLAGS=()
+ENTITLEMENTS="Resources/Monorail.entitlements"
+if [ "${APPSTORE:-0}" = "1" ]; then
+    APP="dist/AppStore/Monorail.app"
+    SWIFT_FLAGS=(-Xswiftc -DAPPSTORE --scratch-path .build-appstore)
+    ENTITLEMENTS="Resources/MonorailAppStore.entitlements"
+fi
 
-echo "==> Building Monorail ${VERSION} (${BUILD})"
-swift build -c release --arch arm64 --arch x86_64
-BIN_DIR="$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path)"
+echo "==> Building Monorail ${VERSION} (${BUILD})${APPSTORE:+ for the App Store}"
+swift build -c release --arch arm64 --arch x86_64 ${SWIFT_FLAGS[@]+"${SWIFT_FLAGS[@]}"}
+BIN_DIR="$(swift build -c release --arch arm64 --arch x86_64 ${SWIFT_FLAGS[@]+"${SWIFT_FLAGS[@]}"} --show-bin-path)"
 
 echo "==> Assembling ${APP}"
 rm -rf "$APP"
@@ -24,6 +32,14 @@ cp LICENSE "$APP/Contents/Resources/LICENSE"
 cp Resources/Monorail.sdef "$APP/Contents/Resources/Monorail.sdef"
 cp CHANGELOG.md "$APP/Contents/Resources/CHANGELOG.md"
 sed -e "s/__VERSION__/${VERSION}/" -e "s/__BUILD__/${BUILD}/" Resources/Info.plist > "$APP/Contents/Info.plist"
+if [ "${APPSTORE:-0}" = "1" ]; then
+    # Its own identifier: the App Store edition and the direct download are separate apps.
+    /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier org.ashforde.monorail.appstore" "$APP/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Add :LSApplicationCategoryType string public.app-category.productivity" "$APP/Contents/Info.plist" 2>/dev/null \
+        || /usr/libexec/PlistBuddy -c "Set :LSApplicationCategoryType public.app-category.productivity" "$APP/Contents/Info.plist"
+    rm -f "$APP/Contents/Resources/monorail"
+    if [ -n "${PROVISIONING_PROFILE:-}" ]; then cp "$PROVISIONING_PROFILE" "$APP/Contents/embedded.provisionprofile"; fi
+fi
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
 echo "==> Icon"
@@ -42,9 +58,9 @@ if [ -n "${SIGN_IDENTITY:-}" ]; then
     # Apple's timestamp server only serves Apple-issued certificates.
     TIMESTAMP="--timestamp=none"
     case "$SIGN_IDENTITY" in "Developer ID"*) TIMESTAMP="--timestamp" ;; esac
-    codesign --force --options runtime $TIMESTAMP --entitlements Resources/Monorail.entitlements --sign "$SIGN_IDENTITY" "$APP"
+    codesign --force --options runtime $TIMESTAMP --entitlements "$ENTITLEMENTS" --sign "$SIGN_IDENTITY" "$APP"
 else
-    codesign --force --sign - "$APP"
+    codesign --force --sign - --entitlements "$ENTITLEMENTS" "$APP"
 fi
 codesign --verify --strict "$APP"
 # The designated requirement is what macOS ties permissions to; a stable

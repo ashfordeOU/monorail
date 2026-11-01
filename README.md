@@ -259,6 +259,14 @@ brew install --cask monorail
 curl -fsSL https://raw.githubusercontent.com/ashfordeOU/monorail/main/scripts/install.sh | bash
 ```
 
+### More ways
+
+- **Nix:** `nix profile install github:ashfordeOU/monorail` (or add the flake to nix-darwin).
+- **MacPorts:** a Portfile is ready in [`packaging/macports`](packaging/macports) (until it is accepted upstream, use it as a local port).
+- **For IT teams:** every release has a `.pkg` for Jamf, Kandji, Mosyle, Intune and Munki, plus an
+  [Installomator label](packaging/installomator) and [AutoPkg recipes](packaging/autopkg).
+- **Mac App Store:** a lighter, sandboxed edition is coming ([what's different](docs/APP-STORE.md)).
+
 This downloads the latest release, installs it in `/Applications` and opens it.
 
 ### Updates

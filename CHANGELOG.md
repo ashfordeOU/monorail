@@ -4,6 +4,11 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.7.6] - 2026-11-01
+
+### Fixed
+- **The slider bar shows again.** Since 1.7.2 it could stay hidden, mostly in "Only while sliding" mode: the rule that makes it step aside for windows in front of it also counted your tiled windows, which sit under the bar by design. Now only floating windows (like a video player) and video playback make it step aside, and audio players no longer count as video.
+
 ## [1.7.5] - 2026-11-01
 
 ### Fixed

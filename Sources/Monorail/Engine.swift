@@ -1872,6 +1872,9 @@ final class Engine {
 
     // MARK: - Focus helpers
 
+    /// Whether Monorail has this window on a strip (rather than floating or unmanaged).
+    func isTiled(_ id: WindowID) -> Bool { windows[id]?.key != nil }
+
     func focusedWindowID() -> WindowID? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
         return AXUIElement.application(app.processIdentifier).focusedWindow?.windowID

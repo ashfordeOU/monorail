@@ -1,3 +1,4 @@
+#if os(macOS)
 import AppKit
 import ApplicationServices
 import MonorailCore
@@ -145,3 +146,4 @@ final class SystemPrompts {
         NSRunningApplication(processIdentifier: prompt.pid)?.activate(options: [])
     }
 }
+#endif

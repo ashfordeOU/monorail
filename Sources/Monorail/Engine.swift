@@ -2375,7 +2375,9 @@ final class Engine {
     /// Makes sure a floating window is fully on screen: left alone if it already is,
     /// otherwise centred (and staggered) on the display you're working on.
     private func placeFloating(_ element: AXUIElement, remembered: CGRect?, lenient: Bool = false) {
-        guard isRunning, !isPaused, !element.isFullScreen, !element.isMinimized, let frame = element.frame else { return }
+        guard isRunning, !isPaused, !element.isFullScreen, !element.isMinimized, let frame = element.frame,
+            !isLeftAlone(element, frame: frame)
+        else { return }
         // The rules are shared with the other platforms (MonorailEngine.OnScreen).
         let visibleAreas = displays.map { Rect($0.visibleFrame) }
         func fits(_ rect: CGRect) -> Bool {
@@ -2407,7 +2409,7 @@ final class Engine {
 
     private func centerDialog(_ element: AXUIElement, pid: pid_t) {
         guard isRunning, !isPaused, element.role == kAXWindowRole, let id = element.windowID, windows[id] == nil,
-            !element.isFullScreen, let frame = element.frame
+            !element.isFullScreen, let frame = element.frame, !isLeftAlone(element, frame: frame)
         else { return }
         // Apps reuse their file pickers: one shown again is only kept on screen, not moved again.
         if placedDialogs.contains(id) {
@@ -2453,7 +2455,7 @@ final class Engine {
 
     /// Pulls a dialog fully onto its display, shrinking it first if it's too big.
     private func keepDialogOnScreen(_ element: AXUIElement, display: Display) {
-        guard isRunning, !isPaused, let frame = element.frame, !element.isFullScreen else { return }
+        guard isRunning, !isPaused, let frame = element.frame, !element.isFullScreen, !isLeftAlone(element, frame: frame) else { return }
         let visible = display.frame.intersects(frame) ? display.visibleFrame
             : (self.display(containing: frame)?.visibleFrame ?? display.visibleFrame)
         guard !visible.insetBy(dx: -2, dy: -2).contains(frame) else { return }
@@ -5040,10 +5042,30 @@ final class Engine {
 
     /// Whether a window sits on the normal window layer (not a floating panel, HUD or menu bar widget).
     private static func isOnNormalLayer(_ id: WindowID) -> Bool {
-        guard let info = (CGWindowListCopyWindowInfo(.optionIncludingWindow, CGWindowID(id)) as? [[String: Any]])?.first,
-            let layer = info[kCGWindowLayer as String] as? Int
-        else { return false }
-        return layer == 0
+        windowLayer(id) == 0
+    }
+
+    private static func windowLayer(_ id: WindowID) -> Int? {
+        guard let info = (CGWindowListCopyWindowInfo(.optionIncludingWindow, CGWindowID(id)) as? [[String: Any]])?.first
+        else { return nil }
+        return info[kCGWindowLayer as String] as? Int
+    }
+
+    /// Windows Monorail never moves to keep on screen: anything above modal panels (status bar,
+    /// notch and menu bar widgets, HUDs), and title-bar-less panels that sit up against the menu
+    /// bar on purpose (a notch app's drop-down, say).
+    private func isLeftAlone(_ element: AXUIElement, frame: CGRect) -> Bool {
+        if let id = element.windowID, let layer = Self.windowLayer(id), layer > Int(CGWindowLevelForKey(.modalPanelWindow)) {
+            return true
+        }
+        let hasTitleBar = element.element(kAXCloseButtonAttribute) != nil || element.bool("AXModal") == true
+        guard !hasTitleBar else { return false }
+        // Small and up against the menu bar: a drop-down that belongs there. (A big file picker
+        // hanging off the top is still brought back.)
+        return displays.contains { display in
+            display.frame.intersects(frame) && frame.minY < display.visibleFrame.minY + 8
+                && frame.height < display.frame.height * 0.45 && frame.width < display.frame.width * 0.6
+        }
     }
 
     /// When something goes wrong: every window of every app back on screen, then a fresh layout.

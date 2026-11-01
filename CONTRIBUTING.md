@@ -24,6 +24,14 @@ make run    # build dist/Monorail.app and open it
 - Match the style of the surrounding code; keep functions small and comments about *why*.
 - Keep pull requests focused on one change, and describe how you tested it.
 
+## Signed commits
+
+Every commit on `main` is signed with Ashforde's commit-signing key and shows as Verified on
+GitHub. Maintainers push to the `incoming` branch; the **Sign and land** workflow signs the new
+commits with the `COMMIT_SIGNING_KEY` secret and moves them onto `main`. Pull requests are signed
+the same way when they're merged. **Re-sign history** (run by hand) can check, or redo, the
+whole history.
+
 ## Releases
 
 1. Update `VERSION` and add a section to `CHANGELOG.md`.

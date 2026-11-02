@@ -127,6 +127,41 @@ enum WindowsUITest {
             let after = system.window(target.id)?.frame.width ?? 0
             check(abs(after - before) > 20, "and the window really changes width (\(Int(before)) → \(Int(after)))")
         }
+        // Slides with several windows: the stack shortcut puts the focused window into its
+        // neighbour's slide (one above the other), and unstacking gives it its own slide again.
+        if let target = tiled.last, let display = engine.displayOf[target.id] {
+            system.focus(target.id)
+            Win32WindowSystem.pump(for: 0.5)
+            let columns = engine.strips[display]?.columns ?? []
+            let index = columns.firstIndex { $0.windows.contains(target.id) } ?? 0
+            let stack: Action = index > 0 ? .consumeIntoLeft : .consumeIntoRight
+            if let key = WindowsKeys.binding(for: stack) {
+                WindowsKeys.press(key)
+            } else {
+                engine.perform(stack)
+            }
+            Win32WindowSystem.pump(for: 1)
+            let slide = engine.strips[display]?.columns.first { $0.windows.contains(target.id) }
+            check(slide?.windows.count == 2, "\(stack == .consumeIntoLeft ? "stacking left" : "stacking right") puts two windows in one slide (\(slide?.windows.count ?? 0))")
+            if let slide, slide.windows.count == 2 {
+                let frames = slide.windows.compactMap { system.window($0)?.frame }.sorted { $0.y < $1.y }
+                if frames.count == 2 {
+                    let (top, bottom) = (frames[0], frames[1])
+                    check(abs(top.x - bottom.x) < 4 && abs(top.width - bottom.width) < 4, "one above the other, same column (\(top) / \(bottom))")
+                    check(top.maxY <= bottom.y + 2, "not overlapping (\(Int(top.maxY)) ≤ \(Int(bottom.y)))")
+                    check(top.height + bottom.height > work.height * 0.8, "together they fill the height")
+                }
+            }
+            let unstack: Action = stack == .consumeIntoLeft ? .expel : .expelLeft
+            system.focus(target.id)
+            Win32WindowSystem.pump(for: 0.3)
+            if let key = WindowsKeys.binding(for: unstack) { WindowsKeys.press(key) } else { engine.perform(unstack) }
+            Win32WindowSystem.pump(for: 1)
+            let alone = engine.strips[display]?.columns.first { $0.windows.contains(target.id) }
+            check(alone?.windows.count == 1, "unstacking gives it its own slide again")
+            let height = system.window(target.id)?.frame.height ?? 0
+            check(height > work.height * 0.8, "and full height (\(Int(height)))")
+        }
         WindowsKeys.unregister()
 
         // Settings in the Mac format: a float rule for Notepad lets ours go, the defaults take them back.

@@ -935,8 +935,7 @@ final class Engine {
             }
             strips[key] = paired
         }
-        appMemory.removeAll()
-        windowMemory.removeAll()
+        returnMemory.forgetAll()
         layout(animated: true)
         scheduleSave()
         onStateChange()
@@ -2254,31 +2253,23 @@ final class Engine {
         var slot: Strip.Slot
     }
 
-    /// Hidden, minimised and closed windows, by window ID.
-    private var windowMemory: [WindowID: Memory] = [:]
-    /// Where each app's most recently removed window was, for when the app
-    /// opens a window again (a Dock click after closing it, or a relaunch).
-    private var appMemory: [String: Memory] = [:]
+    /// Where hidden, minimised and closed windows, and each app's last window, go back to
+    /// (shared with the other platforms: MonorailEngine.ReturnMemory).
+    private var returnMemory = ReturnMemory<Memory>()
 
     private func remember(_ window: ManagedWindow) {
         guard let key = window.key, let slot = strips[key]?.slot(of: window.id) else { return }
-        let memory = Memory(key: key, slot: slot)
-        windowMemory[window.id] = memory
-        appMemory[Self.appKey(window)] = memory
+        returnMemory.remember(window.id, app: Self.appKey(window), at: Memory(key: key, slot: slot))
     }
 
     /// Where a returning window belongs, if Monorail remembers. The app's
     /// slot is only used when none of its windows are on that strip, so a
     /// genuinely new second window still opens normally.
     private func memory(for window: ManagedWindow) -> Memory? {
-        if let memory = windowMemory.removeValue(forKey: window.id) { return memory }
         let app = Self.appKey(window)
-        guard let memory = appMemory[app] else { return nil }
-        let strip = strips[memory.key] ?? Strip()
-        let appOnStrip = strip.allWindows.contains { windows[$0].map(Self.appKey) == app }
-        guard !appOnStrip else { return nil }
-        appMemory[app] = nil
-        return memory
+        return returnMemory.recall(window.id, app: app) { memory in
+            (strips[memory.key] ?? Strip()).allWindows.contains { windows[$0].map(Self.appKey) == app }
+        }
     }
 
     private func window(for element: AXUIElement) -> ManagedWindow? {
@@ -3609,7 +3600,7 @@ final class Engine {
         var strip = strips[key] ?? Strip()
         strip.replaceColumns(columns, keepingFocusOn: entry.strip.focusedWindow)
         strips[key] = strip
-        for id in returning.keys { windowMemory[id] = nil }
+        for id in returning.keys { returnMemory.forget(id) }
         showWorkspace(of: key)
         // Each window finds its place on the strip as it comes back (see `adopt`).
         for element in returning.values { element.set(kAXMinimizedAttribute, kCFBooleanFalse) }
@@ -3956,7 +3947,7 @@ final class Engine {
             strips[key] = strip
             window.key = key
         }
-        stickyWindows = stickyWindows.filter { windows[$0] != nil || windowMemory[$0] != nil }
+        stickyWindows = stickyWindows.filter { windows[$0] != nil || returnMemory.remembers($0) }
         // Tagged windows follow you between the workspaces they're tagged with.
         for id in windowTags.windows(taggedWith: key.workspace) {
             guard let window = windows[id], let from = window.key, from.screen == key.screen,

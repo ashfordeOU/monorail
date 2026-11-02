@@ -111,6 +111,7 @@ The scheduled check-ins work through this list in order and tick items off.
   - [x] Step 3: back and forward through views (`NavigationHistory`), with tests
   - [x] Step 4: windows kept on several workspaces (`WorkspaceTags`), with tests
   - [x] Step 5: saved views, nine per display (`SavedViews`, same saved format), with tests
+  - [x] Step 6: where returning windows and reopened apps go back to (`ReturnMemory`), with tests
 - [ ] macOS backend implements WindowSystem
 - [ ] `core-ts/`: TypeScript project skeleton running the golden tests (split trees first)
 - [ ] Generators for C# and TypeScript definitions

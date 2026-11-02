@@ -643,7 +643,7 @@ struct StayAwakePane: View {
                     .help("Keeps a MacBook running when closed, even without an external display. It turns off by itself if the Mac gets hot. Don't put a running Mac in a bag.")
                 if store.settings.awakeClosedLid {
                     Toggle("Only while plugged in", isOn: $store.settings.awakeClosedLidOnlyOnPower)
-                        .help("On battery, closing the lid puts the Mac to sleep as usual.")
+                        .help("On battery, closing the lid puts the Mac to sleep as usual. Turned off, it keeps running closed on battery down to 20%. Low Power Mode always ends it.")
                         .padding(.leading, 18)
                 }
             } header: {

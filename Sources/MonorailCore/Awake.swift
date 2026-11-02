@@ -187,16 +187,28 @@ extension AwakeRules {
     /// the Mac has got hot during this session (`hotThisSession`): a closed Mac in a bag doesn't
     /// cool down, so it isn't turned back on until the next session.
     public static func closedLid(awake: Bool, enabled: Bool, onlyOnPower: Bool, charging: Bool, heat: AwakeHeat,
-                                 hotThisSession: Bool) -> ClosedLidDecision {
+                                 hotThisSession: Bool, lowPowerMode: Bool = false, battery: Int? = nil,
+                                 batteryFloor: Int = closedLidBatteryFloor) -> ClosedLidDecision {
         guard awake, enabled else { return .off }
         if hotThisSession || heat >= .serious {
             return .stopped("Your Mac is getting hot, so it will sleep when the lid is closed. Stay Awake continues while it's open.")
         }
-        if onlyOnPower, !charging {
-            return .stopped("On battery, so your Mac will sleep when the lid is closed. Plug in to keep it running closed.")
+        if lowPowerMode {
+            return .stopped("Low Power Mode is on, so your Mac will sleep when the lid is closed.")
+        }
+        if !charging {
+            if onlyOnPower {
+                return .stopped("On battery, so your Mac will sleep when the lid is closed. Plug in to keep it running closed.")
+            }
+            if let battery, battery < batteryFloor {
+                return .stopped("Battery below \(batteryFloor)%, so your Mac will sleep when the lid is closed.")
+            }
         }
         return .on
     }
+
+    /// On battery (when allowed), lid-closed mode ends below this charge. Keeper uses the same.
+    public static let closedLidBatteryFloor = 20
 }
 
 public enum AwakeFormat {

@@ -20,6 +20,9 @@ final class StayAwake {
     private var lastDriveWrite = Date.distantPast
     private var closedLidOn = false
     private var lidRequestPending = false
+    /// Sleep was already disabled when lid-closed mode was wanted (by hand, or by Keeper): it's
+    /// left exactly as it is, on and off.
+    private var lidAlreadyOff = false
     /// The Mac got hot during this session: lid-closed mode stays off until the next one.
     private var hotThisSession = false
     /// The last safety message shown about lid-closed mode, so it's shown once.
@@ -58,9 +61,11 @@ final class StayAwake {
         }
         try? FileManager.default.removeItem(at: Self.lidStop)
         timer = Timer.every(15) { [weak self] _ in self?.evaluate() }
-        NotificationCenter.default.addObserver(forName: ProcessInfo.thermalStateDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
-            guard let self, self.isOn else { return }
-            self.updateClosedLid(awake: true)
+        for name in [ProcessInfo.thermalStateDidChangeNotification, Notification.Name.NSProcessInfoPowerStateDidChange] {
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                guard let self, self.isOn else { return }
+                self.updateClosedLid(awake: true)
+            }
         }
     }
 
@@ -265,11 +270,18 @@ final class StayAwake {
         }
         let decision = AwakeRules.closedLid(awake: awake, enabled: settings.awakeClosedLid,
                                             onlyOnPower: settings.awakeClosedLidOnlyOnPower,
-                                            charging: !Power.onBattery, heat: heat, hotThisSession: hotThisSession)
+                                            charging: !Power.onBattery, heat: heat, hotThisSession: hotThisSession,
+                                            lowPowerMode: ProcessInfo.processInfo.isLowPowerModeEnabled,
+                                            battery: Self.batteryPercent())
         switch decision {
         case .on:
             lidStopReason = nil
-            guard !closedLidOn, !lidRequestPending else { return }
+            guard !closedLidOn, !lidRequestPending, !lidAlreadyOff else { return }
+            // Already switched on by hand (or by another app): use it, and never switch it off.
+            if Self.sleepIsDisabled {
+                lidAlreadyOff = true
+                return
+            }
             lidRequestPending = true
             Self.startClosedLid { [weak self] ok in
                 guard let self else { return }
@@ -283,6 +295,7 @@ final class StayAwake {
                 lidStopReason = why
                 onNotice(why)
             }
+            lidAlreadyOff = false
             guard closedLidOn else { return }
             closedLidOn = false
             Self.stopClosedLid()

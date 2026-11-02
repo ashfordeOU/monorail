@@ -33,6 +33,18 @@ final class ClosedLidTests: XCTestCase {
         XCTAssertTrue(why.contains("hot"))
     }
 
+    func testLowPowerModeAndALowBatteryStopIt() {
+        guard case .stopped = AwakeRules.closedLid(awake: true, enabled: true, onlyOnPower: true, charging: true,
+                                                   heat: .nominal, hotThisSession: false, lowPowerMode: true) else { return XCTFail() }
+        XCTAssertEqual(AwakeRules.closedLid(awake: true, enabled: true, onlyOnPower: false, charging: false,
+                                            heat: .nominal, hotThisSession: false, battery: 50), .on)
+        guard case .stopped = AwakeRules.closedLid(awake: true, enabled: true, onlyOnPower: false, charging: false,
+                                                   heat: .nominal, hotThisSession: false, battery: 15) else { return XCTFail() }
+        // Plugged in, the battery level doesn't matter.
+        XCTAssertEqual(AwakeRules.closedLid(awake: true, enabled: true, onlyOnPower: false, charging: true,
+                                            heat: .nominal, hotThisSession: false, battery: 5), .on)
+    }
+
     func testPluggedInOnlyIsTheDefault() {
         XCTAssertTrue(AppSettings().awakeClosedLidOnlyOnPower)
         XCTAssertFalse(AppSettings().awakeClosedLid)

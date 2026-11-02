@@ -104,9 +104,9 @@ version and runs it against real windows there.
   Windows' own input and checks focus and widths change
 - [ ] Slides with several windows, widths, moving and focusing along the strip: done in the shared
   engine, and the Windows UI test stacks and unstacks with real shortcuts. CI found that apps with a
-  minimum size (Notepad: about 460 px wide) stay bigger than their tile and overlap their
-  neighbour; the engine needs to learn each window's minimum size (as the Mac engine does) and
-  give it room
+  minimum size (Notepad: about 460 px wide) stayed bigger than their tile and overlapped their
+  neighbour, so the shared engine now learns each app's minimum width (as the Mac engine does)
+  and widens its slide
 - [x] Tray icon (pause and resume, open and reload settings, quit) and settings: `%APPDATA%\Monorail\settings.json`
   in the Mac format, written with defaults on first run, picked up live when edited; the layout
   and app rules set to float apply (a rule like `notepad.exe` matches the Windows app)

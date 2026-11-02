@@ -200,3 +200,37 @@ final class SharedEngineActionTests: XCTestCase {
         XCTAssertFalse(SharedEngine.supportedActions.contains(.overview))
     }
 }
+
+final class SharedEngineMinimumWidthTests: XCTestCase {
+    func testAnAppThatWontShrinkGetsAWideEnoughSlide() {
+        let system = FakeWindowSystem()
+        system.minimumWidths["notepad"] = 900
+        let engine = SharedEngine(system: system)
+        let frame = Rect(x: 100, y: 100, width: 800, height: 600)
+        system.open(WindowInfo(id: 1, appID: "notepad", appName: "Notepad", frame: frame))
+        system.open(WindowInfo(id: 2, appID: "other", appName: "Other", frame: frame))
+        engine.start()
+        XCTAssertEqual(engine.minimumWidths["notepad"] ?? 0, 900, accuracy: 0.5)
+        // After learning, the engine asks for at least what the app insists on, and the
+        // neighbour starts after it: no overlap.
+        let a = system.window(1)!.frame, b = system.window(2)!.frame
+        XCTAssertGreaterThanOrEqual(engine.lastApplied[1]?.width ?? 0, 899)
+        XCTAssertEqual(a.intersection(b).area, 0, "\(a) / \(b)")
+    }
+
+    func testStackedTilesMakeRoomForTheirMinimum() {
+        let system = FakeWindowSystem()
+        system.minimumWidths["notepad"] = 460
+        let engine = SharedEngine(system: system)
+        let frame = Rect(x: 100, y: 100, width: 800, height: 600)
+        system.open(WindowInfo(id: 1, appID: "notepad", appName: "Notepad", frame: frame))
+        system.open(WindowInfo(id: 2, appID: "notepad", appName: "Notepad", frame: frame))
+        engine.start()
+        system.focus(2)
+        XCTAssertTrue(engine.perform(.consumeIntoLeft))
+        XCTAssertGreaterThanOrEqual(engine.lastApplied[1]?.width ?? 0, 459)
+        XCTAssertGreaterThanOrEqual(engine.lastApplied[2]?.width ?? 0, 459)
+        let a = system.window(1)!.frame, b = system.window(2)!.frame
+        XCTAssertEqual(a.intersection(b).area, 0, "\(a) / \(b)")
+    }
+}

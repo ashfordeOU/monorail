@@ -152,6 +152,10 @@ enum WindowsUITest {
                 }
                 // Where Windows really put them: each starts where it was asked; an app with a
                 // minimum size (Notepad won't go much narrower than ~460 px) may stay bigger.
+                let real = slide.windows.compactMap { system.window($0)?.frame }
+                if real.count == 2 {
+                    check(real[0].intersection(real[1]).area < 16, "the real windows don't overlap either: the slide made room for Notepad's minimum width (\(real[0]) / \(real[1]))")
+                }
                 for id in slide.windows {
                     guard let asked = engine.lastApplied[id], let real = system.window(id)?.frame else { continue }
                     check(abs(real.x - asked.x) < 4 && abs(real.y - asked.y) < 4, "window \(id) starts where its tile does (\(real) vs \(asked))")

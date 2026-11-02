@@ -111,9 +111,22 @@ public final class FakeWindowSystem: WindowSystem {
     public func window(_ id: WindowID) -> WindowInfo? { all[id] }
     public func focusedWindow() -> WindowID? { focused }
 
+    /// Apps that won't go narrower than this (by app ID), like real ones with a minimum size.
+    public var minimumWidths: [String: Double] = [:]
+
     public func apply(_ frames: [WindowID: Rect]) {
         applied.append(frames)
-        for (id, frame) in frames { all[id]?.frame = frame }
+        var refused: [WindowID] = []
+        for (id, frame) in frames {
+            var frame = frame
+            if let app = all[id]?.appID, let minimum = minimumWidths[app], frame.width < minimum {
+                frame.width = minimum
+                refused.append(id)
+            }
+            all[id]?.frame = frame
+        }
+        // The OS reports the size the app insisted on.
+        for id in refused.sorted() { onEvent(.moved(id, byUser: false)) }
     }
 
     public func focus(_ id: WindowID) {

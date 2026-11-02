@@ -22,6 +22,9 @@ public final class SharedEngine {
     public private(set) var lastApplied: [WindowID: Rect] = [:]
     /// The displays the strips were last laid out on.
     private var knownDisplays: [DisplayInfo] = []
+    /// Apps that won't go narrower than asked (by app ID): their slides are made wide enough, so
+    /// they never spill over the next slide (the same rule as the Mac app).
+    public private(set) var minimumWidths: [String: Double] = [:]
 
     public init(system: WindowSystem, config: LayoutConfig = LayoutConfig()) {
         self.system = system
@@ -89,7 +92,9 @@ public final class SharedEngine {
             guard system.displays != knownDisplays else { return }
             rehome()
             layout()
-        case .moved, .titleChanged:
+        case .moved(let id, let byUser):
+            if !byUser, learnMinimumWidth(id) { layout() }
+        case .titleChanged:
             break
         }
     }
@@ -139,6 +144,28 @@ public final class SharedEngine {
         let best = displays.max { $0.frame.intersection(info.frame).area < $1.frame.intersection(info.frame).area }
         if let best, best.frame.intersection(info.frame).area > 0 { return best.id }
         return displays.first?.id
+    }
+
+    /// A window came out wider than its tile (the app has a minimum size): remember it for the
+    /// app and widen the slide to fit. True when the strip changed.
+    @discardableResult
+    func learnMinimumWidth(_ id: WindowID) -> Bool {
+        guard let display = displayOf[id], var strip = strips[display], let asked = lastApplied[id],
+            let real = system.window(id)?.frame, real.width > asked.width + 24, abs(real.x - asked.x) < 40,
+            let column = strip.columns.first(where: { $0.windows.contains(id) }), !column.isFullWidth,
+            let viewport = system.displays.first(where: { $0.id == display })?.visibleFrame
+        else { return false }
+        let app = appOf[id] ?? ""
+        guard (minimumWidths[app] ?? 0) < real.width - 4 else { return false }
+        minimumWidths[app] = real.width
+        let across = Double(max(column.tilesAcross, 1))
+        let needed = real.width * across + config.gap * (across - 1)
+        let fraction = config.fraction(forColumnWidth: needed, viewportWidth: viewport.width)
+        guard fraction > column.width + 0.005 else { return false }
+        strip.setWidth(fraction, of: id)
+        strips[display] = strip
+        for other in column.windows { lastApplied[other] = nil }
+        return true
     }
 
     /// After displays change: windows on a display that's gone move to the first one left.

@@ -190,9 +190,10 @@ private func winEventCallback(_ hook: HWINEVENTHOOK?, _ event: DWORD, _ hwnd: HW
 
 // MARK: - Helpers
 
-/// Win32's BOOL, however this Swift imports it (WindowsBool or a plain integer).
+/// Win32's BOOL, however this Swift imports it (Bool, WindowsBool or a plain integer).
 @inline(__always) func ok(_ value: WindowsBool) -> Bool { value.boolValue }
 @inline(__always) func ok(_ value: Int32) -> Bool { value != 0 }
+@inline(__always) func ok(_ value: Bool) -> Bool { value }
 
 extension Rect {
     init(_ r: RECT) {

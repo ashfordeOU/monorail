@@ -9,6 +9,8 @@ import MonorailCore
 public final class SharedEngine {
     public let system: WindowSystem
     public var config: LayoutConfig
+    /// Windows this returns true for stay off the strip (app rules set to float).
+    public var floats: (WindowInfo) -> Bool = { _ in false }
     /// Strips by display ID.
     public private(set) var strips: [String: Strip] = [:]
     /// Which display each managed window is on.
@@ -36,9 +38,37 @@ public final class SharedEngine {
 
     public func isManaged(_ id: WindowID) -> Bool { displayOf[id] != nil }
 
+    /// While paused, windows are left where they are and events and actions are ignored.
+    public private(set) var isPaused = false
+
+    public func pause() { isPaused = true }
+
+    /// Picks up the desktop as it is now: windows opened, closed or moved while paused.
+    public func resume() {
+        guard isPaused else { return }
+        isPaused = false
+        strips = [:]
+        displayOf = [:]
+        appOf = [:]
+        lastApplied = [:]
+        start()
+    }
+
+    /// Uses new settings: the layout and float rules apply at once, to every window.
+    public func apply(_ settings: SharedSettings) {
+        config = settings.layout
+        floats = { settings.floats($0) }
+        for id in displayOf.keys.sorted() {
+            if let info = system.window(id), floats(info) { release(id) }
+        }
+        for info in system.windows() where !isManaged(info.id) { adopt(info, focus: false) }
+        layout()
+    }
+
     // MARK: Events
 
     public func handle(_ event: WindowEvent) {
+        guard !isPaused else { return }
         switch event {
         case .created(let id), .restored(let id):
             if let info = system.window(id), adopt(info, focus: true) { layout() }
@@ -69,7 +99,7 @@ public final class SharedEngine {
     /// Starts managing a window if it can be tiled; true when a strip changed.
     @discardableResult
     func adopt(_ info: WindowInfo, focus: Bool) -> Bool {
-        guard info.isTileable, !isManaged(info.id), let display = display(for: info) else { return false }
+        guard info.isTileable, !floats(info), !isManaged(info.id), let display = display(for: info) else { return false }
         var strip = strips[display] ?? Strip()
         guard strip.insert(info.id, width: config.defaultWidth, position: .afterFocused, focus: focus) else { return false }
         strips[display] = strip
@@ -146,7 +176,7 @@ public final class SharedEngine {
     /// Returns false when it doesn't apply (nothing to the left, an action this engine doesn't run).
     @discardableResult
     public func perform(_ action: Action) -> Bool {
-        guard Self.supportedActions.contains(action), let display = activeDisplay, var strip = strips[display] else { return false }
+        guard !isPaused, Self.supportedActions.contains(action), let display = activeDisplay, var strip = strips[display] else { return false }
         // Work from the window that really has focus, if it's on this strip.
         if let focused = system.focusedWindow(), displayOf[focused] == display { strip.focus(focused) }
         let changed: Bool

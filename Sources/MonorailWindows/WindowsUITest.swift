@@ -94,8 +94,11 @@ enum WindowsUITest {
         }
 
         // Shortcuts: registered with Windows and pressed through its input system, like a person would.
-        let refused = WindowsKeys.register()
-        check(refused.isEmpty, "every shortcut registers (refused: \(refused.map(\.label)))")
+        let missing = WindowsKeys.register()
+        check(missing.isEmpty, "every action gets a shortcut (none for: \(missing.map(\.title)))")
+        print("shortcuts: \(WindowsKeys.active.map { "\($0.label) \($0.action.title)" })")
+        let fellBack = WindowsKeys.active.filter { $0.modifiers & WindowsKeys.control != 0 }.map(\.label)
+        log.append("info Windows keeps some Win+Alt keys; these fell back: \(fellBack)")
         var pressed: [Action] = []
         Win32WindowSystem.onHotKey = { id in
             guard let action = WindowsKeys.action(forHotKey: id) else { return }
@@ -103,8 +106,7 @@ enum WindowsUITest {
             engine.perform(action)
         }
         if let display = engine.activeDisplay, let before = engine.strips[display]?.focusedWindow,
-            let right = WindowsKeys.defaults.first(where: { $0.action == .focusRight }),
-            let left = WindowsKeys.defaults.first(where: { $0.action == .focusLeft })
+            let right = WindowsKeys.binding(for: .focusRight), let left = WindowsKeys.binding(for: .focusLeft)
         {
             WindowsKeys.press(right)
             Win32WindowSystem.pump(for: 1)
@@ -126,6 +128,31 @@ enum WindowsUITest {
             check(abs(after - before) > 20, "and the window really changes width (\(Int(before)) → \(Int(after)))")
         }
         WindowsKeys.unregister()
+
+        // Settings in the Mac format: a float rule for Notepad lets ours go, the defaults take them back.
+        var floating = AppSettings()
+        floating.appRules = [AppRule(bundleID: "notepad.exe", name: "Notepad", float: true)]
+        engine.apply(SharedSettings(floating))
+        Win32WindowSystem.pump(for: 0.8)
+        check(ours(system, pids).allSatisfy { !engine.isManaged($0.id) }, "a float rule from settings.json leaves Notepad alone")
+        engine.apply(SharedSettings())
+        Win32WindowSystem.pump(for: 0.8)
+        check(ours(system, pids).allSatisfy { engine.isManaged($0.id) }, "and without it Notepad is tiled again")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("monorail-ci-\(GetCurrentProcessId())").appendingPathComponent("settings.json")
+        check(SharedSettings.writeDefaultsIfMissing(to: url) && SharedSettings.load(from: url) == SharedSettings(),
+              "a settings file is written and read back (\(url.path))")
+
+        // Pausing leaves windows alone; resuming takes them back.
+        engine.pause()
+        check(!engine.perform(.focusRight), "paused: shortcuts do nothing")
+        engine.resume()
+        Win32WindowSystem.pump(for: 0.8)
+        check(ours(system, pids).allSatisfy { engine.isManaged($0.id) }, "resumed: every window is managed again")
+
+        // The tray icon.
+        check(WindowsTray.show(), "the tray icon is added")
+        Win32WindowSystem.pump(for: 0.3)
+        WindowsTray.hide()
 
         // A new window arrives through SetWinEventHook and joins the strip.
         if let p = notepad() { processes.append(p); pids.insert(p.processIdentifier) }

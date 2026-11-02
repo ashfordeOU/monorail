@@ -34,6 +34,7 @@ let package = Package(
                 .linkedLibrary("User32", .when(platforms: [.windows])),
                 .linkedLibrary("Dwmapi", .when(platforms: [.windows])),
                 .linkedLibrary("Kernel32", .when(platforms: [.windows])),
+                .linkedLibrary("Shell32", .when(platforms: [.windows])),
             ]
         ),
         .testTarget(name: "MonorailCoreTests", dependencies: ["MonorailCore"]),

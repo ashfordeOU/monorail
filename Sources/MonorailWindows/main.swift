@@ -17,18 +17,55 @@ if CommandLine.arguments.contains("--ci-test") {
     exit(WindowsUITest.run())
 }
 
+// Settings: the Mac app's settings.json format, in %APPDATA%\Monorail. Edits are picked up live.
+let settingsURL = WindowsSettings.url
+SharedSettings.writeDefaultsIfMissing(to: settingsURL)
+var settingsDate = WindowsSettings.modified(settingsURL)
+
 let system = Win32WindowSystem()
 let engine = SharedEngine(system: system)
+let initial = SharedSettings.load(from: settingsURL)
+engine.config = initial.layout
+engine.floats = { initial.floats($0) }
 system.start()
 engine.start()
-let refused = WindowsKeys.register()
+
+WindowsTray.onCommand = { command in
+    switch command {
+    case .togglePause:
+        if engine.isPaused { engine.resume() } else { engine.pause() }
+        WindowsTray.isPaused = engine.isPaused
+        print(engine.isPaused ? "Paused." : "Resumed.")
+    case .openSettings:
+        WindowsTray.open(settingsURL.path)
+    case .reloadSettings:
+        engine.apply(SharedSettings.load(from: settingsURL))
+        print("Settings reloaded.")
+    case .quit:
+        WindowsTray.hide()
+        WindowsKeys.unregister()
+        system.stop()
+        exit(0)
+    }
+}
+if !WindowsTray.show() { print("No tray icon (the taskbar isn't running); Ctrl-C stops Monorail.") }
+let missing = WindowsKeys.register()
 Win32WindowSystem.onHotKey = { id in
     if let action = WindowsKeys.action(forHotKey: id) { engine.perform(action) }
 }
-for binding in refused { print("Shortcut \(binding.label) is taken by another app; \(binding.action.title) has no key.") }
-print("Shortcuts: " + WindowsKeys.defaults.map { "\($0.label) \($0.action.title.lowercased())" }.joined(separator: " · "))
+for action in missing { print("Every shortcut for \(action.title) is taken by another app; it has no key.") }
+print("Shortcuts: " + WindowsKeys.active.map { "\($0.label) \($0.action.title.lowercased())" }.joined(separator: " · "))
 print("Monorail (Windows alpha) running on \(system.displays.count) display(s) with \(engine.displayOf.count) window(s). Ctrl-C stops it.")
-while true { Win32WindowSystem.pump(for: 1) }
+print("Settings: \(settingsURL.path)")
+while true {
+    Win32WindowSystem.pump(for: 1)
+    let date = WindowsSettings.modified(settingsURL)
+    if date != settingsDate {
+        settingsDate = date
+        engine.apply(SharedSettings.load(from: settingsURL))
+        print("Settings changed; applied.")
+    }
+}
 #else
 print("MonorailWindows is the Windows version; on this system, use Monorail.")
 #endif

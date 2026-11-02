@@ -65,6 +65,10 @@ enum SelfTest {
         check(displayInfos.allSatisfy { $0.visibleFrame.width > 0 && $0.frame.width >= $0.visibleFrame.width }, "window system: display frames")
         _ = windowSystem.windows()
         _ = windowSystem.focusedWindow()
+        windowSystem.start()
+        check(windowSystem.isStarted, "window system: events start")
+        windowSystem.stop()
+        check(!windowSystem.isStarted, "window system: events stop")
         // Stay Awake's helpers work without a session.
         check(AwakeFormat.clock(90) == "1:30", "awake clock")
         if failures.isEmpty {

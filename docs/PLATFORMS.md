@@ -114,7 +114,7 @@ The scheduled check-ins work through this list in order and tick items off.
   - [x] Step 6: where returning windows and reopened apps go back to (`ReturnMemory`), with tests
 - [ ] macOS backend implements WindowSystem
   - [x] `AXWindowSystem`: displays, windows, focus, batched moves, minimise, close, and app and display events through Accessibility; checked by the self-test on every build
-  - [ ] Window events (created, destroyed, moved, focused, title) from Accessibility observers
+  - [x] Window events (created, destroyed, moved, focused, minimised, restored, title on request) from Accessibility observers, started and stopped by the self-test
   - [ ] The shared engine drives the Mac through it, behind a setting, before it becomes the default
 - [ ] `core-ts/`: TypeScript project skeleton running the golden tests (split trees first)
 - [ ] Generators for C# and TypeScript definitions

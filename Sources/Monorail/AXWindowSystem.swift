@@ -34,9 +34,119 @@ final class AXWindowSystem: WindowSystem {
     }
 
     deinit {
+        stop()
         for observer in observers {
             NSWorkspace.shared.notificationCenter.removeObserver(observer)
             NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
+    // MARK: Window events
+
+    /// Follow title changes too (off by default: terminals and browsers retitle constantly).
+    var followTitles = false
+    private var axObservers: [pid_t: AXObserver] = [:]
+    private var appObservers: [NSObjectProtocol] = []
+    private(set) var isStarted = false
+
+    private static let appNotifications = [kAXWindowCreatedNotification, kAXFocusedWindowChangedNotification]
+    private static let windowNotifications = [
+        kAXUIElementDestroyedNotification, kAXWindowMiniaturizedNotification, kAXWindowDeminiaturizedNotification,
+        kAXWindowMovedNotification, kAXWindowResizedNotification,
+    ]
+
+    /// Starts reporting window events for every app, and for apps that launch later.
+    func start() {
+        guard !isStarted else { return }
+        isStarted = true
+        for app in NSWorkspace.shared.runningApplications where app.activationPolicy == .regular {
+            observe(app.processIdentifier)
+        }
+        let center = NSWorkspace.shared.notificationCenter
+        appObservers.append(center.addObserver(forName: NSWorkspace.didLaunchApplicationNotification, object: nil, queue: .main) { [weak self] note in
+            guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
+            // Apps answer Accessibility a moment after they launch.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self?.observe(app.processIdentifier) }
+        })
+        appObservers.append(center.addObserver(forName: NSWorkspace.didTerminateApplicationNotification, object: nil, queue: .main) { [weak self] note in
+            guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
+            self?.unobserve(app.processIdentifier)
+        })
+    }
+
+    func stop() {
+        guard isStarted else { return }
+        isStarted = false
+        for pid in Array(axObservers.keys) { unobserve(pid) }
+        for observer in appObservers { NSWorkspace.shared.notificationCenter.removeObserver(observer) }
+        appObservers.removeAll()
+    }
+
+    private var refcon: UnsafeMutableRawPointer { Unmanaged.passUnretained(self).toOpaque() }
+
+    private func observe(_ pid: pid_t) {
+        guard axObservers[pid] == nil, pid != ownPID else { return }
+        var created: AXObserver?
+        guard AXObserverCreate(pid, axWindowSystemCallback, &created) == .success, let observer = created else { return }
+        let app = AXUIElement.application(pid)
+        var ok = false
+        for name in Self.appNotifications {
+            let error = AXObserverAddNotification(observer, app, name as CFString, refcon)
+            ok = ok || error == .success || error == .notificationAlreadyRegistered
+        }
+        guard ok else { return }
+        CFRunLoopAddSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .defaultMode)
+        axObservers[pid] = observer
+        for window in app.windows { observeWindow(window, observer: observer) }
+    }
+
+    private func observeWindow(_ element: AXUIElement, observer: AXObserver) {
+        for name in Self.windowNotifications {
+            AXObserverAddNotification(observer, element, name as CFString, refcon)
+        }
+        if followTitles { AXObserverAddNotification(observer, element, kAXTitleChangedNotification as CFString, refcon) }
+        if let id = element.windowID { elements[WindowID(id)] = element }
+    }
+
+    private func unobserve(_ pid: pid_t) {
+        guard let observer = axObservers.removeValue(forKey: pid) else { return }
+        CFRunLoopRemoveSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .defaultMode)
+        let gone = elements.filter { $0.value.pid == pid }.map(\.key)
+        for id in gone {
+            elements[id] = nil
+            onEvent(.destroyed(id))
+        }
+    }
+
+    /// The ID of a window element, also once it's gone (when Accessibility can no longer say).
+    private func id(of element: AXUIElement) -> WindowID? {
+        if let id = element.windowID { return WindowID(id) }
+        return elements.first { CFEqual($0.value, element) }?.key
+    }
+
+    fileprivate func handle(_ notification: String, element: AXUIElement) {
+        switch notification {
+        case kAXWindowCreatedNotification:
+            guard let pid = element.pid, let observer = axObservers[pid], let id = id(of: element) else { return }
+            observeWindow(element, observer: observer)
+            onEvent(.created(id))
+        case kAXFocusedWindowChangedNotification:
+            let window = element.role == kAXWindowRole ? element : element.focusedWindow
+            if let window, let id = id(of: window) { onEvent(.focused(id)) }
+        case kAXUIElementDestroyedNotification:
+            guard let id = id(of: element) else { return }
+            elements[id] = nil
+            onEvent(.destroyed(id))
+        case kAXWindowMovedNotification, kAXWindowResizedNotification:
+            if let id = id(of: element) { onEvent(.moved(id, byUser: NSEvent.pressedMouseButtons != 0)) }
+        case kAXWindowMiniaturizedNotification:
+            if let id = id(of: element) { onEvent(.minimized(id)) }
+        case kAXWindowDeminiaturizedNotification:
+            if let id = id(of: element) { onEvent(.restored(id)) }
+        case kAXTitleChangedNotification:
+            if let id = id(of: element) { onEvent(.titleChanged(id)) }
+        default:
+            break
         }
     }
 
@@ -122,6 +232,13 @@ final class AXWindowSystem: WindowSystem {
         _ = windows()
         return elements[id]
     }
+}
+
+private func axWindowSystemCallback(
+    _ observer: AXObserver, _ element: AXUIElement, _ notification: CFString, _ refcon: UnsafeMutableRawPointer?
+) {
+    guard let refcon else { return }
+    Unmanaged<AXWindowSystem>.fromOpaque(refcon).takeUnretainedValue().handle(notification as String, element: element)
 }
 
 private extension AXUIElement {

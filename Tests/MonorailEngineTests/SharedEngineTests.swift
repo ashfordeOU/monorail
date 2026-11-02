@@ -104,3 +104,39 @@ final class SharedEngineTests: XCTestCase {
         XCTAssertEqual(Set(engine.strips[laptop.id]?.allWindows ?? []), [1, 2])
     }
 }
+
+final class SharedEngineQuietTests: XCTestCase {
+    func testScreenChangesThatChangeNothingMoveNothing() {
+        let system = FakeWindowSystem()
+        let engine = SharedEngine(system: system)
+        engine.start()
+        system.open(WindowInfo(id: 1, appID: "a", appName: "A", frame: Rect(x: 100, y: 100, width: 800, height: 600)))
+        system.open(WindowInfo(id: 2, appID: "b", appName: "B", frame: Rect(x: 100, y: 100, width: 800, height: 600)))
+        let batches = system.applied.count
+        // macOS reports screen changes it makes itself (Dock, menu bar): nothing to do.
+        for _ in 0..<5 { engine.handle(.displaysChanged) }
+        XCTAssertEqual(system.applied.count, batches)
+        // A real change (the Dock grew) lays out again.
+        var laptop = FakeWindowSystem.laptop
+        laptop.visibleFrame.height -= 60
+        system.displays = [laptop]
+        engine.handle(.displaysChanged)
+        XCTAssertEqual(system.applied.count, batches + 1)
+    }
+
+    func testOnlyWindowsWhosePlaceChangedAreMoved() {
+        let system = FakeWindowSystem()
+        let engine = SharedEngine(system: system)
+        engine.start()
+        for id: WindowID in 1...3 {
+            system.open(WindowInfo(id: id, appID: "a\(id)", appName: "A", frame: Rect(x: 100, y: 100, width: 800, height: 600)))
+        }
+        let batches = system.applied.count
+        engine.layout()
+        XCTAssertEqual(system.applied.count, batches, "a layout with nothing changed applies nothing")
+        system.close(3)
+        // Any batch after the close moves only windows that are still there.
+        for batch in system.applied.dropFirst(batches) { XCTAssertFalse(batch.keys.contains(3)) }
+        XCTAssertNil(engine.lastApplied[3])
+    }
+}

@@ -29,11 +29,18 @@ enum SharedEngineRunner {
         engine.start()
         // Log what happens, then hand each event to the engine.
         system.onEvent = { [weak engine] event in
+            // Moves the engine made itself come back as events; they're not worth a line each.
+            if case .moved(_, byUser: false) = event {
+                engine?.handle(event)
+                return
+            }
+            let before = engine?.lastApplied ?? [:]
             print("event:", event)
             engine?.handle(event)
             if let engine {
+                let moved = engine.lastApplied.filter { before[$0.key] != $0.value }.count
                 let counts = engine.strips.map { "\($0.key.prefix(8)): \($0.value.allWindows.count)" }.sorted()
-                print("strips:", counts.joined(separator: ", "))
+                print("  strips:", counts.joined(separator: ", "), "· windows moved:", moved)
             }
         }
         print("Shared engine running on \(system.displays.count) display(s) with \(engine.displayOf.count) window(s). Ctrl-C stops it.")

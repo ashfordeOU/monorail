@@ -16,6 +16,10 @@ public final class SharedEngine {
     /// Where returning (restored, re-shown) windows go back to.
     private var memory = ReturnMemory<String>()
     private var appOf: [WindowID: String] = [:]
+    /// The frame each window was last given, so unchanged windows aren't moved again.
+    public private(set) var lastApplied: [WindowID: Rect] = [:]
+    /// The displays the strips were last laid out on.
+    private var knownDisplays: [DisplayInfo] = []
 
     public init(system: WindowSystem, config: LayoutConfig = LayoutConfig()) {
         self.system = system
@@ -50,6 +54,9 @@ public final class SharedEngine {
             for info in system.windows() where !isManaged(info.id) { changed = adopt(info, focus: false) || changed }
             if changed { layout() }
         case .displaysChanged:
+            // macOS reports screen changes it makes itself (the Dock, the menu bar, spaces);
+            // only a real change of displays or their usable areas needs a new layout.
+            guard system.displays != knownDisplays else { return }
             rehome()
             layout()
         case .moved, .titleChanged:
@@ -75,6 +82,7 @@ public final class SharedEngine {
     @discardableResult
     func release(_ id: WindowID) -> Bool {
         guard let display = displayOf.removeValue(forKey: id), var strip = strips[display] else { return false }
+        lastApplied[id] = nil
         if let app = appOf.removeValue(forKey: id) { memory.remember(id, app: app, at: display) }
         strip.remove(id)
         strips[display] = strip
@@ -123,12 +131,16 @@ public final class SharedEngine {
     /// Every managed window's frame, in one batch.
     public func layout() {
         var frames: [WindowID: Rect] = [:]
-        for display in system.displays {
+        knownDisplays = system.displays
+        for display in knownDisplays {
             guard var strip = strips[display.id], !strip.isEmpty else { continue }
             strip.revealFocused(config: config, viewportWidth: display.visibleFrame.width)
             strips[display.id] = strip
             for placement in strip.layout(config: config, viewport: display.visibleFrame) {
+                // Only windows whose place changed are moved (each move costs the app a redraw).
+                if let last = lastApplied[placement.window], last.isClose(to: placement.frame, tolerance: 1) { continue }
                 frames[placement.window] = placement.frame
+                lastApplied[placement.window] = placement.frame
             }
         }
         if !frames.isEmpty { system.apply(frames) }

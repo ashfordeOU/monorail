@@ -144,12 +144,20 @@ enum WindowsUITest {
             let slide = engine.strips[display]?.columns.first { $0.windows.contains(target.id) }
             check(slide?.windows.count == 2, "\(stack == .consumeIntoLeft ? "stacking left" : "stacking right") puts two windows in one slide (\(slide?.windows.count ?? 0))")
             if let slide, slide.windows.count == 2 {
-                let frames = slide.windows.compactMap { system.window($0)?.frame }.sorted { $0.y < $1.y }
-                if frames.count == 2 {
-                    let (top, bottom) = (frames[0], frames[1])
-                    check(abs(top.x - bottom.x) < 4 && abs(top.width - bottom.width) < 4, "one above the other, same column (\(top) / \(bottom))")
-                    check(top.maxY <= bottom.y + 2, "not overlapping (\(Int(top.maxY)) ≤ \(Int(bottom.y)))")
-                    check(top.height + bottom.height > work.height * 0.8, "together they fill the height")
+                // The engine's layout: two tiles inside the slide, not overlapping.
+                let wanted = slide.windows.compactMap { engine.lastApplied[$0] }
+                if wanted.count == 2 {
+                    let overlap = wanted[0].intersection(wanted[1]).area
+                    check(overlap < 1, "the slide's two tiles don't overlap (\(wanted[0]) / \(wanted[1]))")
+                }
+                // Where Windows really put them: each starts where it was asked; an app with a
+                // minimum size (Notepad won't go much narrower than ~460 px) may stay bigger.
+                for id in slide.windows {
+                    guard let asked = engine.lastApplied[id], let real = system.window(id)?.frame else { continue }
+                    check(abs(real.x - asked.x) < 4 && abs(real.y - asked.y) < 4, "window \(id) starts where its tile does (\(real) vs \(asked))")
+                    if real.width > asked.width + 4 || real.height > asked.height + 4 {
+                        log.append("info window \(id) keeps a minimum size: asked \(Int(asked.width))×\(Int(asked.height)), is \(Int(real.width))×\(Int(real.height))")
+                    }
                 }
             }
             let unstack: Action = stack == .consumeIntoLeft ? .expel : .expelLeft

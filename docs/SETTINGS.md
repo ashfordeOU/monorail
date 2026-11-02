@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-202 settings.
+203 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -179,6 +179,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `awakeMoveCursorMinutes` | How often the pointer is nudged (minutes). | `4` |
 | `awakeDriveAlive` | During Stay Awake, keep external drives from spinning down. | `false` |
 | `awakeClosedLid` | During Stay Awake, keep running with the lid closed, even without an external display (asks for your password). | `false` |
+| `awakeClosedLidOnlyOnPower` | Lid-closed mode only while plugged in (on battery, closing the lid puts the Mac to sleep). | `true` |
 | `awakeNotify` | Show a notice when Stay Awake starts and ends. | `true` |
 | `awakeSound` | Play a sound when Stay Awake starts and ends. | `false` |
 | `awakeShowTime` | Show the time left in the menu bar. | `true` |

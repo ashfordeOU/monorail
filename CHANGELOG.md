@@ -4,6 +4,14 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Stay awake with the lid closed is safer.** It turns off by itself if your Mac gets hot and stays off for the rest of that session; with the lid closed, the Mac then goes to sleep. New **Only while plugged in** option, on by default: unplug with the lid closed and the Mac sleeps.
+
+### Changed
+- Lid-closed mode asks for your password once, when it starts. Turning it off no longer asks, so it can turn off with the lid closed. It also turns off within seconds if Monorail quits or crashes, instead of waiting until Monorail opens again.
+
 ## [1.7.13] - 2026-11-02
 
 ### Fixed

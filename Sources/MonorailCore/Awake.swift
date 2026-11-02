@@ -167,6 +167,38 @@ public enum AwakeRules {
     }
 }
 
+/// How warm the Mac is, as macOS reports it (ProcessInfo.thermalState).
+public enum AwakeHeat: Int, Comparable, Sendable {
+    case nominal, fair, serious, critical
+    public static func < (a: AwakeHeat, b: AwakeHeat) -> Bool { a.rawValue < b.rawValue }
+}
+
+/// Whether lid-closed mode should be on, and why not.
+public enum ClosedLidDecision: Equatable, Sendable {
+    case on
+    /// Off because it wasn't asked for, or Stay Awake isn't running.
+    case off
+    /// Off for safety; the reason is shown to the person.
+    case stopped(String)
+}
+
+extension AwakeRules {
+    /// Lid-closed mode: only during Stay Awake, only on power when that's chosen, and never once
+    /// the Mac has got hot during this session (`hotThisSession`): a closed Mac in a bag doesn't
+    /// cool down, so it isn't turned back on until the next session.
+    public static func closedLid(awake: Bool, enabled: Bool, onlyOnPower: Bool, charging: Bool, heat: AwakeHeat,
+                                 hotThisSession: Bool) -> ClosedLidDecision {
+        guard awake, enabled else { return .off }
+        if hotThisSession || heat >= .serious {
+            return .stopped("Your Mac is getting hot, so it will sleep when the lid is closed. Stay Awake continues while it's open.")
+        }
+        if onlyOnPower, !charging {
+            return .stopped("On battery, so your Mac will sleep when the lid is closed. Plug in to keep it running closed.")
+        }
+        return .on
+    }
+}
+
 public enum AwakeFormat {
     /// "45 min", "1 h 05", "2 h".
     public static func remaining(_ seconds: Int) -> String {

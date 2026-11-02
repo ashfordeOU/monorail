@@ -31,6 +31,10 @@ the Product Hunt launch). It takes about 30 minutes. Note anything that's off an
 ## 3. Closed-lid mode (MacBook)
 
 - [ ] Turn on **Stay Awake with the Lid Closed** and start Stay Awake: macOS asks for your password once.
+- [ ] Plugged in, no external display: close the lid for a minute, open it: the Mac kept running (`pmset -g` shows SleepDisabled 1).
+- [ ] End Stay Awake: no password asked, and within a few seconds `pmset -g` shows SleepDisabled 0.
+- [ ] Start it again, then quit Monorail (or `kill -9` it): within a few seconds SleepDisabled is 0.
+- [ ] Start it again, unplug the power with the lid closed: the Mac goes to sleep (with "Only while plugged in", the default).
 - [ ] Close the lid with no external display: music keeps playing and a download keeps going.
 - [ ] End Stay Awake: macOS asks for your password again, and closing the lid sleeps the Mac as usual.
 - [ ] Quit Monorail during a closed-lid session, then reopen it: the lid behaves normally again.

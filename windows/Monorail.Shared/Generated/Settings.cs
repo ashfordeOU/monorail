@@ -175,6 +175,7 @@ public static class SettingKeys
     public const string AwakeMoveCursorMinutes = "awakeMoveCursorMinutes";
     public const string AwakeDriveAlive = "awakeDriveAlive";
     public const string AwakeClosedLid = "awakeClosedLid";
+    public const string AwakeClosedLidOnlyOnPower = "awakeClosedLidOnlyOnPower";
     public const string AwakeNotify = "awakeNotify";
     public const string AwakeSound = "awakeSound";
     public const string AwakeShowTime = "awakeShowTime";
@@ -473,6 +474,8 @@ public static class SettingDefaults
     public const bool AwakeDriveAlive = false;
     /// <summary>During Stay Awake, keep running with the lid closed, even without an external display (asks for your password).</summary>
     public const bool AwakeClosedLid = false;
+    /// <summary>Lid-closed mode only while plugged in (on battery, closing the lid puts the Mac to sleep).</summary>
+    public const bool AwakeClosedLidOnlyOnPower = true;
     /// <summary>Show a notice when Stay Awake starts and ends.</summary>
     public const bool AwakeNotify = true;
     /// <summary>Play a sound when Stay Awake starts and ends.</summary>

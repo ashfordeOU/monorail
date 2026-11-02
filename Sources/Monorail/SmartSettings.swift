@@ -590,7 +590,12 @@ struct StayAwakePane: View {
                 }
                 Toggle("Keep external drives from spinning down", isOn: $store.settings.awakeDriveAlive)
                 Toggle("Stay awake with the lid closed (asks for your password)", isOn: $store.settings.awakeClosedLid)
-                    .help("Keeps a MacBook running when closed, even without an external display. Don't put a running Mac in a bag.")
+                    .help("Keeps a MacBook running when closed, even without an external display. It turns off by itself if the Mac gets hot. Don't put a running Mac in a bag.")
+                if store.settings.awakeClosedLid {
+                    Toggle("Only while plugged in", isOn: $store.settings.awakeClosedLidOnlyOnPower)
+                        .help("On battery, closing the lid puts the Mac to sleep as usual.")
+                        .padding(.leading, 18)
+                }
             } header: {
                 Text("While awake")
             }

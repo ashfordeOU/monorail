@@ -616,6 +616,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return true
         }
         engine.peerOverlays = { [weak self] in self?.activePeer?.overlays ?? [] }
+        awake.onNotice = { [weak self] message in self?.toast.show(message) }
         awake.onChange = { [weak self] on, why in
             guard let self else { return }
             if self.store.settings.awakeNotify { self.toast.show(why) }
@@ -750,7 +751,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if !store.settings.awakeClosedLid {
             let alert = NSAlert()
             alert.messageText = "Stay awake with the lid closed?"
-            alert.informativeText = "During Stay Awake your MacBook keeps running when you close it, even without an external display. macOS asks for your password each time it turns on or off. Don't put a running Mac in a bag: it can get hot."
+            alert.informativeText = "During Stay Awake your MacBook keeps running when you close it, even without an external display. macOS asks for your password when it starts. It works only while plugged in (change that in Settings), and it turns off by itself if your Mac gets hot. Still, don't put a running Mac in a bag."
             alert.addButton(withTitle: "Turn On")
             alert.addButton(withTitle: "Cancel")
             NSApp.activate(ignoringOtherApps: true)

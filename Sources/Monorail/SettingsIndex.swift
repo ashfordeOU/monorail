@@ -230,6 +230,7 @@ enum SettingsIndex {
         ("Move the pointer now and then, so chat apps don’t show me as away", "awake"),
         ("Keep external drives from spinning down", "awake"),
         ("Stay awake with the lid closed (asks for your password)", "awake"),
+        ("Only while plugged in", "awake"),
         ("Show a notice when it starts and ends", "awake"),
         ("Play a sound when it starts and ends", "awake"),
         ("Show the time left in the menu bar", "awake"),

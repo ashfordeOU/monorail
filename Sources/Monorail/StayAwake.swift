@@ -1,5 +1,6 @@
 #if os(macOS)
 import AppKit
+import IOKit
 import IOKit.ps
 import IOKit.pwr_mgt
 import MonorailCore
@@ -18,10 +19,17 @@ final class StayAwake {
     private var lastCursorNudge = Date()
     private var lastDriveWrite = Date.distantPast
     private var closedLidOn = false
+    private var lidRequestPending = false
+    /// The Mac got hot during this session: lid-closed mode stays off until the next one.
+    private var hotThisSession = false
+    /// The last safety message shown about lid-closed mode, so it's shown once.
+    private var lidStopReason: String?
     private var cpuTicks: (busy: UInt64, total: UInt64)?
     private var networkBytes: (bytes: UInt64, at: Date)?
     private var thriftTick = false
     var settings: () -> AppSettings = { AppSettings() }
+    /// Safety messages (lid-closed mode stopped because of heat or battery), always shown.
+    var onNotice: (String) -> Void = { _ in }
     /// Called when Stay Awake turns on or off, or its session changes.
     var onChange: (_ on: Bool, _ why: String) -> Void = { _, _ in }
 
@@ -41,12 +49,19 @@ final class StayAwake {
     }
 
     init() {
-        // A closed-lid session can't survive a crash: put the normal lid behaviour back.
+        // Lid-closed mode never outlives a session. Its watcher puts the normal lid behaviour back
+        // when Monorail quits or crashes; only a restart in the middle can leave it on, and then
+        // macOS asks for the password once to put it back.
         if FileManager.default.fileExists(atPath: Self.lidFlag.path) {
-            Self.setClosedLid(false) { _ in }
+            if Self.sleepIsDisabled { Self.setClosedLid(false) { _ in } }
             try? FileManager.default.removeItem(at: Self.lidFlag)
         }
+        try? FileManager.default.removeItem(at: Self.lidStop)
         timer = Timer.every(15) { [weak self] _ in self?.evaluate() }
+        NotificationCenter.default.addObserver(forName: ProcessInfo.thermalStateDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            guard let self, self.isOn else { return }
+            self.updateClosedLid(awake: true)
+        }
     }
 
     // MARK: Sessions
@@ -118,6 +133,7 @@ final class StayAwake {
         triggeredBy = session == nil ? trigger : nil
         if shouldBeOn != isOn { applyAssertions(on: shouldBeOn) }
         if shouldBeOn { keepAlive(settings) }
+        updateClosedLid(awake: shouldBeOn)
         if changed || announce {
             if shouldBeOn {
                 let reason = session?.describe(appName: UsageStats.appName) ?? trigger.map { $0.kind.title.lowercased() } ?? ""
@@ -155,20 +171,10 @@ final class StayAwake {
             }
             // Keep the screen saver away too (unless allowed), and lock after the chosen idle time.
             activityTimer = Timer.every(30) { [weak self] _ in self?.tickActivity() }
-            if settings.awakeClosedLid, !closedLidOn {
-                Self.setClosedLid(true) { [weak self] ok in
-                    self?.closedLidOn = ok
-                    if ok { FileManager.default.createFile(atPath: Self.lidFlag.path, contents: Data()) }
-                }
-            }
         } else {
             startedAt = nil
-            if closedLidOn {
-                Self.setClosedLid(false) { _ in }
-                closedLidOn = false
-                try? FileManager.default.removeItem(at: Self.lidFlag)
-            }
         }
+        updateClosedLid(awake: on)
     }
 
     private func release(_ id: inout IOPMAssertionID) {
@@ -243,15 +249,132 @@ final class StayAwake {
     // MARK: Closed lid
 
     static var lidFlag: URL { SettingsStore.directory.appendingPathComponent(".closed-lid") }
+    /// Created to end lid-closed mode: its watcher sees it and puts the normal lid behaviour back.
+    static var lidStop: URL { SettingsStore.directory.appendingPathComponent(".closed-lid-stop") }
 
-    /// Closed-lid mode needs an administrator's say-so, like Amphetamine's helper: macOS asks for your password.
+    /// Turns lid-closed mode on or off as the rules say: only during Stay Awake, only on power
+    /// when that's chosen, and off for the rest of the session once the Mac gets hot.
+    private func updateClosedLid(awake: Bool) {
+        let settings = self.settings()
+        let heat = Self.heat
+        if !awake {
+            hotThisSession = false
+            lidStopReason = nil
+        } else if heat >= .serious {
+            hotThisSession = true
+        }
+        let decision = AwakeRules.closedLid(awake: awake, enabled: settings.awakeClosedLid,
+                                            onlyOnPower: settings.awakeClosedLidOnlyOnPower,
+                                            charging: !Power.onBattery, heat: heat, hotThisSession: hotThisSession)
+        switch decision {
+        case .on:
+            lidStopReason = nil
+            guard !closedLidOn, !lidRequestPending else { return }
+            lidRequestPending = true
+            Self.startClosedLid { [weak self] ok in
+                guard let self else { return }
+                self.lidRequestPending = false
+                self.closedLidOn = ok
+                // Things may have changed while macOS asked for the password.
+                if ok { self.updateClosedLid(awake: self.isOn) }
+            }
+        case .off, .stopped:
+            if case .stopped(let why) = decision, why != lidStopReason {
+                lidStopReason = why
+                onNotice(why)
+            }
+            guard closedLidOn else { return }
+            closedLidOn = false
+            Self.stopClosedLid()
+        }
+    }
+
+    static var heat: AwakeHeat {
+        switch ProcessInfo.processInfo.thermalState {
+        case .nominal: return .nominal
+        case .fair: return .fair
+        case .serious: return .serious
+        case .critical: return .critical
+        @unknown default: return .serious
+        }
+    }
+
+    /// The lid is closed now.
+    static var lidIsClosed: Bool {
+        let root = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPMrootDomain"))
+        guard root != 0 else { return false }
+        defer { IOObjectRelease(root) }
+        let value = IORegistryEntryCreateCFProperty(root, "AppleClamshellState" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue()
+        return (value as? Bool) ?? false
+    }
+
+    /// `pmset disablesleep` is on (shown as SleepDisabled 1 by `pmset -g`).
+    static var sleepIsDisabled: Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
+        process.arguments = ["-g"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        guard (try? process.run()) != nil else { return false }
+        let output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        process.waitUntilExit()
+        return output.split(separator: "\n").contains { line in
+            let parts = line.split(whereSeparator: \.isWhitespace)
+            return parts.first == "SleepDisabled" && parts.last == "1"
+        }
+    }
+
+    /// One password: turns lid-closed mode on and starts a watcher, with the same approval, that
+    /// turns it back off when Monorail asks (the stop file), quits or crashes. No second password
+    /// is needed to turn it off, which matters with the lid closed and nobody to type it.
+    static func startClosedLid(completion: @escaping (Bool) -> Void) {
+        try? FileManager.default.removeItem(at: lidStop)
+        let pid = ProcessInfo.processInfo.processIdentifier
+        let watcher = "while /bin/kill -0 \(pid) 2>/dev/null && [ ! -e \(shellQuoted(lidStop.path)) ]; do /bin/sleep 3; done; "
+            + "/usr/bin/pmset -a disablesleep 0"
+        let command = "/usr/bin/pmset -a disablesleep 1 && (/usr/bin/nohup /bin/sh -c \(shellQuoted(watcher)) >/dev/null 2>&1 &)"
+        runAsAdministrator(command) { ok in
+            if ok { FileManager.default.createFile(atPath: lidFlag.path, contents: Data()) }
+            completion(ok)
+        }
+    }
+
+    /// Ends lid-closed mode through the watcher. If the lid is already closed (and no external
+    /// display keeps the Mac in clamshell mode), the Mac goes to sleep, as closing it would have done.
+    static func stopClosedLid() {
+        FileManager.default.createFile(atPath: lidStop.path, contents: Data())
+        try? FileManager.default.removeItem(at: lidFlag)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            let external = NSScreen.screens.contains { screen in
+                guard let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else { return false }
+                return CGDisplayIsBuiltin(CGDirectDisplayID(number.uint32Value)) == 0
+            }
+            guard lidIsClosed, !external else { return }
+            let sleep = Process()
+            sleep.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
+            sleep.arguments = ["sleepnow"]
+            try? sleep.run()
+        }
+    }
+
+    /// Puts the normal lid behaviour back directly (after a restart left lid-closed mode on).
     static func setClosedLid(_ on: Bool, completion: @escaping (Bool) -> Void) {
+        runAsAdministrator("/usr/bin/pmset -a disablesleep \(on ? 1 : 0)", completion: completion)
+    }
+
+    private static func runAsAdministrator(_ command: String, completion: @escaping (Bool) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
-            let script = "do shell script \"/usr/bin/pmset -a disablesleep \(on ? 1 : 0)\" with administrator privileges"
+            let escaped = command.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
+            let script = "do shell script \"\(escaped)\" with administrator privileges"
             var error: NSDictionary?
             let ok = NSAppleScript(source: script)?.executeAndReturnError(&error) != nil && error == nil
             DispatchQueue.main.async { completion(ok) }
         }
+    }
+
+    static func shellQuoted(_ text: String) -> String {
+        "'" + text.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
     // MARK: What the Mac is doing

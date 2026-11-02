@@ -116,7 +116,8 @@ The scheduled check-ins work through this list in order and tick items off.
   - [x] `AXWindowSystem`: displays, windows, focus, batched moves, minimise, close, and app and display events through Accessibility; checked by the self-test on every build
   - [x] Window events (created, destroyed, moved, focused, minimised, restored, title on request) from Accessibility observers, started and stopped by the self-test
   - [x] `SharedEngine` in MonorailEngine: strips per display from any WindowSystem (new windows slide in, closed and minimised ones leave and come back where they were, focus scrolls, hidden apps, unplugged displays), tested against the fake
-  - [ ] The shared engine drives the Mac through it, behind a setting, before it becomes the default
+  - [x] The shared engine drives the Mac through it, kept apart from the shipping app: `Monorail --shared-engine` runs only the shared engine on real windows and logs every event (the self-test starts it in CI)
+  - [ ] Tried on a real Mac (needs the owner: quit Monorail, run `/Applications/Monorail.app/Contents/MacOS/Monorail --shared-engine` in Terminal, open and close a few windows, Ctrl-C)
 - [ ] `core-ts/`: TypeScript project skeleton running the golden tests (split trees first)
 - [ ] Generators for C# and TypeScript definitions
 - [ ] Phase 0 review: report to the owner, decide on Phase 1 start

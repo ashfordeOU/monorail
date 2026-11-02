@@ -1,6 +1,7 @@
 #if os(macOS)
 import AppKit
 import MonorailCore
+import MonorailEngine
 import SwiftUI
 
 /// `Monorail --self-test`: builds every Settings pane and panel, checks every action,
@@ -65,6 +66,10 @@ enum SelfTest {
         check(displayInfos.allSatisfy { $0.visibleFrame.width > 0 && $0.frame.width >= $0.visibleFrame.width }, "window system: display frames")
         _ = windowSystem.windows()
         _ = windowSystem.focusedWindow()
+        // The shared engine starts on it (no Accessibility in CI, so no windows to tile).
+        let shared = SharedEngine(system: windowSystem, config: settings.layout(for: displayInfos.first?.id ?? ""))
+        shared.start()
+        check(shared.strips.values.allSatisfy { !$0.isEmpty }, "shared engine: no empty strips")
         windowSystem.start()
         check(windowSystem.isStarted, "window system: events start")
         windowSystem.stop()

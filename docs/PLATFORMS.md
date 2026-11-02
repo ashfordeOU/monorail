@@ -105,7 +105,7 @@ The scheduled check-ins work through this list in order and tick items off.
 - [x] `spec/parity.md`: every feature marked shared, adapted or OS-only
 - [x] More golden files: strip moves, the sentence parser, AeroSpace import
 - [x] `WindowSystem` protocol in a new MonorailEngine module, with a fake implementation for tests
-- [ ] Move platform-free engine logic into MonorailEngine (in small, tested steps; the Mac app keeps working)
+- [x] Move platform-free engine logic into MonorailEngine (in small, tested steps; the Mac app keeps working). The rest of today's engine is tied to Accessibility and moves with the backend work below.
   - [x] Step 1: keeping floating windows and dialogs on screen (`OnScreen`), used by the Mac app, with tests
   - [x] Step 2: focus history (`FocusHistory`: back to the last window, quick launch, where focus goes next), with tests
   - [x] Step 3: back and forward through views (`NavigationHistory`), with tests
@@ -113,6 +113,9 @@ The scheduled check-ins work through this list in order and tick items off.
   - [x] Step 5: saved views, nine per display (`SavedViews`, same saved format), with tests
   - [x] Step 6: where returning windows and reopened apps go back to (`ReturnMemory`), with tests
 - [ ] macOS backend implements WindowSystem
+  - [x] `AXWindowSystem`: displays, windows, focus, batched moves, minimise, close, and app and display events through Accessibility; checked by the self-test on every build
+  - [ ] Window events (created, destroyed, moved, focused, title) from Accessibility observers
+  - [ ] The shared engine drives the Mac through it, behind a setting, before it becomes the default
 - [ ] `core-ts/`: TypeScript project skeleton running the golden tests (split trees first)
 - [ ] Generators for C# and TypeScript definitions
 - [ ] Phase 0 review: report to the owner, decide on Phase 1 start

@@ -57,6 +57,14 @@ enum SelfTest {
         // The help index and settings index answer common questions.
         check(!HelpIndex.answers(for: "how do I keep my mac awake").isEmpty, "help: stay awake")
         check(!SettingsIndex.search("animate").isEmpty, "settings search: animate")
+        // The Mac's WindowSystem (the shared engine's backend) reads displays and windows without
+        // failing, even with no Accessibility access (CI has none, so it sees no windows).
+        let windowSystem = AXWindowSystem()
+        let displayInfos = windowSystem.displays
+        check(displayInfos.count == NSScreen.screens.count, "window system: displays")
+        check(displayInfos.allSatisfy { $0.visibleFrame.width > 0 && $0.frame.width >= $0.visibleFrame.width }, "window system: display frames")
+        _ = windowSystem.windows()
+        _ = windowSystem.focusedWindow()
         // Stay Awake's helpers work without a session.
         check(AwakeFormat.clock(90) == "1:30", "awake clock")
         if failures.isEmpty {

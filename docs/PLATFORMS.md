@@ -120,7 +120,7 @@ The scheduled check-ins work through this list in order and tick items off.
   - [ ] Tried on a real Mac. First run (owner, 1.7.12): took over 11 windows on one display and followed drags; found a loop (macOS's own screen changes re-placed every window), fixed. Second run: check focus, open and close (needs the owner: quit Monorail, run `/Applications/Monorail.app/Contents/MacOS/Monorail --shared-engine` in Terminal, open and close a few windows, Ctrl-C)
 - [ ] `core-ts/`: TypeScript project skeleton running the golden tests (split trees first)
   - [x] Split trees and dock zones, passing `split-tree.json` and `dock-zones.json` (18 cases), in CI on Linux
-  - [ ] The strip, passing `strip.json`
+  - [x] The strip and slide layouts (`Arrangement`: tiles, moving focus inside a slide, entering a slide), passing `strip.json`, with two new cases for focus inside a slide that Swift passes too
   - [ ] The sentence parser, passing `sentences.json`
 - [ ] Generators for C# and TypeScript definitions
 - [ ] Phase 0 review: report to the owner, decide on Phase 1 start

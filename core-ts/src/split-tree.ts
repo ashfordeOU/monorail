@@ -188,3 +188,28 @@ export function dockZone(x: number, y: number, frame: Rect, edgeShare = 0.4): Ed
   for (const d of distances) if (d[1] < nearest[1]) nearest = d;
   return nearest[1] < edgeShare ? nearest[0] : 'center';
 }
+
+/** Matches the tree to `windows`: drops windows that left, docks new ones right of the last. */
+export function reconciled(tree: SplitTree, list: WindowID[]): SplitTree | undefined {
+  let t: SplitTree | undefined = tree;
+  for (const window of windows(tree)) if (!list.includes(window) && t) t = removing(t, window);
+  for (const window of list) {
+    if (t && contains(t, window)) continue;
+    const last = t ? windows(t).at(-1) : undefined;
+    t = t && last !== undefined ? docking(t, window, last, 'right') : single(window);
+  }
+  return t;
+}
+
+/** A tree with the same tiles as a standard layout ('stack' runs down, anything else across). */
+export function fromArrangement(list: WindowID[], arrangement: string): SplitTree | undefined {
+  if (list.length === 0) return undefined;
+  const axis: Axis = arrangement === 'stack' ? 'vertical' : 'horizontal';
+  let t = single(list[0]);
+  list.slice(1).forEach((window, i) => {
+    // Even shares: each new window takes 1/n of the run so far.
+    const share = 1 / (i + 2);
+    t = split(axis, 1 - share, t, single(window));
+  });
+  return t;
+}

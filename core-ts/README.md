@@ -4,7 +4,7 @@ Monorail's core in TypeScript, for the GNOME Shell extension and the KDE (KWin) 
 (docs/PLATFORMS.md). It's a port of `Sources/MonorailCore`, and the same golden tests
 (`tests/golden`) prove the two behave identically.
 
-So far: split trees and dock zones (`src/split-tree.ts`). The strip and the sentence parser follow.
+So far: split trees and dock zones (`src/split-tree.ts`), slide layouts (`src/arrangement.ts`) and the strip (`src/strip.ts`). The sentence parser follows.
 
 ```bash
 cd core-ts && npm test

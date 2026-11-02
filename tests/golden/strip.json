@@ -1,42 +1,420 @@
 [
   {
     "name": "new windows open beside the focused one",
-    "ops": [{"insert": [1, 0.5]}, {"insert": [2, 0.5]}, {"focus": 1}, {"insert": [3, 0.5]}],
-    "expect": {"slides": [[1], [3], [2]], "focused": 3}
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5
+        ]
+      },
+      {
+        "focus": 1
+      },
+      {
+        "insert": [
+          3,
+          0.5
+        ]
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          1
+        ],
+        [
+          3
+        ],
+        [
+          2
+        ]
+      ],
+      "focused": 3
+    }
   },
   {
     "name": "start and end positions",
-    "ops": [{"insert": [1, 0.5]}, {"insert": [2, 0.5, "start"]}, {"insert": [3, 0.5, "end"]}],
-    "expect": {"slides": [[2], [1], [3]], "focused": 3}
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5,
+          "start"
+        ]
+      },
+      {
+        "insert": [
+          3,
+          0.5,
+          "end"
+        ]
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          2
+        ],
+        [
+          1
+        ],
+        [
+          3
+        ]
+      ],
+      "focused": 3
+    }
   },
   {
     "name": "focus moves between slides and stops at the ends",
-    "ops": [{"insert": [1, 0.5]}, {"insert": [2, 0.5]}, {"insert": [3, 0.5]}, {"moveFocus": "left"}, {"moveFocus": "left"}, {"moveFocus": "left"}],
-    "expect": {"slides": [[1], [2], [3]], "focused": 1}
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          3,
+          0.5
+        ]
+      },
+      {
+        "moveFocus": "left"
+      },
+      {
+        "moveFocus": "left"
+      },
+      {
+        "moveFocus": "left"
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "focused": 1
+    }
   },
   {
     "name": "moving a slide along",
-    "ops": [{"insert": [1, 0.5]}, {"insert": [2, 0.5]}, {"insert": [3, 0.5]}, {"focus": 1}, {"moveFocused": "right"}],
-    "expect": {"slides": [[2], [1], [3]], "focused": 1}
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          3,
+          0.5
+        ]
+      },
+      {
+        "focus": 1
+      },
+      {
+        "moveFocused": "right"
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          2
+        ],
+        [
+          1
+        ],
+        [
+          3
+        ]
+      ],
+      "focused": 1
+    }
   },
   {
     "name": "consume into the slide on the left",
-    "ops": [{"insert": [1, 0.5]}, {"insert": [2, 0.5]}, {"consumeIntoLeft": true}],
-    "expect": {"slides": [[1, 2]], "focused": 2}
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5
+        ]
+      },
+      {
+        "consumeIntoLeft": true
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          1,
+          2
+        ]
+      ],
+      "focused": 2
+    }
   },
   {
     "name": "removing the last window of a slide removes the slide",
-    "ops": [{"insert": [1, 0.5]}, {"insert": [2, 0.5]}, {"insert": [3, 0.5]}, {"remove": 2}],
-    "expect": {"slides": [[1], [3]]}
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          3,
+          0.5
+        ]
+      },
+      {
+        "remove": 2
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          1
+        ],
+        [
+          3
+        ]
+      ]
+    }
   },
   {
     "name": "docking across slides joins them",
-    "ops": [{"insert": [1, 0.5]}, {"insert": [2, 0.5]}, {"insert": [3, 0.5]}, {"dock": [2, 1, "right"]}, {"dock": [3, 2, "bottom"]}],
-    "expect": {"slides": [[1, 2, 3]], "focused": 3}
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          3,
+          0.5
+        ]
+      },
+      {
+        "dock": [
+          2,
+          1,
+          "right"
+        ]
+      },
+      {
+        "dock": [
+          3,
+          2,
+          "bottom"
+        ]
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "focused": 3
+    }
   },
   {
     "name": "tearing off gives a slide of its own beside",
-    "ops": [{"insert": [1, 0.5]}, {"insert": [2, 0.5]}, {"dock": [2, 1, "right"]}, {"tearOff": 2}],
-    "expect": {"slides": [[1], [2]], "focused": 2}
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5
+        ]
+      },
+      {
+        "dock": [
+          2,
+          1,
+          "right"
+        ]
+      },
+      {
+        "tearOff": 2
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "focused": 2
+    }
+  },
+  {
+    "name": "focus moves between the tiles of a slide before leaving it",
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          3,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          4,
+          0.5
+        ]
+      },
+      {
+        "focus": 2
+      },
+      {
+        "consumeIntoLeft": true
+      },
+      {
+        "moveFocus": "left"
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          1,
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "focused": 1
+    }
+  },
+  {
+    "name": "coming back into a slide from the right lands on its right-hand tile",
+    "ops": [
+      {
+        "insert": [
+          1,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          2,
+          0.5
+        ]
+      },
+      {
+        "insert": [
+          3,
+          0.5
+        ]
+      },
+      {
+        "focus": 2
+      },
+      {
+        "consumeIntoLeft": true
+      },
+      {
+        "moveFocus": "right"
+      },
+      {
+        "moveFocus": "left"
+      }
+    ],
+    "expect": {
+      "slides": [
+        [
+          1,
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "focused": 2
+    }
   }
 ]

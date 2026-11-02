@@ -24,6 +24,10 @@ concurrency:
 jobs:
   land:
     runs-on: ubuntu-latest
+    env:
+      # GitHub's API sometimes answers a workflow dispatch with a 500: try a few times.
+      DISPATCH: |
+        dispatch() { for i in 1 2 3 4; do gh workflow run "$@" && return 0; sleep $((i * 10)); done; return 1; }
     steps:
       - uses: actions/checkout@v5
         with:
@@ -78,15 +82,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh workflow run ci.yml --ref main --repo "$GITHUB_REPOSITORY"
-          gh workflow run platforms.yml --ref main --repo "$GITHUB_REPOSITORY"
+          eval "$DISPATCH"
+          dispatch ci.yml --ref main --repo "$GITHUB_REPOSITORY"
+          dispatch platforms.yml --ref main --repo "$GITHUB_REPOSITORY"
       - name: Start the website
         if: steps.land.outputs.pages == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+        run: |
+          eval "$DISPATCH"
+          dispatch pages.yml --ref main --repo "$GITHUB_REPOSITORY"
       - name: Start the release (VERSION changed)
         if: steps.land.outputs.release != ''
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run release.yml --ref main --repo "$GITHUB_REPOSITORY" -f tag="${{ steps.land.outputs.release }}"
+        run: |
+          eval "$DISPATCH"
+          dispatch release.yml --ref main --repo "$GITHUB_REPOSITORY" -f tag="${{ steps.land.outputs.release }}"

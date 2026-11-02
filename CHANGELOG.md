@@ -4,7 +4,7 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.7.13] - 2026-11-02
 
 ### Fixed
 - `--shared-engine`: screen changes macOS makes by itself (the Dock, the menu bar) no longer make it re-place every window, it only moves windows whose place changed, and its log leaves out the echoes of its own moves.

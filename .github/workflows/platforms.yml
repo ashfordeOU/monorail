@@ -30,3 +30,15 @@ jobs:
         run: swift --version
       - name: Build and test MonorailCore and MonorailEngine
         run: swift test --filter "Monorail(Core|Engine)Tests"
+
+  core-ts:
+    name: TypeScript core (Linux, for GNOME and KDE)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Golden tests against the TypeScript core
+        working-directory: core-ts
+        run: npm test

@@ -2,7 +2,7 @@
 
 Each file is a list of cases: a starting state, a series of operations, and the expected result.
 Every Monorail implementation (Swift on Mac and Windows, TypeScript on Linux) must reproduce these
-exactly. Rectangles are `[x, y, width, height]` in unit coordinates; compare with a tolerance of 1e-6.
+exactly: `swift test` runs them against MonorailCore, `cd core-ts && npm test` against the TypeScript core. Rectangles are `[x, y, width, height]` in unit coordinates; compare with a tolerance of 1e-6.
 
 | File | Covers | Spec |
 |---|---|---|

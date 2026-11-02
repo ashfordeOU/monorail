@@ -6,6 +6,7 @@ let package = Package(
     platforms: [.macOS(.v13)],
     products: [
         .executable(name: "Monorail", targets: ["Monorail"]),
+        .executable(name: "MonorailWindows", targets: ["MonorailWindows"]),
         .library(name: "MonorailCore", targets: ["MonorailCore"]),
         .library(name: "MonorailEngine", targets: ["MonorailEngine"]),
     ],
@@ -23,6 +24,16 @@ let package = Package(
                 .linkedFramework("AppKit", .when(platforms: [.macOS])),
                 .linkedFramework("ApplicationServices", .when(platforms: [.macOS])),
                 .linkedFramework("ServiceManagement", .when(platforms: [.macOS])),
+            ]
+        ),
+        // Monorail for Windows (alpha): the shared engine on Win32 (a stub on other systems).
+        .executableTarget(
+            name: "MonorailWindows",
+            dependencies: ["MonorailCore", "MonorailEngine"],
+            linkerSettings: [
+                .linkedLibrary("User32", .when(platforms: [.windows])),
+                .linkedLibrary("Dwmapi", .when(platforms: [.windows])),
+                .linkedLibrary("Kernel32", .when(platforms: [.windows])),
             ]
         ),
         .testTarget(name: "MonorailCoreTests", dependencies: ["MonorailCore"]),

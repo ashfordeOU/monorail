@@ -35,6 +35,17 @@ jobs:
           dotnet-version: 8.0.x
       - name: Shared C# definitions build (generated from spec/)
         run: dotnet build windows/Monorail.Shared -c Release
+      - name: Build Monorail for Windows (alpha)
+        run: swift build --product MonorailWindows
+      - name: UI test on this machine's desktop (real Notepad windows, the Win32 backend, the shared engine)
+        run: .build\debug\MonorailWindows.exe --ci-test
+      - name: Keep the UI test's report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-ui-test
+          path: windows-ui-test.json
+          if-no-files-found: ignore
 
   core-ts:
     name: TypeScript core (Linux, for GNOME and KDE)

@@ -85,6 +85,23 @@ make sense (PowerShell, PowerToys Run plugins, D-Bus) and are marked OS-only in 
 | 3. Linux: GNOME | Extension on core-ts, companion app, extensions.gnome.org | 8–10 weeks with OS fit |
 | 4. Linux: KDE | KWin script on core-ts | 3–4 weeks |
 
+## Phase 1 checklist (Windows alpha)
+
+Tested on GitHub's Windows runners, which have a real desktop: every change builds the Windows
+version and runs it against real windows there.
+
+- [ ] `Win32WindowSystem`: displays and work areas, top-level windows (DWM visible bounds, cloaked and
+  tool windows left out), batched moves (DeferWindowPos), focus, minimise, close, events
+  (SetWinEventHook); `MonorailWindows` runs the shared engine on it; `--ci-test` opens Notepad windows
+  and checks they tile side by side, that a new one is adopted and a closed one let go
+- [ ] Per-monitor DPI awareness and display scale
+- [ ] Workspaces as Windows virtual desktops
+- [ ] Shortcuts (Win key combinations that leave Windows' own alone), from the shared keymap
+- [ ] Slides with several windows, widths, moving and focusing along the strip
+- [ ] Tray icon and basic settings (settings.json shared with the Mac format)
+- [ ] Signed installer (MSIX or EXE) and winget (needs the owner's code signing)
+- [ ] Alpha on a real PC (needs the owner)
+
 ## What needs the owner
 
 - Windows code signing (Azure Trusted Signing, about $10 a month) and a Microsoft Store account.

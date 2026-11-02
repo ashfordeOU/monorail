@@ -40,57 +40,57 @@
     },
     {
       "name": "focus-column-1",
-      "title": "focus-column-1",
+      "title": "Focus column 1",
       "defaultKey": true,
-      "numbered": false
+      "numbered": true
     },
     {
       "name": "focus-column-2",
-      "title": "focus-column-2",
+      "title": "Focus column 2",
       "defaultKey": true,
-      "numbered": false
+      "numbered": true
     },
     {
       "name": "focus-column-3",
-      "title": "focus-column-3",
+      "title": "Focus column 3",
       "defaultKey": true,
-      "numbered": false
+      "numbered": true
     },
     {
       "name": "focus-column-4",
-      "title": "focus-column-4",
+      "title": "Focus column 4",
       "defaultKey": true,
-      "numbered": false
+      "numbered": true
     },
     {
       "name": "focus-column-5",
-      "title": "focus-column-5",
+      "title": "Focus column 5",
       "defaultKey": true,
-      "numbered": false
+      "numbered": true
     },
     {
       "name": "focus-column-6",
-      "title": "focus-column-6",
+      "title": "Focus column 6",
       "defaultKey": true,
-      "numbered": false
+      "numbered": true
     },
     {
       "name": "focus-column-7",
-      "title": "focus-column-7",
+      "title": "Focus column 7",
       "defaultKey": true,
-      "numbered": false
+      "numbered": true
     },
     {
       "name": "focus-column-8",
-      "title": "focus-column-8",
+      "title": "Focus column 8",
       "defaultKey": true,
-      "numbered": false
+      "numbered": true
     },
     {
       "name": "focus-column-9",
-      "title": "focus-column-9",
+      "title": "Focus column 9",
       "defaultKey": true,
-      "numbered": false
+      "numbered": true
     },
     {
       "name": "move-left",

@@ -44,7 +44,7 @@ def spec_actions():
     block = enum[enum.index("unboundByDefault"):]
     block = block[:block.index("\n    ]") if "\n    ]" in block else len(block)]
     unbound = set(re.findall(r"\.(\w+)", block))
-    numbered = re.compile(r"^(workspace|move-to-workspace|column|view|save-view|tag|combine)-[1-9]$")
+    numbered = re.compile(r"^(workspace|move-to-workspace|column|focus-column|view|save-view|tag|combine)-[1-9]$")
     items = []
     for name, raw in re.findall(r"^    case (\w+)(?: = \"([^\"]+)\")?\s*$", enum, re.M):
         raw = raw or name
@@ -53,7 +53,7 @@ def spec_actions():
         n = re.search(r"(\d)$", raw)
         if not title and n:
             templates = {"workspace": "Switch to workspace {}", "move-to-workspace": "Move window to workspace {}",
-                         "column": "Focus column {}", "view": "Go to saved view {}", "save-view": "Save this view as {}",
+                         "column": "Focus column {}", "focus-column": "Focus column {}", "view": "Go to saved view {}", "save-view": "Save this view as {}",
                          "tag": "Also keep this window on workspace {}", "combine": "Show workspace {} alongside this one"}
             prefix = raw.rsplit("-", 1)[0]
             title = templates.get(prefix, raw).format(n.group(1))

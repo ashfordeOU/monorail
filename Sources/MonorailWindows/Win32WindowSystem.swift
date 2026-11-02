@@ -120,6 +120,11 @@ final class Win32WindowSystem: WindowSystem {
     func focus(_ id: WindowID) {
         guard let hwnd = Self.hwnd(id) else { return }
         if ok(IsIconic(hwnd)) { ShowWindow(hwnd, SW_RESTORE) }
+        if ok(SetForegroundWindow(hwnd)) { return }
+        // Windows only lets the app that had the last input take the foreground: a tap of Alt
+        // counts as input, after which the switch is allowed.
+        keybd_event(0x12, 0, 0, 0)
+        keybd_event(0x12, 0, DWORD(0x0002), 0)
         SetForegroundWindow(hwnd)
     }
 
@@ -164,12 +169,16 @@ final class Win32WindowSystem: WindowSystem {
         }
     }
 
-    /// Delivers waiting messages (and so window events) for up to `seconds`.
+    /// Called with the id of a registered shortcut when it's pressed (WM_HOTKEY).
+    static var onHotKey: (Int) -> Void = { _ in }
+
+    /// Delivers waiting messages (and so window events and shortcuts) for up to `seconds`.
     static func pump(for seconds: Double) {
         let end = Date().addingTimeInterval(seconds)
         var message = MSG()
         repeat {
             while ok(PeekMessageW(&message, nil, 0, 0, UINT(PM_REMOVE))) {
+                if message.message == UINT(0x0312) { onHotKey(Int(message.wParam)) }  // WM_HOTKEY
                 TranslateMessage(&message)
                 DispatchMessageW(&message)
             }

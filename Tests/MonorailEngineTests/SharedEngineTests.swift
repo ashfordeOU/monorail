@@ -140,3 +140,63 @@ final class SharedEngineQuietTests: XCTestCase {
         XCTAssertNil(engine.lastApplied[3])
     }
 }
+
+final class SharedEngineActionTests: XCTestCase {
+    private func start(_ count: Int) -> (FakeWindowSystem, SharedEngine) {
+        let system = FakeWindowSystem()
+        let engine = SharedEngine(system: system)
+        engine.start()
+        for id in 1...count {
+            system.open(WindowInfo(id: WindowID(id), appID: "a\(id)", appName: "A", frame: Rect(x: 100, y: 100, width: 800, height: 600)))
+        }
+        return (system, engine)
+    }
+
+    private var laptop: String { FakeWindowSystem.laptop.id }
+
+    func testFocusMovesAlongTheStripAndFocusesTheWindow() {
+        let (system, engine) = start(3)
+        XCTAssertEqual(system.focusedWindow(), 3)
+        XCTAssertTrue(engine.perform(.focusLeft))
+        XCTAssertEqual(system.focusedWindow(), 2)
+        XCTAssertTrue(engine.perform(.focusFirst))
+        XCTAssertEqual(system.focusedWindow(), 1)
+        XCTAssertFalse(engine.perform(.focusLeft), "nothing further left")
+        XCTAssertTrue(engine.perform(.focusLast))
+        XCTAssertEqual(system.focusedWindow(), 3)
+    }
+
+    func testMovingASlideReordersTheStripAndScreen() {
+        let (system, engine) = start(2)
+        system.focus(1)
+        XCTAssertTrue(engine.perform(.moveRight))
+        XCTAssertEqual(engine.strips[laptop]?.allWindows, [2, 1])
+        let frames = system.applied.last ?? [:]
+        XCTAssertLessThan(frames[2]?.x ?? .infinity, frames[1]?.x ?? 0, "window 2 is now on the left")
+    }
+
+    func testWidthsCycleThroughThePresets() {
+        let (system, engine) = start(1)
+        let before = system.window(1)!.frame.width
+        XCTAssertTrue(engine.perform(.cycleWidth))
+        XCTAssertNotEqual(system.window(1)!.frame.width, before)
+        XCTAssertTrue(engine.perform(.toggleFullWidth))
+        XCTAssertEqual(system.window(1)!.frame.width, FakeWindowSystem.laptop.visibleFrame.width - 16, accuracy: 1)
+    }
+
+    func testStackingAndUnstacking() {
+        let (system, engine) = start(2)
+        XCTAssertTrue(engine.perform(.consumeIntoLeft))
+        XCTAssertEqual(engine.strips[laptop]?.columns.count, 1)
+        let frames = system.applied.last ?? [:]
+        XCTAssertNotNil(frames[1])
+        XCTAssertTrue(engine.perform(.expel))
+        XCTAssertEqual(engine.strips[laptop]?.columns.count, 2)
+    }
+
+    func testActionsItDoesNotRunSayNo() {
+        let (_, engine) = start(1)
+        XCTAssertFalse(engine.perform(.overview))
+        XCTAssertFalse(SharedEngine.supportedActions.contains(.overview))
+    }
+}

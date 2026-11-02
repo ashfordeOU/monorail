@@ -93,6 +93,40 @@ enum WindowsUITest {
                   "a focused window is fully inside the work area \(work) (\(frame))")
         }
 
+        // Shortcuts: registered with Windows and pressed through its input system, like a person would.
+        let refused = WindowsKeys.register()
+        check(refused.isEmpty, "every shortcut registers (refused: \(refused.map(\.label)))")
+        var pressed: [Action] = []
+        Win32WindowSystem.onHotKey = { id in
+            guard let action = WindowsKeys.action(forHotKey: id) else { return }
+            pressed.append(action)
+            engine.perform(action)
+        }
+        if let display = engine.activeDisplay, let before = engine.strips[display]?.focusedWindow,
+            let right = WindowsKeys.defaults.first(where: { $0.action == .focusRight }),
+            let left = WindowsKeys.defaults.first(where: { $0.action == .focusLeft })
+        {
+            WindowsKeys.press(right)
+            Win32WindowSystem.pump(for: 1)
+            let after = engine.strips[display]?.focusedWindow
+            check(pressed.contains(.focusRight), "pressing \(right.label) reaches Monorail")
+            check(after != before, "\(right.label) moves focus to the next slide (\(String(describing: before)) → \(String(describing: after)))")
+            check(system.focusedWindow() == after, "and Windows focuses that window")
+            WindowsKeys.press(left)
+            Win32WindowSystem.pump(for: 1)
+            check(engine.strips[display]?.focusedWindow == before, "\(left.label) comes back")
+        }
+        if let target = tiled.last {
+            system.focus(target.id)
+            Win32WindowSystem.pump(for: 0.5)
+            let before = system.window(target.id)?.frame.width ?? 0
+            check(engine.perform(.cycleWidth), "cycle width runs")
+            Win32WindowSystem.pump(for: 0.8)
+            let after = system.window(target.id)?.frame.width ?? 0
+            check(abs(after - before) > 20, "and the window really changes width (\(Int(before)) → \(Int(after)))")
+        }
+        WindowsKeys.unregister()
+
         // A new window arrives through SetWinEventHook and joins the strip.
         if let p = notepad() { processes.append(p); pids.insert(p.processIdentifier) }
         _ = waitFor(3, system, pids)

@@ -3237,7 +3237,7 @@ final class Engine {
             activeProfile: activeProfile, profileWorkspaces: profileWorkspaces, marks: marks, scratchpad: scratchpad,
             wholeSlideApps: roomyApps.sorted(), sticky: Array(stickyWindows), appWidths: appWidths,
             floatingFrames: floatingFrames, windowNotes: windowNotes.filter { windows[$0.key] != nil },
-            projectHomes: projectHomes, savedViews: savedViews,
+            projectHomes: projectHomes, savedViews: savedViews.byDisplay,
             tags: windowTags.keeping { windows[$0] != nil })
         do {
             try FileManager.default.createDirectory(at: SettingsStore.directory, withIntermediateDirectories: true)
@@ -3271,7 +3271,7 @@ final class Engine {
         floatingFrames = state.floatingFrames ?? [:]
         windowNotes = state.windowNotes ?? [:]
         projectHomes = state.projectHomes ?? [:]
-        savedViews = state.savedViews ?? [:]
+        savedViews = SavedViews(state.savedViews ?? [:])
         windowTags = WorkspaceTags(state.tags ?? [:])
         lastSession = state.session ?? []
         lastSessionLoaded = Date()
@@ -4420,15 +4420,9 @@ final class Engine {
 
     // MARK: - Saved views, back and forward, tags
 
-    /// A place to come back to: a workspace on a display, how far along it was, and the window in front.
-    struct SavedView: Codable, Equatable {
-        var workspace: Int
-        var scroll: Double
-        var window: WindowID?
-    }
-
     /// Nine saved views per display (keyed by display name).
-    private var savedViews: [String: [Int: SavedView]] = [:]
+    /// Shared with the other platforms (MonorailEngine.SavedViews).
+    private var savedViews = SavedViews()
     /// Back and forward through views (shared with the other platforms: MonorailEngine.NavigationHistory).
     private var viewHistory = NavigationHistory<(display: String, view: SavedView)>()
     private var restoringView = false
@@ -4487,14 +4481,14 @@ final class Engine {
 
     private func saveView(_ n: Int) {
         guard let (name, view) = currentView() else { return }
-        savedViews[name, default: [:]][n] = view
+        savedViews.save(view, as: n, on: name)
         scheduleSave()
         onNotice("View \(n) saved · ⌃⌥⌘\(n) comes back here")
     }
 
     private func goToView(_ n: Int) {
         guard let (name, here) = currentView() else { return }
-        guard let view = savedViews[name]?[n] else { return onNotice("No view \(n) yet · ⌃⌥⌘⇧\(n) saves one") }
+        guard let view = savedViews.view(n, on: name) else { return onNotice("No view \(n) yet · ⌃⌥⌘⇧\(n) saves one") }
         viewHistory.leave((name, here))
         show(view, on: name)
     }
@@ -4502,7 +4496,7 @@ final class Engine {
     /// Saved views on the active display, for the menu bar and palette.
     func savedViewList() -> [(number: Int, workspace: Int)] {
         guard let (display, _) = activeContext() else { return [] }
-        return (savedViews[display.name] ?? [:]).sorted { $0.key < $1.key }.map { ($0.key, $0.value.workspace - base + 1) }
+        return savedViews.list(on: display.name).map { ($0.number, $0.view.workspace - base + 1) }
     }
 
     private func toggleTag(_ index: Int) {

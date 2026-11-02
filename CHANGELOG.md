@@ -4,6 +4,15 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.7.12] - 2026-11-02
+
+### Added
+- **`Monorail --shared-engine`**, for trying the engine the Windows and Linux versions will share on your Mac's real windows. Quit Monorail first, then run `/Applications/Monorail.app/Contents/MacOS/Monorail --shared-engine` in Terminal; it prints every window event and stops with Ctrl-C. Normal use is unchanged.
+
+### Changed
+- Groundwork for Windows and Linux: keeping windows on screen, focus history, back and forward, workspace tags, saved views and where returning windows go now come from the shared engine. Monorail behaves the same, and saved views keep their format.
+- Every commit in Monorail's history is signed and shows as Verified on GitHub.
+
 ## [1.7.11] - 2026-11-01
 
 ### Fixed

@@ -30,6 +30,11 @@ jobs:
         run: swift --version
       - name: Build and test MonorailCore and MonorailEngine
         run: swift test --filter "Monorail(Core|Engine)Tests"
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Shared C# definitions build (generated from spec/)
+        run: dotnet build windows/Monorail.Shared -c Release
 
   core-ts:
     name: TypeScript core (Linux, for GNOME and KDE)
@@ -39,6 +44,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Generated definitions are up to date with spec/
+        run: python3 scripts/gen-defs.py --check
       - name: Golden tests against the TypeScript core
         working-directory: core-ts
         run: npm test

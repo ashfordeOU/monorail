@@ -124,5 +124,5 @@ The scheduled check-ins work through this list in order and tick items off.
   - [x] The sentence parser, passing `sentences.json` (now 18 cases, both cores), with actions read from `spec/actions.json`
   - [x] A Swift test that `spec/actions.json` matches the Swift core exactly (it caught 9 wrong titles, now fixed)
   - [ ] Settings import (`import-aerospace`) in TypeScript, when the Linux companion app needs it
-- [ ] Generators for C# and TypeScript definitions
+- [x] Generators for C# and TypeScript definitions: `scripts/gen-defs.py` turns `spec/` into `core-ts/src/generated/` and `windows/Monorail.Shared/Generated/` (actions, setting keys, plain defaults); CI checks they're current, builds the C# on Windows, and the TypeScript parser uses them
 - [ ] Phase 0 review: report to the owner, decide on Phase 1 start

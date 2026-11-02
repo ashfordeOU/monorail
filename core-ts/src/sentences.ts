@@ -1,10 +1,9 @@
 // Plain sentences into commands ("slack and mail side by side on 3"). A port of MonorailCore's
-// CommandParser, checked against tests/golden/sentences.json. Actions come from spec/actions.json,
-// which is generated from the Swift sources (in the same order, so the same one wins).
+// CommandParser, checked against tests/golden/sentences.json. Actions come from src/generated,
+// made from spec/actions.json, which is generated from the Swift sources (same order, so the same one wins).
 
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import type { Arrangement } from './arrangement.ts';
+import { ACTIONS } from './generated/actions.ts';
 
 export type NaturalCommand =
   | { pair: { apps: string[]; arrangement: Arrangement; workspace: number | null } }
@@ -15,15 +14,8 @@ export type NaturalCommand =
   | { focusMode: boolean }
   | { action: string };
 
-export interface ActionInfo {
-  name: string;
-  title: string;
-}
-
-/** Every action, from spec/actions.json. */
-export const actions: ActionInfo[] = JSON.parse(
-  readFileSync(fileURLToPath(new URL('../../spec/actions.json', import.meta.url)), 'utf8'),
-).actions;
+/** Every action, in the Swift core's order (generated from spec/actions.json). */
+export const actions: readonly { name: string; title: string }[] = ACTIONS;
 
 const numberWords: Record<string, number> = {
   one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,

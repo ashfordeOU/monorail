@@ -122,6 +122,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var notesSave: DispatchWorkItem?
     private var dimMonitor: Any?
     private let awake = StayAwake()
+    private let evening = EveningLight()
     let usage = UsageLog()
     private let telemetry = Telemetry()
     private let dockPreview = DockPreview()
@@ -185,6 +186,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         engine.shutdown()
         usage.awake(false)
         awake.shutdown()
+        evening.restore()
         usage.save()
         EventStream.shared.stop()
     }
@@ -606,6 +608,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         UsageBridge.log = usage
         awake.settings = { [weak self] in self?.store.settings ?? AppSettings() }
+        evening.settings = { [weak self] in self?.store.settings ?? AppSettings() }
+        evening.start()
         // Keeper owns staying awake while it runs and says so: a session started here goes to it.
         awake.forwardToPeer = { [weak self] session in
             guard let self, let peer = self.activePeer, peer.owns.awake,
@@ -760,6 +764,58 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         toggleAwakeSetting { $0.awakeClosedLid.toggle() }
     }
     @objc private func toggleAwakeTriggersFromMenu() { toggleAwakeSetting { $0.awakeTriggersOn.toggle() } }
+    /// Evening Mode in the menu bar menu: on or off, how warm, the schedule.
+    private func eveningMenu() -> NSMenuItem {
+        let settings = store.settings
+        let parent = NSMenuItem(title: L("Evening Mode"), action: nil, keyEquivalent: "")
+        parent.image = NSImage(systemSymbolName: evening.isOn ? "moon.fill" : "moon", accessibilityDescription: nil)
+        let menu = NSMenu()
+        let toggle = item(settings.eveningOn ? L("Turn Off") : L("Turn On Now"), #selector(toggleEveningFromMenu))
+        menu.addItem(toggle)
+        menu.addItem(.separator())
+        for percent in [25, 50, 75, 100] {
+            let entry = item("\(percent)% warmer", #selector(setEveningStrengthFromMenu(_:)))
+            entry.tag = percent
+            entry.state = Int((settings.eveningStrength * 100).rounded()) == percent ? .on : .off
+            menu.addItem(entry)
+        }
+        menu.addItem(.separator())
+        let scheduled = item(L("Every Evening on a Schedule"), #selector(toggleEveningScheduleFromMenu))
+        scheduled.state = settings.eveningSchedule == .scheduled ? .on : .off
+        menu.addItem(scheduled)
+        menu.addItem(item(L("Evening Mode Settings…"), #selector(showEveningSettingsFromMenu)))
+        parent.submenu = menu
+        return parent
+    }
+
+    @objc private func toggleEveningFromMenu() {
+        var settings = store.settings
+        settings.eveningOn.toggle()
+        store.settings = settings
+        toast.show(settings.eveningOn ? "Evening Mode on · \(Int((settings.eveningStrength * 100).rounded()))% warmer" : "Evening Mode off")
+    }
+
+    @objc private func setEveningStrengthFromMenu(_ sender: NSMenuItem) {
+        var settings = store.settings
+        settings.eveningStrength = Double(sender.tag) / 100
+        if settings.eveningSchedule == .manual { settings.eveningOn = true }
+        store.settings = settings
+    }
+
+    @objc private func toggleEveningScheduleFromMenu() {
+        var settings = store.settings
+        settings.eveningSchedule = settings.eveningSchedule == .scheduled ? .manual : .scheduled
+        store.settings = settings
+        if settings.eveningSchedule == .scheduled {
+            toast.show(String(format: "Evening Mode every day %02d:%02d–%02d:%02d", settings.eveningStart / 60, settings.eveningStart % 60, settings.eveningEnd / 60, settings.eveningEnd % 60))
+        }
+    }
+
+    @objc private func showEveningSettingsFromMenu() {
+        navigation.tab = .evening
+        showSettings()
+    }
+
     @objc private func showAwakeSettingsFromMenu() {
         navigation.tab = .awake
         showSettings()
@@ -1633,6 +1689,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let syncWasOn = engine.settings.syncThroughICloud
         let liveReloadWasOn = engine.settings.liveReloadSettings
         engine.settings = settings
+        evening.update()
         WorkspaceColor.theme = settings.theme
         stats.isEnabled = settings.collectStats
         autoRules.rules = settings.autoRules
@@ -2592,6 +2649,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(item("Grant Accessibility Access…", #selector(showWelcomeFromMenu)))
         }
         menu.addItem(awakeMenu())
+        menu.addItem(eveningMenu())
         let animate = item(L("Animate Windows"), #selector(toggleAnimationsFromMenu), action: .toggleAnimations)
         animate.state = store.settings.animate ? .on : .off
         animate.toolTip = "Off: windows move instantly. Everything else works the same, and it saves energy."

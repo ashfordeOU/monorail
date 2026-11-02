@@ -7,6 +7,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Evening Mode**: less blue light from every display, easier on the eyes at night. Choose how warm with a slider (the screen changes as you drag), turn it on from the menu bar, or have it come on every evening on a schedule, fading in over 20 minutes. Screenshots and recordings keep their normal colours, and your displays' own calibration is kept. Settings → Evening Mode.
 - **Stay awake with the lid closed is safer.** It turns off by itself if your Mac gets hot and stays off for the rest of that session; with the lid closed, the Mac then goes to sleep. New **Only while plugged in** option, on by default: unplug with the lid closed and the Mac sleeps.
 
 ### Changed

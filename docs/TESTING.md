@@ -30,6 +30,7 @@ the Product Hunt launch). It takes about 30 minutes. Note anything that's off an
 
 ## 3. Closed-lid mode (MacBook)
 
+- [ ] **Evening Mode** (menu bar): Turn On Now warms every display, including external ones; drag the slider in Settings → Evening Mode and the screen follows; a screenshot keeps normal colours; quit Monorail and the colours come back; sleep and wake the Mac and it stays warm.
 - [ ] Turn on **Stay Awake with the Lid Closed** and start Stay Awake: macOS asks for your password once.
 - [ ] Plugged in, no external display: close the lid for a minute, open it: the Mac kept running (`pmset -g` shows SleepDisabled 1).
 - [ ] End Stay Awake: no password asked, and within a few seconds `pmset -g` shows SleepDisabled 0.

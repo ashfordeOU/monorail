@@ -127,7 +127,7 @@ def settings():
 PANE_TABS = {
     "GeneralPane": "general", "LayoutPane": "layout", "InputPane": "input", "AppearancePane": "appearance",
     "ThemeGrid": "appearance", "AppsPane": "apps", "QuickLaunchSection": "apps", "TemplatesSection": "apps",
-    "SmartPane": "smart", "DevicesPane": "devices", "StayAwakePane": "awake", "AutomationPane": "automation",
+    "SmartPane": "smart", "DevicesPane": "devices", "StayAwakePane": "awake", "EveningPane": "evening", "AutomationPane": "automation",
     "WorkspaceConfigSection": "automation", "APISection": "automation", "InsightsPane": "insights",
     "TimeSection": "insights", "ShortcutsPane": "shortcuts", "AboutPane": "about", "UsageSection": "about",
 }

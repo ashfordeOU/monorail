@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 203,
+  "count": 208,
   "settings": [
     {
       "key": "layout",
@@ -1027,6 +1027,36 @@
       "type": "Bool",
       "default": "true",
       "about": "Lid-closed mode only while plugged in (on battery, closing the lid puts the Mac to sleep)."
+    },
+    {
+      "key": "eveningStrength",
+      "type": "Double",
+      "default": "0.5",
+      "about": "Evening Mode: a warmer screen with less blue light. How strong, 0–1."
+    },
+    {
+      "key": "eveningOn",
+      "type": "Bool",
+      "default": "false",
+      "about": "Turned on by hand (from the menu bar or Settings)."
+    },
+    {
+      "key": "eveningSchedule",
+      "type": "?",
+      "default": "EveningSchedule.manual",
+      "about": "By hand only, or every day on a schedule."
+    },
+    {
+      "key": "eveningStart",
+      "type": "?",
+      "default": "20 * 60",
+      "about": "The schedule, in minutes after midnight (it may run past midnight)."
+    },
+    {
+      "key": "eveningEnd",
+      "type": "?",
+      "default": "7 * 60",
+      "about": ""
     },
     {
       "key": "awakeNotify",

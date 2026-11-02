@@ -6,7 +6,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum SettingsTab: String, CaseIterable, Identifiable {
-    case basics, general, layout, input, appearance, apps, smart, devices, awake, automation, insights, shortcuts, about
+    case basics, general, layout, input, appearance, evening, apps, smart, devices, awake, automation, insights, shortcuts, about
     var id: String { rawValue }
 
     var title: String {
@@ -16,6 +16,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .layout: return L("Layout")
         case .input: return L("Motion & Input")
         case .appearance: return L("Appearance")
+        case .evening: return L("Evening Mode")
         case .apps: return L("Apps")
         case .smart: return L("Smart")
         case .devices: return L("Devices & Sharing")
@@ -34,6 +35,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         case .layout: return "rectangle.split.3x1"
         case .input: return "hand.draw"
         case .appearance: return "paintbrush"
+        case .evening: return "moon"
         case .apps: return "square.grid.2x2"
         case .smart: return "sparkles"
         case .devices: return "dot.radiowaves.left.and.right"
@@ -61,7 +63,7 @@ struct SettingsView: View {
     /// The sidebar's groups, most-used first.
     static let groups: [(String, [SettingsTab])] = [
         (L("Essentials"), [.basics, .general, .layout, .shortcuts]),
-        (L("Make it yours"), [.appearance, .input, .apps]),
+        (L("Make it yours"), [.appearance, .evening, .input, .apps]),
         (L("Power"), [.smart, .automation, .devices, .awake]),
         (L("Monorail"), [.insights, .about]),
     ]
@@ -139,6 +141,7 @@ struct SettingsView: View {
         case .smart: SmartPane(store: store)
         case .devices: DevicesPane(store: store)
         case .awake: StayAwakePane(store: store)
+        case .evening: EveningPane(store: store)
         case .automation: AutomationPane(store: store)
         case .insights: InsightsPane(store: store, stats: stats)
         case .shortcuts: ShortcutsPane(store: store)

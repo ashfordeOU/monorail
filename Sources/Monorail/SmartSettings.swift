@@ -553,6 +553,56 @@ struct AppMenu: View {
         .fixedSize()
     }
 }
+/// Settings → Evening Mode: a warmer screen with less blue light, easier on the eyes at night.
+struct EveningPane: View {
+    @ObservedObject var store: SettingsStore
+
+    private static func clock(_ minute: Int) -> String { String(format: "%02d:%02d", minute / 60, minute % 60) }
+    private static let times = Array(stride(from: 0, to: 24 * 60, by: 30))
+
+    var body: some View {
+        Form {
+            Section {
+                Toggle("Evening Mode on now", isOn: $store.settings.eveningOn)
+                LabeledContent("Warmth") {
+                    HStack {
+                        Image(systemName: "sun.max").foregroundStyle(.secondary)
+                        Slider(value: $store.settings.eveningStrength, in: 0.05...1)
+                        Image(systemName: "moon.fill").foregroundStyle(.orange)
+                        Text("\(Int((store.settings.eveningStrength * 100).rounded()))%")
+                            .monospacedDigit().frame(width: 40, alignment: .trailing)
+                    }
+                }
+            } header: {
+                Text("Evening Mode")
+            } footer: {
+                Text("Less blue light from every display, as warm as you like: drag the slider and the screen changes as you go. Screenshots and recordings keep their normal colours. Works alongside Night Shift; use one or the other for the warmth you want.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+            Section {
+                Picker("Turn on by itself", selection: $store.settings.eveningSchedule) {
+                    Text("Never, only by hand").tag(EveningSchedule.manual)
+                    Text("Every day on a schedule").tag(EveningSchedule.scheduled)
+                }
+                if store.settings.eveningSchedule == .scheduled {
+                    Picker("From", selection: $store.settings.eveningStart) {
+                        ForEach(Self.times, id: \.self) { Text(Self.clock($0)).tag($0) }
+                    }
+                    Picker("Until", selection: $store.settings.eveningEnd) {
+                        ForEach(Self.times, id: \.self) { Text(Self.clock($0)).tag($0) }
+                    }
+                }
+            } header: {
+                Text("Schedule")
+            } footer: {
+                Text("It fades in over 20 minutes after the start and out before the end, so the change is easy on the eyes.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+    }
+}
+
 /// Settings → Stay Awake: keep the Mac from sleeping, by hand or by itself.
 struct StayAwakePane: View {
     @ObservedObject var store: SettingsStore

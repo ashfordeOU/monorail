@@ -17,6 +17,7 @@ public enum HelpIndex {
 
     public static let all: [Answer] = [
         .init(question: "Keep my Mac awake", answer: "Stay Awake in the menu bar: for a while, while an app is open, or by itself with triggers.", target: .settings("awake"), keywords: ["awake", "sleep", "caffeinate", "amphetamine", "display", "lid"]),
+        .init(question: "Reduce blue light in the evening", answer: "Evening Mode in the menu bar: a warmer screen, as strong as you like, by hand or every evening on a schedule.", target: .settings("evening"), keywords: ["evening", "night", "blue light", "warm", "eyes", "night shift", "f.lux", "flux", "amber"]),
         .init(question: "See all my windows", answer: "⌃⌥O opens the overview of every workspace and slide.", target: .action(.overview), keywords: ["overview", "see", "all", "windows", "expose", "mission"]),
         .init(question: "Find a window", answer: "⌃⌥/ then type its name, or use the window switcher.", target: .action(.windowSwitcher), keywords: ["find", "search", "window", "switch"]),
         .init(question: "Put two apps side by side", answer: "Type “Safari and Notes side by side” in the palette, or drag one window onto another in the overview.", target: .action(.commandPalette), keywords: ["side", "pair", "two", "together", "split"]),

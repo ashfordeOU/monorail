@@ -47,6 +47,7 @@ enum SelfTest {
             ("Smart", AnyView(SmartPane(store: store))),
             ("Devices", AnyView(DevicesPane(store: store))),
             ("Stay Awake", AnyView(StayAwakePane(store: store))),
+            ("Evening Mode", AnyView(EveningPane(store: store))),
             ("Settings window", AnyView(SettingsView(store: store, navigation: SettingsNavigation(), stats: UsageStats(),
                                                      isPaused: { false }, setPaused: { _ in }))),
         ]

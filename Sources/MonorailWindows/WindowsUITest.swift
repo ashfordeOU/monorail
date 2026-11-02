@@ -63,17 +63,34 @@ enum WindowsUITest {
         engine.start()
         Win32WindowSystem.pump(for: 1.5)
 
+        // Everything the engine took over (the runner's desktop has windows of its own too).
+        for (display, strip) in engine.strips {
+            for id in strip.allWindows {
+                let info = system.window(id)
+                print("managed on \(display): \(id) \(info?.appName ?? "?") “\(info?.title ?? "")” \(info?.frame ?? Rect(x: 0, y: 0, width: 0, height: 0))")
+            }
+        }
         let tiled = ours(system, pids).sorted { $0.frame.x < $1.frame.x }
-        for info in tiled { print("window \(info.id) \(info.appName) \(info.frame)") }
-        check(tiled.allSatisfy { engine.isManaged($0.id) }, "the engine manages both")
+        check(tiled.count == 2 && tiled.allSatisfy { engine.isManaged($0.id) }, "the engine manages both")
+        // The backend puts each window exactly where the engine asked (visible bounds, no invisible borders).
+        for info in tiled {
+            guard let wanted = engine.lastApplied[info.id] else { check(false, "the engine placed \(info.id)"); continue }
+            check(info.frame.isClose(to: wanted, tolerance: 3), "window \(info.id) is where the engine put it (\(info.frame) vs \(wanted))")
+        }
         if tiled.count == 2 {
             let (a, b) = (tiled[0].frame, tiled[1].frame)
-            let slack = 12.0
-            check([a, b].allSatisfy { $0.x >= work.x - slack && $0.maxX <= work.maxX + slack && $0.y >= work.y - slack && $0.maxY <= work.maxY + slack },
-                  "both sit inside the work area \(work)")
-            check(a.maxX <= b.x + slack, "side by side, not overlapping (\(a.maxX) ≤ \(b.x))")
-            check(abs(a.width - b.width) < 24, "equal widths (\(Int(a.width)), \(Int(b.width)))")
+            check(a.maxX <= b.x + 2, "side by side, not overlapping (\(a.maxX) ≤ \(b.x))")
+            check(abs(a.width - b.width) < 4, "equal widths (\(Int(a.width)), \(Int(b.width)))")
             check(a.height > work.height * 0.8 && b.height > work.height * 0.8, "full height of the work area")
+        }
+        // Focusing one scrolls the strip until it's fully on screen.
+        if let target = tiled.first {
+            system.focus(target.id)
+            Win32WindowSystem.pump(for: 1.5)
+            let frame = system.window(target.id)?.frame ?? Rect(x: 0, y: 0, width: 0, height: 0)
+            let slack = 3.0
+            check(frame.x >= work.x - slack && frame.maxX <= work.maxX + slack && frame.y >= work.y - slack && frame.maxY <= work.maxY + slack,
+                  "a focused window is fully inside the work area \(work) (\(frame))")
         }
 
         // A new window arrives through SetWinEventHook and joins the strip.

@@ -90,10 +90,11 @@ make sense (PowerShell, PowerToys Run plugins, D-Bus) and are marked OS-only in 
 Tested on GitHub's Windows runners, which have a real desktop: every change builds the Windows
 version and runs it against real windows there.
 
-- [ ] `Win32WindowSystem`: displays and work areas, top-level windows (DWM visible bounds, cloaked and
+- [x] `Win32WindowSystem`: displays and work areas, top-level windows (DWM visible bounds, cloaked and
   tool windows left out), batched moves (DeferWindowPos), focus, minimise, close, events
   (SetWinEventHook); `MonorailWindows` runs the shared engine on it; `--ci-test` opens Notepad windows
-  and checks they tile side by side, that a new one is adopted and a closed one let go
+  and checks they tile side by side, that a new one is adopted and a closed one let go (passing on
+  GitHub's Windows Server 2025 runner: 13 checks, windows placed to the pixel)
 - [ ] Per-monitor DPI awareness and display scale
 - [ ] Workspaces as Windows virtual desktops
 - [ ] Shortcuts (Win key combinations that leave Windows' own alone), from the shared keymap

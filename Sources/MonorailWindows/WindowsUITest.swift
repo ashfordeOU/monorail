@@ -97,8 +97,8 @@ enum WindowsUITest {
         let missing = WindowsKeys.register()
         check(missing.isEmpty, "every action gets a shortcut (none for: \(missing.map(\.title)))")
         print("shortcuts: \(WindowsKeys.active.map { "\($0.label) \($0.action.title)" })")
-        let fellBack = WindowsKeys.active.filter { $0.modifiers & WindowsKeys.control != 0 }.map(\.label)
-        log.append("info Windows keeps some Win+Alt keys; these fell back: \(fellBack)")
+        let sets = Set(WindowsKeys.active.map { $0.modifiers & ~WindowsKeys.shift })
+        check(sets.count == 1, "all shortcuts share one set of modifiers (\(WindowsKeys.active.map(\.label)))")
         var pressed: [Action] = []
         Win32WindowSystem.onHotKey = { id in
             guard let action = WindowsKeys.action(forHotKey: id) else { return }

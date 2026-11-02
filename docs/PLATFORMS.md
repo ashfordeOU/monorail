@@ -95,11 +95,18 @@ version and runs it against real windows there.
   (SetWinEventHook); `MonorailWindows` runs the shared engine on it; `--ci-test` opens Notepad windows
   and checks they tile side by side, that a new one is adopted and a closed one let go (passing on
   GitHub's Windows Server 2025 runner: 13 checks, windows placed to the pixel)
-- [ ] Per-monitor DPI awareness and display scale
+- [x] Per-monitor DPI awareness (v2): positions are real pixels on every display, scaled or not
+  (a scaled second display is still to be tried on a real PC)
 - [ ] Workspaces as Windows virtual desktops
-- [ ] Shortcuts (Win key combinations that leave Windows' own alone), from the shared keymap
-- [ ] Slides with several windows, widths, moving and focusing along the strip
-- [ ] Tray icon and basic settings (settings.json shared with the Mac format)
+- [x] Shortcuts from the shared keymap: Win+Alt with arrows, Home, End, W, F, comma and full stop
+  (Shift to move). Windows 11 and Server 2025 keep Win+Alt+arrows, W and F, which CI found, so the
+  whole set moves to Ctrl+Win+Alt when Win+Alt isn't free; the UI test presses them through
+  Windows' own input and checks focus and widths change
+- [ ] Slides with several windows, widths, moving and focusing along the strip (done in the shared
+  engine and tested, with the shortcuts; slides of several windows still to be tried on Windows)
+- [x] Tray icon (pause and resume, open and reload settings, quit) and settings: `%APPDATA%\Monorail\settings.json`
+  in the Mac format, written with defaults on first run, picked up live when edited; the layout
+  and app rules set to float apply (a rule like `notepad.exe` matches the Windows app)
 - [ ] Signed installer (MSIX or EXE) and winget (needs the owner's code signing)
 - [ ] Alpha on a real PC (needs the owner)
 

@@ -3,9 +3,9 @@ import MonorailCore
 import WinSDK
 
 /// Monorail's shortcuts on Windows: Win+Alt with arrows and a few letters. Windows 11 and Server
-/// 2025 keep some of those for themselves (CI found Win+Alt+arrows, W and F taken), so each
-/// shortcut falls back to Ctrl+Win+Alt, then Ctrl+Alt, with the same key. What each action got is
-/// printed at start and shown in the tray.
+/// 2025 keep some of those for themselves (CI found Win+Alt+arrows, W and F taken), so the set
+/// falls back to Ctrl+Win+Alt, then Ctrl+Alt, with the same keys. What each action got is printed
+/// at start.
 enum WindowsKeys {
     struct Binding: Equatable {
         var action: Action
@@ -37,20 +37,28 @@ enum WindowsKeys {
     /// The shortcuts that are registered now, by WM_HOTKEY id − 1.
     private(set) static var active: [Binding] = []
 
-    /// Registers a shortcut for every action, falling back when Windows refuses one; returns the
-    /// actions that got none at all.
+    /// Registers a shortcut for every action and returns the actions that got none. All of them
+    /// use the same modifiers when one set is entirely free (Win+Alt, else Ctrl+Win+Alt, else
+    /// Ctrl+Alt), so they're easy to remember; otherwise each falls back on its own.
     @discardableResult
     static func register() -> [Action] {
+        for choice in modifierChoices {
+            unregister()
+            if keymap.allSatisfy({ tryRegister($0.0, $0.1, choice | ($0.2 ? shift : 0)) }) { return [] }
+        }
         unregister()
         var missing: [Action] = []
-        for (action, key, withShift) in keymap {
-            let got = modifierChoices.lazy.map { Binding(action: action, modifiers: $0 | (withShift ? shift : 0), key: key) }
-                .first { binding in
-                    ok(RegisterHotKey(nil, Int32(active.count + 1), UINT(binding.modifiers | noRepeat), UINT(binding.key)))
-                }
-            if let got { active.append(got) } else { missing.append(action) }
+        for (action, key, withShift) in keymap
+        where !modifierChoices.contains(where: { tryRegister(action, key, $0 | (withShift ? shift : 0)) }) {
+            missing.append(action)
         }
         return missing
+    }
+
+    private static func tryRegister(_ action: Action, _ key: UInt32, _ modifiers: UInt32) -> Bool {
+        guard ok(RegisterHotKey(nil, Int32(active.count + 1), UINT(modifiers | noRepeat), UINT(key))) else { return false }
+        active.append(Binding(action: action, modifiers: modifiers, key: key))
+        return true
     }
 
     static func unregister() {

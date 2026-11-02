@@ -77,11 +77,40 @@ public struct PeerHello: Equatable, Sendable {
         }
     }
 
+    /// What Keeper can do beyond the basics.
+    public struct Caps: Equatable, Sendable {
+        /// It can keep the Mac running with the lid closed.
+        public var closedLid = false
+        /// …and is set up to switch it without asking for a password.
+        public var closedLidReady = false
+        public init(closedLid: Bool = false, closedLidReady: Bool = false) {
+            self.closedLid = closedLid
+            self.closedLidReady = closedLidReady
+        }
+    }
+
+    /// Keeper's answer to a Stay Awake session handed to it (kept in its hellos for 60 s).
+    public struct AwakeHandoff: Equatable, Sendable {
+        public var id: String
+        public var ok: Bool
+        public var closedLid: Bool
+        /// When it failed: "not-ready", "denied" or "failed".
+        public var reason: String?
+        public init(id: String, ok: Bool, closedLid: Bool = false, reason: String? = nil) {
+            self.id = id
+            self.ok = ok
+            self.closedLid = closedLid
+            self.reason = reason
+        }
+    }
+
     public var app: String
     public var bundleID: String
     public var version: String
     public var pid: Int32
     public var owns: Owns
+    public var caps = Caps()
+    public var awakeHandoff: AwakeHandoff?
     /// Its windows Monorail must leave alone (fixed titles).
     public var overlays: [String]
     /// Its links (keeper://awake, keeper://focus, keeper://stage).
@@ -109,10 +138,33 @@ public struct PeerHello: Equatable, Sendable {
         else { return nil }
         let owns = body["owns"] as? [String: Any] ?? [:]
         func flag(_ key: String) -> Bool { owns[key] as? Bool ?? false }
-        return PeerHello(app: app, bundleID: bundleID, version: body["version"] as? String ?? "", pid: Int32(pid),
-                         owns: Owns(awake: flag("awake"), focus: flag("focus"), stage: flag("stage")),
-                         overlays: (body["overlays"] as? [Any] ?? []).compactMap { $0 as? String },
-                         links: (body["links"] as? [Any] ?? []).compactMap { $0 as? String })
+        var hello = PeerHello(app: app, bundleID: bundleID, version: body["version"] as? String ?? "", pid: Int32(pid),
+                              owns: Owns(awake: flag("awake"), focus: flag("focus"), stage: flag("stage")),
+                              overlays: (body["overlays"] as? [Any] ?? []).compactMap { $0 as? String },
+                              links: (body["links"] as? [Any] ?? []).compactMap { $0 as? String })
+        let caps = body["caps"] as? [String: Any] ?? [:]
+        hello.caps = Caps(closedLid: caps["closedLid"] as? Bool ?? false, closedLidReady: caps["closedLidReady"] as? Bool ?? false)
+        if let state = body["state"] as? [String: Any], let handoff = state["awakeHandoff"] as? [String: Any],
+            let id = handoff["id"] as? String, let ok = handoff["ok"] as? Bool
+        {
+            hello.awakeHandoff = AwakeHandoff(id: id, ok: ok, closedLid: handoff["closedLid"] as? Bool ?? false,
+                                              reason: handoff["reason"] as? String)
+        }
+        return hello
+    }
+
+    /// Keeper can take a lid-closed session now, without a password prompt in the middle.
+    public var takesClosedLid: Bool { owns.awake && caps.closedLid && caps.closedLidReady }
+
+    /// How a Stay Awake session goes to Keeper, or nil when it stays with Monorail. A lid-closed
+    /// session goes only when Keeper is set up for it (agreed with Keeper: never a surprise
+    /// password prompt there); it then carries `closedLid=1`, a handoff id Keeper answers with,
+    /// and `from=monorail`.
+    public func awakeHandoffLink(for session: AwakeSession, closedLid: Bool, handoffID: String, now: Date = Date()) -> String? {
+        guard owns.awake, let link = PeerHello.awakeLink(for: session, now: now) else { return nil }
+        guard closedLid else { return link }
+        guard takesClosedLid else { return nil }
+        return link + (link.contains("?") ? "&" : "?") + "closedLid=1&handoff=\(handoffID)&from=monorail"
     }
 
     /// Where a Stay Awake session started in Monorail goes while Keeper owns staying awake:

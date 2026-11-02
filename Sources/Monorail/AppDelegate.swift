@@ -612,11 +612,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         evening.start()
         // Keeper owns staying awake while it runs and says so: a session started here goes to it.
         awake.forwardToPeer = { [weak self] session in
-            guard let self, let peer = self.activePeer, peer.owns.awake,
-                let link = PeerHello.awakeLink(for: session), let url = URL(string: link)
+            guard let self, let peer = self.activePeer else { return false }
+            let closedLid = self.store.settings.awakeClosedLid
+            let id = String(UUID().uuidString.prefix(8)).lowercased()
+            guard let link = peer.awakeHandoffLink(for: session, closedLid: closedLid, handoffID: id),
+                let url = URL(string: link)
             else { return false }
             NSWorkspace.shared.open(url)
             self.toast.show("\(peer.app) keeps your Mac awake")
+            if closedLid { self.awaitAwakeHandoff(id, session: session) }
             return true
         }
         engine.peerOverlays = { [weak self] in self?.activePeer?.overlays ?? [] }
@@ -764,6 +768,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         toggleAwakeSetting { $0.awakeClosedLid.toggle() }
     }
     @objc private func toggleAwakeTriggersFromMenu() { toggleAwakeSetting { $0.awakeTriggersOn.toggle() } }
+    /// A lid-closed session handed to Keeper: Keeper answers in its next hello within 10 s. If it
+    /// says no or doesn't answer, Monorail keeps the session itself (agreed with Keeper).
+    private func awaitAwakeHandoff(_ id: String, session: AwakeSession, tries: Int = 0) {
+        if let answer = activePeer?.awakeHandoff, answer.id == id {
+            if answer.ok { return }
+            awake.start(session, fromPeer: true)
+            toast.show("Keeper couldn't keep your Mac running closed (\(answer.reason ?? "failed")), so Monorail does")
+            return
+        }
+        guard tries < 10 else {
+            awake.start(session, fromPeer: true)
+            return
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            self?.awaitAwakeHandoff(id, session: session, tries: tries + 1)
+        }
+    }
+
     /// Evening Mode in the menu bar menu: on or off, how warm, the schedule.
     private func eveningMenu() -> NSMenuItem {
         let settings = store.settings

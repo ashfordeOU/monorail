@@ -68,6 +68,30 @@ final class PeerTests: XCTestCase {
         XCTAssertEqual(hello?.links.count, 2)
     }
 
+    func testClosedLidHandoffFollowsKeepersCapsAndAck() throws {
+        let now = Date(timeIntervalSince1970: 1_000_000)
+        var body: [String: Any] = ["app": "Keeper", "bundleID": "io.github.ashfordeou.keeper", "pid": 42, "owns": ["awake": true]]
+        // An older Keeper: no caps. Plain sessions go to it, lid-closed ones stay here.
+        let old = try XCTUnwrap(PeerHello.decode(body))
+        XCTAssertFalse(old.takesClosedLid)
+        XCTAssertEqual(old.awakeHandoffLink(for: .indefinitely, closedLid: false, handoffID: "a", now: now), "keeper://awake")
+        XCTAssertNil(old.awakeHandoffLink(for: .indefinitely, closedLid: true, handoffID: "a", now: now))
+        // Keeper that can, but isn't set up yet: still stays here.
+        body["caps"] = ["closedLid": true, "closedLidReady": false]
+        XCTAssertNil(PeerHello.decode(body)?.awakeHandoffLink(for: .indefinitely, closedLid: true, handoffID: "a", now: now))
+        // Set up: the link carries closedLid, the id and who sent it.
+        body["caps"] = ["closedLid": true, "closedLidReady": true]
+        let ready = try XCTUnwrap(PeerHello.decode(body))
+        XCTAssertEqual(ready.awakeHandoffLink(for: .indefinitely, closedLid: true, handoffID: "h1", now: now),
+                       "keeper://awake?closedLid=1&handoff=h1&from=monorail")
+        XCTAssertEqual(ready.awakeHandoffLink(for: .until(now.addingTimeInterval(1800)), closedLid: true, handoffID: "h2", now: now),
+                       "keeper://awake?for=30m&closedLid=1&handoff=h2&from=monorail")
+        // The ack, in a later hello.
+        body["state"] = ["awake": true, "awakeHandoff": ["id": "h2", "ok": false, "closedLid": true, "reason": "denied", "at": 1]]
+        XCTAssertEqual(PeerHello.decode(body)?.awakeHandoff,
+                       PeerHello.AwakeHandoff(id: "h2", ok: false, closedLid: true, reason: "denied"))
+    }
+
     func testRejectsHellosFromOtherApps() {
         XCTAssertNil(PeerHello.decode(["app": "Evil", "bundleID": "com.example.evil", "pid": 10]))
         XCTAssertNil(PeerHello.decode(["app": "Keeper", "bundleID": "io.github.ashfordeou.keeper"]))

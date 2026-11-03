@@ -272,6 +272,41 @@ public enum Action: String, Codable, CaseIterable, Sendable {
     case retile
     case undo
     case togglePause = "toggle-pause"
+    // 2.x: displays, stash and Evening Mode.
+    case focusDisplayLeft = "focus-display-left"
+    case focusDisplayRight = "focus-display-right"
+    case focusDisplayUp = "focus-display-up"
+    case focusDisplayDown = "focus-display-down"
+    case sendToDisplayLeft = "send-to-display-left"
+    case sendToDisplayRight = "send-to-display-right"
+    case sendToDisplayUp = "send-to-display-up"
+    case sendToDisplayDown = "send-to-display-down"
+    case focusDisplay1 = "focus-display-1"
+    case focusDisplay2 = "focus-display-2"
+    case focusDisplay3 = "focus-display-3"
+    case focusDisplay4 = "focus-display-4"
+    case focusDisplay5 = "focus-display-5"
+    case focusDisplay6 = "focus-display-6"
+    case focusDisplay7 = "focus-display-7"
+    case focusDisplay8 = "focus-display-8"
+    case focusDisplay9 = "focus-display-9"
+    case sendToDisplay1 = "send-to-display-1"
+    case sendToDisplay2 = "send-to-display-2"
+    case sendToDisplay3 = "send-to-display-3"
+    case sendToDisplay4 = "send-to-display-4"
+    case sendToDisplay5 = "send-to-display-5"
+    case sendToDisplay6 = "send-to-display-6"
+    case sendToDisplay7 = "send-to-display-7"
+    case sendToDisplay8 = "send-to-display-8"
+    case sendToDisplay9 = "send-to-display-9"
+    case displayBrighter = "display-brighter"
+    case displayDimmer = "display-dimmer"
+    case displayMoreSpace = "display-more-space"
+    case displayLargerText = "display-larger-text"
+    case displayDefaultResolution = "display-default-resolution"
+    case stashWindow = "stash-window"
+    case unstashAll = "unstash-all"
+    case toggleEvening = "evening-mode"
 
     public var title: String {
         switch self {
@@ -482,6 +517,40 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         case .retile: return "Retile everything"
         case .undo: return "Undo last layout change"
         case .togglePause: return "Pause / resume"
+        case .focusDisplayLeft: return "Focus the display on the left"
+        case .focusDisplayRight: return "Focus the display on the right"
+        case .focusDisplayUp: return "Focus the display above"
+        case .focusDisplayDown: return "Focus the display below"
+        case .sendToDisplayLeft: return "Send window to the display on the left"
+        case .sendToDisplayRight: return "Send window to the display on the right"
+        case .sendToDisplayUp: return "Send window to the display above"
+        case .sendToDisplayDown: return "Send window to the display below"
+        case .focusDisplay1: return "Focus display 1"
+        case .focusDisplay2: return "Focus display 2"
+        case .focusDisplay3: return "Focus display 3"
+        case .focusDisplay4: return "Focus display 4"
+        case .focusDisplay5: return "Focus display 5"
+        case .focusDisplay6: return "Focus display 6"
+        case .focusDisplay7: return "Focus display 7"
+        case .focusDisplay8: return "Focus display 8"
+        case .focusDisplay9: return "Focus display 9"
+        case .sendToDisplay1: return "Send window to display 1"
+        case .sendToDisplay2: return "Send window to display 2"
+        case .sendToDisplay3: return "Send window to display 3"
+        case .sendToDisplay4: return "Send window to display 4"
+        case .sendToDisplay5: return "Send window to display 5"
+        case .sendToDisplay6: return "Send window to display 6"
+        case .sendToDisplay7: return "Send window to display 7"
+        case .sendToDisplay8: return "Send window to display 8"
+        case .sendToDisplay9: return "Send window to display 9"
+        case .displayBrighter: return "Brighter display (software brightness)"
+        case .displayDimmer: return "Dimmer display (below the lowest brightness)"
+        case .displayMoreSpace: return "Display resolution: more space"
+        case .displayLargerText: return "Display resolution: larger text"
+        case .displayDefaultResolution: return "Display resolution: back to default"
+        case .stashWindow: return "Stash the window at the screen edge (again to bring it back)"
+        case .unstashAll: return "Bring back every stashed window"
+        case .toggleEvening: return "Evening Mode on or off"
         default:
             if let n = columnNumber { return "Focus column \(n)" }
             if let n = workspaceNumber { return "Switch to workspace \(n)" }
@@ -541,6 +610,23 @@ public enum Action: String, Codable, CaseIterable, Sendable {
     public var tagNumber: Int? { number(after: "tag-") }
     public var combineNumber: Int? { number(after: "combine-") }
 
+    /// The direction of the "focus / send to the display on the left…" actions.
+    public var displayDirection: DisplayDirection? {
+        switch self {
+        case .focusDisplayLeft, .sendToDisplayLeft: return .left
+        case .focusDisplayRight, .sendToDisplayRight: return .right
+        case .focusDisplayUp, .sendToDisplayUp: return .up
+        case .focusDisplayDown, .sendToDisplayDown: return .down
+        default: return nil
+        }
+    }
+
+    /// 1...9 for "focus display N" and "send window to display N".
+    public var displayNumber: Int? { number(after: "focus-display-") ?? number(after: "send-to-display-") }
+
+    /// True for the display actions that move the focused window (rather than focus).
+    public var sendsToDisplay: Bool { rawValue.hasPrefix("send-to-display-") }
+
     /// 1...9 for the "move window to workspace N" actions.
     public var moveToWorkspaceNumber: Int? {
         let prefix = "move-to-workspace-"
@@ -567,6 +653,11 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         .nameSlide, .toggleFitMode,
         .slideToStart, .slideToEnd, .slideToNextWorkspace, .slideToPreviousWorkspace, .slideToEmptyWorkspace, .unpairSlide, .mergeNext, .mergePrevious, .nextTile, .previousTile, .mainTile, .widthQuarter, .widthThird, .widthHalf, .widthTwoThirds, .widthThreeQuarters, .scrollToStart, .scrollToEnd, .layoutSideBySide, .layoutUpDown, .layoutGrid, .layoutMainSide, .layoutMainBottom, .layoutSpiral, .layoutAccordion, .layoutTabs, .resetSplit, .hideApp, .minimizeWorkspace, .minimizeOthers, .renameWorkspace, .swapWorkspaceNext, .swapWorkspacePrevious, .mergeWorkspacePrevious, .quickLaunchBeside, .openLinkBeside, .copyLayout, .pasteLayout, .noteWindow, .locatePointer, .flashFocus, .toggleDim, .toggleBorder, .toggleSliderBar, .toggleAnimations, .pomodoro, .toggleQuietMode, .restart, .openSettings, .checkForUpdates,
         .sortIntoProjects, .goToPredicted, .startIntent, .toggleElasticFocus, .addBookmark, .nextBookmark, .forkLayout, .keepFork, .discardFork, .groupWindow, .moveGroupToNextWorkspace, .showTimeline, .toggleTallColumn, .archiveWorkspace, .shareWorkspace, .toggleVimMode, .searchWindowText, .voiceCommand, .toggleDeepWork, .toggleReadingMode, .markPrivate, .shareSlide, .demoZoom, .toggleKeystrokes, .toggleAnnotate, .presenterNotes, .mirrorWindow, .guestMode, .ultrawideCenter, .linkAcrossDisplays, .cameraTile, .pairSync, .handoff, .clipboardHistory, .toggleAwake, .awake30, .awake60, .awake120, .awakeWhileDownloading, .toggleAwakeDisplay,
+        .focusDisplayLeft, .focusDisplayRight, .focusDisplayUp, .focusDisplayDown, .sendToDisplayLeft, .sendToDisplayRight, .sendToDisplayUp, .sendToDisplayDown,
+        .focusDisplay1, .focusDisplay2, .focusDisplay3, .focusDisplay4, .focusDisplay5, .focusDisplay6, .focusDisplay7, .focusDisplay8, .focusDisplay9,
+        .sendToDisplay1, .sendToDisplay2, .sendToDisplay3, .sendToDisplay4, .sendToDisplay5, .sendToDisplay6, .sendToDisplay7, .sendToDisplay8, .sendToDisplay9,
+        .displayBrighter, .displayDimmer, .displayMoreSpace, .displayLargerText, .displayDefaultResolution,
+        .stashWindow, .unstashAll, .toggleEvening,
     ])
 
     /// The slide layout a "Slide layout: …" action sets (nil for tabs).

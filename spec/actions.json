@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/Action.swift",
-  "count": 270,
+  "count": 304,
   "actions": [
     {
       "name": "focus-left",
@@ -1620,6 +1620,210 @@
       "name": "toggle-pause",
       "title": "Pause / resume",
       "defaultKey": true,
+      "numbered": false
+    },
+    {
+      "name": "focus-display-left",
+      "title": "Focus the display on the left",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "focus-display-right",
+      "title": "Focus the display on the right",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "focus-display-up",
+      "title": "Focus the display above",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "focus-display-down",
+      "title": "Focus the display below",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "send-to-display-left",
+      "title": "Send window to the display on the left",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "send-to-display-right",
+      "title": "Send window to the display on the right",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "send-to-display-up",
+      "title": "Send window to the display above",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "send-to-display-down",
+      "title": "Send window to the display below",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "focus-display-1",
+      "title": "Focus display 1",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "focus-display-2",
+      "title": "Focus display 2",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "focus-display-3",
+      "title": "Focus display 3",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "focus-display-4",
+      "title": "Focus display 4",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "focus-display-5",
+      "title": "Focus display 5",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "focus-display-6",
+      "title": "Focus display 6",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "focus-display-7",
+      "title": "Focus display 7",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "focus-display-8",
+      "title": "Focus display 8",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "focus-display-9",
+      "title": "Focus display 9",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "send-to-display-1",
+      "title": "Send window to display 1",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "send-to-display-2",
+      "title": "Send window to display 2",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "send-to-display-3",
+      "title": "Send window to display 3",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "send-to-display-4",
+      "title": "Send window to display 4",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "send-to-display-5",
+      "title": "Send window to display 5",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "send-to-display-6",
+      "title": "Send window to display 6",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "send-to-display-7",
+      "title": "Send window to display 7",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "send-to-display-8",
+      "title": "Send window to display 8",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "send-to-display-9",
+      "title": "Send window to display 9",
+      "defaultKey": false,
+      "numbered": true
+    },
+    {
+      "name": "display-brighter",
+      "title": "Brighter display (software brightness)",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "display-dimmer",
+      "title": "Dimmer display (below the lowest brightness)",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "display-more-space",
+      "title": "Display resolution: more space",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "display-larger-text",
+      "title": "Display resolution: larger text",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "display-default-resolution",
+      "title": "Display resolution: back to default",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "stash-window",
+      "title": "Stash the window at the screen edge (again to bring it back)",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "unstash-all",
+      "title": "Bring back every stashed window",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "evening-mode",
+      "title": "Evening Mode on or off",
+      "defaultKey": false,
       "numbered": false
     }
   ]

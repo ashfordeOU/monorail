@@ -432,6 +432,23 @@ private struct LayoutPane: View {
                 }
                 .disabled(!store.settings.groupByApp)
                 Toggle("Drag a window to the top of the screen to pick a snap layout", isOn: $store.settings.snapPicker)
+                Toggle("Drag a floating window to a screen edge or corner to snap it", isOn: $store.settings.edgeSnapping)
+                    .help("Left or right edge for a half, a corner for a quarter, the top edge to maximise, with a preview. Windows on the strip aren't affected.")
+                if store.settings.edgeSnapping {
+                    Toggle("Leave edge drags to macOS when its own tiling is on", isOn: $store.settings.edgeSnappingDefersToMacOS)
+                        .padding(.leading, 18)
+                    if SystemEdgeTiling.isOn {
+                        HStack {
+                            Text(store.settings.edgeSnappingDefersToMacOS
+                                 ? "macOS tiles windows dragged to screen edges itself, so Monorail leaves them to it."
+                                 : "macOS also tiles windows dragged to screen edges: turn that off so the two don’t both act.")
+                                .font(.callout).foregroundStyle(.secondary)
+                            Spacer()
+                            Button("Desktop & Dock Settings…") { SystemEdgeTiling.openSettings() }
+                        }
+                        .padding(.leading, 18)
+                    }
+                }
                 Picker("Slide layout", selection: $store.settings.slideArrangement) {
                     ForEach(Arrangement.standard, id: \.self) { arrangement in
                         Label(arrangement.title, systemImage: arrangement.symbol).tag(arrangement)
@@ -565,6 +582,17 @@ private struct InputPane: View {
                 }
                 .disabled(!store.settings.slideSound)
             }
+            Section {
+                Picker("Hold and press Tab to switch windows", selection: $store.settings.windowSwitcherShortcut) {
+                    ForEach(SwitcherShortcut.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+            } header: {
+                Text("Window switcher")
+            } footer: {
+                Text("Hold the key and press Tab for a grid of every window, most recent first, with live previews. Tab or the arrows move, W closes, M minimises, Q quits the app, Esc cancels; let go to switch. ⌘Tab replaces the macOS app switcher while it’s chosen.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+            .hiddenInAppStore()
             Section {
                 Picker("Slide mode key", selection: $store.settings.slideTrigger) {
                     ForEach(SlideTrigger.allCases, id: \.self) { Text($0.title).tag($0) }
@@ -1964,6 +1992,11 @@ private struct ShortcutsPane: View {
     private static let groups: [(String, [Action])] = [
         ("Focus", [.focusLeft, .focusRight, .focusUp, .focusDown, .focusFirst, .focusLast, .overview, .windowSwitcher]),
         ("Move", [.moveLeft, .moveRight, .moveUp, .moveDown, .sendToNextDisplay]),
+        ("Displays", [.focusDisplayLeft, .focusDisplayRight, .focusDisplayUp, .focusDisplayDown,
+                      .sendToDisplayLeft, .sendToDisplayRight, .sendToDisplayUp, .sendToDisplayDown]
+            + Action.allCases.filter { $0.displayNumber != nil }
+            + [.displayBrighter, .displayDimmer, .displayMoreSpace, .displayLargerText, .displayDefaultResolution]),
+        ("Stash & Evening Mode", [.stashWindow, .unstashAll, .toggleEvening]),
         ("Size", [.cycleWidth, .cycleWidthBackward, .narrower, .wider, .toggleFullWidth, .center, .toggleNativeFullScreen]),
         ("Slides & columns", [.regroup, .cycleLayout, .mainLarger, .mainSmaller, .makeMain, .consumeIntoLeft, .consumeIntoRight, .expelLeft, .expel,
                               .toggleTabbed, .pinLeft, .pinRight, .toggleFloat]),

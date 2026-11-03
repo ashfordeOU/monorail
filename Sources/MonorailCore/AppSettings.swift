@@ -845,6 +845,18 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// The schedule, in minutes after midnight (it may run past midnight).
     public var eveningStart = 20 * 60
     public var eveningEnd = 7 * 60
+    /// Evening Mode rests while one of these apps (bundle IDs) is in front, for work where colour matters.
+    public var eveningPausedApps: [String] = []
+    /// Evening Mode goes red: green and blue fade out as well, down to red light only at full strength.
+    public var eveningRed = false
+    /// Software brightness for each display (by UUID), 0.1–1, on top of its own: dims below its lowest setting.
+    public var displayBrightness: [String: Double] = [:]
+    /// Hold a modifier and press Tab for a grid of every window, let go to switch (⌘Tab replaces the app switcher).
+    public var windowSwitcherShortcut: SwitcherShortcut = .off
+    /// Drag a floating window to a screen edge for a half, a corner for a quarter, or the top to maximise.
+    public var edgeSnapping = false
+    /// Leave edge drags to macOS when its own tiling by dragging to screen edges is on (macOS 15 and later).
+    public var edgeSnappingDefersToMacOS = true
     /// Show a notice when Stay Awake starts and ends.
     public var awakeNotify = true
     /// Play a sound when Stay Awake starts and ends.
@@ -1070,7 +1082,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
-        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
     }
 
     public init(from decoder: Decoder) throws {
@@ -1252,6 +1264,12 @@ public struct AppSettings: Equatable, Codable, Sendable {
         eveningSchedule = value(.eveningSchedule, d.eveningSchedule)
         eveningStart = value(.eveningStart, d.eveningStart)
         eveningEnd = value(.eveningEnd, d.eveningEnd)
+        eveningPausedApps = value(.eveningPausedApps, d.eveningPausedApps)
+        eveningRed = value(.eveningRed, d.eveningRed)
+        displayBrightness = value(.displayBrightness, d.displayBrightness)
+        windowSwitcherShortcut = value(.windowSwitcherShortcut, d.windowSwitcherShortcut)
+        edgeSnapping = value(.edgeSnapping, d.edgeSnapping)
+        edgeSnappingDefersToMacOS = value(.edgeSnappingDefersToMacOS, d.edgeSnappingDefersToMacOS)
         awakeNotify = value(.awakeNotify, d.awakeNotify)
         awakeSound = value(.awakeSound, d.awakeSound)
         awakeShowTime = value(.awakeShowTime, d.awakeShowTime)

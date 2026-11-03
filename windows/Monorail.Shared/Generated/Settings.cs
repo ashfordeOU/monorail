@@ -183,6 +183,12 @@ public static class SettingKeys
     public const string EveningSchedule = "eveningSchedule";
     public const string EveningStart = "eveningStart";
     public const string EveningEnd = "eveningEnd";
+    public const string EveningPausedApps = "eveningPausedApps";
+    public const string EveningRed = "eveningRed";
+    public const string DisplayBrightness = "displayBrightness";
+    public const string WindowSwitcherShortcut = "windowSwitcherShortcut";
+    public const string EdgeSnapping = "edgeSnapping";
+    public const string EdgeSnappingDefersToMacOS = "edgeSnappingDefersToMacOS";
     public const string AwakeNotify = "awakeNotify";
     public const string AwakeSound = "awakeSound";
     public const string AwakeShowTime = "awakeShowTime";
@@ -208,6 +214,7 @@ public static class SettingKeys
     public const string KeepWindowsInPlace = "keepWindowsInPlace";
     public const string ResizeAssist = "resizeAssist";
     public const string PairLoneWindowsOnOpen = "pairLoneWindowsOnOpen";
+    public const string GroupTerminals = "groupTerminals";
     public const string SlideArrangement = "slideArrangement";
     public const string WorkspaceCount = "workspaceCount";
     public const string WorkspaceNames = "workspaceNames";
@@ -491,6 +498,12 @@ public static class SettingDefaults
     public const double EveningStrength = 0.5;
     /// <summary>Turned on by hand (from the menu bar or Settings).</summary>
     public const bool EveningOn = false;
+    /// <summary>Evening Mode goes red: green and blue fade out as well, down to red light only at full strength.</summary>
+    public const bool EveningRed = false;
+    /// <summary>Drag a floating window to a screen edge for a half, a corner for a quarter, or the top to maximise.</summary>
+    public const bool EdgeSnapping = false;
+    /// <summary>Leave edge drags to macOS when its own tiling by dragging to screen edges is on (macOS 15 and later).</summary>
+    public const bool EdgeSnappingDefersToMacOS = true;
     /// <summary>Show a notice when Stay Awake starts and ends.</summary>
     public const bool AwakeNotify = true;
     /// <summary>Play a sound when Stay Awake starts and ends.</summary>
@@ -537,6 +550,8 @@ public static class SettingDefaults
     public const bool ResizeAssist = true;
     /// <summary>Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A).</summary>
     public const bool PairLoneWindowsOnOpen = false;
+    /// <summary>Terminal apps (Terminal, iTerm, Ghostty, Warp, kitty, Alacritty, WezTerm) share slides with each other, as if they were one app.</summary>
+    public const bool GroupTerminals = true;
     /// <summary>Workspaces per display (1...9). Each has its own strip.</summary>
     public const int WorkspaceCount = 4;
     /// <summary>Look for new versions on GitHub once a day.</summary>

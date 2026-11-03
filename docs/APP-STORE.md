@@ -17,6 +17,7 @@ is the same.
 | The local API, MCP server and phone remote | The sandbox doesn't allow apps to accept network connections this way |
 | JavaScript scripts | Running code from a folder is restricted |
 | Saving browser tabs in snapshots | Controlling other apps with AppleScript needs exceptions App Review rarely grants |
+| The hold-and-release window switcher (⌘Tab / ⌥Tab) | It needs the event tap, and taking over ⌘Tab needs a private call |
 
 The code for this is `Edition.isAppStore` (`Sources/Monorail/Edition.swift`), set by building with
 `-DAPPSTORE`. CI checks that the edition compiles on every change.

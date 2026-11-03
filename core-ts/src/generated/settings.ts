@@ -340,6 +340,18 @@ export interface Settings {
   /** The schedule, in minutes after midnight (it may run past midnight). */
   eveningStart: unknown;
   eveningEnd: unknown;
+  /** Evening Mode rests while one of these apps (bundle IDs) is in front, for work where colour matters. */
+  eveningPausedApps: string[];
+  /** Evening Mode goes red: green and blue fade out as well, down to red light only at full strength. */
+  eveningRed: boolean;
+  /** Software brightness for each display (by UUID), 0.1–1, on top of its own: dims below its lowest setting. */
+  displayBrightness: Record<string, number>;
+  /** Hold a modifier and press Tab for a grid of every window, let go to switch (⌘Tab replaces the app switcher). */
+  windowSwitcherShortcut: unknown;
+  /** Drag a floating window to a screen edge for a half, a corner for a quarter, or the top to maximise. */
+  edgeSnapping: boolean;
+  /** Leave edge drags to macOS when its own tiling by dragging to screen edges is on (macOS 15 and later). */
+  edgeSnappingDefersToMacOS: boolean;
   /** Show a notice when Stay Awake starts and ends. */
   awakeNotify: boolean;
   /** Play a sound when Stay Awake starts and ends. */
@@ -390,6 +402,8 @@ export interface Settings {
   resizeAssist: boolean;
   /** Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). */
   pairLoneWindowsOnOpen: boolean;
+  /** Terminal apps (Terminal, iTerm, Ghostty, Warp, kitty, Alacritty, WezTerm) share slides with each other, as if they were one app. */
+  groupTerminals: boolean;
   /** Layout of new slides, unless an app rule says otherwise. */
   slideArrangement: unknown;
   /** Workspaces per display (1...9). Each has its own strip. */
@@ -548,6 +562,9 @@ export const DEFAULTS: Partial<Settings> = {
   showAllSettings: false,
   eveningStrength: 0.5,
   eveningOn: false,
+  eveningRed: false,
+  edgeSnapping: false,
+  edgeSnappingDefersToMacOS: true,
   awakeNotify: true,
   awakeSound: false,
   awakeShowTime: true,
@@ -571,10 +588,11 @@ export const DEFAULTS: Partial<Settings> = {
   keepWindowsInPlace: true,
   resizeAssist: true,
   pairLoneWindowsOnOpen: false,
+  groupTerminals: true,
   workspaceCount: 4,
   checkForUpdates: true,
   installUpdatesAutomatically: false,
   hasCompletedOnboarding: false,
 };
 
-export const SETTING_KEYS = ["layout", "animate", "animationDuration", "modifierSwipe", "scrollModifier", "scrollOverMenuBar", "showNavigationArrows", "slideTrigger", "swipeFingers", "swipeSensitivity", "invertSwipe", "mouseFollowsFocus", "focusFollowsMouse", "keepHeights", "focusBorder", "focusBorderWidth", "focusBorderColor", "dimInactive", "dimAmount", "showColumnIndicator", "newWindowPosition", "appRules", "keymap", "sliderBar", "sliderBarEdge", "iconOpensSlider", "groupByApp", "tilesPerSlide", "hotEdges", "customLayouts", "appPairs", "profiles", "dynamicWorkspaces", "hapticFeedback", "pinchForOverview", "attentionMarkers", "snapPicker", "focusMinutes", "focusDim", "displayOverrides", "theme", "syncThroughICloud", "threeFingerTapOverview", "peekWithOption", "collectStats", "autoRules", "smartGaps", "launchSlots", "menuBarShowsApp", "modifierDrag", "titleBarSwipes", "focusBorderGradient", "focusBorderColor2", "workspaceWallpapers", "liveReloadSettings", "publishState", "eventScript", "followReduceMotion", "resizeHUD", "rememberWidths", "centerLoneWindow", "autoGrowFocus", "projects", "templates", "meetingHelper", "meetingProfile", "verticalWorkspaceSwipes", "pinchZoomsStrip", "localAPI", "apiPort", "scripts", "language", "openNextToSameApp", "openIntoFocusedSlide", "workspaceHUD", "sliderTitles", "compactSlider", "menuBarStyle", "compactMenuBarApplied", "quietMode", "slideSound", "announceChanges", "rememberFloatingPositions", "autoSnapshot", "dailyBackups", "skipAnimationsOnBattery", "cheatSheetOnHold", "focusFollowsMouseDelay", "capsLockKey", "fitByDefault", "fitExceptions", "workspaceNotes", "autoNameWorkspaces", "betaUpdates", "weeklySummary", "lastSeenVersion", "hotCorners", "mouseButtonsStep", "scrollResizes", "shiftScrollSwitchesWorkspace", "middleClickZoom", "focusGlow", "borderFromAppIcon", "focusFlash", "sliderOpacity", "sliderScale", "plainOverview", "overviewIconsOnly", "menuBarShowsTitle", "noticePosition", "noticeDuration", "pomodoroFocus", "pomodoroBreak", "breakReminderMinutes", "dailyFocusGoal", "workspaceConfigs", "autoParkHours", "floatSmallerThan", "floatSettingsWindows", "pauseForApps", "retileAfterWake", "animationCurve", "animationFPS", "rescueAfterCrash", "clickSound", "announceWindows", "webhookURL", "remoteCommands", "stageNextWindow", "distractionNudges", "contentAwareWidths", "pathRules", "displayProfiles", "agentAlerts", "agentBringIntoView", "ruleSuggestions", "suggestedRules", "monorailKeySource", "mouseGestures", "midiControl", "midiMap", "gameController", "webRemote", "webRemoteToken", "headFocus", "deepWorkApps", "deepWorkFromCalendar", "safeScreenShare", "privateApps", "privacyBlur", "dimFollowsPointer", "energySaver", "presenterNotes", "workspaceClipboard", "driftWallpaper", "notchHUD", "soundPack", "crashReports", "askAfterCrash", "confirmDestructiveAPI", "parkInCorner", "wholeSlidesOnly", "fitMinimumWidth", "awakeKeepDisplayOn", "awakeAllowScreenSaver", "awakeDefaultMinutes", "awakeBatteryCutoff", "awakeMoveCursor", "awakeMoveCursorMinutes", "awakeDriveAlive", "awakeClosedLid", "awakeClosedLidOnlyOnPower", "showAllSettings", "eveningStrength", "eveningOn", "eveningSchedule", "eveningStart", "eveningEnd", "awakeNotify", "awakeSound", "awakeShowTime", "awakeOnLaunch", "awakeTriggers", "awakeTriggersOn", "awakeLockAfterMinutes", "menuWindowsInline", "meetingLayout", "meetingNotesApp", "sidecarFit", "seenTips", "shareUsageStats", "usageNoticeShown", "restoreBrowserTabs", "floatSuggestions", "assistantModel", "dragToDock", "gapHandles", "sliderBarStepsAside", "keepEverythingOnScreen", "systemPromptsInFront", "keepWindowsInPlace", "resizeAssist", "pairLoneWindowsOnOpen", "slideArrangement", "workspaceCount", "workspaceNames", "checkForUpdates", "installUpdatesAutomatically", "rulesVersion", "hasCompletedOnboarding"] as const;
+export const SETTING_KEYS = ["layout", "animate", "animationDuration", "modifierSwipe", "scrollModifier", "scrollOverMenuBar", "showNavigationArrows", "slideTrigger", "swipeFingers", "swipeSensitivity", "invertSwipe", "mouseFollowsFocus", "focusFollowsMouse", "keepHeights", "focusBorder", "focusBorderWidth", "focusBorderColor", "dimInactive", "dimAmount", "showColumnIndicator", "newWindowPosition", "appRules", "keymap", "sliderBar", "sliderBarEdge", "iconOpensSlider", "groupByApp", "tilesPerSlide", "hotEdges", "customLayouts", "appPairs", "profiles", "dynamicWorkspaces", "hapticFeedback", "pinchForOverview", "attentionMarkers", "snapPicker", "focusMinutes", "focusDim", "displayOverrides", "theme", "syncThroughICloud", "threeFingerTapOverview", "peekWithOption", "collectStats", "autoRules", "smartGaps", "launchSlots", "menuBarShowsApp", "modifierDrag", "titleBarSwipes", "focusBorderGradient", "focusBorderColor2", "workspaceWallpapers", "liveReloadSettings", "publishState", "eventScript", "followReduceMotion", "resizeHUD", "rememberWidths", "centerLoneWindow", "autoGrowFocus", "projects", "templates", "meetingHelper", "meetingProfile", "verticalWorkspaceSwipes", "pinchZoomsStrip", "localAPI", "apiPort", "scripts", "language", "openNextToSameApp", "openIntoFocusedSlide", "workspaceHUD", "sliderTitles", "compactSlider", "menuBarStyle", "compactMenuBarApplied", "quietMode", "slideSound", "announceChanges", "rememberFloatingPositions", "autoSnapshot", "dailyBackups", "skipAnimationsOnBattery", "cheatSheetOnHold", "focusFollowsMouseDelay", "capsLockKey", "fitByDefault", "fitExceptions", "workspaceNotes", "autoNameWorkspaces", "betaUpdates", "weeklySummary", "lastSeenVersion", "hotCorners", "mouseButtonsStep", "scrollResizes", "shiftScrollSwitchesWorkspace", "middleClickZoom", "focusGlow", "borderFromAppIcon", "focusFlash", "sliderOpacity", "sliderScale", "plainOverview", "overviewIconsOnly", "menuBarShowsTitle", "noticePosition", "noticeDuration", "pomodoroFocus", "pomodoroBreak", "breakReminderMinutes", "dailyFocusGoal", "workspaceConfigs", "autoParkHours", "floatSmallerThan", "floatSettingsWindows", "pauseForApps", "retileAfterWake", "animationCurve", "animationFPS", "rescueAfterCrash", "clickSound", "announceWindows", "webhookURL", "remoteCommands", "stageNextWindow", "distractionNudges", "contentAwareWidths", "pathRules", "displayProfiles", "agentAlerts", "agentBringIntoView", "ruleSuggestions", "suggestedRules", "monorailKeySource", "mouseGestures", "midiControl", "midiMap", "gameController", "webRemote", "webRemoteToken", "headFocus", "deepWorkApps", "deepWorkFromCalendar", "safeScreenShare", "privateApps", "privacyBlur", "dimFollowsPointer", "energySaver", "presenterNotes", "workspaceClipboard", "driftWallpaper", "notchHUD", "soundPack", "crashReports", "askAfterCrash", "confirmDestructiveAPI", "parkInCorner", "wholeSlidesOnly", "fitMinimumWidth", "awakeKeepDisplayOn", "awakeAllowScreenSaver", "awakeDefaultMinutes", "awakeBatteryCutoff", "awakeMoveCursor", "awakeMoveCursorMinutes", "awakeDriveAlive", "awakeClosedLid", "awakeClosedLidOnlyOnPower", "showAllSettings", "eveningStrength", "eveningOn", "eveningSchedule", "eveningStart", "eveningEnd", "eveningPausedApps", "eveningRed", "displayBrightness", "windowSwitcherShortcut", "edgeSnapping", "edgeSnappingDefersToMacOS", "awakeNotify", "awakeSound", "awakeShowTime", "awakeOnLaunch", "awakeTriggers", "awakeTriggersOn", "awakeLockAfterMinutes", "menuWindowsInline", "meetingLayout", "meetingNotesApp", "sidecarFit", "seenTips", "shareUsageStats", "usageNoticeShown", "restoreBrowserTabs", "floatSuggestions", "assistantModel", "dragToDock", "gapHandles", "sliderBarStepsAside", "keepEverythingOnScreen", "systemPromptsInFront", "keepWindowsInPlace", "resizeAssist", "pairLoneWindowsOnOpen", "groupTerminals", "slideArrangement", "workspaceCount", "workspaceNames", "checkForUpdates", "installUpdatesAutomatically", "rulesVersion", "hasCompletedOnboarding"] as const;

@@ -51,6 +51,8 @@ final class WhatsNew {
     private var window: NSWindow?
     /// Runs an action from a "Try it" button.
     var tryAction: (Action) -> Void = { _ in }
+    /// The settings, for switching this version's new features on from the window.
+    var store: SettingsStore?
 
     func show(version: String) {
         guard let url = Bundle.main.url(forResource: "CHANGELOG", withExtension: "md"),
@@ -58,7 +60,9 @@ final class WhatsNew {
         else { return }
         let notes = Self.section(for: version, in: changelog)
         guard !notes.isEmpty else { return }
-        let view = WhatsNewView(version: version, lines: notes, tryAction: { [weak self] action in
+        guard let store else { return }
+        let view = WhatsNewView(version: version, lines: notes, store: store, offersSwitches: true,
+                                tryAction: { [weak self] action in
             self?.window?.close()
             self?.tryAction(action)
         }) { [weak self] in self?.window?.close() }
@@ -91,8 +95,19 @@ final class WhatsNew {
 private struct WhatsNewView: View {
     let version: String
     let lines: [String]
+    @ObservedObject var store: SettingsStore
+    let offersSwitches: Bool
     let tryAction: (Action) -> Void
     let close: () -> Void
+
+    /// This version's new features, each off until switched on here.
+    private var newSwitches: [StarterExtra] {
+        StarterExtra.newInThisVersion.filter { !(Edition.isAppStore && $0 == .windowSwitcher) }
+    }
+
+    private func binding(_ item: StarterExtra) -> Binding<Bool> {
+        Binding(get: { item.isOn(in: store.settings) }, set: { on in item.set(on, in: &store.settings) })
+    }
 
     /// The features people most often miss, with a button to try each.
     private static let highlights: [(symbol: String, title: String, text: String, action: Action)] = [
@@ -123,6 +138,19 @@ private struct WhatsNewView: View {
                     .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.08)))
                 }
             }
+            if offersSwitches, !newSwitches.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Try the new features").font(.headline)
+                    ForEach(newSwitches, id: \.self) { item in
+                        Toggle(item.title, isOn: binding(item)).toggleStyle(.checkbox)
+                    }
+                    Text("They stay off unless you tick them. Change them any time in Settings.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.08)))
+            }
             ScrollView {
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
@@ -144,6 +172,9 @@ private struct WhatsNewView: View {
             HStack {
                 Link("Full changelog", destination: URL(string: "https://github.com/ashfordeOU/monorail/blob/main/CHANGELOG.md")!)
                 Spacer()
+                if offersSwitches, !newSwitches.isEmpty {
+                    Button("Not now", action: close).keyboardShortcut(.cancelAction)
+                }
                 Button("Continue", action: close).keyboardShortcut(.defaultAction)
             }
         }

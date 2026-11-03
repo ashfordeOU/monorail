@@ -20,7 +20,9 @@ def actions():
     for name, raw in re.findall(r"^    case (\w+)(?: = \"([^\"]+)\")?\s*$", enum, re.M):
         cases.append((name, raw or name))
     titles = dict(re.findall(r'case \.(\w+): return "([^"]+)"', enum))
-    unbound = set(re.findall(r"\.(\w+)", enum[enum.index("unboundByDefault"):enum.index("]", enum.index("unboundByDefault"))]))
+    block = enum[enum.index("unboundByDefault"):]
+    block = block[:block.index("\n    ]") if "\n    ]" in block else len(block)]
+    unbound = set(re.findall(r"\.(\w+)", block))
     lines = ["# Every Monorail action", "",
              "Generated from `Sources/MonorailCore/Action.swift` by `scripts/gen-docs.py`. Don't edit by hand.", "",
              "Run any action from the command palette (⌃⌥/), with `open -g monorail://<name>`, `monorail <name>`,",
@@ -30,7 +32,7 @@ def actions():
              "| Action | Name | Default key |", "| --- | --- | --- |"]
     for name, raw in cases:
         title = titles.get(name, name)
-        key = "none (add one in Settings)" if name in unbound else "yes (see Settings → Shortcuts)"
+        key = "none (add one in Settings)" if name in unbound or re.match(r"^(tag|combine)-", raw) else "yes (see Settings → Shortcuts)"
         lines.append(f"| {title} | `{raw}` | {key} |")
     return "\n".join(lines) + "\n"
 
@@ -44,7 +46,7 @@ def spec_actions():
     block = enum[enum.index("unboundByDefault"):]
     block = block[:block.index("\n    ]") if "\n    ]" in block else len(block)]
     unbound = set(re.findall(r"\.(\w+)", block))
-    numbered = re.compile(r"^(workspace|move-to-workspace|column|focus-column|view|save-view|tag|combine)-[1-9]$")
+    numbered = re.compile(r"^(workspace|move-to-workspace|column|focus-column|view|save-view|tag|combine|focus-display|send-to-display)-[1-9]$")
     items = []
     for name, raw in re.findall(r"^    case (\w+)(?: = \"([^\"]+)\")?\s*$", enum, re.M):
         raw = raw or name

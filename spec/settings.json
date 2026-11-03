@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 211,
+  "count": 217,
   "settings": [
     {
       "key": "layout",
@@ -1069,6 +1069,42 @@
       "type": "?",
       "default": "7 * 60",
       "about": ""
+    },
+    {
+      "key": "eveningPausedApps",
+      "type": "[String]",
+      "default": "[]",
+      "about": "Evening Mode rests while one of these apps (bundle IDs) is in front, for work where colour matters."
+    },
+    {
+      "key": "eveningRed",
+      "type": "Bool",
+      "default": "false",
+      "about": "Evening Mode goes red: green and blue fade out as well, down to red light only at full strength."
+    },
+    {
+      "key": "displayBrightness",
+      "type": "[String: Double]",
+      "default": "[:]",
+      "about": "Software brightness for each display (by UUID), 0.1–1, on top of its own: dims below its lowest setting."
+    },
+    {
+      "key": "windowSwitcherShortcut",
+      "type": "SwitcherShortcut",
+      "default": ".off",
+      "about": "Hold a modifier and press Tab for a grid of every window, let go to switch (⌘Tab replaces the app switcher)."
+    },
+    {
+      "key": "edgeSnapping",
+      "type": "Bool",
+      "default": "false",
+      "about": "Drag a floating window to a screen edge for a half, a corner for a quarter, or the top to maximise."
+    },
+    {
+      "key": "edgeSnappingDefersToMacOS",
+      "type": "Bool",
+      "default": "true",
+      "about": "Leave edge drags to macOS when its own tiling by dragging to screen edges is on (macOS 15 and later)."
     },
     {
       "key": "awakeNotify",

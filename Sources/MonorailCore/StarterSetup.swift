@@ -46,3 +46,74 @@ extension AppSettings {
         }
     }
 }
+
+/// The "Pick your extras" checklist in the welcome tour (and the switches in What's New): one line
+/// each, bound to real settings. Which start ticked depends on the starter setup.
+public enum StarterExtra: String, CaseIterable, Sendable {
+    case swipe, windowSwitcher, edgeSnapping, eveningSunset, terminalsTogether, awakeInMenuBar, agentChime, usageCounts
+
+    public var title: String {
+        switch self {
+        case .swipe: return "Three-finger swipe moves the strip"
+        case .windowSwitcher: return "⌘Tab switcher with window previews"
+        case .edgeSnapping: return "Snap windows by dragging to screen edges"
+        case .eveningSunset: return "Evening Mode from sunset to sunrise"
+        case .terminalsTogether: return "Keep terminals together"
+        case .awakeInMenuBar: return "Stay Awake in the menu bar"
+        case .agentChime: return "Chime when your AI coding assistant is waiting"
+        case .usageCounts: return "Anonymous usage counts"
+        }
+    }
+
+    /// Whether it's on in `settings`.
+    public func isOn(in settings: AppSettings) -> Bool {
+        switch self {
+        case .swipe: return settings.swipeFingers == .three
+        case .windowSwitcher: return settings.windowSwitcherShortcut == .commandTab
+        case .edgeSnapping: return settings.edgeSnapping
+        case .eveningSunset: return settings.eveningSchedule == .sun
+        case .terminalsTogether: return settings.groupTerminals
+        case .awakeInMenuBar: return settings.awakeShowTime
+        case .agentChime: return settings.agentAlerts
+        case .usageCounts: return settings.shareUsageStats
+        }
+    }
+
+    /// Turns it on or off in `settings`, leaving related choices alone where it can.
+    public func set(_ on: Bool, in settings: inout AppSettings) {
+        switch self {
+        case .swipe:
+            if on { settings.swipeFingers = .three } else if settings.swipeFingers == .three { settings.swipeFingers = .off }
+        case .windowSwitcher:
+            if on { settings.windowSwitcherShortcut = .commandTab } else if settings.windowSwitcherShortcut == .commandTab { settings.windowSwitcherShortcut = .off }
+        case .edgeSnapping: settings.edgeSnapping = on
+        case .eveningSunset:
+            if on { settings.eveningSchedule = .sun } else if settings.eveningSchedule == .sun { settings.eveningSchedule = .manual }
+        case .terminalsTogether: settings.groupTerminals = on
+        case .awakeInMenuBar: settings.awakeShowTime = on
+        case .agentChime: settings.agentAlerts = on
+        case .usageCounts: settings.shareUsageStats = on
+        }
+    }
+
+    /// Which extras a starter setup ticks. Simple keeps to the gentle ones; the others take most,
+    /// but never the ones that take over system gestures and shortcuts (the ⌘Tab switcher and
+    /// three-finger swipes): those stay off unless ticked.
+    public static func defaults(for setup: StarterSetup) -> Set<StarterExtra> {
+        switch setup {
+        case .simple: return [.terminalsTogether, .awakeInMenuBar, .agentChime, .usageCounts]
+        case .power, .switching: return Set(allCases).subtracting([.windowSwitcher, .swipe])
+        }
+    }
+
+    /// Extras offered to people updating (What's New): the ones new in this version.
+    public static let newInThisVersion: [StarterExtra] = [.windowSwitcher, .edgeSnapping, .eveningSunset]
+}
+
+extension AppSettings {
+    /// Ticks exactly the extras a starter setup starts with.
+    public mutating func applyExtras(for setup: StarterSetup) {
+        let on = StarterExtra.defaults(for: setup)
+        for extra in StarterExtra.allCases { extra.set(on.contains(extra), in: &self) }
+    }
+}

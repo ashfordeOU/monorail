@@ -63,7 +63,7 @@ the signed build is out, a 30-second screen recording of the real app is worth a
 > - 📍 **Saved views** (⌃⌥⌘1…9) and back/forward through where you've been, like a browser.
 > - 📦 **Switch in a minute:** imports your AeroSpace, yabai/skhd or Rectangle setup.
 > - 🗣️ **Say it.** Type “Safari two thirds” or “write the Q3 report” in the palette and Monorail does it, all on your Mac.
-> - 🤖 **AI agent alerts.** Run Claude Code or Codex in a terminal and hear a chime the moment it's waiting for your approval.
+> - 🤖 **AI agent alerts.** Run an AI coding assistant in a terminal and hear a chime the moment it's waiting for your approval.
 > - 🛡️ **Safe screen sharing.** Private windows step aside as soon as you share in Zoom, Teams or Meet.
 > - 🎤 **Share one slide** instead of your whole screen, plus a demo zoom, drawing on screen and presenter notes only you can see.
 > - 🎨 **27 themes**, including Seasons, which changes through the year.

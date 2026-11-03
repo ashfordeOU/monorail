@@ -130,7 +130,7 @@ instead of your whole screen. Deep work hides distracting apps until you're done
 ### Works with your tools.
 
 - **Coming from another window manager?** Settings → Basics → **Import Settings…** reads your AeroSpace, yabai and skhd, or Rectangle settings.
-- **AI coding agents.** Monorail hears when Claude Code, Codex, Aider or Gemini is waiting for your approval in a terminal, plays a chime and takes you there.
+- **AI coding agents.** Monorail hears when an AI coding assistant is waiting for your approval in a terminal, plays a chime and takes you there.
 - **Keeper.** Monorail and [Keeper](https://github.com/ashfordeOU/keeper) by Ashforde work together with nothing to set up. Monorail leaves Keeper's Island, widgets and panels where Keeper puts them, they share focus, presentation and Stay Awake, and only one of them keeps your Mac awake at a time. [How they work together](https://monorail.ashforde.org/keeper/).
 - **Scripts and automation.** Every action has a `monorail://` link and a `monorail` command, and there's a local API, an MCP server for AI assistants, AppleScript and JavaScript scripts. See [Automation](#automation).
 

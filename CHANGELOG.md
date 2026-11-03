@@ -278,7 +278,7 @@ Monorail understands what you want, learns how you work, knows when your AI agen
 - **Smart:**
   - **Sentences** in the command palette and by voice: “Slack and Mail side by side on 3”, “Safari two thirds”, “move Mail to workspace two”.
   - **Intent workspaces:** **Start working on…** opens the template, layout, pair or workspace that fits what you're about to do.
-  - **AI agent alerts** for Claude Code, Codex, Aider, Gemini and other terminal agents waiting for approval, with a palette shortcut to the agent.
+  - **AI agent alerts** for AI coding assistants in a terminal waiting for approval, with a palette shortcut to the agent.
   - **Learning on your Mac:** stage the window you usually go to next, go straight to it, rule suggestions from widths you keep choosing, and a nudge towards focus mode when you're switching a lot.
   - **Content-aware widths** for new slides.
   - **Sort windows into project workspaces** from their titles.

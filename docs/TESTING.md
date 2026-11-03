@@ -59,7 +59,7 @@ the Product Hunt launch). It takes about 30 minutes. Note anything that's off an
 
 - [ ] ⌃⌥/ then type `safari two thirds` and press return.
 - [ ] Start a screen share in Zoom, Teams or Meet: private apps hide; they come back when sharing stops.
-- [ ] Run Claude Code or Codex in a terminal and let it ask for approval: a chime and a notice.
+- [ ] Run an AI coding assistant in a terminal and let it ask for approval: a chime and a notice.
 - [ ] **Animate Windows** off in the menu bar menu: windows move instantly, everything still works.
 - [ ] Settings → About → **Usage** shows launches, running time, CPU and your most used actions.
 - [ ] Switch the language (Settings → General) to each of the 9 languages: the menu bar menu and Settings tabs change.

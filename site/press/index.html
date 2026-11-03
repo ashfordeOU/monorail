@@ -35,7 +35,7 @@ h2 { font-size:24px; letter-spacing:-.01em; margin:56px 0 14px; }
 .copy { position:relative; }
 .copy p { margin:0 0 12px; }
 .copy p:last-of-type { margin-bottom:0; }
-.copybtn { position:absolute; top:12px; right:12px; font:600 13px/1 inherit; padding:8px 12px; border-radius:999px; border:1px solid var(--line); background:var(--soft); color:var(--ink); cursor:pointer; }
+.copybtn { position:absolute; top:12px; right:12px; font-family:inherit; font-weight:600; font-size:13px; line-height:1; padding:8px 12px; border-radius:999px; border:1px solid var(--line); background:var(--soft); color:var(--ink); cursor:pointer; }
 .gallery { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
 .shot { margin:0; background:var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
 .shot img { display:block; width:100%; aspect-ratio:2540/1520; object-fit:cover; background:var(--soft); }
@@ -76,17 +76,18 @@ footer { margin-top:64px; font-size:14px; color:var(--muted); }
     <div class="card"><b>Price</b>Free, every feature, no window limits or Pro tier</div>
     <div class="card"><b>Licence</b>Source available on GitHub (FSL-1.1-ALv2; each version becomes Apache 2.0 after two years)</div>
     <div class="card"><b>Latest version</b><span id="ver">See the latest release</span></div>
+    <div class="card"><b>Security</b>Signed with Ashforde OÜ's Apple Developer ID and notarised by Apple (from 1.7.16)</div>
     <div class="card"><b>Privacy</b>No account. One permission (Accessibility). Anonymous daily counts, off with one switch.</div>
     <div class="card"><b>Install</b>Download from the site, Homebrew, Nix, or a .pkg for IT teams</div>
   </div>
 
   <h2>About Monorail</h2>
   <div class="card copy" id="short">
-    <button class="copybtn" data-copy="short">Copy</button>
+    <button type="button" class="copybtn" data-copy="short">Copy</button>
     <p><b>One line:</b> Monorail is a free scrolling window manager for Mac: every window rides one endless strip, so new windows never squeeze the rest.</p>
   </div>
   <div class="card copy" id="long" style="margin-top:12px">
-    <button class="copybtn" data-copy="long">Copy</button>
+    <button type="button" class="copybtn" data-copy="long">Copy</button>
     <p>Monorail by Ashforde® is a scrolling window manager for macOS. Most tiling window managers shrink every window when a new one opens. Monorail puts each window on a slide in a horizontal strip that runs past the edges of the screen: a new window slides in beside the one you're using, and nothing else changes size. Moving focus glides the strip along.</p>
     <p>Windows can be dragged onto each other to dock side by side or form tab groups across any apps, nested as deep as you like. Saved views return the screen to an arrangement with one shortcut, and back and forward work like a browser. Plain-language commands such as “Slack and Mail side by side” are understood on the Mac, and Monorail chimes when an AI coding agent in a terminal is waiting for approval. It imports AeroSpace, yabai and Rectangle setups.</p>
     <p>Monorail is native Swift, free with no paid tier, and its source is on GitHub. It needs no account and only the Accessibility permission.</p>

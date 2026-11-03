@@ -4,10 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Monorail by Ashforde® · the scrolling window manager for Mac</title>
-<meta name="description" content="Every window rides one rail. Monorail is a free scrolling window manager for macOS: nothing ever shrinks, it understands plain sentences, keeps your Mac awake, and hides private windows when you share.">
+<meta name="description" content="Monorail is a free scrolling window manager for Mac. New windows slide in beside the one you're using, and nothing else shrinks. Notarised by Apple.">
 <meta property="og:title" content="Monorail by Ashforde® · every window rides one rail">
-<meta property="og:description" content="The scrolling window manager for Mac that understands you. Free for Mac.">
+<meta property="og:description" content="A free scrolling window manager for Mac: new windows slide in beside the one you're using, and nothing else ever shrinks.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Monorail by Ashforde">
 <meta property="og:image" content="https://monorail.ashforde.org/assets/launch/v17/01-hero.png">
+<meta property="og:image:alt" content="Monorail on a Mac: windows side by side on one scrolling strip">
 <meta property="og:url" content="https://monorail.ashforde.org/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://monorail.ashforde.org/">
@@ -29,16 +32,17 @@
   --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA;
   --coral:#FF9E62; --pink:#F66270; --plum:#D63A80; --deep:#2A1430;
   --w1:#5B8CFF; --w2:#B06BFF; --w3:#FF5F9E; --w4:#FF9445; --w5:#45D18C; --w6:#33CCDB; --w7:#FFCC40; --w8:#8E7CFF;
+  --link:#D63A80; --ok:#177A45;
   --radius:20px; --ease:cubic-bezier(.22,.8,.25,1);
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; color-scheme:dark; }
+  :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; }
 }
-:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; color-scheme:dark; }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; }
 :root[data-theme="light"] { color-scheme:light; }
 /* Reader controls: theme and text size */
 .prefs { display:flex; align-items:center; gap:4px; padding:3px; border-radius:999px; border:1px solid var(--line); background:var(--card); }
-.prefs button { border:0; background:transparent; color:var(--muted); min-width:32px; height:30px; border-radius:999px; font:700 13px/1 inherit; cursor:pointer; padding:0 8px; }
+.prefs button { border:0; background:transparent; color:var(--muted); min-width:32px; height:30px; border-radius:999px; font-family:inherit; font-weight:700; font-size:13px; line-height:1; cursor:pointer; padding:0 8px; }
 .prefs button:hover { color:var(--ink); background:var(--soft); }
 .prefs button[aria-pressed="true"] { color:var(--ink); background:var(--soft); }
 .prefs .sep { width:1px; height:18px; background:var(--line); }
@@ -47,7 +51,7 @@
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }
 body { zoom:var(--zoom, 1); margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
-a { color:var(--plum); }
+a { color:var(--link); }
 .wrap { max-width:1120px; margin:0 auto; padding:0 22px; }
 .grad { background:linear-gradient(100deg, var(--coral), var(--pink) 45%, var(--plum)); -webkit-background-clip:text; background-clip:text; color:transparent; }
 kbd { font:600 13px/1 ui-rounded, -apple-system, sans-serif; padding:4px 7px; border-radius:7px; border:1px solid var(--line); background:var(--card); box-shadow:0 1px 0 var(--line); }
@@ -85,7 +89,7 @@ h1 em { font-style:normal; white-space:nowrap; }
 /* The demo Mac */
 .stage { margin:34px auto 0; max-width:1020px; }
 .tabs { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
-.tab { padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:var(--card); color:var(--muted); font:600 14px/1 inherit; cursor:pointer; transition:all .25s var(--ease); }
+.tab { padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:var(--card); color:var(--muted); font-family:inherit; font-weight:600; font-size:14px; line-height:1; cursor:pointer; transition:all .25s var(--ease); }
 .tab[aria-selected="true"] { color:#fff; background:var(--deep); border-color:var(--deep); }
 .mac { position:relative; aspect-ratio:16/9.6; border-radius:22px; overflow:hidden; box-shadow:0 40px 100px rgba(42,20,48,.35), 0 0 0 1px rgba(0,0,0,.06); background:linear-gradient(135deg,#3A2A6E,#7A2E78 55%,#C2456E); }
 .mac .menubar { position:absolute; inset:0 0 auto; height:5.2%; background:rgba(20,8,24,.35); backdrop-filter:blur(12px); display:flex; align-items:center; padding:0 2%; gap:2.2%; color:#fff; font:600 clamp(9px,1.25vw,13px)/1 -apple-system, sans-serif; z-index:5; }
@@ -128,7 +132,7 @@ h1 em { font-style:normal; white-space:nowrap; }
 
 /* Sections */
 section { padding:96px 0 0; }
-.kicker { font:800 13px/1 inherit; letter-spacing:2px; text-transform:uppercase; color:var(--plum); }
+.kicker { font-family:inherit; font-weight:800; font-size:13px; line-height:1; letter-spacing:2px; text-transform:uppercase; color:var(--link); }
 h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; margin:12px 0 14px; }
 .sub { color:var(--muted); max-width:680px; font-size:19px; margin:0; }
 .center { text-align:center; } .center .sub { margin:0 auto; }
@@ -136,7 +140,7 @@ h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; 
 .reveal.in { opacity:1; transform:none; }
 .steps { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:18px; margin-top:38px; }
 .step { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px; }
-.step .num { font:800 14px/1 inherit; color:var(--plum); }
+.step .num { font-family:inherit; font-weight:800; font-size:14px; line-height:1; color:var(--plum); }
 .step h3 { margin:10px 0 6px; font-size:21px; }
 .step p { margin:0; color:var(--muted); font-size:15px; }
 .step .art { height:90px; margin:-4px -4px 14px; border-radius:14px; background:var(--soft); position:relative; overflow:hidden; }
@@ -168,7 +172,7 @@ h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; 
 
 /* Themes */
 .themes { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:30px; }
-.theme { border:0; cursor:pointer; border-radius:14px; padding:12px 14px; min-width:128px; text-align:left; color:#fff; font:700 13px/1.2 inherit; box-shadow:0 8px 20px rgba(0,0,0,.18); transition:transform .25s var(--ease), outline-color .25s; outline:3px solid transparent; outline-offset:2px; }
+.theme { border:0; cursor:pointer; border-radius:14px; padding:12px 14px; min-width:128px; text-align:left; color:#fff; font-family:inherit; font-weight:700; font-size:13px; line-height:1.2; box-shadow:0 8px 20px rgba(0,0,0,.18); transition:transform .25s var(--ease), outline-color .25s; outline:3px solid transparent; outline-offset:2px; }
 .theme:hover { transform:translateY(-3px); }
 .theme[aria-pressed="true"] { outline-color:var(--plum); }
 .theme .dots { display:flex; gap:4px; margin-bottom:10px; }
@@ -204,7 +208,7 @@ details p { color:var(--muted); margin:10px 0 0; font-size:15px; }
 code.install { display:inline-block; margin-top:16px; background:rgba(0,0,0,.28); color:#fff; padding:10px 14px; border-radius:10px; font-size:13.5px; max-width:100%; overflow-x:auto; white-space:nowrap; }
 footer { padding:56px 0 46px; color:var(--muted); font-size:14px; }
 footer .cols { display:flex; flex-wrap:wrap; gap:40px; justify-content:space-between; }
-footer h4 { color:var(--ink); margin:0 0 10px; font-size:14px; }
+footer h2 { color:var(--ink); margin:0 0 10px; font-size:14px; letter-spacing:0; line-height:1.4; }
 footer ul { list-style:none; padding:0; margin:0; display:grid; gap:6px; }
 footer a { color:var(--muted); text-decoration:none; }
 footer a:hover { color:var(--ink); }
@@ -256,17 +260,24 @@ footer a:hover { color:var(--ink); }
 .platform .os { width:46px; height:46px; border-radius:13px; display:grid; place-items:center; font-size:24px; color:#fff; }
 .platform h3 { margin:4px 0 0; font-size:21px; }
 .platform p { margin:0; color:var(--muted); font-size:15px; line-height:1.5; flex:1; }
-.platform .badge { position:absolute; top:22px; right:20px; padding:5px 11px; border-radius:999px; font:700 12px/1 inherit; letter-spacing:.04em; text-transform:uppercase; }
-.platform .badge.now { background:color-mix(in srgb, var(--w5) 18%, transparent); color:var(--w5); }
-.platform .badge.soon { background:color-mix(in srgb, var(--pink) 14%, transparent); color:var(--pink); }
-.platform a.more { font-weight:700; color:var(--pink); text-decoration:none; font-size:15px; }
+.platform .badge { position:absolute; top:22px; right:20px; padding:5px 11px; border-radius:999px; font-family:inherit; font-weight:700; font-size:12px; line-height:1; letter-spacing:.04em; text-transform:uppercase; }
+.platform .badge.now { background:color-mix(in srgb, var(--w5) 18%, transparent); color:var(--ok); }
+.platform .badge.soon { background:color-mix(in srgb, var(--pink) 14%, transparent); color:var(--link); }
+.platform a.more { font-weight:700; color:var(--link); text-decoration:none; font-size:15px; }
 .platform a.more:hover { text-decoration:underline; }
 
+/* After downloading */
+.afterdl { position:fixed; right:20px; bottom:20px; z-index:70; max-width:360px; background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:18px; padding:18px 20px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+.afterdl ol { margin:10px 0 0; padding-left:20px; }
+.afterdl li { margin:4px 0; }
+.afterdl .x { position:absolute; right:10px; top:10px; border:0; background:transparent; color:var(--muted); font-size:20px; cursor:pointer; }
+@media (max-width:520px) { .afterdl { left:16px; right:16px; max-width:none; } }
+#trust code, #install code { font:13px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--card); padding:1px 5px; border-radius:6px; word-break:break-all; }
 /* Product Hunt welcome */
-.phbar { display:none; position:relative; z-index:60; background:linear-gradient(100deg,#DA552F,#E8743F); color:#fff; text-align:center; padding:10px 44px; font:600 15px/1.4 inherit; }
+.phbar { display:none; position:relative; z-index:60; background:linear-gradient(100deg,#DA552F,#E8743F); color:#fff; text-align:center; padding:10px 44px; font-family:inherit; font-weight:600; font-size:15px; line-height:1.4; }
 .phbar.show { display:block; }
 .phbar a { color:#fff; font-weight:800; }
-.phbar button { position:absolute; right:12px; top:50%; transform:translateY(-50%); border:0; background:rgba(255,255,255,.2); color:#fff; width:26px; height:26px; border-radius:50%; cursor:pointer; font:700 14px/1 inherit; }
+.phbar button { position:absolute; right:12px; top:50%; transform:translateY(-50%); border:0; background:rgba(255,255,255,.2); color:#fff; width:26px; height:26px; border-radius:50%; cursor:pointer; font-family:inherit; font-weight:700; font-size:14px; line-height:1; }
 /* Comparison */
 .compare { max-width:880px; margin:28px auto 0; overflow-x:auto; border-radius:20px; border:1px solid var(--line); background:var(--card); }
 .compare table { width:100%; border-collapse:collapse; font-size:15px; min-width:560px; }
@@ -290,7 +301,7 @@ footer a:hover { color:var(--ink); }
   <div class="wrap">
     <a class="brand" href="#"><img src="assets/icon.png" alt="">Monorail <small>by Ashforde®</small></a>
     <div class="links">
-      <a href="#demo">Demo</a><a href="#how">How it works</a><a href="#docking">Docking</a><a href="#features">Features</a><a href="#compare">Compare</a><a href="#shortcuts">Shortcuts</a><a href="#themes">Themes</a><a href="#faq">FAQ</a>
+      <a href="#demo">Demo</a><a href="#how">How it works</a><a href="#docking">Docking</a><a href="#features">Features</a><a href="#trust">Safety</a><a href="#compare">Compare</a><a href="#shortcuts">Shortcuts</a><a href="#themes">Themes</a><a href="#faq">FAQ</a>
     </div>
     <div class="prefs" role="group" aria-label="Display">
       <button type="button" id="themebtn" title="Theme: follows your system" aria-label="Theme"></button>
@@ -298,21 +309,21 @@ footer a:hover { color:var(--ink); }
       <button type="button" id="smaller" title="Smaller text" aria-label="Smaller text">A−</button>
       <button type="button" id="bigger" title="Larger text" aria-label="Larger text">A+</button>
     </div>
-    <a class="btn primary small" href="https://github.com/ashfordeOU/monorail/releases/latest">Download</a>
+    <a class="btn primary small dl" href="https://github.com/ashfordeOU/monorail/releases/latest">Download</a>
   </div>
 </nav>
 
 <header class="hero">
   <div class="wrap">
-    <a class="eyebrow" href="#docking" style="text-decoration:none"><b>New</b> Drag-to-dock, tab groups and saved views</a>
+    <a class="eyebrow" href="#trust" style="text-decoration:none"><b>New</b> Evening Mode, a safer Stay Awake, and notarised by Apple from 1.7.16</a>
     <h1>Every window rides <em class="grad">one rail.</em></h1>
     <p class="lede">Monorail is a scrolling window manager for your Mac. New windows slide in next to the one you're using, and <b>nothing else ever shrinks</b>. Tell it what you want in plain words.</p>
     <div class="cta">
       <a class="btn primary dl" href="https://github.com/ashfordeOU/monorail/releases/latest"> Download for Mac</a>
       <a class="btn ghost" href="#demo">Try it here ↓</a>
     </div>
-    <p class="hint" id="dlmeta" style="margin:-4px 0 10px">macOS 13 or later · Apple silicon and Intel</p>
-    <div class="trust"><span>Free</span><span>No account</span><span>macOS 13 or later</span><span>Apple silicon and Intel</span></div>
+    <p class="hint" id="dlmeta" style="margin:-4px 0 10px">macOS 13 or later</p>
+    <div class="trust"><span class="notarised" hidden>Notarised by Apple</span><span>Free, every feature</span><span>No account</span><span>Apple silicon and Intel</span></div>
 
     <div class="stage" id="demo">
       <div class="tabs" role="tablist" aria-label="Demo">
@@ -322,7 +333,7 @@ footer a:hover { color:var(--ink); }
         <button class="tab" role="tab" data-step="3" aria-selected="false">Say it</button>
         <button class="tab" role="tab" data-step="4" aria-selected="false">Focus</button>
       </div>
-      <div class="mac" aria-label="A Mac running Monorail">
+      <div class="mac" role="img" aria-label="A Mac running Monorail">
         <div class="menubar"><span></span><span>Finder</span><span style="opacity:.75">File</span><span style="opacity:.75">Edit</span><span style="opacity:.75">View</span>
           <div class="right"><span class="pips" id="pips"></span><span>☕</span><span id="clock">9:41</span></div></div>
         <div class="screen"><div class="track" id="track"></div></div>
@@ -357,7 +368,7 @@ footer a:hover { color:var(--ink); }
           <div class="area" id="dockarea"></div>
           <div class="shelf" id="dockshelf"><span style="flex:0 0 auto">Floating</span></div>
           <div class="dpreview" id="dpreview"></div>
-          <svg class="dcursor" id="dcursor" viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.5-3.4-7.3L4 18z" fill="#fff" stroke="#24112B" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          <svg class="dcursor" id="dcursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.5-3.4-7.3L4 18z" fill="#fff" stroke="#24112B" stroke-width="1.4" stroke-linejoin="round"/></svg>
         </div>
         <div class="dockbar">
           <button class="btn primary" id="dockplay" type="button">▶ Show me</button>
@@ -376,24 +387,25 @@ footer a:hover { color:var(--ink); }
 
   <section id="features" class="reveal">
     <div class="center"><div class="kicker">Features</div><h2>Calm to use, <span class="grad">powerful</span> when you need it</h2>
-    <p class="sub">Over 250 actions, all in the command palette and all free. Here are the ones people love first.</p></div>
+    <p class="sub">270 actions, every one in the command palette and all free. Here are the ones to try first.</p></div>
     <div class="grid">
       <div class="feature"><div class="ic">🗣️</div><h3>Say it <kbd>⌃⌥/</kbd></h3><p>“Slack and Mail side by side on 3.” “Safari two thirds.” “How do I keep my Mac awake?” Understood on your Mac.</p></div>
       <div class="feature"><div class="ic">🧩</div><h3>Smart slides</h3><p>Windows of one app share a slide. Pair any two, in grids, main + side, tabs or tall slides.</p></div>
       <div class="feature"><div class="ic">🗺️</div><h3>Overview <kbd>⌃⌥O</kbd></h3><p>Every workspace on one colourful canvas. Drag to pair, reorder, move or close.</p></div>
-      <div class="feature"><div class="ic">☕</div><h3>Stay Awake</h3><p>For an hour, while downloading, or by itself when a trigger applies. Even with the lid closed, safely: it stops if the Mac gets hot or runs on battery.</p></div>
-      <div class="feature"><div class="ic">🌙</div><h3>Evening Mode</h3><p>Less blue light at night, as warm as you like with a slider. On by hand or every evening, fading in gently.</p></div>
+      <div class="feature"><div class="ic">☕</div><h3>Stay Awake</h3><p>For an hour, until a time, while something downloads or while an app is open. The download version also keeps a MacBook running with the lid closed: only while plugged in unless you choose otherwise, and it stops if the Mac gets hot.</p></div>
+      <div class="feature"><div class="ic">🌙</div><h3>Evening Mode</h3><p>Less blue light from every display, as warm as you like. Turn it on by hand or on a schedule; it fades in over 20 minutes.</p></div>
       <div class="feature"><div class="ic">🤖</div><h3>AI agent alerts</h3><p>A chime when Claude Code or Codex waits for approval. Assistants can drive Monorail over MCP.</p></div>
       <div class="feature"><div class="ic">🛡️</div><h3>Safe screen sharing</h3><p>Private windows step aside the moment you share in Zoom, Teams or Meet.</p></div>
-      <div class="feature"><div class="ic">🎯</div><h3>Focus and deep work <kbd>⌃⌥B</kbd></h3><p>Dim everything but your slide, hide distracting apps, pomodoro in the menu bar.</p></div>
+      <div class="feature"><div class="ic">🎯</div><h3>Focus and deep work <kbd>⌃⌥B</kbd></h3><p>Dim everything but your slide, hide distracting apps, and work in pomodoro blocks.</p></div>
       <div class="feature"><div class="ic">🖥️</div><h3>Displays that remember</h3><p>Unplug and replug: every window goes back where it was. A layout for each desk.</p></div>
       <div class="feature"><div class="ic">⌨️</div><h3>No chords needed</h3><p>Tap right ⌥ for slide mode, or use Vim keys, a MIDI pad, a game controller or your phone.</p></div>
-      <div class="feature"><div class="ic">🪟</div><h3>Dock anything, nest anywhere</h3><p>Drag a window onto another's edge to dock it beside, or onto its middle for a tab group, any apps, as deep as you like. Drag the gap to resize both.</p></div>
+      <div class="feature"><div class="ic">🪟</div><h3>Dock anything, nest anywhere</h3><p>Split a slide by dragging, group windows from different apps into tabs, and resize two windows at once from the gap between them.</p></div>
       <div class="feature"><div class="ic">📍</div><h3>Saved views <kbd>⌃⌥⌘1</kbd></h3><p>Nine places per display to jump back to, plus back and forward through where you've been, like a browser.</p></div>
       <div class="feature"><div class="ic">📐</div><h3>Draw your own layouts</h3><p>The zone editor splits a slide any way you like. Use it on any slide from its menu.</p></div>
       <div class="feature"><div class="ic">📦</div><h3>Switch in a minute</h3><p>Imports your shortcuts, gaps and app rules from AeroSpace, yabai and skhd, or Rectangle.</p></div>
       <div class="feature"><div class="ic">🏷️</div><h3>Tags</h3><p>Keep a window on the workspaces you choose, or show another workspace alongside this one.</p></div>
       <div class="feature"><div class="ic">🔌</div><h3>Built to be scripted</h3><p>monorail:// links, a CLI with a live event stream, a local API, MCP for AI assistants, and shareable layout links.</p></div>
+      <div class="feature"><div class="ic">🤝</div><h3>Works with Keeper</h3><p>Monorail leaves the panels of Keeper, Ashforde's Mac suite, alone and shares one Stay Awake with it. <a href="keeper/">How they work together</a>.</p></div>
     </div>
   </section>
 
@@ -411,7 +423,7 @@ footer a:hover { color:var(--ink); }
         <tr><td>Workspaces</td><td><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>1</kbd>…<kbd>9</kbd></td></tr>
         <tr><td>Undo</td><td><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>Z</kbd></td></tr>
       </table>
-      <p style="margin:14px 0 0;font-size:14px;color:var(--muted)">All 226 actions: <a href="https://github.com/ashfordeOU/monorail/blob/main/docs/ACTIONS.md">the full list</a>.</p></div>
+      <p style="margin:14px 0 0;font-size:14px;color:var(--muted)">All 270 actions: <a href="https://github.com/ashfordeOU/monorail/blob/main/docs/ACTIONS.md">the full list</a>.</p></div>
       <div class="checklist"><h3>Practice pad</h3><ul id="practice">
         <li data-k="left"><span class="tick">✓</span>Slide left: ⌃⌥←</li>
         <li data-k="right"><span class="tick">✓</span>Slide right: ⌃⌥→</li>
@@ -441,13 +453,36 @@ footer a:hover { color:var(--ink); }
     </div>
   </section>
 
+  <section id="trust" class="reveal">
+    <div class="center"><div class="kicker">Safe to install</div><h2>Signed, notarised and <span class="grad">built in public</span></h2>
+    <p class="sub">Monorail opens without warnings, and you can check every claim on this page yourself.</p></div>
+    <div class="privacy">
+      <div><b>Notarised by Apple</b><p>From version 1.7.16, every release is checked by Apple's notary service and carries Apple's ticket, so macOS opens it without the "can't verify the developer" warning.</p></div>
+      <div><b>Signed by Ashforde OÜ</b><p>Signed with Ashforde's Apple Developer ID (Team D69G45342Y), and updates install only if they carry the same signature.</p></div>
+      <div><b>Source on GitHub, tested on every change</b><p>Every line is public under the Functional Source License. Every change is tested on macOS, Windows and Linux, and every release is built from that source by GitHub Actions, not on someone's laptop.</p></div>
+      <div><b>Check your download</b><p>Each release lists SHA-256 checksums in SHA256SUMS: compare them with <code>shasum -a 256 Monorail-*.dmg</code>. <code>spctl -a -vvv -t open --context context:primary-signature Monorail-*.dmg</code> should say "Notarized Developer ID".</p></div>
+    </div>
+    <p class="hint">Made by Ashforde OÜ, a company in the European Union. <a href="support/">Support</a> · <a href="privacy/">Privacy</a> · <a href="https://github.com/ashfordeOU/monorail/security/policy">Security</a></p>
+  </section>
+
+  <section id="install" class="center reveal">
+    <div class="kicker">Other ways to install</div>
+    <h2>However you like to install apps</h2>
+    <div class="privacy" style="text-align:left">
+      <div><b>Homebrew</b><p><code>brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail &amp;&amp; brew install --cask monorail</code><br>After that, Monorail updates itself.</p></div>
+      <div><b>Terminal</b><p>Downloads the latest release into Applications.<br><code>curl -fsSL https://raw.githubusercontent.com/ashfordeOU/monorail/main/scripts/install.sh | bash</code></p></div>
+      <div><b>For IT and MDM</b><p>A signed, notarised <a class="pkg" href="https://github.com/ashfordeOU/monorail/releases/latest">.pkg</a> for Jamf, Kandji, Mosyle, Intune and Munki, an Installomator label, and every setting manageable with a configuration profile.</p></div>
+      <div><b>Every version</b><p>All releases, release notes and checksums are on <a href="https://github.com/ashfordeOU/monorail/releases">GitHub Releases</a>.</p></div>
+    </div>
+  </section>
+
   <section class="reveal">
     <div class="center"><div class="kicker">Privacy</div><h2>Your windows stay yours</h2></div>
     <div class="privacy">
-      <div><b>No account. Nothing personal.</b><p>Your windows, titles and apps never leave your Mac. Monorail sends only anonymous daily counts (version, Mac model, features on), and you can turn that off.</p></div>
+      <div><b>No account. Nothing personal.</b><p>Window titles, contents and files never leave your Mac. Besides update checks and a list of app quirks, Monorail sends only anonymous daily counts (versions, Mac model, features on), and you can turn those off. <a href="privacy/">Exactly what's sent</a>.</p></div>
       <div><b>One permission.</b><p>Accessibility, so it can arrange windows. Others only when you turn a feature on.</p></div>
-      <div><b>Smart, on device.</b><p>Sentences, predictions and suggestions run locally. No cloud AI.</p></div>
-      <div><b>Source on GitHub.</b><p>Every line is public under the Functional Source License. Read it, build it, check what it does.</p></div>
+      <div><b>Smart, on device.</b><p>Sentences, predictions and suggestions run on your Mac. The optional assistant uses Claude only if you add your own API key.</p></div>
+      <div><b>Crash reports stay put.</b><p>Crash and hang reports stay on your Mac. Nothing is sent unless you choose to send it.</p></div>
     </div>
   </section>
 
@@ -466,7 +501,7 @@ footer a:hover { color:var(--ink); }
     <h2>On the Mac today. <span class="grad">Windows and Linux are coming.</span></h2>
     <p class="sub">The same strip, the same docking and the same shortcuts, made natively for each system.</p>
     <div class="platforms">
-      <div class="platform"><span class="badge now">Available</span><div class="os" style="background:linear-gradient(135deg,#5B5B66,#24242B)">⌘</div><h3>macOS</h3><p>macOS 13 or later, on Apple silicon and Intel. Free, with every feature.</p><a class="more" href="https://github.com/ashfordeOU/monorail/releases/latest">Download for Mac →</a></div>
+      <div class="platform"><span class="badge now">Available</span><div class="os" style="background:linear-gradient(135deg,#5B5B66,#24242B)">⌘</div><h3>macOS</h3><p>macOS 13 or later, on Apple silicon and Intel. Free, with every feature.</p><a class="more dl" href="https://github.com/ashfordeOU/monorail/releases/latest">Download for Mac →</a></div>
       <div class="platform"><span class="badge soon">Coming soon</span><div class="os" style="background:linear-gradient(135deg,#2F8CFF,#1B5FD6)">⊞</div><h3>Windows</h3><p>For Windows 11 and 10: one strip across your screens, drag-to-dock, saved views and the command palette.</p><a class="more" href="https://github.com/ashfordeOU/monorail/issues/new?title=I%27d%20like%20Monorail%20for%20Windows&amp;labels=windows">I want it on Windows →</a></div>
       <div class="platform"><span class="badge soon">Coming soon</span><div class="os" style="background:linear-gradient(135deg,#F5B700,#E07A00)">🐧</div><h3>Linux</h3><p>For GNOME and KDE on Wayland and X11, with the same keyboard-first design.</p><a class="more" href="https://github.com/ashfordeOU/monorail/issues/new?title=I%27d%20like%20Monorail%20for%20Linux&amp;labels=linux">I want it on Linux →</a></div>
     </div>
@@ -476,16 +511,15 @@ footer a:hover { color:var(--ink); }
   <section id="faq" class="reveal">
     <div class="center"><div class="kicker">FAQ</div><h2>Good questions</h2></div>
     <div class="faq">
-      <details><summary>Is it really free?</summary><p>Yes. No trial, no subscription. The source is on GitHub under the Functional Source License.</p></details>
-      <details><summary>Is it safe to install?</summary><p>Yes. Every release is signed with Ashforde's Apple Developer ID and notarised by Apple, so macOS opens it without warnings. It's built in public on GitHub from the source you can read, checked by CI on every change, and every download has a published SHA-256 checksum.</p></details>
-      <details><summary>Will it fight my other window tools?</summary><p>Turn off other tilers' snapping and Stage Manager; Settings → General → Mac setup checks for you.</p></details>
+      <details><summary>Is it really free?</summary><p>Yes. Every feature, including docking, tab groups, saved views, scripting and every display, with no trial, subscription or window limits. The source is on GitHub under the Functional Source License.</p></details>
+      <details><summary>Is it safe to install?</summary><p>Yes. From 1.7.16, every release is signed with Ashforde's Apple Developer ID and notarised by Apple, so macOS opens it without warnings. <a href="#trust">Safe to install</a> shows how to check a download yourself.</p></details>
+      <details><summary>Will it fight my other window tools?</summary><p>It can, so quit other window managers and turn off Stage Manager. Settings → General → Mac setup checks for both.</p></details>
       <details><summary>What happens to my windows if I quit?</summary><p>Every window comes back on screen. Next time Monorail starts, your layout returns.</p></details>
       <details><summary>Does it work with multiple displays, projectors and Sidecar?</summary><p>Yes: each display gets its own strip, an unplugged display's windows come back when you reconnect, and Sidecar iPads fit every slide.</p></details>
       <details><summary>Which languages?</summary><p>English, German, French, Spanish, Japanese, Chinese (Simplified), Portuguese, Korean and Italian.</p></details>
       <details><summary>I use AeroSpace, yabai or Rectangle. Can I bring my setup?</summary><p>Yes. Settings → Basics → Import Settings… brings over your shortcuts, gaps, floating apps and workspace rules.</p></details>
-      <details><summary>Is there a Windows or Linux version?</summary><p>Not yet. Both are on the way, with the same strip, docking and shortcuts. Tell us which you'd use from the section above, and watch the repository to hear when they're ready.</p></details>
-      <details><summary>Is anything behind a paywall?</summary><p>No. Docking, nesting, tab groups, saved views, URL commands and every display are free, with no window limits.</p></details>
-      <details><summary>Can I script it?</summary><p>monorail:// links, a command-line tool, a local API, an MCP server for AI assistants, AppleScript and JavaScript scripts with a gallery.</p></details>
+      <details><summary>Is there a Windows or Linux version?</summary><p>Not yet. Both are on the way: <a href="#platforms">tell us which you'd use</a>, and watch the repository to hear when they're ready.</p></details>
+      <details><summary>Can I script it?</summary><p>Yes: monorail:// links, the monorail command-line tool, a local API, an MCP server for AI assistants, and AppleScript or JavaScript, with a gallery of scripts to start from.</p></details>
     </div>
     <div class="center" style="margin-top:34px">
       <div class="kicker">Still curious?</div>
@@ -506,7 +540,7 @@ footer a:hover { color:var(--ink); }
       <a class="btn ghost" href="https://github.com/ashfordeOU/monorail">Star on GitHub</a>
     </div>
     <code class="install">brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail &amp;&amp; brew install --cask monorail</code>
-    <div class="trust" style="margin-top:16px"><span>Free</span><span>No account</span><span>macOS 13+</span></div>
+    <div class="trust" style="margin-top:16px"><span class="notarised" hidden>Notarised by Apple</span><span>Free</span><span>No account</span><span>macOS 13+</span></div>
   </div>
 </main>
 
@@ -516,9 +550,9 @@ footer a:hover { color:var(--ink); }
       <a class="brand" href="#" style="display:flex;align-items:center;gap:10px;font-weight:700;color:var(--ink);text-decoration:none"><img src="assets/icon.png" alt="" width="28" height="28" style="border-radius:7px">Monorail by Ashforde®</a>
       <p>© Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ. Source-available under the Functional Source License (FSL-1.1-ALv2). The Monorail name and icon are trademarks of Ashforde OÜ.</p>
     </div>
-    <div><h4>Product</h4><ul><li><a href="https://github.com/ashfordeOU/monorail/releases/latest">Download</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/CHANGELOG.md">What's new</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/docs/ACTIONS.md">All actions</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/docs/SETTINGS.md">All settings</a></li><li><a href="stats/">Downloads</a></li><li><a href="press/">Press kit</a></li><li><a href="keeper/">Monorail + Keeper</a></li><li><a href="support/">Support</a></li><li><a href="privacy/">Privacy</a></li></ul></div>
-    <div><h4>Help</h4><ul><li><a href="https://github.com/ashfordeOU/monorail#readme">Documentation</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/docs/TESTING.md">Testing guide</a></li><li><a href="https://github.com/ashfordeOU/monorail/issues">Report an issue</a></li></ul></div>
-    <div><h4>Source</h4><ul><li><a href="https://github.com/ashfordeOU/monorail">GitHub</a></li><li><a href="https://github.com/ashfordeOU/monorail/tree/main/extensions">Extensions</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/LICENSE">License</a></li></ul></div>
+    <div><h2>Product</h2><ul><li><a class="dl" href="https://github.com/ashfordeOU/monorail/releases/latest">Download</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/CHANGELOG.md">What's new</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/docs/ACTIONS.md">All actions</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/docs/SETTINGS.md">All settings</a></li><li><a href="stats/">Downloads</a></li><li><a href="press/">Press kit</a></li><li><a href="keeper/">Monorail + Keeper</a></li></ul></div>
+    <div><h2>Help</h2><ul><li><a href="support/">Support</a></li><li><a href="privacy/">Privacy</a></li><li><a href="https://github.com/ashfordeOU/monorail/security/policy">Security</a></li><li><a href="https://github.com/ashfordeOU/monorail#readme">Documentation</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/docs/TESTING.md">Testing guide</a></li><li><a href="https://github.com/ashfordeOU/monorail/issues">Report an issue</a></li></ul></div>
+    <div><h2>Source</h2><ul><li><a href="https://github.com/ashfordeOU/monorail">GitHub</a></li><li><a href="https://github.com/ashfordeOU/monorail/tree/main/extensions">Extensions</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/LICENSE">Licence</a></li></ul></div>
   </div>
 </footer>
 
@@ -658,10 +692,10 @@ footer a:hover { color:var(--ink); }
     ['Nord', ['#88C0D0', '#81A1C1', '#5E81AC', '#8FBCBB', '#A3BE8C'], ['#2E3440', '#434C5E']],
     ['Dracula', ['#BD93F9', '#FF79C6', '#8BE9FD', '#50FA7B', '#FFB86C'], ['#21222C', '#343746']],
     ['Rosé Pine', ['#EBBCBA', '#C4A7E7', '#9CCFD8', '#31748F', '#F6C177'], ['#191724', '#26233A']],
-    ['Autumn', ['#D9480F', '#E67700', '#F59F00', '#A0522D', '#C2410C'], ['#2A1408', '#3A1C0C']],
-    ['Winter', ['#E3F2FD', '#BBDEFB', '#90CAF9', '#CFD8DC', '#B3E5FC'], ['#0D1B2A', '#1B263B']],
+    ['Autumn Leaves', ['#D9480F', '#E67700', '#F59F00', '#A0522D', '#C2410C'], ['#2A1408', '#3A1C0C']],
+    ['Winter Frost', ['#E3F2FD', '#BBDEFB', '#90CAF9', '#CFD8DC', '#B3E5FC'], ['#0D1B2A', '#1B263B']],
     ['Synthwave', ['#FF2E97', '#00F0FF', '#FFB800', '#9D4EDD', '#FF6EC7'], ['#12002B', '#2D0B4E']],
-    ['Phosphor', ['#33FF66', '#22CC55', '#66FF99', '#19A347', '#99FFBB'], ['#010A03', '#03140A']],
+    ['Phosphor Terminal', ['#33FF66', '#22CC55', '#66FF99', '#19A347', '#99FFBB'], ['#010A03', '#03140A']],
     ['Ink & Paper', ['#1F1F1F', '#5C5C5C', '#8C1C13', '#2E4057', '#6B4E2E'], ['#EFE9DD', '#E8E0D0']],
     ['Nebula', ['#7B2FF7', '#F107A3', '#00C2FF', '#FF7AF5', '#4D96FF'], ['#070214', '#140533']],
   ];
@@ -673,7 +707,7 @@ footer a:hover { color:var(--ink); }
     picker.querySelectorAll('.theme').forEach((b, j) => b.setAttribute('aria-pressed', j === i));
   }
   themes.forEach(([name, colors, g], i) => {
-    const b = document.createElement('button'); b.className = 'theme';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'theme';
     b.style.background = `linear-gradient(135deg, ${g[0]}, ${g[1]})`; if (name === 'Ink & Paper') b.style.color = '#24112B';
     b.innerHTML = `<div class="dots">${colors.map(c => `<i style="background:${c}"></i>`).join('')}</div>${name}`;
     b.addEventListener('click', () => pick(i)); picker.appendChild(b);
@@ -717,7 +751,7 @@ footer a:hover { color:var(--ink); }
   const store = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
   function apply(mode) {
     if (mode === 'auto') delete root.dataset.theme; else root.dataset.theme = mode;
-    btn.innerHTML = icons[mode]; btn.title = 'Theme: ' + names[mode]; btn.setAttribute('aria-pressed', mode !== 'auto');
+    btn.innerHTML = icons[mode]; btn.title = 'Theme: ' + names[mode]; btn.setAttribute('aria-label', btn.title);
     const dark = mode === 'dark' || (mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
     document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', dark ? '#120914' : '#FFF8F3'));
   }
@@ -983,17 +1017,44 @@ footer a:hover { color:var(--ink); }
 })();
 </script>
 
+<div class="afterdl" id="afterdl" role="dialog" aria-label="Next steps" hidden>
+  <button type="button" class="x" id="afterdlclose" aria-label="Close">×</button>
+  <b>Thanks for downloading Monorail</b>
+  <ol><li>Open <span id="afterdlname">the Monorail DMG</span> from your Downloads.</li><li>Drag <b>Monorail</b> onto <b>Applications</b>.</li><li>Open Monorail and allow <b>Accessibility</b> when asked. The welcome tour does the rest.</li></ol>
+  <p class="hint" style="text-align:left;margin:6px 0 0">Didn't start? <a id="afterdlretry" href="https://github.com/ashfordeOU/monorail/releases/latest">Download again</a></p>
+</div>
 <script>
 (() => {
-  // Download buttons go straight to the latest DMG, with its version and size.
+  // Every download button gets the latest DMG straight from GitHub (falling back to the releases page),
+  // with its version, size and date; the IT link gets the pkg.
   fetch('https://api.github.com/repos/ashfordeOU/monorail/releases/latest').then(r => r.ok ? r.json() : null).then(release => {
     if (!release) return;
-    const dmg = (release.assets || []).find(a => /\.dmg$/i.test(a.name)); if (!dmg) return;
+    const assets = release.assets || [];
+    const dmg = assets.find(a => /^Monorail.*\.dmg$/i.test(a.name)) || assets.find(a => /\.dmg$/i.test(a.name));
+    const pkg = assets.find(a => /\.pkg$/i.test(a.name));
+    if (!dmg) return;
     const version = String(release.tag_name || '').replace(/^v/, ''), mb = (dmg.size / 1048576).toFixed(1);
-    document.querySelectorAll('a.dl').forEach(a => { a.href = dmg.browser_download_url; a.title = `Monorail ${version} · ${mb} MB · macOS 13 or later`; });
-    const meta = document.getElementById('dlmeta'); if (meta) meta.textContent = `Version ${version} · ${mb} MB · macOS 13 or later`;
+    // "Notarised by Apple" shows once the latest release is a notarised one (1.7.16 and later).
+    const [ma, mi, pa] = version.split('.').map(n => parseInt(n, 10) || 0);
+    if (ma > 1 || (ma === 1 && (mi > 7 || (mi === 7 && pa >= 16)))) document.querySelectorAll('.notarised').forEach(el => { el.hidden = false; });
+    const date = new Date(release.published_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+    document.querySelectorAll('a.dl').forEach(a => { a.href = dmg.browser_download_url; a.title = `Monorail ${version} · ${mb} MB · macOS 13 or later`; a.dataset.name = dmg.name; });
+    if (pkg) document.querySelectorAll('a.pkg').forEach(a => { a.href = pkg.browser_download_url; });
+    const retry = document.getElementById('afterdlretry'); if (retry) retry.href = dmg.browser_download_url;
+    const meta = document.getElementById('dlmeta'); if (meta) meta.textContent = `Version ${version} · ${mb} MB · ${date} · macOS 13 or later`;
   }).catch(() => {});
+  // After a click: what to do next.
+  const panel = document.getElementById('afterdl');
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a.dl'); if (!a || !/\.dmg$/i.test(a.href)) return;
+    document.getElementById('afterdlname').textContent = a.dataset.name || 'the Monorail DMG';
+    panel.hidden = false;
+  });
+  document.getElementById('afterdlclose').addEventListener('click', () => { panel.hidden = true; });
 })();
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Monorail by Ashforde","applicationCategory":"UtilitiesApplication","operatingSystem":"macOS 13 or later","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"url":"https://monorail.ashforde.org/","downloadUrl":"https://github.com/ashfordeOU/monorail/releases/latest","image":"https://monorail.ashforde.org/assets/icon.png","description":"A scrolling window manager for Mac: new windows slide in beside the one you're using, and nothing else ever shrinks.","publisher":{"@type":"Organization","name":"Ashforde OÜ","url":"https://ashforde.org"}}
 </script>
 </body>
 </html>

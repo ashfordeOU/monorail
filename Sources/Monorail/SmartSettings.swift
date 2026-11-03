@@ -133,7 +133,7 @@ extension ProblemReport {
         let keys: [URLResourceKey] = [.contentModificationDateKey]
         let recent = Date().addingTimeInterval(-7 * 86_400)
         let reports = ((try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: keys)) ?? [])
-            .filter { ["Monorail", "MacSlider"].contains { name in $0.lastPathComponent.hasPrefix(name) } && $0.pathExtension == "ips" }
+            .filter { url in url.pathExtension == "ips" && ["Monorail", "MacSlider"].contains { url.lastPathComponent.hasPrefix($0) } }
             .compactMap { url -> (URL, Date)? in
                 guard let date = try? url.resourceValues(forKeys: Set(keys)).contentModificationDate, date > recent else { return nil }
                 return (url, date)

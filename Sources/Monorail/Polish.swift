@@ -92,7 +92,7 @@ final class WhatsNew {
     }
 }
 
-private struct WhatsNewView: View {
+struct WhatsNewView: View {
     let version: String
     let lines: [String]
     @ObservedObject var store: SettingsStore

@@ -35,7 +35,7 @@ Monorail is native Swift, free with no paid tier, and its source is on GitHub.
 - **Dock anything:** drag a window onto another's edge to split, or its middle to tab, across apps.
 - **Saved views** (⌃⌥⌘1–9) with back and forward through where you've been.
 - **Say it:** a command palette that understands sentences, processed on the Mac.
-- **AI agent alerts:** a chime when Claude Code or Codex needs you.
+- **AI agent alerts:** a chime when your AI coding assistant needs you.
 - **Switch in a minute:** imports AeroSpace, yabai/skhd and Rectangle configurations.
 - **27 themes**, safe screen sharing, presentation tools and a scripting API.
 

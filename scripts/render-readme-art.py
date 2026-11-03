@@ -499,7 +499,7 @@ def smart():
     ax, ay = 770, 80
     parts.append(f'<rect x="{ax}" y="{ay}" width="440" height="250" rx="16" fill="#1B1330" filter="url(#shadow)"/>')
     parts.append(f'<circle cx="{ax + 22}" cy="{ay + 22}" r="6" fill="#FF5F57"/><circle cx="{ax + 42}" cy="{ay + 22}" r="6" fill="#FEBC2E"/><circle cx="{ax + 62}" cy="{ay + 22}" r="6" fill="#28C840"/>')
-    parts.append(f'<text x="{ax + 90}" y="{ay + 27}" font-family="{FONT}" font-size="13" fill="#fff" opacity="0.7">✳ Claude Code — needs approval</text>')
+    parts.append(f'<text x="{ax + 90}" y="{ay + 27}" font-family="{FONT}" font-size="13" fill="#fff" opacity="0.7">✳ AI assistant — needs approval</text>')
     for i, line in enumerate(["› Edit Sources/Engine.swift", "  + 42 lines, − 7 lines", "", "Do you want to make this edit?", "❯ 1. Yes   2. No"]):
         parts.append(f'<text x="{ax + 24}" y="{ay + 70 + i * 26}" font-family="Menlo, monospace" font-size="14" fill="#E9E3FF">{line}</text>')
     parts.append(f'<rect x="{ax + 10}" y="{ay + 280}" width="420" height="52" rx="26" fill="{DEEP}" opacity="0.92"/>')
@@ -512,7 +512,7 @@ def new_in_12():
     W, H = 1280, 812
     items = [("Say it", "“Safari two thirds” in the palette or by voice", WS[0]),
              ("Intent workspaces", "“Write the Q3 report” opens your setup", WS[1]),
-             ("AI agent alerts", "Know when Claude Code or Codex is waiting", WS[2]),
+             ("AI agent alerts", "Know when your AI coding assistant is waiting", WS[2]),
              ("Learns your habits", "Stages the next window, suggests rules", WS[3]),
              ("Tall slides", "Windows full height, scroll up and down", WS[4]),
              ("Elastic focus", "The slide you’re in grows, others give way", "#33CCDB"),

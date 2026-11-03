@@ -55,7 +55,7 @@ Status: ✅ shipped · 🧪 beta · 🗓 planned · — not applicable
 
 | Feature | Kind | Mac | Windows | Linux (GNOME) | Linux (KDE) |
 |---|---|:---:|:---:|:---:|:---:|
-| AI agent alerts (Claude Code, Codex…) | Shared | ✅ | 🗓 | 🗓 | 🗓 |
+| AI agent alerts (terminal AI coding assistants) | Shared | ✅ | 🗓 | 🗓 | 🗓 |
 | Safe screen sharing (private windows step aside) | Adapted | ✅ | 🗓 | 🗓 | 🗓 |
 | Focus mode, deep work, pomodoro | Shared | ✅ | 🗓 | 🗓 | 🗓 |
 | Rule and float suggestions | Shared | ✅ | 🗓 | 🗓 | 🗓 |

@@ -423,6 +423,8 @@ private struct LayoutPane: View {
                 Toggle("Drag the gap between two windows to resize both", isOn: $store.settings.gapHandles)
                 Toggle("After resizing a window in a slide, offer to rearrange it", isOn: $store.settings.resizeAssist)
                 Toggle("Group windows into slides by app", isOn: $store.settings.groupByApp)
+                Toggle("Keep terminals together (Terminal, iTerm, Ghostty and others share slides)", isOn: $store.settings.groupTerminals)
+                    .disabled(!store.settings.groupByApp)
                 Toggle("Pair lone windows of different apps as they open", isOn: $store.settings.pairLoneWindowsOnOpen)
                     .disabled(!store.settings.groupByApp)
                 Stepper(value: $store.settings.tilesPerSlide, in: 1...Column.maximumWindows) {

@@ -840,10 +840,10 @@ final class Engine {
                 position: position, focus: focus)
         } else if settings.groupByApp {
             let decision = Grouping.decide(
-                newApp: Self.appKey(window),
+                newApp: groupKey(window),
                 strip: strip,
-                app: { [weak self] id in self?.windows[id].map(Self.appKey) },
-                capacity: { [weak self] app in self?.settings.tiles(for: app) ?? 2 },
+                app: { [weak self] id in self.flatMap { me in me.windows[id].map(me.groupKey) } },
+                capacity: { [weak self] app in self?.settings.tiles(forGroup: app) ?? 2 },
                 pairSize: settings.tilesPerSlide,
                 pairLoneWindows: settings.pairLoneWindowsOnOpen
             )
@@ -906,13 +906,18 @@ final class Engine {
         window.bundleID ?? window.appName
     }
 
+    /// What windows are grouped into slides by: the app, or "terminals" for every terminal app.
+    private func groupKey(_ window: ManagedWindow) -> String {
+        settings.groupKey(for: window.bundleID, appName: window.appName)
+    }
+
     /// Regroups `strip` by app: same-app windows share slides, lone windows pair up.
     private func smartPairs(_ strip: Strip) -> Strip {
         var strip = strip
         let groups = Grouping.plan(
             strip.columns.filter { $0.pin == nil && !$0.isLocked }.flatMap(\.windows),
-            app: { [weak self] id in self?.windows[id].map(Self.appKey) ?? "" },
-            capacity: { [weak self] app in self?.settings.tiles(for: app) ?? 2 },
+            app: { [weak self] id in self.flatMap { me in me.windows[id].map(me.groupKey) } ?? "" },
+            capacity: { [weak self] app in self?.settings.tiles(forGroup: app) ?? 2 },
             pairSize: settings.tilesPerSlide
         )
         strip.regroup(groups, width: 1) { [weak self] group in

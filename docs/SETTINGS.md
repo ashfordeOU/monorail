@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-209 settings.
+210 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -167,6 +167,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `notchHUD` | Show slides and workspaces around the MacBook notch as you move. | `false` |
 | `soundPack` | The sounds Monorail plays. | `.classic` |
 | `crashReports` | Keep crash and hang reports on this Mac so you can send them. | `false` |
+| `askAfterCrash` | After Monorail quits unexpectedly, ask (once per version) what happened. | `true` |
 | `confirmDestructiveAPI` | Ask before an assistant or script closes windows. | `true` |
 | `parkInCorner` | Slides off screen wait hidden in the corner (no slivers at the screen edges). | `true` |
 | `wholeSlidesOnly` | Hide slides that only partly fit on screen, instead of showing them cut off at the edge. | `true` |

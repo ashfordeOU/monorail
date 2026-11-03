@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 209,
+  "count": 210,
   "settings": [
     {
       "key": "layout",
@@ -949,6 +949,12 @@
       "type": "Bool",
       "default": "false",
       "about": "Keep crash and hang reports on this Mac so you can send them."
+    },
+    {
+      "key": "askAfterCrash",
+      "type": "Bool",
+      "default": "true",
+      "about": "After Monorail quits unexpectedly, ask (once per version) what happened."
     },
     {
       "key": "confirmDestructiveAPI",

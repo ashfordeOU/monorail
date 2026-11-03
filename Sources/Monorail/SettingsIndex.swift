@@ -220,6 +220,7 @@ enum SettingsIndex {
         ("Share anonymous usage counts", "devices"),
         ("What's Sent…", "devices"),
         ("Keep crash and hang reports on this Mac", "devices"),
+        ("After an unexpected quit, ask what happened", "devices"),
         ("Report a Problem…", "devices"),
         ("Evening Mode on now", "evening"),
         ("Warmth", "evening"),

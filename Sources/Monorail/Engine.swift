@@ -188,6 +188,9 @@ final class Engine {
 
     // MARK: - Lifecycle
 
+    /// Monorail didn't quit cleanly the last time it ran (a crash, a force quit or a freeze).
+    private(set) var crashedLastRun = false
+
     func start() {
         guard !isRunning else { return }
         isRunning = true
@@ -203,6 +206,7 @@ final class Engine {
         Self.fetchQuirks()
         // Monorail didn't quit cleanly last time: windows may be waiting off screen.
         let crashed = FileManager.default.fileExists(atPath: Self.runningURL.path)
+        crashedLastRun = crashed
         FileManager.default.createFile(atPath: Self.runningURL.path, contents: Data())
         if crashed, settings.rescueAfterCrash {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in

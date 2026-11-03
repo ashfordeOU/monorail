@@ -163,6 +163,7 @@ public static class SettingKeys
     public const string NotchHUD = "notchHUD";
     public const string SoundPack = "soundPack";
     public const string CrashReports = "crashReports";
+    public const string AskAfterCrash = "askAfterCrash";
     public const string ConfirmDestructiveAPI = "confirmDestructiveAPI";
     public const string ParkInCorner = "parkInCorner";
     public const string WholeSlidesOnly = "wholeSlidesOnly";
@@ -456,6 +457,8 @@ public static class SettingDefaults
     public const bool NotchHUD = false;
     /// <summary>Keep crash and hang reports on this Mac so you can send them.</summary>
     public const bool CrashReports = false;
+    /// <summary>After Monorail quits unexpectedly, ask (once per version) what happened.</summary>
+    public const bool AskAfterCrash = true;
     /// <summary>Ask before an assistant or script closes windows.</summary>
     public const bool ConfirmDestructiveAPI = true;
     /// <summary>Slides off screen wait hidden in the corner (no slivers at the screen edges).</summary>

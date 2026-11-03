@@ -1668,6 +1668,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         permissionTimer = nil
         input.start()
         engine.start()
+        if engine.crashedLastRun {
+            // After the windows are rescued and things have settled.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in
+                guard let self else { return }
+                ProblemReport.askAfterCrash(store: self.store)
+            }
+        }
         apply(store.settings)
         updateStatusItem()
         store.startCloudSync()

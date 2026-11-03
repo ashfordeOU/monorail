@@ -9,6 +9,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ### Added
 - **Start as Simple, Power user or Coming from another app**, in the welcome tour and Settings → Basics. Coming from another app opens the importer for AeroSpace, yabai and Rectangle.
 - **Show all settings**, at the bottom of the Settings sidebar. Off (the default for new installs), the sidebar shows the essentials: Basics, Shortcuts, Appearance, Evening Mode, Stay Awake and About. Search always finds every setting.
+- **After an unexpected quit, Monorail asks what happened** (once per version, and you can turn it off). **Tell Us…** opens a GitHub issue filled in with the Monorail and macOS versions and a short summary of where it crashed, from macOS's own crash report: no window titles, files, paths or names, and nothing is sent until you submit it.
 
 ## [1.7.16] - 2026-11-03
 

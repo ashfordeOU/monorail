@@ -97,6 +97,52 @@ enum ProblemReport {
     }
 }
 
+extension ProblemReport {
+    private static let askedKey = "crashPromptVersion"
+
+    /// After an unexpected quit: asks once per version what happened, and opens an issue with the
+    /// versions and a private summary of macOS's crash report.
+    static func askAfterCrash(store: SettingsStore) {
+        let version = Bundle.main.shortVersion
+        guard CrashFeedback.shouldAsk(crashed: true, enabled: store.settings.askAfterCrash,
+                                      lastAskedVersion: UserDefaults.standard.string(forKey: askedKey), version: version)
+        else { return }
+        UserDefaults.standard.set(version, forKey: askedKey)
+        let alert = NSAlert()
+        alert.messageText = "Monorail quit unexpectedly last time"
+        alert.informativeText = "Your windows are back on screen. Would you tell us what you were doing? It takes a minute, and you see everything before it's sent: the Monorail and macOS versions and where it crashed, with no window titles, files or names."
+        alert.addButton(withTitle: "Tell Us…")
+        alert.addButton(withTitle: "Not Now")
+        alert.showsSuppressionButton = true
+        alert.suppressionButton?.title = "Don't ask again"
+        NSApp.activate(ignoringOtherApps: true)
+        let answer = alert.runModal()
+        if alert.suppressionButton?.state == .on { store.settings.askAfterCrash = false }
+        guard answer == .alertFirstButtonReturn else { return }
+        let info = ProcessInfo.processInfo.operatingSystemVersion
+        let summary = latestCrashReport().flatMap { CrashFeedback.summary(ips: $0) }
+        let body = CrashFeedback.issueBody(version: version, macOS: "\(info.majorVersion).\(info.minorVersion).\(info.patchVersion)", summary: summary)
+        var components = URLComponents(string: "https://github.com/ashfordeOU/monorail/issues/new")!
+        components.queryItems = [URLQueryItem(name: "title", value: "Crash: Monorail \(version)"), URLQueryItem(name: "body", value: body)]
+        if let url = components.url { NSWorkspace.shared.open(url) }
+    }
+
+    /// macOS's newest crash report for Monorail from the last week, if there is one.
+    private static func latestCrashReport() -> String? {
+        let folder = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/DiagnosticReports")
+        let keys: [URLResourceKey] = [.contentModificationDateKey]
+        let recent = Date().addingTimeInterval(-7 * 86_400)
+        let reports = ((try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: keys)) ?? [])
+            .filter { ["Monorail", "MacSlider"].contains { name in $0.lastPathComponent.hasPrefix(name) } && $0.pathExtension == "ips" }
+            .compactMap { url -> (URL, Date)? in
+                guard let date = try? url.resourceValues(forKeys: Set(keys)).contentModificationDate, date > recent else { return nil }
+                return (url, date)
+            }
+            .sorted { $0.1 > $1.1 }
+        return reports.first.flatMap { try? String(contentsOf: $0.0, encoding: .utf8) }
+    }
+}
+
 /// Ready-made scripts from the repository, installed with one click (Settings → Automation).
 final class ScriptGallery: ObservableObject {
     struct Entry: Codable, Identifiable, Hashable {
@@ -488,6 +534,8 @@ struct DevicesPane: View {
                 }
                 .help("Once a day: Monorail and macOS versions, Mac model, chip, displays, language and which features are on. Never titles, apps, files or what you type.")
                 Toggle("Keep crash and hang reports on this Mac", isOn: $store.settings.crashReports)
+                Toggle("After an unexpected quit, ask what happened", isOn: $store.settings.askAfterCrash)
+                    .help("Once per version: a short question, and a GitHub issue filled in with the versions and where it crashed. Nothing is sent without you.")
                 HStack {
                     if !CrashReporter.reports.isEmpty {
                         Button("Show \(CrashReporter.reports.count) Reports") { NSWorkspace.shared.open(CrashReporter.folder) }

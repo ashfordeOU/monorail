@@ -6,6 +6,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.17] - 2026-11-03
+
 ### Added
 - **A window switcher with live previews.** Hold ⌘ (or ⌥) and press Tab for a grid of every window, most recent first, in every workspace. Tab or the arrow keys move, W closes a window, M minimises it, Q quits its app, and letting go switches. Off until you choose ⌘Tab or ⌥Tab in Settings → Motion & Input; ⌘Tab replaces the macOS app switcher while it's chosen, and gets it back when you switch it off or quit. Not in the App Store edition.
 - **Snap by dragging to screen edges.** Drag a floating window to the left or right edge for a half, a corner for a quarter, or the top to maximise, with a preview of where it will go. Windows on the strip aren't affected. When macOS's own edge tiling is on (macOS 15 and later), Monorail leaves edge drags to it unless you choose otherwise. Settings → Layout.
@@ -15,6 +17,11 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **Resolution and refresh rate** for each display in the Displays menu, including sharp (HiDPI) scaled sizes, plus actions for More Space, Larger Text and the display's default.
 - **Stash a window at the screen edge.** It slides out of view leaving a sliver; point at the sliver and it slides out, and back again when you move away. Run the action again, or **Bring back every stashed window**, to put it back where it was.
 - **Pick your extras** in the welcome tour: a short checklist, ticked to suit the starter setup you choose. People updating see this version's new features as switches in What's New, all off until ticked.
+- **Keep terminals together.** Terminal, iTerm, Ghostty, Warp, kitty, Alacritty and WezTerm windows share slides with each other (up to four), as if they were one app. On by default; switch it off under grouping in Settings.
+
+### Fixed
+- Monorail and Keeper find each other as soon as Monorail opens, before Accessibility is allowed, so Stay Awake hand-over works from the first minute.
+- The shared folder Monorail and Keeper talk through is rewritten correctly on Windows.
 
 ## [1.7.16] - 2026-11-03
 

@@ -42,7 +42,7 @@ updated. Our own tap keeps working either way.
 
 **Not yet (checked 3 November 2026: 0 stars, 0 forks, 0 watchers).** Submit when the repository passes
 about 225 stars (or 90 forks or watchers), e.g. after the Product Hunt launch; an early submission is
-closed. Until then `brew install --cask ashfordeOU/monorail/monorail` works from our own tap.
+closed. Until then `brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail && brew install --cask monorail` works from our own tap.
 
 **Check first:** Homebrew only takes apps with some following. For a project hosted on GitHub that
 means roughly 30 forks, 30 watchers or 75 stars, and about three times that when the developer

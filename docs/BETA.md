@@ -8,7 +8,7 @@ Beta builds get new features a week or two before everyone else.
 2. Monorail checks for betas along with normal releases and installs them the same way.
 3. To leave, turn it off. You'll move to the next normal release when it comes out.
 
-With Homebrew: `brew install --cask ashfordeOU/monorail/monorail`, then turn on beta versions in
+With Homebrew: `brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail && brew install --cask monorail`, then turn on beta versions in
 Settings. Monorail updates itself, so Homebrew doesn't need to.
 
 ## What we ask

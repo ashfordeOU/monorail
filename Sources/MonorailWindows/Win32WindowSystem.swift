@@ -145,7 +145,7 @@ final class Win32WindowSystem: WindowSystem {
     func start() {
         guard hook == nil else { return }
         EventRouter.current = self
-        hook = SetWinEventHook(DWORD(0x0003), DWORD(0x800C), nil, winEventCallback, 0, 0, DWORD(WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS))
+        hook = SetWinEventHook(DWORD(0x0003), DWORD(0x8018), nil, winEventCallback, 0, 0, DWORD(WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS))
     }
 
     func stop() {
@@ -165,6 +165,10 @@ final class Win32WindowSystem: WindowSystem {
         case 0x8001: onEvent(.destroyed(id))  // EVENT_OBJECT_DESTROY
         case 0x800B: onEvent(.moved(id, byUser: GetAsyncKeyState(Int32(VK_LBUTTON)) < 0))  // EVENT_OBJECT_LOCATIONCHANGE
         case 0x800C: onEvent(.titleChanged(id))  // EVENT_OBJECT_NAMECHANGE
+        // Windows hides (cloaks) the windows of other virtual desktops: switching desktops takes
+        // them off the strip and brings the new desktop's on, each desktop like a workspace.
+        case 0x8017: onEvent(.minimized(id))  // EVENT_OBJECT_CLOAKED
+        case 0x8018: onEvent(.restored(id))  // EVENT_OBJECT_UNCLOAKED
         default: break
         }
     }

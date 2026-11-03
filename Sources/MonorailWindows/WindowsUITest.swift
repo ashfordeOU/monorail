@@ -217,6 +217,26 @@ enum WindowsUITest {
             check(engine.strips.values.reduce(0) { $0 + $1.allWindows.count } >= 2, "the others stay tiled")
         }
 
+        // Virtual desktops as workspaces: Ctrl+Win+D makes a new desktop and switches to it (our
+        // windows stay on the old one, hidden), Ctrl+Win+F4 closes it and brings them back.
+        let before = ours(system, pids).filter { engine.isManaged($0.id) }.map(\.id)
+        WindowsKeys.press(WindowsKeys.Binding(action: .focusLeft, modifiers: WindowsKeys.control | WindowsKeys.win, key: 0x44))
+        Win32WindowSystem.pump(for: 2.5)
+        let visible = Set(system.windows().map(\.id))
+        if before.allSatisfy({ visible.contains($0) }) {
+            log.append("info virtual desktops: Ctrl+Win+D changed nothing on this machine, skipped")
+            print("info virtual desktops unavailable here; skipped")
+        } else {
+            check(before.allSatisfy { !engine.isManaged($0) }, "a new virtual desktop: the old desktop's windows leave the strip (\(before.filter { engine.isManaged($0) }.count) still managed)")
+            if let p = notepad() { processes.append(p); pids.insert(p.processIdentifier) }
+            Win32WindowSystem.pump(for: 2)
+            let fresh = ours(system, pids).filter { !before.contains($0.id) }
+            check(!fresh.isEmpty && fresh.allSatisfy { engine.isManaged($0.id) }, "a window opened on the new desktop is tiled there")
+            WindowsKeys.press(WindowsKeys.Binding(action: .focusLeft, modifiers: WindowsKeys.control | WindowsKeys.win, key: 0x73))
+            Win32WindowSystem.pump(for: 2.5)
+            check(before.allSatisfy { engine.isManaged($0) }, "closing that desktop brings the first desktop's windows back onto the strip")
+        }
+
         system.stop()
         for p in processes where p.isRunning { p.terminate() }
         return finish(tiled)

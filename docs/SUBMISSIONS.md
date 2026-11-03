@@ -87,6 +87,16 @@ Ashforde OU developer account:
    with the Apple Distribution certificate. Download the profile.
 3. **App Store Connect:** appstoreconnect.apple.com → Apps → **+** → New App: macOS, name
    "Monorail by Ashforde", bundle ID `org.ashforde.monorail.appstore`, SKU `monorail`.
-4. Then the build, upload, TestFlight, screenshots and listing follow [APP-STORE.md](APP-STORE.md);
-   the session can automate the build and upload in CI once the two certificates and the profile are
-   exported (`.p12` / `.provisionprofile`) into repository secrets, like the Developer ID ones.
+4. **Export and add the secrets** (GitHub → ashfordeOU/monorail → Settings → Secrets → Actions), the
+   same way as the Developer ID ones:
+   - `MONORAIL_APPSTORE_CERT` + `MONORAIL_APPSTORE_PASSWORD`: the Apple Distribution `.p12`, base64
+   - `MONORAIL_APPSTORE_INSTALLER_CERT` (+ `MONORAIL_APPSTORE_INSTALLER_PASSWORD` if different): the
+     Mac Installer Distribution `.p12`, base64
+   - `MONORAIL_APPSTORE_PROFILE`: the profile, base64: `base64 -i Monorail_App_Store.provisionprofile | pbcopy`
+   - `APPLE_ID` and `APPLE_APP_PASSWORD` are already there.
+5. **Then the session runs the App Store workflow** (Actions → App Store): it builds the sandboxed
+   edition, signs it, checks the signature and the identifier, validates it with Apple and uploads it.
+   It shows up in App Store Connect → TestFlight within the hour: try it there first.
+6. **The listing**: everything to copy into App Store Connect (name, subtitle, description, keywords,
+   URLs, screenshots in `assets/appstore/`, App Review notes and the App Privacy answers) is in
+   [appstore/LISTING.md](appstore/LISTING.md). Then **Add for Review** and **Submit**.

@@ -1,0 +1,64 @@
+# Builds the Mac App Store edition, signs it with the App Store certificates, checks it with Apple
+# and uploads it to App Store Connect (it appears in TestFlight first). Run by hand from Actions.
+# Needs the secrets in scripts/ci-import-appstore-certs.sh plus APPLE_ID and APPLE_APP_PASSWORD.
+name: App Store
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: "Upload to App Store Connect (off: build and check only)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  appstore:
+    runs-on: macos-15
+    env:
+      MONORAIL_APPSTORE_CERT: ${{ secrets.MONORAIL_APPSTORE_CERT }}
+      MONORAIL_APPSTORE_PASSWORD: ${{ secrets.MONORAIL_APPSTORE_PASSWORD }}
+      MONORAIL_APPSTORE_INSTALLER_CERT: ${{ secrets.MONORAIL_APPSTORE_INSTALLER_CERT }}
+      MONORAIL_APPSTORE_INSTALLER_PASSWORD: ${{ secrets.MONORAIL_APPSTORE_INSTALLER_PASSWORD }}
+      MONORAIL_APPSTORE_PROFILE: ${{ secrets.MONORAIL_APPSTORE_PROFILE }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Use the newest Xcode
+        run: |
+          latest="$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -n1)"
+          [ -n "$latest" ] && sudo xcode-select -s "$latest/Contents/Developer"
+          xcodebuild -version
+      - name: Import the App Store certificates and profile
+        run: scripts/ci-import-appstore-certs.sh
+      - name: Build the App Store edition
+        run: scripts/build-appstore.sh
+      - name: Check the signature
+        run: |
+          app=dist/AppStore/Monorail.app
+          codesign --verify --strict --deep "$app"
+          codesign -d --entitlements - --xml "$app" | plutil -p - | tee entitlements.txt
+          grep -q "com.apple.security.app-sandbox" entitlements.txt
+          grep -q "D69G45342Y.org.ashforde.monorail.appstore" entitlements.txt
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$app/Contents/Info.plist" | grep -qx "org.ashforde.monorail.appstore"
+          pkgutil --check-signature dist/AppStore/Monorail-*.pkg
+      - name: Validate with App Store Connect
+        run: |
+          xcrun altool --validate-app -f dist/AppStore/Monorail-*.pkg -t macos \
+            -u "$APPLE_ID" -p "$APPLE_APP_PASSWORD" --output-format normal
+      - name: Upload to App Store Connect
+        if: github.event.inputs.upload == 'true'
+        run: |
+          xcrun altool --upload-app -f dist/AppStore/Monorail-*.pkg -t macos \
+            -u "$APPLE_ID" -p "$APPLE_APP_PASSWORD" --output-format normal
+          echo "### Uploaded: it shows in App Store Connect → TestFlight after Apple processes it (about 15–60 minutes)" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v5
+        with:
+          name: monorail-appstore
+          path: dist/AppStore/Monorail-*.pkg

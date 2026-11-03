@@ -10,19 +10,29 @@ notarises and staples every DMG as soon as these repository secrets exist, so th
 
 ## Steps
 
-1. **Create a Developer ID Application certificate.**
-   In Xcode: **Settings → Accounts → (your team) → Manage Certificates → + → Developer ID Application**.
-2. **Export it** from Keychain Access (My Certificates → right-click it → Export) as a `.p12` with a strong password.
-3. **Replace the signing secrets** in GitHub → ashfordeOU/monorail → Settings → Secrets and variables → Actions:
+Team: **Ashforde OU**, Team ID **D69G45342Y**.
+
+1. **Create both Developer ID certificates.**
+   In Xcode: **Settings → Accounts → Ashforde OU → Manage Certificates → +**, once for
+   **Developer ID Application** (signs the app) and once for **Developer ID Installer** (signs the pkg
+   for MDM and Installomator).
+2. **Export them together.** In Keychain Access → My Certificates, select both
+   "Developer ID Application: Ashforde OU (D69G45342Y)" and "Developer ID Installer: Ashforde OU (D69G45342Y)"
+   (each must have its private key underneath), right-click → **Export 2 items…** → `.p12` with a strong password.
+3. **Wait for a bridge release to be out** (1.7.15 or later). Releases before it only accept updates
+   signed with the old self-signed certificate; 1.7.15 also accepts Ashforde's Developer ID, so
+   everyone can update to the first notarised build.
+4. **Replace the signing secrets** in GitHub → ashfordeOU/monorail → Settings → Secrets and variables → Actions:
    - `MONORAIL_SIGNING_CERT`: the `.p12`, base64-encoded: `base64 -i DeveloperID.p12 | pbcopy`
    - `MONORAIL_SIGNING_PASSWORD`: its password
-4. **Add the notarisation secrets:**
+5. **Add the notarisation secrets:**
    - `APPLE_ID`: the Apple ID email of the developer account
-   - `APPLE_TEAM_ID`: the 10-character Team ID (developer.apple.com → Membership)
+   - `APPLE_TEAM_ID`: `D69G45342Y`
    - `APPLE_APP_PASSWORD`: an app-specific password from https://account.apple.com → Sign-In and Security → App-Specific Passwords
-5. **Release as usual** (bump `VERSION`). The workflow signs with the Developer ID (hardened runtime, the
-   entitlements in `Resources/Monorail.entitlements`), submits the DMG with `notarytool`, staples the ticket,
-   and leaves the Gatekeeper note out of the release notes.
+6. **Release as usual** (bump `VERSION`). `scripts/ci-import-signing-cert.sh` finds the Developer ID
+   identities in the `.p12` (falling back to the old self-signed one when there are none), the app is
+   signed with the hardened runtime and a secure timestamp, the pkg with the Installer identity, both
+   are submitted with `notarytool` and stapled, and the Gatekeeper note leaves the release notes.
 
 ## After switching certificates
 

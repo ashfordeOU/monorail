@@ -1,8 +1,8 @@
 #!/bin/bash
 # Builds the Mac App Store edition and the installer package App Store Connect takes.
 #
-#   APP_SIGN_IDENTITY="Apple Distribution: Ashforde OÜ (TEAMID)" \
-#   INSTALLER_SIGN_IDENTITY="3rd Party Mac Developer Installer: Ashforde OÜ (TEAMID)" \
+#   APP_SIGN_IDENTITY="Apple Distribution: Ashforde OU (D69G45342Y)" \
+#   INSTALLER_SIGN_IDENTITY="3rd Party Mac Developer Installer: Ashforde OU (D69G45342Y)" \
 #   PROVISIONING_PROFILE=~/Downloads/Monorail_App_Store.provisionprofile \
 #   scripts/build-appstore.sh
 #

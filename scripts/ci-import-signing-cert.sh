@@ -1,11 +1,13 @@
 #!/bin/bash
-# CI only: imports the signing certificate from MONORAIL_SIGNING_CERT /
+# CI only: imports the signing certificate(s) from MONORAIL_SIGNING_CERT /
 # MONORAIL_SIGNING_PASSWORD into a temporary keychain and exports
-# SIGN_IDENTITY for scripts/build-app.sh.
+#   SIGN_IDENTITY       for scripts/build-app.sh (Developer ID Application, else the self-signed one)
+#   INSTALLER_IDENTITY  for scripts/package.sh (Developer ID Installer, when the .p12 has one)
+# The .p12 may hold both Developer ID certificates (select both in Keychain Access and export them together).
 set -euo pipefail
 
 : "${MONORAIL_SIGNING_CERT:?}" "${MONORAIL_SIGNING_PASSWORD:?}"
-NAME="MacSlider Self-Signed"  # the certificate's name; kept so existing secrets and permissions stay valid
+SELF_SIGNED="MacSlider Self-Signed"  # the old certificate's name, still used when there's no Developer ID
 TMP="${RUNNER_TEMP:-$(mktemp -d)}"
 KEYCHAIN="$TMP/signing.keychain-db"
 KEYCHAIN_PASSWORD="$(openssl rand -hex 16)"
@@ -14,17 +16,35 @@ printf '%s' "$MONORAIL_SIGNING_CERT" | base64 --decode > "$TMP/cert.p12"
 security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
 security set-keychain-settings -lut 21600 "$KEYCHAIN"
 security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-security import "$TMP/cert.p12" -k "$KEYCHAIN" -P "$MONORAIL_SIGNING_PASSWORD" -T /usr/bin/codesign
+security import "$TMP/cert.p12" -k "$KEYCHAIN" -P "$MONORAIL_SIGNING_PASSWORD" -T /usr/bin/codesign -T /usr/bin/productbuild
+rm -f "$TMP/cert.p12"
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
-# Put the keychain on the search list so codesign can find the identity.
+# Put the keychain on the search list so codesign and productbuild can find the identities.
 security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
 
-# Trust the self-signed certificate for code signing on this runner.
-security find-certificate -c "$NAME" -p "$KEYCHAIN" > "$TMP/cert.pem"
-sudo security add-trusted-cert -d -r trustRoot -p codeSign -k /Library/Keychains/System.keychain "$TMP/cert.pem"
-rm -f "$TMP/cert.p12"
+identity() {  # $1: policy, $2: name prefix → SHA-1 of the first matching identity
+    security find-identity -p "$1" "$KEYCHAIN" | awk -v name="\"$2" 'index($0, name) {print $2; exit}'
+}
 
-HASH="$(security find-identity -p codesigning "$KEYCHAIN" | awk -v name="\"$NAME\"" 'index($0, name) {print $2; exit}')"
-[ -n "$HASH" ] || { security find-identity -p codesigning "$KEYCHAIN"; echo "Signing identity not found" >&2; exit 1; }
+HASH="$(identity codesigning "Developer ID Application")"
+if [ -n "$HASH" ]; then
+    echo "Imported Developer ID Application ($HASH)"
+    # Notarisation needs a secure timestamp on every signature.
+    echo "SIGN_TIMESTAMP=1" >> "${GITHUB_ENV:-/dev/null}"
+else
+    # The self-signed certificate needs trusting on this runner first.
+    security find-certificate -c "$SELF_SIGNED" -p "$KEYCHAIN" > "$TMP/cert.pem"
+    sudo security add-trusted-cert -d -r trustRoot -p codeSign -k /Library/Keychains/System.keychain "$TMP/cert.pem"
+    HASH="$(identity codesigning "$SELF_SIGNED")"
+    echo "Imported \"$SELF_SIGNED\" ($HASH)"
+fi
+[ -n "$HASH" ] || { security find-identity "$KEYCHAIN"; echo "Signing identity not found" >&2; exit 1; }
 echo "SIGN_IDENTITY=$HASH" >> "${GITHUB_ENV:-/dev/null}"
-echo "Imported \"$NAME\" ($HASH)"
+
+INSTALLER="$(identity basic "Developer ID Installer")"
+if [ -n "$INSTALLER" ]; then
+    echo "INSTALLER_IDENTITY=$INSTALLER" >> "${GITHUB_ENV:-/dev/null}"
+    echo "Imported Developer ID Installer ($INSTALLER): the pkg will be signed"
+else
+    echo "No Developer ID Installer certificate: the pkg stays unsigned"
+fi

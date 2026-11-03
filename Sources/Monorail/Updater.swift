@@ -225,8 +225,8 @@ final class Updater: ObservableObject {
     }
 
     /// The new app must carry a valid signature that satisfies this app's own
-    /// designated requirement (same identifier, same certificate), so only
-    /// builds signed with Monorail's certificate can replace it. A local
+    /// designated requirement (same identifier, same certificate) or Ashforde's
+    /// Developer ID, so only builds signed by Ashforde can replace it. A local
     /// ad-hoc build has no certificate to compare, so it only checks validity.
     private static func signatureMatchesRunningApp(_ app: URL) -> Bool {
         var newCode: SecStaticCode?
@@ -252,8 +252,13 @@ final class Updater: ObservableObject {
                     let widened = text
                         .replacingOccurrences(of: "identifier \"\(BundleIDs.legacy)\"", with: both)
                         .replacingOccurrences(of: "identifier \"\(BundleIDs.current)\"", with: both)
+                    // …and builds signed with Ashforde's Developer ID may replace self-signed ones
+                    // (the move to notarised releases), never the other way round.
+                    let allowed = CodeSigning.updateRequirement(running: widened, identifiers: BundleIDs.all)
                     var relaxed: SecRequirement?
-                    if widened != text, SecRequirementCreateWithString(widened as CFString, [], &relaxed) == errSecSuccess {
+                    if SecRequirementCreateWithString(allowed as CFString, [], &relaxed) == errSecSuccess {
+                        requirement = relaxed
+                    } else if widened != text, SecRequirementCreateWithString(widened as CFString, [], &relaxed) == errSecSuccess {
                         requirement = relaxed
                     }
                 }

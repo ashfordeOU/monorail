@@ -79,6 +79,8 @@ if [ -n "${SIGN_IDENTITY:-}" ]; then
     # Apple's timestamp server only serves Apple-issued certificates.
     TIMESTAMP="--timestamp=none"
     case "$SIGN_IDENTITY" in "Developer ID"*) TIMESTAMP="--timestamp" ;; esac
+    # CI passes the identity as a SHA-1 and says separately that it's a Developer ID.
+    [ "${SIGN_TIMESTAMP:-}" = "1" ] && TIMESTAMP="--timestamp"
     codesign --force --options runtime $TIMESTAMP --entitlements "$ENTITLEMENTS" --sign "$SIGN_IDENTITY" "$APP"
 else
     codesign --force --sign - --entitlements "$ENTITLEMENTS" "$APP"

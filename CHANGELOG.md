@@ -4,6 +4,11 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Getting ready for notarised releases: updates signed with Ashforde's Apple Developer ID are now accepted, so the next releases can open without the "can't verify the developer" warning and still update automatically.
+
 ## [1.7.14] - 2026-11-03
 
 ### Added

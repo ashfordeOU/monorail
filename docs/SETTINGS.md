@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-211 settings.
+217 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -187,6 +187,12 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `eveningSchedule` | By hand only, or every day on a schedule. | `EveningSchedule.manual` |
 | `eveningStart` | The schedule, in minutes after midnight (it may run past midnight). | `20 * 60` |
 | `eveningEnd` |  | `7 * 60` |
+| `eveningPausedApps` | Evening Mode rests while one of these apps (bundle IDs) is in front, for work where colour matters. | `[]` |
+| `eveningRed` | Evening Mode goes red: green and blue fade out as well, down to red light only at full strength. | `false` |
+| `displayBrightness` | Software brightness for each display (by UUID), 0.1–1, on top of its own: dims below its lowest setting. | `[:]` |
+| `windowSwitcherShortcut` | Hold a modifier and press Tab for a grid of every window, let go to switch (⌘Tab replaces the app switcher). | `.off` |
+| `edgeSnapping` | Drag a floating window to a screen edge for a half, a corner for a quarter, or the top to maximise. | `false` |
+| `edgeSnappingDefersToMacOS` | Leave edge drags to macOS when its own tiling by dragging to screen edges is on (macOS 15 and later). | `true` |
 | `awakeNotify` | Show a notice when Stay Awake starts and ends. | `true` |
 | `awakeSound` | Play a sound when Stay Awake starts and ends. | `false` |
 | `awakeShowTime` | Show the time left in the menu bar. | `true` |

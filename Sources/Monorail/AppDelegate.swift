@@ -20,6 +20,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let input = InputMonitor()
     private let trackpad = TrackpadSwipe.shared
     private let switcher = SwitcherController()
+    private let switcherGrid = WindowSwitcherGrid()
+    private let displayMenu = DisplayMenu()
+    /// True while Monorail's switcher has ⌘Tab (the macOS app switcher is off).
+    private var commandTabTaken = false
     private lazy var overview = OverviewController(engine: engine)
     private let updater = Updater()
     private var subscriptions: [AnyCancellable] = []
@@ -187,6 +191,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         usage.awake(false)
         awake.shutdown()
         evening.restore()
+        if commandTabTaken { NativeCommandTab.setEnabled(true) }
         usage.save()
         EventStream.shared.stop()
     }
@@ -436,7 +441,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         input.titleBarWindow = { [weak self] point in self?.engine.titleBarWindow(at: point) }
         input.onTitleBarSwipe = { [weak self] swipe, id in self?.engine.titleBarSwipe(swipe, on: id) }
         engine.onWindowDrag = { [weak self] id in self?.snapPicker.windowDragStarted(id) }
-        snapPicker.snap = { [weak self] id, position in self?.engine.snapWindow(id, to: position) }
+        snapPicker.snap = { [weak self] id, position, point in self?.engine.snapWindow(id, to: position, at: point) }
+        snapPicker.isFloating = { [weak self] id in self?.engine.isFloating(id) ?? false }
+        snapPicker.gap = { [weak self] in self?.store.settings.layout.gap ?? 8 }
         engine.onResized = { [weak self] id, frame, name, hasOthers in
             self?.resizeAssist.show(for: id, frame: frame, appName: name, hasOthers: hasOthers)
         }
@@ -477,6 +484,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         switcher.windows = { [weak self] in self?.engine.allWindowSummaries() ?? [] }
         switcher.choose = { [weak self] id in self?.engine.focusAndReveal(id) }
+        wireUpDesktopTools()
         wireUpV11()
         wireUpV12()
     }
@@ -603,6 +611,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 self.tipOnce("sentences", "the palette understands sentences: try “Safari two thirds” or “how do I keep my Mac awake?”")
             }
         }
+        whatsNew.store = store
         whatsNew.tryAction = { [weak self] action in
             if action == .commandPalette { self?.palette.show() } else { self?.engine.perform(action) }
         }
@@ -837,6 +846,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let scheduled = item(L("Every Evening on a Schedule"), #selector(toggleEveningScheduleFromMenu))
         scheduled.state = settings.eveningSchedule == .scheduled ? .on : .off
         menu.addItem(scheduled)
+        let sun = item(L("Sunset to Sunrise"), #selector(toggleEveningSunFromMenu))
+        sun.state = settings.eveningSchedule == .sun ? .on : .off
+        if case .normal(let sunrise, let sunset) = evening.todaysSun() {
+            sun.toolTip = String(format: "Today %02d:%02d–%02d:%02d, worked out from your time zone", sunset / 60, sunset % 60, sunrise / 60, sunrise % 60)
+        }
+        menu.addItem(sun)
+        let red = item(L("Deep Red"), #selector(toggleEveningRedFromMenu))
+        red.state = settings.eveningRed ? .on : .off
+        red.toolTip = "Green and blue fade out as well: at full strength only red light is left, for late at night."
+        menu.addItem(red)
+        if evening.isPausedForApp {
+            let paused = NSMenuItem(title: L("Resting while this app is in front"), action: nil, keyEquivalent: "")
+            paused.isEnabled = false
+            menu.addItem(paused)
+        }
         menu.addItem(item(L("Evening Mode Settings…"), #selector(showEveningSettingsFromMenu)))
         parent.submenu = menu
         return parent
@@ -863,6 +887,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if settings.eveningSchedule == .scheduled {
             toast.show(String(format: "Evening Mode every day %02d:%02d–%02d:%02d", settings.eveningStart / 60, settings.eveningStart % 60, settings.eveningEnd / 60, settings.eveningEnd % 60))
         }
+    }
+
+    @objc private func toggleEveningSunFromMenu() {
+        var settings = store.settings
+        settings.eveningSchedule = settings.eveningSchedule == .sun ? .manual : .sun
+        store.settings = settings
+        if settings.eveningSchedule == .sun, case .normal(let sunrise, let sunset) = evening.todaysSun() {
+            toast.show(String(format: "Evening Mode from sunset (%02d:%02d) to sunrise (%02d:%02d)", sunset / 60, sunset % 60, sunrise / 60, sunrise % 60))
+        }
+    }
+
+    @objc private func toggleEveningRedFromMenu() {
+        var settings = store.settings
+        settings.eveningRed.toggle()
+        store.settings = settings
     }
 
     @objc private func showEveningSettingsFromMenu() {
@@ -1608,6 +1647,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     /// Actions the engine hands to the app: prompts, the clipboard, timers and flashes.
+    // MARK: - Window switcher and displays
+
+    private func wireUpDesktopTools() {
+        switcherGrid.windows = { [weak self] in self?.engine.recentWindowSummaries() ?? [] }
+        switcherGrid.choose = { [weak self] id in self?.engine.focusAndReveal(id) }
+        switcherGrid.closeWindow = { [weak self] id in self?.engine.closeWindow(id) }
+        switcherGrid.minimizeWindow = { [weak self] id in self?.engine.minimizeWindow(id) }
+        switcherGrid.quitApp = { [weak self] id in
+            guard let pid = self?.engine.pid(of: id) else { return }
+            NSRunningApplication(processIdentifier: pid)?.terminate()
+        }
+        switcherGrid.onDismiss = { [weak self] in self?.input.holdSwitcher.reset() }
+        input.onHoldSwitcher = { [weak self] event in self?.switcherGrid.handle(event) }
+        displayMenu.brightness = { [weak self] uuid in self?.store.settings.displayBrightness[uuid] ?? 1 }
+        displayMenu.setBrightness = { [weak self] uuid, value in
+            guard let self else { return }
+            var settings = self.store.settings
+            let clamped = min(max(value, EveningMode.minimumBrightness), 1)
+            settings.displayBrightness[uuid] = clamped >= 0.995 ? nil : clamped
+            self.store.settings = settings
+        }
+        displayMenu.notice = { [weak self] text in self?.toast.show(text) }
+    }
+
+    /// The macOS app switcher is off exactly while Monorail's switcher has ⌘Tab and its keys work.
+    private func updateCommandTab() {
+        let take = input.holdSwitcher.shortcut == .commandTab && input.isActive && NativeCommandTab.isAvailable
+        if take != commandTabTaken || (!take && NativeCommandTab.wasLeftOff) {
+            commandTabTaken = take
+            NativeCommandTab.setEnabled(!take)
+        }
+    }
+
     private func performAppAction(_ action: Action) {
         switch action {
         case .renameWorkspace:
@@ -1677,6 +1749,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             showSettings()
         case .checkForUpdates:
             updater.check(userInitiated: true)
+        case .toggleEvening:
+            toggleEveningFromMenu()
+        case .displayBrighter, .displayDimmer:
+            guard let display = engine.activeDisplay() else { return }
+            displayMenu.step(display.uuid, name: display.name, brighter: action == .displayBrighter)
+        case .displayMoreSpace, .displayLargerText, .displayDefaultResolution:
+            guard let display = engine.activeDisplay() else { return }
+            displayMenu.changeResolution(display.id, name: display.name, action: action)
         default:
             performAppActionV12(action)
         }
@@ -1699,6 +1779,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         permissionTimer?.invalidate()
         permissionTimer = nil
         input.start()
+        updateCommandTab()
         engine.start()
         startSuiteChannel()
         if engine.crashedLastRun {
@@ -1720,6 +1801,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         if store.settings.hasCompletedOnboarding, !version.isEmpty, store.settings.lastSeenVersion != version {
             if !store.settings.lastSeenVersion.isEmpty || store.settings.hasCompletedOnboarding {
+                whatsNew.store = store
                 whatsNew.show(version: version)
             }
         }
@@ -1784,6 +1866,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         input.titleBarSwipes = settings.titleBarSwipes
         if settings.liveReloadSettings != liveReloadWasOn { store.watchFile() }
         snapPicker.isEnabled = settings.snapPicker
+        snapPicker.edgeSnapping = settings.edgeSnapping
+        snapPicker.defersToMacOS = settings.edgeSnappingDefersToMacOS
+        input.holdSwitcher.shortcut = settings.windowSwitcherShortcut
+        updateCommandTab()
         updateArrowItems(visible: settings.showNavigationArrows)
         updater.setAutomatic(settings.checkForUpdates)
         updater.installAutomatically = settings.installUpdatesAutomatically
@@ -2779,6 +2865,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         menu.addItem(awakeMenu())
         menu.addItem(eveningMenu())
+        menu.addItem(displayMenu.menuItem())
         addAshfordeSection(to: menu)
         let animate = item(L("Animate Windows"), #selector(toggleAnimationsFromMenu), action: .toggleAnimations)
         animate.state = store.settings.animate ? .on : .off

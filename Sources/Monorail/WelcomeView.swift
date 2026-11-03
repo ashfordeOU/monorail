@@ -63,6 +63,51 @@ struct WelcomeView: View {
             })
     }
 
+    /// An extra's checkbox, bound to the real setting.
+    private func extra(_ item: StarterExtra) -> Binding<Bool> {
+        Binding(get: { item.isOn(in: store.settings) }, set: { on in item.set(on, in: &store.settings) })
+    }
+
+    /// The extras offered: the ⌘Tab switcher needs the event tap, so not in the App Store edition.
+    private var extras: [StarterExtra] {
+        StarterExtra.allCases.filter { !(Edition.isAppStore && $0 == .windowSwitcher) }
+    }
+
+    /// "Pick your extras": one line each, ticked to suit the starter setup chosen above.
+    private var extrasStep: some View {
+        GroupBox {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Pick your extras").fontWeight(.medium)
+                LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
+                          alignment: .leading, spacing: 4) {
+                    ForEach(extras, id: \.self) { item in
+                        Toggle(item.title, isOn: extra(item)).toggleStyle(.checkbox).font(.callout)
+                    }
+                }
+                HStack(spacing: 12) {
+                    Button("Open Trackpad settings") {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.Trackpad-Settings.extension") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                    .help("Set “Swipe between full-screen apps” to four fingers, so three belong to Monorail.")
+                    Button("What’s sent…") { SmartBridge.showUsagePayload() }
+                        .help("Exactly what the anonymous usage counts contain.")
+                }
+                .buttonStyle(.link).controlSize(.small)
+                if extra(.swipe).wrappedValue {
+                    Text("For the swipe: in Trackpad settings, set “Swipe between full-screen apps” to four fingers.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Text("Change any of these later in Settings.").font(.caption).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(6)
+        }
+        // The usage counts are explained here, so the separate notice isn't shown as well.
+        .onAppear { if !store.settings.usageNoticeShown { store.settings.usageNoticeShown = true } }
+    }
+
     private func shortcut(_ action: Action) -> String {
         store.settings.keymap.shortcuts(for: action).first?.displayString ?? "—"
     }
@@ -145,6 +190,7 @@ struct WelcomeView: View {
                             Button(setup.title) {
                                 let bar = store.settings.sliderBar
                                 store.settings.apply(setup)
+                                store.settings.applyExtras(for: setup)
                                 store.settings.sliderBar = bar
                                 if setup == .switching { Importer.run(store: store) }
                             }
@@ -168,6 +214,8 @@ struct WelcomeView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(6)
             }
+
+            extrasStep
 
             GroupBox {
                 VStack(alignment: .leading, spacing: 10) {

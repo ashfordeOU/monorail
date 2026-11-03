@@ -8,6 +8,8 @@ public enum EveningSchedule: String, Codable, CaseIterable, Sendable {
     case manual
     /// Every day between `eveningStart` and `eveningEnd`.
     case scheduled
+    /// Every day from sunset to sunrise, worked out on the Mac from its time zone.
+    case sun
 }
 
 public enum EveningMode {
@@ -23,9 +25,31 @@ public enum EveningMode {
 
     /// Red, green and blue multipliers (0–1) for a strength from 0 to 1: 1, 1, 1 at 0, less blue
     /// and some green as it grows. Normalised so white at 6500 K is exactly 1, 1, 1.
-    public static func multipliers(strength: Double) -> (red: Double, green: Double, blue: Double) {
+    /// With `red`, green and blue fall away further as it grows, down to red light only at 1 (for
+    /// late at night or a darkroom).
+    public static func multipliers(strength: Double, red: Bool = false) -> (red: Double, green: Double, blue: Double) {
         let warm = rgb(kelvin: kelvin(strength: strength)), white = rgb(kelvin: neutralKelvin)
-        return (min(warm.0 / white.0, 1), min(warm.1 / white.1, 1), min(warm.2 / white.2, 1))
+        let m = (min(warm.0 / white.0, 1), min(warm.1 / white.1, 1), min(warm.2 / white.2, 1))
+        guard red else { return m }
+        let keep = 1 - min(max(strength, 0), 1)
+        return (m.0, m.1 * keep, m.2 * keep)
+    }
+
+    /// The lowest software brightness a display can be set to, so it never goes completely dark.
+    public static let minimumBrightness = 0.1
+
+    /// A colour curve's multipliers with a display's software brightness (0.1–1) applied as well.
+    public static func multipliers(strength: Double, red: Bool = false, brightness: Double) -> (red: Double, green: Double, blue: Double) {
+        let m = multipliers(strength: strength, red: red)
+        let b = min(max(brightness, minimumBrightness), 1)
+        return (m.red * b, m.green * b, m.blue * b)
+    }
+
+    /// Whether Evening Mode rests while `frontApp` (a bundle ID) is in front, for apps where
+    /// colour matters (photo and video editors).
+    public static func isPaused(frontApp: String?, exceptions: [String]) -> Bool {
+        guard let frontApp, !frontApp.isEmpty else { return false }
+        return exceptions.contains { $0.caseInsensitiveCompare(frontApp) == .orderedSame }
     }
 
     /// Black-body colour (Tanner Helland's approximation), 0–255 per channel.
@@ -53,12 +77,26 @@ public enum EveningMode {
         return min(1, fromStart / ramp, toEnd / ramp)
     }
 
-    /// The strength to show now (0 = screen as normal).
+    /// The strength to show now (0 = screen as normal). With the sun schedule, `sun` is today's
+    /// sunrise and sunset: it fades in over 40 minutes from sunset and out over the 40 before sunrise.
     public static func level(schedule: EveningSchedule, manuallyOn: Bool, strength: Double, minute: Int,
-                             start: Int, end: Int, fade: Int = 20) -> Double {
+                             start: Int, end: Int, fade: Int = 20, sun: SolarTimes.Day? = nil) -> Double {
         let s = min(max(strength, 0), 1)
         if manuallyOn { return s }
-        guard schedule == .scheduled else { return 0 }
-        return s * scheduleLevel(minute: minute, start: start, end: end, fade: fade)
+        switch schedule {
+        case .manual:
+            return 0
+        case .scheduled:
+            return s * scheduleLevel(minute: minute, start: start, end: end, fade: fade)
+        case .sun:
+            switch sun {
+            case .normal(let sunrise, let sunset)?:
+                return s * scheduleLevel(minute: minute, start: sunset, end: sunrise, fade: 40)
+            case .alwaysDown?:
+                return s
+            case .alwaysUp?, nil:
+                return 0
+            }
+        }
     }
 }

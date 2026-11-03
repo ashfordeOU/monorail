@@ -91,6 +91,11 @@ final class InputMonitor {
     var mouseGestures = false
     var onMouseGesture: (_ dx: Double, _ dy: Double) -> Void = { _, _ in }
     private var gestureStart: CGPoint?
+    /// The hold-and-release window switcher (⌘Tab or ⌥Tab): its keys while it's open.
+    var holdSwitcher = HoldSwitcherKeys()
+    var onHoldSwitcher: (HoldSwitcherEvent) -> Void = { _ in }
+    /// Keys whose press Monorail took: their release is taken too, so apps never see half a key.
+    private var swallowedKeyUps = Set<UInt16>()
     /// Every key press, for the keystroke overlay (only while it is on).
     var echoKeys = false
     var onKeyEcho: (String) -> Void = { _ in }
@@ -213,6 +218,9 @@ final class InputMonitor {
         case .flagsChanged:
             handleFlagsChanged(event)
             let mods = Modifiers(event.flags)
+            if let switcherEvent = holdSwitcher.flagsChanged(mods) {
+                DispatchQueue.main.async { self.onHoldSwitcher(switcherEvent) }
+            }
             DispatchQueue.main.async { self.onFlagsChanged(mods) }
             return pass
         case .leftMouseDown where mouseGestures && !isSuspended && Modifiers(event.flags) == [.control, .option, .shift]:
@@ -258,6 +266,7 @@ final class InputMonitor {
             onDragEnd()
             return nil
         case .keyUp:
+            if swallowedKeyUps.remove(UInt16(event.getIntegerValueField(.keyboardEventKeycode))) != nil { return nil }
             if capsLockKey, UInt16(event.getIntegerValueField(.keyboardEventKeycode)) == CapsLockKey.f18 {
                 capsHeld = false
                 let used = capsUsed
@@ -281,6 +290,11 @@ final class InputMonitor {
             if capsHeld {
                 capsUsed = true
                 modifiers.formUnion([.control, .option])
+            }
+            if let switcherEvent = holdSwitcher.keyDown(keyCode, modifiers: modifiers) {
+                swallowedKeyUps.insert(keyCode)
+                DispatchQueue.main.async { self.onHoldSwitcher(switcherEvent) }
+                return nil
             }
             DispatchQueue.main.async { self.onKeyActivity() }
             if echoKeys, let echo = Self.describe(keyCode: keyCode, modifiers: modifiers, event: event) {

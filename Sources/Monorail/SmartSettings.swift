@@ -631,6 +631,10 @@ struct EveningPane: View {
                 Picker("Turn on by itself", selection: $store.settings.eveningSchedule) {
                     Text("Never, only by hand").tag(EveningSchedule.manual)
                     Text("Every day on a schedule").tag(EveningSchedule.scheduled)
+                    Text("Sunset to sunrise").tag(EveningSchedule.sun)
+                }
+                if store.settings.eveningSchedule == .sun {
+                    LabeledContent("Today") { Text(Self.sunText()).foregroundStyle(.secondary) }
                 }
                 if store.settings.eveningSchedule == .scheduled {
                     Picker("From", selection: $store.settings.eveningStart) {
@@ -643,11 +647,49 @@ struct EveningPane: View {
             } header: {
                 Text("Schedule")
             } footer: {
-                Text("It fades in over 20 minutes after the start and out before the end, so the change is easy on the eyes.")
+                Text("It fades in over 20 minutes after the start and out before the end, so the change is easy on the eyes. Sunset and sunrise are worked out on your Mac from its time zone: no location access and nothing sent anywhere.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+            Section {
+                Toggle("Deep red", isOn: $store.settings.eveningRed)
+                    .help("Green and blue fade out as well as the warmth grows: at 100% only red light is left, for late at night or a dark room.")
+                ForEach(store.settings.eveningPausedApps, id: \.self) { bundleID in
+                    HStack {
+                        Text(Self.appName(bundleID))
+                        Spacer()
+                        Button {
+                            store.settings.eveningPausedApps.removeAll { $0 == bundleID }
+                        } label: {
+                            Image(systemName: "minus.circle").accessibilityLabel("Stop resting for \(Self.appName(bundleID))")
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
+                AppMenu(title: "Rest while an app is in front…") { bundleID in
+                    if !store.settings.eveningPausedApps.contains(bundleID) { store.settings.eveningPausedApps.append(bundleID) }
+                }
+            } header: {
+                Text("Colour")
+            } footer: {
+                Text("Evening Mode rests while one of these apps is in front, for work where colour matters, such as photo and video editing, and comes back when you switch away.")
                     .font(.callout).foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
+    }
+
+    private static func sunText() -> String {
+        let clock = { (minute: Int) in String(format: "%02d:%02d", minute / 60, minute % 60) }
+        switch SolarTimes.day(on: Date(), timeZone: .current) {
+        case .normal(let sunrise, let sunset): return "Sunset \(clock(sunset)), sunrise \(clock(sunrise))"
+        case .alwaysUp: return "The sun doesn’t set today"
+        case .alwaysDown: return "The sun doesn’t rise today"
+        }
+    }
+
+    private static func appName(_ bundleID: String) -> String {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return bundleID }
+        return FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
     }
 }
 

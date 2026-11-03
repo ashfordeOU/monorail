@@ -226,6 +226,7 @@ final class Engine {
         if settings.autoSnapshot { saveSnapshot(named: Self.lastSessionName, quiet: true) }
         saveState()
         try? FileManager.default.removeItem(at: Self.runningURL)
+        unstashAll(quietly: true)
         restoreAll()
         overlays.hideAll()
     }
@@ -239,6 +240,7 @@ final class Engine {
         isPaused = paused
         if paused {
             animator.finishNow()
+            unstashAll(quietly: true)
             restoreAll()
             overlays.hideAll()
         } else {
@@ -298,6 +300,9 @@ final class Engine {
         case .windowSwitcher:
             onShowSwitcher()
             return
+        case .toggleEvening, .displayBrighter, .displayDimmer, .displayMoreSpace, .displayLargerText, .displayDefaultResolution:
+            onAppAction(action)
+            return
         case .overview:
             onShowOverview()
             return
@@ -315,7 +320,14 @@ final class Engine {
         if let n = action.saveViewNumber { return saveView(n) }
         if let n = action.tagNumber { return toggleTag(n - 1) }
         if let n = action.combineNumber { return toggleCombine(n - 1) }
+        if action.displayDirection != nil || action.displayNumber != nil { return performDisplayAction(action) }
         switch action {
+        case .stashWindow:
+            toggleStash()
+            return
+        case .unstashAll:
+            unstashAll(quietly: false)
+            return
         case .toggleScratchpad:
             toggleScratchpad()
             return
@@ -1600,6 +1612,30 @@ final class Engine {
         return result
     }
 
+    /// Every window of this profile, in every workspace and floating, the most recently used
+    /// first: for the hold-and-release window switcher.
+    func recentWindowSummaries() -> [WindowSummary] {
+        refreshTitles()
+        let focused = focusedWindowID()
+        var ids: [WindowID] = []
+        for (key, strip) in strips.sorted(by: { ($0.key.display, $0.key.workspace) < ($1.key.display, $1.key.workspace) })
+        where key.workspace / Self.profileStride == activeProfile {
+            ids += strip.allWindows.filter { windows[$0] != nil }
+        }
+        ids += windows.values.filter { $0.key == nil }.map(\.id).sorted()
+        var recent = focusHistory.recentFirst
+        if let focused, windows[focused] != nil {
+            recent.removeAll { $0 == focused }
+            recent.insert(focused, at: 0)
+        }
+        return HoldSwitcher.order(ids, recentFirst: recent).compactMap { id in
+            windows[id].map { summary($0, focused: id == focused) }
+        }
+    }
+
+    /// The process that owns a window.
+    func pid(of id: WindowID) -> pid_t? { windows[id]?.pid }
+
     private func summary(_ window: ManagedWindow, focused: Bool) -> WindowSummary {
         WindowSummary(
             id: window.id,
@@ -1890,6 +1926,8 @@ final class Engine {
 
     /// Whether Monorail has this window on a strip (rather than floating or unmanaged).
     func isTiled(_ id: WindowID) -> Bool { windows[id]?.key != nil }
+    /// True for a window Monorail knows that isn't on a strip.
+    func isFloating(_ id: WindowID) -> Bool { windows[id].map { $0.key == nil } ?? false }
 
     func focusedWindowID() -> WindowID? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
@@ -2368,7 +2406,7 @@ final class Engine {
     private func keepFloatingInView(_ id: WindowID) {
         inViewChecks[id]?.cancel()
         let work = DispatchWorkItem { [weak self] in
-            guard let self, let window = self.windows[id], window.key == nil else { return }
+            guard let self, let window = self.windows[id], window.key == nil, self.stashes[id] == nil else { return }
             self.inViewChecks[id] = nil
             if NSEvent.pressedMouseButtons != 0 {
                 self.keepFloatingInView(id)
@@ -2388,7 +2426,7 @@ final class Engine {
     /// otherwise centred (and staggered) on the display you're working on.
     private func placeFloating(_ element: AXUIElement, remembered: CGRect?, lenient: Bool = false) {
         guard isRunning, !isPaused, !element.isFullScreen, !element.isMinimized, let frame = element.frame,
-            !isLeftAlone(element, frame: frame)
+            !isLeftAlone(element, frame: frame), element.windowID.map({ stashes[$0] == nil }) ?? true
         else { return }
         // The rules are shared with the other platforms (MonorailEngine.OnScreen).
         let visibleAreas = displays.map { Rect($0.visibleFrame) }
@@ -2652,7 +2690,14 @@ final class Engine {
             }
             return
         }
-        if windows[id]?.key != nil { lastTiledFocus = id } else if id != scratchpad { keepFloatingInView(id) }
+        if windows[id]?.key != nil {
+            lastTiledFocus = id
+        } else if stashes[id] != nil {
+            // Switched to a stashed window (⌘Tab, a notification): slide it out.
+            revealStash(id)
+        } else if id != scratchpad {
+            keepFloatingInView(id)
+        }
         if focusHistory.last != id {
             if let window = windows[id] {
                 EventStream.shared.send("focus", ["id": Int(id), "app": window.appName, "bundleID": window.bundleID ?? "",
@@ -2710,6 +2755,11 @@ final class Engine {
     /// was dropped. Either way the layout is re-applied after mouse-up.
     private func userMovedOrResized(_ element: AXUIElement, resized: Bool) {
         if let window = window(for: element), window.key == nil, window.id != scratchpad {
+            // Dragging a stashed window out takes it out of the stash, where it was dropped.
+            if stashes[window.id] != nil {
+                guard NSEvent.pressedMouseButtons != 0 else { return }
+                stashes[window.id] = nil
+            }
             if settings.rememberFloatingPositions, let key = floatKey(window), let frame = element.frame,
                 displays.contains(where: { $0.visibleFrame.insetBy(dx: -2, dy: -2).contains(frame) })
             {
@@ -5099,6 +5149,7 @@ final class Engine {
     func rescueWindows() {
         animator.finishNow()
         showingDesktop = false
+        unstashAll(quietly: true)
         guard let main = displays.first else { return }
         var moved = 0
         for app in NSWorkspace.shared.runningApplications where app.activationPolicy == .regular {
@@ -5839,16 +5890,245 @@ final class Engine {
     }
 
     /// Snaps a window dropped on the snap layouts picker.
-    func snapWindow(_ id: WindowID, to position: SnapPosition) {
+    // MARK: - Displays by direction and number
+
+    /// The display keyboard actions apply to (the focused window's, or the one under the pointer).
+    func activeDisplay() -> (id: CGDirectDisplayID, uuid: String, name: String)? {
+        guard let display = activeContext()?.0 ?? displayUnderMouse() ?? displays.first else { return nil }
+        return (display.id, display.uuid, display.name)
+    }
+
+    /// "Focus / send to the display on the left", "… display 3": displays are numbered from
+    /// left to right (then top to bottom).
+    private func performDisplayAction(_ action: Action) {
+        guard displays.count > 1 else {
+            onNotice("Only one display is connected")
+            return
+        }
+        guard let current = activeContext()?.0, let index = displays.firstIndex(of: current) else { return }
+        let frames = displays.map { Rect($0.frame) }
+        let target: Int?
+        if let direction = action.displayDirection {
+            target = DisplayTargets.neighbour(of: index, direction, in: frames)
+        } else if let number = action.displayNumber {
+            target = DisplayTargets.index(ofNumber: number, in: frames)
+        } else {
+            target = nil
+        }
+        guard let target else {
+            onNotice(action.displayNumber.map { "There’s no display \($0)" } ?? "No display that way")
+            return
+        }
+        guard target != index else { return }
+        if action.sendsToDisplay {
+            sendFocusedWindow(to: displays[target])
+        } else {
+            focusDisplay(displays[target])
+        }
+    }
+
+    /// Focuses what was last in use on a display: its strip's window, or a floating window there.
+    private func focusDisplay(_ display: Display) {
+        if let id = strips[currentKey(display)]?.focusedWindow {
+            focusAndReveal(id)
+        } else if let id = focusHistory.recentFirst.first(where: { id in
+            guard let window = windows[id], window.key == nil, stashes[id] == nil, let frame = window.element.frame else { return false }
+            return self.display(containing: frame)?.uuid == display.uuid
+        }) {
+            focus(id, warpMouse: true)
+        } else {
+            CGWarpMouseCursorPosition(CGPoint(x: display.frame.midX, y: display.frame.midY))
+        }
+    }
+
+    /// Moves the focused window to `display`: into its strip if tiled, or to the same place
+    /// (in proportion) if floating.
+    private func sendFocusedWindow(to display: Display) {
+        guard let id = focusedWindowID() else { return }
+        if let window = windows[id], let key = window.key {
+            recordHistory()
+            let width = strips[key].flatMap { strip in strip.locate(id).map { strip.columns[$0.column].width } }
+            removeFromStrip(window)
+            place(window, in: currentKey(display), display: display, focus: true, width: width, restoring: false)
+            window.lastApplied = nil
+            layout(animated: true)
+            focus(id, warpMouse: true)
+            scheduleSave()
+            return
+        }
+        guard let app = NSWorkspace.shared.frontmostApplication,
+            let element = windows[id]?.element ?? AXUIElement.application(app.processIdentifier).focusedWindow,
+            let frame = element.frame, let source = self.display(containing: frame)
+        else { return }
+        stashes[id] = nil
+        let moved = DisplayTargets.transfer(Rect(frame), from: Rect(source.visibleFrame), to: Rect(display.visibleFrame))
+        element.setFrame(CGRect(moved))
+        if settings.mouseFollowsFocus { CGWarpMouseCursorPosition(CGPoint(x: moved.midX, y: moved.midY)) }
+    }
+
+    // MARK: - Stash
+
+    /// A window stashed at a screen edge: out of view but a sliver, sliding out when the pointer
+    /// touches it.
+    private struct Stash {
+        var edge: ScreenEdge
+        var display: String
+        /// Where it was before stashing, and the slide it was in (to go back to).
+        var restore: CGRect
+        var tiledIn: StripKey?
+        /// Where it waits, while hidden.
+        var hidden: Rect?
+        var revealed = false
+        var pointerLeftAt: CFTimeInterval?
+    }
+
+    private var stashes: [WindowID: Stash] = [:]
+    private var stashTimer: Timer?
+
+    /// Stashes the focused window at the nearer free screen edge, or brings it back if it is stashed.
+    private func toggleStash() {
+        guard let id = focusedWindowID() else {
+            onNotice("Focus a window to stash it")
+            return
+        }
+        if stashes[id] != nil {
+            unstash(id)
+            return
+        }
+        guard let window = windows[id] ?? adoptFocused(id), let frame = window.element.frame,
+            let display = display(containing: frame) ?? displays.first, let index = displays.firstIndex(of: display)
+        else { return }
+        guard window.id != scratchpad else {
+            onNotice("The scratchpad hides by itself · ⌃⌥` shows and hides it")
+            return
+        }
+        let frames = displays.map { Rect($0.frame) }
+        guard let edge = StashGeometry.edge(for: Rect(frame), display: Rect(display.frame),
+                                            sharedEdges: DisplayTargets.sharedEdges(of: index, in: frames))
+        else {
+            onNotice("Both sides of this display touch another display · nowhere to stash")
+            return
+        }
+        let tiledIn = window.key
+        if tiledIn != nil {
+            removeFromStrip(window)
+            window.lastApplied = nil
+            layout(animated: true)
+        }
+        stashes[id] = Stash(edge: edge, display: display.uuid, restore: frame, tiledIn: tiledIn)
+        hideStash(id)
+        if let (_, key) = activeContext(), let next = strips[key]?.focusedWindow, next != id { focus(next, warpMouse: false) }
+        if stashTimer == nil { stashTimer = Timer.every(0.1) { [weak self] _ in self?.trackStashes() } }
+        onNotice("Stashed at the \(edge == .left ? "left" : "right") edge · point at it to slide the window out")
+    }
+
+    /// Puts a stashed window back where it was (and into its slide, if it was tiled).
+    private func unstash(_ id: WindowID, focusing: Bool = true) {
+        guard let stash = stashes.removeValue(forKey: id), let window = windows[id] else { return }
+        if stashes.isEmpty { stopStashTimer() }
+        let fits = displays.contains { $0.frame.intersection(stash.restore).area > stash.restore.area * 0.5 }
+        if fits { window.element.setFrame(stash.restore) }
+        if let key = stash.tiledIn, let display = display(for: key) ?? displays.first {
+            place(window, in: currentKey(display), display: display, focus: true, restoring: false)
+            window.lastApplied = nil
+            layout(animated: true)
+        } else if !fits {
+            placeFloating(window.element, remembered: nil)
+        }
+        if focusing { focus(id, warpMouse: false) }
+    }
+
+    /// Brings back every stashed window.
+    private func unstashAll(quietly: Bool) {
+        let count = stashes.count
+        for id in Array(stashes.keys) { unstash(id, focusing: false) }
+        stopStashTimer()
+        if !quietly { onNotice(count == 0 ? "Nothing is stashed" : "Brought back \(count) stashed window\(count == 1 ? "" : "s")") }
+    }
+
+    private func stopStashTimer() {
+        stashTimer?.invalidate()
+        stashTimer = nil
+    }
+
+    private func stashDisplay(_ stash: Stash) -> Display? { displays.first { $0.uuid == stash.display } }
+
+    private func hideStash(_ id: WindowID) {
+        guard var stash = stashes[id], let window = windows[id], let frame = window.element.frame,
+            let display = stashDisplay(stash)
+        else { return }
+        let hidden = StashGeometry.stashedFrame(Rect(frame), edge: stash.edge, frame: Rect(display.frame),
+                                                visible: Rect(display.visibleFrame))
+        window.element.setPosition(CGPoint(x: hidden.x, y: hidden.y))
+        stash.hidden = hidden
+        stash.revealed = false
+        stash.pointerLeftAt = nil
+        stashes[id] = stash
+    }
+
+    private func revealStash(_ id: WindowID) {
+        guard var stash = stashes[id], !stash.revealed, let window = windows[id], let frame = window.element.frame,
+            let display = stashDisplay(stash)
+        else { return }
+        let shown = StashGeometry.revealedFrame(Rect(frame), edge: stash.edge, visible: Rect(display.visibleFrame),
+                                                gap: layoutConfig(for: display).gap)
+        window.element.setPosition(CGPoint(x: shown.x, y: shown.y))
+        window.element.raise()
+        stash.revealed = true
+        stash.pointerLeftAt = nil
+        stashes[id] = stash
+    }
+
+    /// Ten times a second while anything is stashed: the pointer at a sliver slides its window
+    /// out; once the pointer has left a revealed window (and it doesn't have focus), it slides back.
+    private func trackStashes() {
+        guard isRunning, !isPaused else { return }
+        guard !stashes.isEmpty else { return stopStashTimer() }
+        let location = NSEvent.mouseLocation
+        let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
+        let point = CGPoint(x: location.x, y: primaryHeight - location.y)
+        let now = CACurrentMediaTime()
+        var focusedID: WindowID?
+        var checkedFocus = false
+        for (id, stash) in stashes {
+            guard let window = windows[id], window.element.isAlive, let display = stashDisplay(stash) else {
+                stashes[id] = nil
+                continue
+            }
+            if stash.revealed {
+                let frame = window.element.frame ?? .zero
+                if !checkedFocus {
+                    focusedID = focusedWindowID()
+                    checkedFocus = true
+                }
+                let keep = frame.insetBy(dx: -16, dy: -16).contains(point) || NSEvent.pressedMouseButtons != 0
+                    || focusedID == id
+                if keep {
+                    stashes[id]?.pointerLeftAt = nil
+                } else if let left = stash.pointerLeftAt {
+                    if now - left > 0.4 { hideStash(id) }
+                } else {
+                    stashes[id]?.pointerLeftAt = now
+                }
+            } else if let hidden = stash.hidden {
+                let zone = StashGeometry.hotZone(stashed: hidden, edge: stash.edge, frame: Rect(display.frame))
+                if zone.contains(x: Double(point.x), y: Double(point.y)) { revealStash(id) }
+            }
+        }
+    }
+
+    /// Snaps a window to a zone: on the display at `point` (Accessibility coordinates) when
+    /// given, otherwise the one it's on.
+    func snapWindow(_ id: WindowID, to position: SnapPosition, at point: CGPoint? = nil) {
         guard isRunning, !isPaused, let window = windows[id] else { return }
         recordHistory()
-        snap(window.element, to: position)
+        snap(window.element, to: position, on: point.flatMap { p in displays.first { $0.frame.contains(p) } })
         focus(id, warpMouse: false)
     }
 
-    private func snap(_ element: AXUIElement, to position: SnapPosition) {
+    private func snap(_ element: AXUIElement, to position: SnapPosition, on chosen: Display? = nil) {
         guard let id = element.windowID, let frame = element.frame,
-            let display = display(containing: frame) ?? displays.first
+            let display = chosen ?? display(containing: frame) ?? displays.first
         else { return }
         if snapOrigins[id] == nil {
             let window = windows[id]

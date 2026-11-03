@@ -277,6 +277,40 @@ public static class Actions
     public const string Retile = "retile";
     public const string Undo = "undo";
     public const string TogglePause = "toggle-pause";
+    public const string FocusDisplayLeft = "focus-display-left";
+    public const string FocusDisplayRight = "focus-display-right";
+    public const string FocusDisplayUp = "focus-display-up";
+    public const string FocusDisplayDown = "focus-display-down";
+    public const string SendToDisplayLeft = "send-to-display-left";
+    public const string SendToDisplayRight = "send-to-display-right";
+    public const string SendToDisplayUp = "send-to-display-up";
+    public const string SendToDisplayDown = "send-to-display-down";
+    public const string FocusDisplay1 = "focus-display-1";
+    public const string FocusDisplay2 = "focus-display-2";
+    public const string FocusDisplay3 = "focus-display-3";
+    public const string FocusDisplay4 = "focus-display-4";
+    public const string FocusDisplay5 = "focus-display-5";
+    public const string FocusDisplay6 = "focus-display-6";
+    public const string FocusDisplay7 = "focus-display-7";
+    public const string FocusDisplay8 = "focus-display-8";
+    public const string FocusDisplay9 = "focus-display-9";
+    public const string SendToDisplay1 = "send-to-display-1";
+    public const string SendToDisplay2 = "send-to-display-2";
+    public const string SendToDisplay3 = "send-to-display-3";
+    public const string SendToDisplay4 = "send-to-display-4";
+    public const string SendToDisplay5 = "send-to-display-5";
+    public const string SendToDisplay6 = "send-to-display-6";
+    public const string SendToDisplay7 = "send-to-display-7";
+    public const string SendToDisplay8 = "send-to-display-8";
+    public const string SendToDisplay9 = "send-to-display-9";
+    public const string DisplayBrighter = "display-brighter";
+    public const string DisplayDimmer = "display-dimmer";
+    public const string DisplayMoreSpace = "display-more-space";
+    public const string DisplayLargerText = "display-larger-text";
+    public const string DisplayDefaultResolution = "display-default-resolution";
+    public const string StashWindow = "stash-window";
+    public const string UnstashAll = "unstash-all";
+    public const string EveningMode = "evening-mode";
 
     public static readonly ActionInfo[] All =
     {
@@ -550,5 +584,39 @@ public static class Actions
         new("retile", "Retile everything", true, false),
         new("undo", "Undo last layout change", true, false),
         new("toggle-pause", "Pause / resume", true, false),
+        new("focus-display-left", "Focus the display on the left", false, false),
+        new("focus-display-right", "Focus the display on the right", false, false),
+        new("focus-display-up", "Focus the display above", false, false),
+        new("focus-display-down", "Focus the display below", false, false),
+        new("send-to-display-left", "Send window to the display on the left", false, false),
+        new("send-to-display-right", "Send window to the display on the right", false, false),
+        new("send-to-display-up", "Send window to the display above", false, false),
+        new("send-to-display-down", "Send window to the display below", false, false),
+        new("focus-display-1", "Focus display 1", false, true),
+        new("focus-display-2", "Focus display 2", false, true),
+        new("focus-display-3", "Focus display 3", false, true),
+        new("focus-display-4", "Focus display 4", false, true),
+        new("focus-display-5", "Focus display 5", false, true),
+        new("focus-display-6", "Focus display 6", false, true),
+        new("focus-display-7", "Focus display 7", false, true),
+        new("focus-display-8", "Focus display 8", false, true),
+        new("focus-display-9", "Focus display 9", false, true),
+        new("send-to-display-1", "Send window to display 1", false, true),
+        new("send-to-display-2", "Send window to display 2", false, true),
+        new("send-to-display-3", "Send window to display 3", false, true),
+        new("send-to-display-4", "Send window to display 4", false, true),
+        new("send-to-display-5", "Send window to display 5", false, true),
+        new("send-to-display-6", "Send window to display 6", false, true),
+        new("send-to-display-7", "Send window to display 7", false, true),
+        new("send-to-display-8", "Send window to display 8", false, true),
+        new("send-to-display-9", "Send window to display 9", false, true),
+        new("display-brighter", "Brighter display (software brightness)", false, false),
+        new("display-dimmer", "Dimmer display (below the lowest brightness)", false, false),
+        new("display-more-space", "Display resolution: more space", false, false),
+        new("display-larger-text", "Display resolution: larger text", false, false),
+        new("display-default-resolution", "Display resolution: back to default", false, false),
+        new("stash-window", "Stash the window at the screen edge (again to bring it back)", false, false),
+        new("unstash-all", "Bring back every stashed window", false, false),
+        new("evening-mode", "Evening Mode on or off", false, false),
     };
 }

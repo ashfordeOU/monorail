@@ -18,7 +18,7 @@
 
 ---
 
-**Monorail by Ashforde®** is a scrolling window manager for your Mac. **Version 1.5 is here:** you can ask it questions, search Settings, and install it with Homebrew. **1.4:** It keeps floating windows in view, shows your usage in About, and speaks nine languages. 1.3 added Stay Awake, Amphetamine-style, and 1.2 added this: you can tell it what you want in plain words, it learns how you work, it tells you when an AI agent needs you, it keeps private windows out of screen shares, and it comes in 27 themes.
+**Monorail by Ashforde®** is a scrolling window manager for your Mac. **New in 1.7:** it's signed with Ashforde's Apple Developer ID and notarised by Apple, so it opens without warnings; **Evening Mode** warms your screen at night with a strength slider; and Stay Awake can keep a MacBook running with the lid closed, safely. **1.5:** you can ask it questions, search Settings, and install it with Homebrew. **1.4:** It keeps floating windows in view, shows your usage in About, and speaks nine languages. 1.3 added Stay Awake, Amphetamine-style, and 1.2 added this: you can tell it what you want in plain words, it learns how you work, it tells you when an AI agent needs you, it keeps private windows out of screen shares, and it comes in 27 themes.
 
 Grid tilers squeeze every new window into the space that's already there.
 **Monorail does the opposite.** Each window is a column on a horizontal strip
@@ -628,6 +628,12 @@ in Settings → Layout if you prefer dragging to swap windows.
 - **Nine languages:** English, German, French, Spanish, Japanese, Chinese (Simplified), Portuguese, Korean and Italian for the menus and Settings.
 - **Lighter in use.** Overlays only redraw when something changes, and overview previews are smaller.
 - For contributors and testers: [docs/TESTING.md](docs/TESTING.md) (a real-Mac checklist) and [docs/NOTARISATION.md](docs/NOTARISATION.md).
+
+### New in 1.7: notarised, Evening Mode, safer lid-closed mode 🌙
+
+- **Signed and notarised.** From 1.7.16, every release is signed with Ashforde's Apple Developer ID and notarised by Apple: it opens with no "can't verify the developer" warning, and the pkg is signed for MDM tools and Installomator. Earlier releases are re-signed too.
+- **Evening Mode** (menu bar → Evening Mode, or Settings → Evening Mode): less blue light from every display, as warm as you like with a slider that changes the screen as you drag. Turn it on by hand or every evening on a schedule, fading in and out over 20 minutes. Screenshots and recordings keep their normal colours, and your displays' own calibration is kept.
+- **Stay awake with the lid closed, safely.** Your password is asked once per session, and turning it off never asks. It turns off by itself when the Mac gets hot, on battery (by default), in Low Power Mode or below 20%, and within seconds if Monorail quits or crashes. With the lid closed, the Mac then goes to sleep. With Keeper installed, Keeper takes care of it under the same rules.
 
 ### New in 1.3: Stay Awake ☕
 

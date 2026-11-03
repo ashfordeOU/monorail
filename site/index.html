@@ -71,8 +71,9 @@ nav.top .links a:hover { color:var(--ink); }
 .btn.primary { color:#fff; background:linear-gradient(100deg, var(--pink), var(--plum)); box-shadow:0 10px 30px rgba(214,58,128,.35); }
 .btn.ghost { color:var(--ink); background:var(--card); border:1px solid var(--line); }
 .btn.small { padding:8px 16px; font-size:14px; }
-@media (max-width:1320px) { nav.top .links { display:none; } nav.top .prefs { margin-left:auto; } }
-@media (max-width:480px) { nav.top .brand small { display:none; } nav.top .wrap { gap:8px; } .prefs { gap:0; } .prefs .sep { display:none; } .prefs button { min-width:26px; padding:0 5px; } nav.top .btn.small { padding:7px 12px; font-size:13px; } }
+@media (max-width:1320px) { nav.top .links a.x { display:none; } }
+@media (max-width:1000px) { nav.top .links { display:none; } nav.top .prefs { margin-left:auto; } }
+@media (max-width:560px) { nav.top .brand small { display:none; } nav.top .wrap { gap:8px; } .prefs { gap:0; } .prefs .sep { display:none; } .prefs button { min-width:26px; padding:0 5px; } nav.top .btn.small { padding:7px 12px; font-size:13px; } }
 
 /* Hero */
 .hero { padding:44px 0 30px; text-align:center; position:relative; overflow:hidden; }
@@ -91,12 +92,11 @@ h1 em { font-style:normal; white-space:nowrap; }
 .tabs { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
 .tab { padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:var(--card); color:var(--muted); font-family:inherit; font-weight:600; font-size:14px; line-height:1; cursor:pointer; transition:all .25s var(--ease); }
 .tab[aria-selected="true"] { color:#fff; background:var(--deep); border-color:var(--deep); }
-.laptop { position:relative; margin:0 auto; max-width:100%; }
+.laptop { position:relative; margin:0 auto; max-width:100%; padding-inline:4.5%; }
 .laptop .lid { position:relative; padding:clamp(6px,1.6%,16px); padding-top:clamp(10px,2.2%,22px); border-radius:clamp(14px,2.4vw,26px) clamp(14px,2.4vw,26px) 6px 6px; background:#0d0b10; box-shadow:0 40px 100px rgba(42,20,48,.35), inset 0 0 0 1px rgba(255,255,255,.08), 0 0 0 1px rgba(0,0,0,.25); }
 .laptop .lid::before { content:""; position:absolute; top:clamp(3px,.8%,8px); left:50%; width:6px; height:6px; margin-left:-3px; border-radius:50%; background:#1f2a33; box-shadow:inset 0 0 0 1.5px #2b3a46; }
-.laptop .base { position:relative; height:clamp(10px,1.6vw,18px); margin:0 -6%; border-radius:0 0 18px 18px / 0 0 100% 100%; background:linear-gradient(#e4e2ea, #b9b6c2 70%, #8f8b99); box-shadow:0 18px 30px rgba(42,20,48,.22); }
+.laptop .base { position:relative; height:clamp(10px,1.6vw,18px); margin:0 -4.8%; border-radius:0 0 18px 18px / 0 0 100% 100%; background:linear-gradient(#e4e2ea, #b9b6c2 70%, #8f8b99); box-shadow:0 18px 30px rgba(42,20,48,.22); }
 .laptop .base::before { content:""; position:absolute; top:0; left:50%; width:16%; height:45%; transform:translateX(-50%); border-radius:0 0 10px 10px; background:linear-gradient(#a9a5b3,#cfccd6); }
-@media (max-width:560px) { .laptop .base { margin:0 -3%; } }
 .mac { position:relative; aspect-ratio:16/9.6; border-radius:6px; overflow:hidden; background:linear-gradient(135deg,#3A2A6E,#7A2E78 55%,#C2456E); }
 .mac .menubar { position:absolute; inset:0 0 auto; height:5.2%; background:rgba(20,8,24,.35); backdrop-filter:blur(12px); display:flex; align-items:center; padding:0 2%; gap:2.2%; color:#fff; font:600 clamp(9px,1.25vw,13px)/1 -apple-system, sans-serif; z-index:5; }
 .mac .menubar .right { margin-left:auto; display:flex; align-items:center; gap:10px; }
@@ -307,7 +307,7 @@ footer a:hover { color:var(--ink); }
   <div class="wrap">
     <a class="brand" href="#"><img src="assets/icon.png" alt="">Monorail <small>by Ashforde®</small></a>
     <div class="links">
-      <a href="#demo">Demo</a><a href="#how">How it works</a><a href="#docking">Docking</a><a href="#features">Features</a><a href="#trust">Safety</a><a href="#compare">Compare</a><a href="#shortcuts">Shortcuts</a><a href="#themes">Themes</a><a href="#faq">FAQ</a>
+      <a href="#demo">Demo</a><a href="#how">How it works</a><a class="x" href="#docking">Docking</a><a href="#features">Features</a><a href="#trust">Safety</a><a class="x" href="#compare">Compare</a><a class="x" href="#shortcuts">Shortcuts</a><a class="x" href="#themes">Themes</a><a href="#faq">FAQ</a>
     </div>
     <div class="prefs" role="group" aria-label="Display">
       <button type="button" id="themebtn" title="Theme: follows your system" aria-label="Theme"></button>
@@ -321,7 +321,7 @@ footer a:hover { color:var(--ink); }
 
 <header class="hero">
   <div class="wrap">
-    <a class="eyebrow" href="#trust" style="text-decoration:none"><b>New</b> Evening Mode, a safer Stay Awake, and notarised by Apple from 1.7.16</a>
+    <a class="eyebrow" href="#trust" style="text-decoration:none"><b>New</b> Evening Mode and a safer Stay Awake</a>
     <h1>Every window rides <em class="grad">one rail.</em></h1>
     <p class="lede">Monorail is a scrolling window manager for your Mac. New windows slide in next to the one you're using, and <b>nothing else ever shrinks</b>. Tell it what you want in plain words.</p>
     <div class="cta">
@@ -329,7 +329,7 @@ footer a:hover { color:var(--ink); }
       <a class="btn ghost" href="#demo">Try it here ↓</a>
     </div>
     <p class="hint" id="dlmeta" style="margin:-4px 0 10px">macOS 13 or later</p>
-    <div class="trust"><span class="notarised" hidden>Notarised by Apple</span><span>Free, every feature</span><span>No account</span><span>Apple silicon and Intel</span></div>
+    <div class="trust"><span class="notarised">Notarised by Apple</span><span>Free, every feature</span><span>No account</span><span>Apple silicon and Intel</span></div>
 
     <div class="stage" id="demo">
       <div class="tabs" role="tablist" aria-label="Demo">
@@ -465,7 +465,7 @@ footer a:hover { color:var(--ink); }
     <div class="center"><div class="kicker">Safe to install</div><h2>Signed, notarised and <span class="grad">built in public</span></h2>
     <p class="sub">Monorail opens without warnings, and you can check every claim on this page yourself.</p></div>
     <div class="privacy">
-      <div><b>Notarised by Apple</b><p>From version 1.7.16, every release is checked by Apple's notary service and carries Apple's ticket, so macOS opens it without the "can't verify the developer" warning.</p></div>
+      <div><b>Notarised by Apple</b><p>Every release is checked by Apple's notary service and carries Apple's ticket, so macOS opens it without the "can't verify the developer" warning.</p></div>
       <div><b>Signed by Ashforde OÜ</b><p>Signed with Ashforde's Apple Developer ID (Team D69G45342Y), and updates install only if they carry the same signature.</p></div>
       <div><b>Source on GitHub, tested on every change</b><p>Every line is public under the Functional Source License. Every change is tested on macOS, Windows and Linux, and every release is built from that source by GitHub Actions, not on someone's laptop.</p></div>
       <div><b>Check your download</b><p>Each release lists SHA-256 checksums in SHA256SUMS: compare them with <code>shasum -a 256 Monorail-*.dmg</code>. <code>spctl -a -vvv -t open --context context:primary-signature Monorail-*.dmg</code> should say "Notarized Developer ID".</p></div>
@@ -520,7 +520,7 @@ footer a:hover { color:var(--ink); }
     <div class="center"><div class="kicker">FAQ</div><h2>Good questions</h2></div>
     <div class="faq">
       <details><summary>Is it really free?</summary><p>Yes. Every feature, including docking, tab groups, saved views, scripting and every display, with no trial, subscription or window limits. The source is on GitHub under the Functional Source License.</p></details>
-      <details><summary>Is it safe to install?</summary><p>Yes. From 1.7.16, every release is signed with Ashforde's Apple Developer ID and notarised by Apple, so macOS opens it without warnings. <a href="#trust">Safe to install</a> shows how to check a download yourself.</p></details>
+      <details><summary>Is it safe to install?</summary><p>Yes. Every release is signed with Ashforde's Apple Developer ID and notarised by Apple, so macOS opens it without warnings. <a href="#trust">Safe to install</a> shows how to check a download yourself.</p></details>
       <details><summary>Will it fight my other window tools?</summary><p>It can, so quit other window managers and turn off Stage Manager. Settings → General → Mac setup checks for both.</p></details>
       <details><summary>What happens to my windows if I quit?</summary><p>Every window comes back on screen. Next time Monorail starts, your layout returns.</p></details>
       <details><summary>Does it work with multiple displays, projectors and Sidecar?</summary><p>Yes: each display gets its own strip, an unplugged display's windows come back when you reconnect, and Sidecar iPads fit every slide.</p></details>
@@ -548,7 +548,7 @@ footer a:hover { color:var(--ink); }
       <a class="btn ghost" href="https://github.com/ashfordeOU/monorail">Star on GitHub</a>
     </div>
     <code class="install">brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail &amp;&amp; brew install --cask monorail</code>
-    <div class="trust" style="margin-top:16px"><span class="notarised" hidden>Notarised by Apple</span><span>Free</span><span>No account</span><span>macOS 13+</span></div>
+    <div class="trust" style="margin-top:16px"><span class="notarised">Notarised by Apple</span><span>Free</span><span>No account</span><span>macOS 13+</span></div>
   </div>
 </main>
 
@@ -1042,9 +1042,6 @@ footer a:hover { color:var(--ink); }
     const pkg = assets.find(a => /\.pkg$/i.test(a.name));
     if (!dmg) return;
     const version = String(release.tag_name || '').replace(/^v/, ''), mb = (dmg.size / 1048576).toFixed(1);
-    // "Notarised by Apple" shows once the latest release is a notarised one (1.7.16 and later).
-    const [ma, mi, pa] = version.split('.').map(n => parseInt(n, 10) || 0);
-    if (ma > 1 || (ma === 1 && (mi > 7 || (mi === 7 && pa >= 16)))) document.querySelectorAll('.notarised').forEach(el => { el.hidden = false; });
     const date = new Date(release.published_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
     document.querySelectorAll('a.dl').forEach(a => { a.href = dmg.browser_download_url; a.title = `Monorail ${version} · ${mb} MB · macOS 13 or later`; a.dataset.name = dmg.name; });
     if (pkg) document.querySelectorAll('a.pkg').forEach(a => { a.href = pkg.browser_download_url; });

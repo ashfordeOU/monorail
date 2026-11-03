@@ -50,3 +50,12 @@ spctl -a -vvv -t open --context context:primary-signature Monorail-1.7.16.dmg   
 spctl -a -vvv -t install Monorail-1.7.16.pkg   # the same for the pkg
 xcrun stapler validate Monorail-1.7.16.dmg
 ```
+
+## When Apple takes a long time
+
+Apple usually answers in minutes, but a new team's first submissions can sit in a deeper review for
+hours. The release sends the DMG and the pkg at the same time, keeps the built files and Apple's
+submission IDs (the `release-files` artifact, kept 7 days), and waits up to 5 hours. If Apple still
+hasn't answered, the run stops cleanly with a message: once Apple has accepted the files (check with
+`xcrun notarytool history`), run **Release** again with the same tag and `resume_run` set to that run's
+ID. It reuses the same files and submissions, so nothing goes back in Apple's queue.

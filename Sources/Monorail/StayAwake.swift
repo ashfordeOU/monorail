@@ -275,7 +275,9 @@ final class StayAwake {
                                             battery: Self.batteryPercent())
         switch decision {
         case .on:
-            lidStopReason = nil
+            // Once stopped for safety it stays off until the next session (no surprise password
+            // prompt when the power comes back, perhaps with the lid closed). Same rule as Keeper.
+            guard lidStopReason == nil else { return }
             guard !closedLidOn, !lidRequestPending, !lidAlreadyOff else { return }
             // Already switched on by hand (or by another app): use it, and never switch it off.
             if Self.sleepIsDisabled {

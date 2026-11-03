@@ -194,14 +194,14 @@ extension AwakeRules {
             return .stopped("Your Mac is getting hot, so it will sleep when the lid is closed. Stay Awake continues while it's open.")
         }
         if lowPowerMode {
-            return .stopped("Low Power Mode is on, so your Mac will sleep when the lid is closed.")
+            return .stopped("Low Power Mode is on, so your Mac will sleep when the lid is closed, for the rest of this Stay Awake session.")
         }
         if !charging {
             if onlyOnPower {
-                return .stopped("On battery, so your Mac will sleep when the lid is closed. Plug in to keep it running closed.")
+                return .stopped("On battery, so your Mac will sleep when the lid is closed, for the rest of this Stay Awake session.")
             }
             if let battery, battery < batteryFloor {
-                return .stopped("Battery below \(batteryFloor)%, so your Mac will sleep when the lid is closed.")
+                return .stopped("Battery below \(batteryFloor)%, so your Mac will sleep when the lid is closed, for the rest of this Stay Awake session.")
             }
         }
         return .on

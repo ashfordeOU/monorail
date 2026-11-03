@@ -39,6 +39,7 @@ enum SettingsIndex {
         ("Drag the gap between two windows to resize both", "layout"),
         ("After resizing a window in a slide, offer to rearrange it", "layout"),
         ("Group windows into slides by app", "layout"),
+        ("Keep terminals together (Terminal, iTerm, Ghostty and others share slides)", "layout"),
         ("Pair lone windows of different apps as they open", "layout"),
         ("Drag a window to the top of the screen to pick a snap layout", "layout"),
         ("Slide layout", "layout"),

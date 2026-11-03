@@ -3,7 +3,7 @@
 PortSystem          1.0
 PortGroup           github 1.0
 
-github.setup        ashfordeOU monorail 1.7.16 v
+github.setup        ashfordeOU monorail 1.7.17 v
 github.tarball_from releases
 revision            0
 
@@ -25,9 +25,9 @@ homepage            https://monorail.ashforde.org/
 distname            Monorail-${version}
 use_zip             yes
 extract.mkdir       yes
-checksums           rmd160  907d98c907f9965f8d4cd0c88549e5bca183e3b5 \
-                    sha256  b1c96753c0a8726ea6b43259a2cc6375a81ed7163770ec0e24a6f4937051f6d5 \
-                    size    7104505
+checksums           rmd160  e25b7a6800f41023b38965355c953c012024948a \
+                    sha256  0ee56234d918cd88d9a5cf64989fb8d196884ece94bde8f0e5956248907f5001 \
+                    size    7421471
 
 use_configure       no
 build               {}

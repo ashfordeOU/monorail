@@ -306,6 +306,7 @@ public enum ContentWidths {
         "dev.zed.Zed": .code, "com.jetbrains.intellij": .code, "com.sublimetext.4": .code, "com.panic.Nova": .code,
         "com.apple.Terminal": .terminal, "com.googlecode.iterm2": .terminal, "com.github.wez.wezterm": .terminal,
         "net.kovidgoyal.kitty": .terminal, "com.mitchellh.ghostty": .terminal, "dev.warp.Warp-Stable": .terminal,
+        "org.alacritty": .terminal, "io.alacritty": .terminal, "co.zeit.hyper": .terminal, "com.raphaelamorim.rio": .terminal,
         "com.apple.iWork.Pages": .document, "com.microsoft.Word": .document, "com.apple.TextEdit": .document,
         "md.obsidian": .document, "notion.id": .document, "com.apple.Preview": .document, "com.apple.Notes": .document,
         "com.apple.Safari": .browser, "com.google.Chrome": .browser, "org.mozilla.firefox": .browser,

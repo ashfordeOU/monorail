@@ -896,6 +896,9 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// Put a newly opened lone window into a slide with another app's lone
     /// window. When off, that only happens when regrouping (⌃⌥A).
     public var pairLoneWindowsOnOpen = false
+    /// Terminal apps (Terminal, iTerm, Ghostty, Warp, kitty, Alacritty, WezTerm) share slides with
+    /// each other, as if they were one app.
+    public var groupTerminals = true
     /// Layout of new slides, unless an app rule says otherwise.
     public var slideArrangement: Arrangement = .grid
     /// Workspaces per display (1...9). Each has its own strip.
@@ -1011,6 +1014,20 @@ public struct AppSettings: Equatable, Codable, Sendable {
         min(max(rule(for: bundleID)?.tiles ?? tilesPerSlide, 1), Column.maximumWindows)
     }
 
+    /// The key windows are grouped by: the app, or one shared key for every terminal app.
+    public static let terminalsGroup = "terminals"
+    public func groupKey(for bundleID: String?, appName: String) -> String {
+        if groupTerminals, ContentWidths.kind(of: bundleID) == .terminal { return Self.terminalsGroup }
+        return bundleID ?? appName
+    }
+
+    /// How many windows of a group share one slide.
+    public func tiles(forGroup key: String) -> Int {
+        guard key == Self.terminalsGroup else { return tiles(for: key) }
+        let terminalTiles = appRules.filter { ContentWidths.kind(of: $0.bundleID) == .terminal }.compactMap(\.tiles)
+        return min(max(terminalTiles.max() ?? 4, 1), Column.maximumWindows)
+    }
+
     /// The name shown for workspace `index` (0-based).
     public func workspaceName(_ index: Int) -> String {
         let name = workspaceNames.indices.contains(index)
@@ -1036,7 +1053,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case mouseFollowsFocus, focusFollowsMouse, keepHeights, focusBorder, focusBorderWidth
         case focusBorderColor, dimInactive, dimAmount, showColumnIndicator, newWindowPosition
         case appRules, keymap, hasCompletedOnboarding, groupByApp, tilesPerSlide, workspaceCount
-        case checkForUpdates, rulesVersion, sliderBar, sliderBarEdge, slideArrangement, iconOpensSlider, pairLoneWindowsOnOpen, keepWindowsInPlace, installUpdatesAutomatically, resizeAssist, workspaceNames, hotEdges, customLayouts, appPairs, profiles, dynamicWorkspaces
+        case checkForUpdates, rulesVersion, sliderBar, sliderBarEdge, slideArrangement, iconOpensSlider, pairLoneWindowsOnOpen, groupTerminals, keepWindowsInPlace, installUpdatesAutomatically, resizeAssist, workspaceNames, hotEdges, customLayouts, appPairs, profiles, dynamicWorkspaces
         case hapticFeedback, pinchForOverview, attentionMarkers, snapPicker
         case focusMinutes, focusDim, displayOverrides, theme, syncThroughICloud, threeFingerTapOverview
         case peekWithOption, collectStats, autoRules, smartGaps, launchSlots, menuBarShowsApp
@@ -1100,6 +1117,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         sliderBarEdge = value(.sliderBarEdge, d.sliderBarEdge)
         iconOpensSlider = value(.iconOpensSlider, d.iconOpensSlider)
         pairLoneWindowsOnOpen = value(.pairLoneWindowsOnOpen, d.pairLoneWindowsOnOpen)
+        groupTerminals = value(.groupTerminals, d.groupTerminals)
         keepWindowsInPlace = value(.keepWindowsInPlace, d.keepWindowsInPlace)
         resizeAssist = value(.resizeAssist, d.resizeAssist)
         workspaceNames = value(.workspaceNames, d.workspaceNames)

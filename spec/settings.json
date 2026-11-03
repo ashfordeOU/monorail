@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 210,
+  "count": 211,
   "settings": [
     {
       "key": "layout",
@@ -1219,6 +1219,12 @@
       "type": "Bool",
       "default": "false",
       "about": "Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A)."
+    },
+    {
+      "key": "groupTerminals",
+      "type": "Bool",
+      "default": "true",
+      "about": "Terminal apps (Terminal, iTerm, Ghostty, Warp, kitty, Alacritty, WezTerm) share slides with each other, as if they were one app."
     },
     {
       "key": "slideArrangement",

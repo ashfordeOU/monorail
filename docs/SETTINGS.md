@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-210 settings.
+211 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -212,6 +212,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `keepWindowsInPlace` | Snap windows back when an app moves or resizes one by itself. | `true` |
 | `resizeAssist` | After resizing a window in a slide, offer to rearrange the slide. | `true` |
 | `pairLoneWindowsOnOpen` | Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A). | `false` |
+| `groupTerminals` | Terminal apps (Terminal, iTerm, Ghostty, Warp, kitty, Alacritty, WezTerm) share slides with each other, as if they were one app. | `true` |
 | `slideArrangement` | Layout of new slides, unless an app rule says otherwise. | `.grid` |
 | `workspaceCount` | Workspaces per display (1...9). Each has its own strip. | `4` |
 | `workspaceNames` | Names for workspaces, by index; empty or missing means "Workspace N". | `[]` |

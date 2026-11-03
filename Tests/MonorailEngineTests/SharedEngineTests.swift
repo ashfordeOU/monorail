@@ -234,3 +234,30 @@ final class SharedEngineMinimumWidthTests: XCTestCase {
         XCTAssertEqual(a.intersection(b).area, 0, "\(a) / \(b)")
     }
 }
+
+final class SharedEngineDesktopTests: XCTestCase {
+    func testEachDesktopKeepsItsOrderAndWidths() {
+        let system = FakeWindowSystem()
+        let engine = SharedEngine(system: system)
+        let frame = Rect(x: 100, y: 100, width: 800, height: 600)
+        for id in 1...3 as ClosedRange<WindowID> { system.open(WindowInfo(id: id, appID: "a", appName: "A", frame: frame)) }
+        engine.start()
+        let display = FakeWindowSystem.laptop.id
+        system.focus(2)
+        XCTAssertTrue(engine.perform(.cycleWidth))
+        let order = engine.strips[display]!.allWindows
+        let width2 = engine.strips[display]!.columns.first { $0.windows.contains(2) }!.width
+        // Switch to another desktop: these three go, a new window arrives there.
+        system.setHidden([1, 2, 3], true)
+        XCTAssertTrue(engine.strips[display]?.isEmpty ?? true)
+        system.open(WindowInfo(id: 9, appID: "b", appName: "B", frame: frame))
+        XCTAssertEqual(engine.strips[display]?.allWindows, [9])
+        // And back, in any order: the first desktop's strip is as it was.
+        system.setHidden([9], true)
+        system.setHidden([3, 1, 2], false)
+        XCTAssertEqual(engine.strips[display]?.allWindows, order)
+        XCTAssertEqual(engine.strips[display]!.columns.first { $0.windows.contains(2) }!.width, width2, accuracy: 0.0001)
+        system.setHidden([9], false)
+        XCTAssertEqual(engine.strips[display]?.allWindows, order + [9])
+    }
+}

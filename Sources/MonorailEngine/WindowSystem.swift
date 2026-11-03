@@ -83,6 +83,10 @@ public enum WindowEvent: Equatable, Sendable {
     case minimized(WindowID)
     case restored(WindowID)
     case titleChanged(WindowID)
+    /// Kept by the OS but not shown here for now (on another Windows virtual desktop).
+    case hidden(WindowID)
+    /// Shown here again (its virtual desktop is the current one).
+    case unhidden(WindowID)
     case appHidden(appID: String)
     case appShown(appID: String)
     case displaysChanged
@@ -97,6 +101,7 @@ public final class FakeWindowSystem: WindowSystem {
     public private(set) var applied: [[WindowID: Rect]] = []
     public var onEvent: (WindowEvent) -> Void = { _ in }
     private var order: [WindowID] = []
+    private var hiddenWindows: Set<WindowID> = []
 
     public init(displays: [DisplayInfo] = [FakeWindowSystem.laptop]) {
         self.displays = displays
@@ -107,8 +112,8 @@ public final class FakeWindowSystem: WindowSystem {
         frame: Rect(x: 0, y: 0, width: 1512, height: 982),
         visibleFrame: Rect(x: 0, y: 33, width: 1512, height: 949))
 
-    public func windows() -> [WindowInfo] { order.compactMap { all[$0] } }
-    public func window(_ id: WindowID) -> WindowInfo? { all[id] }
+    public func windows() -> [WindowInfo] { order.filter { !hiddenWindows.contains($0) }.compactMap { all[$0] } }
+    public func window(_ id: WindowID) -> WindowInfo? { hiddenWindows.contains(id) ? nil : all[id] }
     public func focusedWindow() -> WindowID? { focused }
 
     /// Apps that won't go narrower than this (by app ID), like real ones with a minimum size.
@@ -163,5 +168,13 @@ public final class FakeWindowSystem: WindowSystem {
         guard all[id] != nil else { return }
         all[id]?.frame = frame
         onEvent(.moved(id, byUser: byUser))
+    }
+
+    /// Hides windows as another virtual desktop would, or shows them again.
+    public func setHidden(_ ids: [WindowID], _ hidden: Bool) {
+        for id in ids where all[id] != nil {
+            hiddenWindows = hidden ? hiddenWindows.union([id]) : hiddenWindows.subtracting([id])
+            onEvent(hidden ? .hidden(id) : .unhidden(id))
+        }
     }
 }

@@ -100,9 +100,9 @@ version and runs it against real windows there.
 - [ ] Workspaces as Windows virtual desktops. Written: Windows hides (cloaks) other desktops'
   windows, so switching desktops takes them off the strip and brings the new desktop's on. The UI
   test makes and closes a real desktop (Ctrl+Win+D, Ctrl+Win+F4), but GitHub's Windows machines
-  have no virtual desktops (the shortcut does nothing there), so it needs a real PC. Still to do:
-  each desktop keeping its own slide order when you come back, and shortcuts to switch desktop and
-  send a window to one (Windows has no public API for those)
+  have no virtual desktops (the shortcut does nothing there), so it needs a real PC. Each desktop
+  keeps its own slide order and widths when you come back (tested against the fake). Still to do:
+  shortcuts to switch desktop and send a window to one (Windows has no public API for those)
 - [x] Shortcuts from the shared keymap: Win+Alt with arrows, Home, End, W, F, comma and full stop
   (Shift to move). Windows 11 and Server 2025 keep Win+Alt+arrows, W and F, which CI found, so the
   whole set moves to Ctrl+Win+Alt when Win+Alt isn't free; the UI test presses them through

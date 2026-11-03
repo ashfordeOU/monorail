@@ -94,6 +94,10 @@ public final class SharedEngine {
             layout()
         case .moved(let id, let byUser):
             if !byUser, learnMinimumWidth(id) { layout() }
+        case .hidden(let id):
+            if hide(id) { layout() }
+        case .unhidden(let id):
+            if unhide(id) { layout() }
         case .titleChanged:
             break
         }
@@ -144,6 +148,57 @@ public final class SharedEngine {
         let best = displays.max { $0.frame.intersection(info.frame).area < $1.frame.intersection(info.frame).area }
         if let best, best.frame.intersection(info.frame).area > 0 { return best.id }
         return displays.first?.id
+    }
+
+    // MARK: Hidden windows (other virtual desktops)
+
+    /// The strip's order when windows started leaving for another desktop, so they come back in
+    /// the same order and widths, each desktop keeping its own arrangement.
+    private var snapshots: [Int: [WindowID]] = [:]
+    private var openSnapshot: [String: Int] = [:]
+    private var nextSnapshot = 0
+    private var hiddenAt: [WindowID: (snapshot: Int, display: String, width: Double)] = [:]
+
+    func hide(_ id: WindowID) -> Bool {
+        guard let display = displayOf[id], let strip = strips[display] else { return false }
+        var snapshot = openSnapshot[display]
+        if snapshot.map({ !(snapshots[$0] ?? []).contains(id) }) ?? true {
+            nextSnapshot += 1
+            snapshot = nextSnapshot
+            snapshots[nextSnapshot] = strip.allWindows
+            openSnapshot[display] = nextSnapshot
+        }
+        let width = strip.columns.first { $0.windows.contains(id) }?.width ?? config.defaultWidth
+        hiddenAt[id] = (snapshot ?? 0, display, width)
+        return release(id)
+    }
+
+    func unhide(_ id: WindowID) -> Bool {
+        guard let info = system.window(id), info.isTileable, !floats(info), !isManaged(id) else { return false }
+        guard let place = hiddenAt.removeValue(forKey: id), let order = snapshots[place.snapshot],
+            let rank = order.firstIndex(of: id), system.displays.contains(where: { $0.id == place.display })
+        else { return adopt(info, focus: false) }
+        defer {
+            if !hiddenAt.values.contains(where: { $0.snapshot == place.snapshot }) {
+                snapshots[place.snapshot] = nil
+                if openSnapshot[place.display] == place.snapshot { openSnapshot[place.display] = nil }
+            }
+        }
+        var strip = strips[place.display] ?? Strip()
+        guard strip.insert(id, width: place.width, position: .end, focus: false) else { return false }
+        // After the last slide holding a window that came before it; before the first that came
+        // after it; at the end when none of its desktop's windows are back yet.
+        var after: Int?, before: Int?
+        for (index, column) in strip.columns.enumerated() where !column.windows.contains(id) {
+            let ranks = column.windows.compactMap { order.firstIndex(of: $0) }
+            if ranks.contains(where: { $0 < rank }) { after = index + 1 }
+            if before == nil, ranks.contains(where: { $0 > rank }) { before = index }
+        }
+        if let target = after ?? before { strip.moveColumn(from: strip.columns.count - 1, to: target) }
+        strips[place.display] = strip
+        displayOf[id] = place.display
+        appOf[id] = info.appID
+        return true
     }
 
     /// A window came out wider than its tile (the app has a minimum size): remember it for the

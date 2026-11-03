@@ -167,8 +167,8 @@ final class Win32WindowSystem: WindowSystem {
         case 0x800C: onEvent(.titleChanged(id))  // EVENT_OBJECT_NAMECHANGE
         // Windows hides (cloaks) the windows of other virtual desktops: switching desktops takes
         // them off the strip and brings the new desktop's on, each desktop like a workspace.
-        case 0x8017: onEvent(.minimized(id))  // EVENT_OBJECT_CLOAKED
-        case 0x8018: onEvent(.restored(id))  // EVENT_OBJECT_UNCLOAKED
+        case 0x8017: onEvent(.hidden(id))  // EVENT_OBJECT_CLOAKED
+        case 0x8018: onEvent(.unhidden(id))  // EVENT_OBJECT_UNCLOAKED
         default: break
         }
     }

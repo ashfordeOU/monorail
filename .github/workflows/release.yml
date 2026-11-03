@@ -68,6 +68,16 @@ jobs:
       - name: Test
         if: env.SKIP != '1' && env.RESUME == ''
         run: swift test
+      - name: Tag the commit being built
+        # Now, while it is still main's newest commit: GitHub lets this workflow make a tag only
+        # where the workflow files match main's, which may no longer hold after a long Apple review.
+        if: env.SKIP != '1' && env.RESUME == ''
+        run: |
+          # Not yet published: (re)point the tag at this build (a failed earlier try may have left one).
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            git tag -f "$TAG" "$GITHUB_SHA"
+            git push --force origin "refs/tags/$TAG" || echo "::warning::Couldn't tag $GITHUB_SHA yet; publishing will try again."
+          fi
       - name: Import signing certificate
         # Signing with the same certificate every release keeps macOS
         # permissions across updates. See scripts/make-signing-cert.sh.
@@ -226,7 +236,19 @@ jobs:
             # changes workflow files (403), while a git push with the same token is allowed.
             # A tag pushed with the workflow's token doesn't start this workflow again.
             if ! git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
-              git tag "$TAG" "${BUILT_SHA:-$GITHUB_SHA}"
+              sha="${BUILT_SHA:-$GITHUB_SHA}"
+              # GitHub lets this workflow make a tag only where the workflow files match main's.
+              # When main has moved on since the build (a long Apple review), tag main instead,
+              # but only if the app's source is identical, so the tag still matches the files.
+              if [ "$sha" != "$GITHUB_SHA" ]; then
+                if git diff --quiet "$sha" "$GITHUB_SHA" -- Sources Package.swift Package.resolved VERSION Resources scripts/build-app.sh assets/AppIcon.icon; then
+                  echo "Tagging $GITHUB_SHA: the same app source as $sha, which the files were built from."
+                  sha="$GITHUB_SHA"
+                else
+                  echo "::warning::The app's source changed since $sha; trying to tag that commit itself."
+                fi
+              fi
+              git tag "$TAG" "$sha"
               git push origin "refs/tags/$TAG"
             fi
             gh release create "$TAG" dist/*.zip dist/*.dmg dist/*.pkg dist/SHA256SUMS \

@@ -4,25 +4,20 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.7.16] - 2026-11-03
 
 ### Added
 - **Start as Simple, Power user or Coming from another app**, in the welcome tour and Settings → Basics. Coming from another app opens the importer for AeroSpace, yabai and Rectangle.
 - **Show all settings**, at the bottom of the Settings sidebar. Off (the default for new installs), the sidebar shows the essentials: Basics, Shortcuts, Appearance, Evening Mode, Stay Awake and About. Search always finds every setting.
 - **After an unexpected quit, Monorail asks what happened** (once per version, and you can turn it off). **Tell Us…** opens a GitHub issue filled in with the Monorail and macOS versions and a short summary of where it crashed, from macOS's own crash report: no window titles, files, paths or names, and nothing is sent until you submit it.
-
 - **Also from Ashforde** in the menu bar menu: while Keeper runs, it shows what Keeper is doing (keeping your Mac awake or not) with **Open Keeper**; with Keeper installed but closed, **Open Keeper**. And a joint page on the website, **Monorail + Keeper**, on how the two work together.
-
-### Changed
-- Monorail and Keeper also talk through a folder only Ashforde's apps share (an App Group), so they keep working together in their App Store editions, where the local network API isn't allowed.
-- The Mac App Store edition leaves out lid-closed mode and event scripts (the sandbox doesn't allow them), sets the App Store's encryption declaration, and signs with the App Store's app identity when it has the profile.
-- **VoiceOver reads every icon button**: Remove, Delete, Clear, Edit, Overview, Settings, Pause, Undo and the rest in Settings, the menu bar popover, the overview and the resize popup now have spoken names. A test keeps new icon buttons from shipping without one.
-
-## [1.7.16] - 2026-11-03
 
 ### Changed
 - **Signed with Ashforde's Apple Developer ID and notarised by Apple.** Monorail now opens without the "can't verify the developer" warning, and the pkg installer is signed for MDM tools (Jamf, Kandji, Intune) and Installomator.
 - Because the signature changed, macOS asks you once to allow Accessibility again after this update (System Settings → Privacy & Security → Accessibility: remove Monorail, then open it again). Updates after this one keep the permission.
+- Monorail and Keeper also talk through a folder only Ashforde's apps share (an App Group), so they keep working together in their App Store editions, where the local network API isn't allowed.
+- The Mac App Store edition leaves out lid-closed mode and event scripts (the sandbox doesn't allow them), sets the App Store's encryption declaration, and signs with the App Store's app identity when it has the profile.
+- **VoiceOver reads every icon button**: Remove, Delete, Clear, Edit, Overview, Settings, Pause, Undo and the rest in Settings, the menu bar popover, the overview and the resize popup now have spoken names. A test keeps new icon buttons from shipping without one.
 
 ## [1.7.15] - 2026-11-03
 

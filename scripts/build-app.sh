@@ -37,8 +37,19 @@ if [ "${APPSTORE:-0}" = "1" ]; then
     /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier org.ashforde.monorail.appstore" "$APP/Contents/Info.plist"
     /usr/libexec/PlistBuddy -c "Add :LSApplicationCategoryType string public.app-category.productivity" "$APP/Contents/Info.plist" 2>/dev/null \
         || /usr/libexec/PlistBuddy -c "Set :LSApplicationCategoryType public.app-category.productivity" "$APP/Contents/Info.plist"
+    # Only standard HTTPS: no export compliance paperwork for each upload.
+    /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$APP/Contents/Info.plist" 2>/dev/null || true
     rm -f "$APP/Contents/Resources/monorail"
-    if [ -n "${PROVISIONING_PROFILE:-}" ]; then cp "$PROVISIONING_PROFILE" "$APP/Contents/embedded.provisionprofile"; fi
+    if [ -n "${PROVISIONING_PROFILE:-}" ]; then
+        cp "$PROVISIONING_PROFILE" "$APP/Contents/embedded.provisionprofile"
+        # The App Store needs the app's identity in its signature (matching the profile).
+        TEAM="${APPLE_TEAM_ID:-D69G45342Y}"
+        SIGNED_ENTITLEMENTS="$(mktemp -d)/MonorailAppStore.entitlements"
+        cp "$ENTITLEMENTS" "$SIGNED_ENTITLEMENTS"
+        /usr/libexec/PlistBuddy -c "Add :com.apple.application-identifier string ${TEAM}.org.ashforde.monorail.appstore" "$SIGNED_ENTITLEMENTS"
+        /usr/libexec/PlistBuddy -c "Add :com.apple.developer.team-identifier string ${TEAM}" "$SIGNED_ENTITLEMENTS"
+        ENTITLEMENTS="$SIGNED_ENTITLEMENTS"
+    fi
 fi
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 

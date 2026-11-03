@@ -52,3 +52,27 @@ system-wide hot keys.
    that nothing leaves the Mac except anonymous usage counts the person can turn off, and include a
    short screen recording of the welcome tour.
 8. **Pricing**: free.
+
+## Lid-closed mode in the App Store edition (the Amphetamine way)
+
+The sandbox doesn't let an App Store app change the system's sleep setting, so the first App Store
+release leaves lid-closed mode out (plain Stay Awake is there). It comes back in an update the way
+Amphetamine does it, in pieces that each stay inside Apple's rules:
+
+1. **A script the person installs.** A sandboxed app may run scripts placed in its own folder,
+   `~/Library/Application Scripts/org.ashforde.monorail.appstore/`, through `NSUserUnixTask`; it can't
+   put them there itself, but the person can with an ordinary Save dialog. Settings → Stay Awake shows
+   **Install the lid script…**: a Save panel opens on that folder with `monorail-lid.sh` ready, and one
+   click on Save installs it. The script does what the download version does today: asks for the
+   administrator password (or Touch ID) once per session, runs `pmset -a disablesleep 1`, and starts the
+   watcher that puts sleep back when Monorail asks, quits or crashes. The same safety rules apply (heat,
+   battery, Low Power Mode, plugged-in only).
+2. **Ashforde Enhancer (optional).** A small notarised app on GitHub, not in the App Store, signed with
+   Ashforde's Developer ID, like Amphetamine Enhancer and Power Protect. One setup installs a narrow
+   `sudo` rule allowing only `pmset -a disablesleep 0|1`, so lid-closed mode stops asking for the
+   password, and adds a fail-safe that restores sleep if neither app is running. The same Enhancer and
+   script design serve Keeper's App Store edition.
+3. **The download version** keeps its built-in lid-closed mode and needs neither.
+
+Order: submit the App Store edition first without lid-closed mode, so the first review is simple;
+add the script installer in an update once it's approved; then the Enhancer.

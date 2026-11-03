@@ -687,13 +687,16 @@ struct StayAwakePane: View {
                     Stepper("Every \(store.settings.awakeMoveCursorMinutes) minutes", value: $store.settings.awakeMoveCursorMinutes, in: 1...30)
                 }
                 Toggle("Keep external drives from spinning down", isOn: $store.settings.awakeDriveAlive)
-                Toggle("Stay awake with the lid closed (asks for your password)", isOn: $store.settings.awakeClosedLid)
-                    .help("Keeps a MacBook running when closed, even without an external display. It turns off by itself if the Mac gets hot. Don't put a running Mac in a bag.")
-                if store.settings.awakeClosedLid {
-                    Toggle("Only while plugged in", isOn: $store.settings.awakeClosedLidOnlyOnPower)
-                        .help("On battery, closing the lid puts the Mac to sleep as usual. Turned off, it keeps running closed on battery down to 20%. Low Power Mode always ends it.")
-                        .padding(.leading, 18)
+                Group {
+                    Toggle("Stay awake with the lid closed (asks for your password)", isOn: $store.settings.awakeClosedLid)
+                        .help("Keeps a MacBook running when closed, even without an external display. It turns off by itself if the Mac gets hot. Don't put a running Mac in a bag.")
+                    if store.settings.awakeClosedLid {
+                        Toggle("Only while plugged in", isOn: $store.settings.awakeClosedLidOnlyOnPower)
+                            .help("On battery, closing the lid puts the Mac to sleep as usual. Turned off, it keeps running closed on battery down to 20%. Low Power Mode always ends it.")
+                            .padding(.leading, 18)
+                    }
                 }
+                .hiddenInAppStore()
             } header: {
                 Text("While awake")
             }

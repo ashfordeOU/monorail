@@ -27,6 +27,11 @@ enum Edition {
         s.checkForUpdates = false
         s.installUpdatesAutomatically = false
         s.betaUpdates = false
+        // Changing the system's sleep setting needs an administrator: not in the sandbox. (It comes
+        // back later through a separate, optional Ashforde helper, like Amphetamine Enhancer.)
+        s.awakeClosedLid = false
+        // Running a script file on events isn't allowed in the sandbox.
+        s.eventScript = ""
         return s
     }
 }

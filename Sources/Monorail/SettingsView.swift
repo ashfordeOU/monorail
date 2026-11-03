@@ -1644,6 +1644,7 @@ private struct AutomationPane: View {
                         if panel.runModal() == .OK, let url = panel.url { store.settings.eventScript = url.path }
                     }
                 }
+                .hiddenInAppStore()
                 Toggle("Apply changes made to settings.json in a text editor", isOn: $store.settings.liveReloadSettings)
                 Button("Reveal settings.json") { NSWorkspace.shared.activateFileViewerSelecting([SettingsStore.fileURL]) }
             } header: {

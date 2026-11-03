@@ -14,6 +14,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **Also from Ashforde** in the menu bar menu: while Keeper runs, it shows what Keeper is doing (keeping your Mac awake or not) with **Open Keeper**; with Keeper installed but closed, **Open Keeper**. And a joint page on the website, **Monorail + Keeper**, on how the two work together.
 
 ### Changed
+- The Mac App Store edition leaves out lid-closed mode and event scripts (the sandbox doesn't allow them), sets the App Store's encryption declaration, and signs with the App Store's app identity when it has the profile.
 - **VoiceOver reads every icon button**: Remove, Delete, Clear, Edit, Overview, Settings, Pause, Undo and the rest in Settings, the menu bar popover, the overview and the resize popup now have spoken names. A test keeps new icon buttons from shipping without one.
 
 ## [1.7.16] - 2026-11-03

@@ -701,9 +701,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             ("Allow the Screen Saver", settings.awakeAllowScreenSaver, #selector(toggleAwakeScreenSaverFromMenu)),
             ("Move the Pointer Now and Then", settings.awakeMoveCursor, #selector(toggleAwakeCursorFromMenu)),
             ("Keep External Drives Awake", settings.awakeDriveAlive, #selector(toggleAwakeDrivesFromMenu)),
-            ("Stay Awake with the Lid Closed", settings.awakeClosedLid, #selector(toggleAwakeLidFromMenu)),
             ("Automatic Triggers", settings.awakeTriggersOn, #selector(toggleAwakeTriggersFromMenu)),
-        ] {
+        ] + (Edition.isAppStore ? [] : [("Stay Awake with the Lid Closed", settings.awakeClosedLid, #selector(toggleAwakeLidFromMenu))]) {
             let entry = item(title, selector)
             entry.state = on ? .on : .off
             menu.addItem(entry)

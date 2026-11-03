@@ -5,7 +5,13 @@ come from the owner's GitHub account, and the App Store needs the owner's Apple 
 from 1.7.16 on are signed with Ashforde OU's Developer ID (Team `D69G45342Y`) and notarised, which
 all three require.
 
-## 1. A 20-minute test on a real Mac (do this first)
+## 1. A 10-minute test on a real Mac (do this first)
+
+GitHub's Mac already checks every release (`.github/workflows/release-smoke.yml`): the download is
+notarised and accepted by Gatekeeper, the DMG and pkg install, the app opens and quits cleanly, Evening
+Mode warms the display and restores it, Monorail answers Keeper on the shared channel, and Installomator
+installs it. What only a person can check, because it needs Accessibility (which no program can
+grant itself) or the lid:
 
 Install the newest release, then:
 
@@ -33,6 +39,10 @@ Anything odd: menu bar → **Report a Problem…** (or tell the session what you
 
 Once in, people install with `brew install --cask monorail`, no tap needed, and Homebrew keeps it
 updated. Our own tap keeps working either way.
+
+**Not yet (checked 3 November 2026: 0 stars, 0 forks, 0 watchers).** Submit when the repository passes
+about 225 stars (or 90 forks or watchers), e.g. after the Product Hunt launch; an early submission is
+closed. Until then `brew install --cask ashfordeOU/monorail/monorail` works from our own tap.
 
 **Check first:** Homebrew only takes apps with some following. For a project hosted on GitHub that
 means roughly 30 forks, 30 watchers or 75 stars, and about three times that when the developer

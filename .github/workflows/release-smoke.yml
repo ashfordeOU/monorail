@@ -1,0 +1,102 @@
+# After every release: downloads it the way a person would, and checks it on GitHub's Mac. Notarised
+# and accepted by Gatekeeper, installs and opens, Evening Mode warms the display and restores it, and
+# Monorail answers Keeper on the shared channel. What needs a person (Accessibility, the lid) is in
+# docs/SUBMISSIONS.md.
+name: Release smoke test
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release to test (empty: the latest)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: macos-15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Download the release
+        run: |
+          tag="${{ github.event.inputs.tag }}"
+          [ -n "$tag" ] || tag="$(gh release view --json tagName -q .tagName)"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+          mkdir -p dl && gh release download "$tag" -D dl -p '*.dmg' -p '*.pkg' -p SHA256SUMS
+          (cd dl && shasum -a 256 -c SHA256SUMS --ignore-missing)
+          # As if downloaded by a browser, so Gatekeeper checks it fully.
+          for f in dl/*.dmg dl/*.pkg; do xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" "$f"; done
+          ls -l dl
+      - name: Gatekeeper accepts the downloads
+        run: |
+          for f in dl/Monorail-*.dmg; do spctl -a -vvv -t open --context context:primary-signature "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; xcrun stapler validate "$f"; done
+          for f in dl/Monorail-*.pkg; do spctl -a -vvv -t install "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; xcrun stapler validate "$f"; done
+      - name: Install from the DMG and open it
+        run: |
+          mount="$(hdiutil attach dl/Monorail-*.dmg -nobrowse -noautoopen | awk -F '\t' '/\/Volumes\// {print $NF; exit}')"
+          ditto "$mount/Monorail.app" /Applications/Monorail.app
+          hdiutil detach "$mount"
+          spctl -a -vvv -t exec /Applications/Monorail.app 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"
+          codesign -d --requirements - /Applications/Monorail.app 2>&1 | grep -q 'certificate leaf\[subject.OU\] = D69G45342Y'
+          # No usage counts or update checks from CI; Evening Mode on for the next step.
+          mkdir -p "$HOME/Library/Application Support/Monorail"
+          echo '{"shareUsageStats":false,"checkForUpdates":false,"usageNoticeShown":true,"eveningOn":true,"eveningStrength":0.8}' > "$HOME/Library/Application Support/Monorail/settings.json"
+          open /Applications/Monorail.app
+          sleep 15
+          pgrep -x Monorail
+      - name: Evening Mode warms the display, and quitting restores it
+        run: |
+          blue="$(swift scripts/smoke/gamma.swift)"
+          echo "blue with Evening Mode on: $blue"
+          if [ "$blue" = "unsupported" ]; then
+            echo "::warning::this machine's display has no colour curve to check"
+          else
+            awk -v b="$blue" 'BEGIN { exit !(b < 0.9) }' || { echo "Evening Mode didn't warm the display"; exit 1; }
+          fi
+      - name: Monorail answers Keeper on the shared channel
+        run: |
+          if grep -q "com.ashforde.suite.changed" /Applications/Monorail.app/Contents/MacOS/Monorail; then
+            swift scripts/smoke/suite.swift
+          else
+            echo "This release is older than the shared channel: skipped"
+          fi
+      - name: Quit cleanly
+        run: |
+          osascript -e 'tell application "Monorail" to quit' || pkill -x Monorail || true
+          sleep 3
+          ! pgrep -x Monorail
+          blue="$(swift scripts/smoke/gamma.swift)"
+          echo "blue after quitting: $blue"
+          [ "$blue" = "unsupported" ] || awk -v b="$blue" 'BEGIN { exit !(b > 0.99) }'
+          echo "### $TAG passed the smoke test on GitHub's Mac" >> "$GITHUB_STEP_SUMMARY"
+      - name: The pkg installs (as MDM tools do)
+        run: |
+          sudo rm -rf /Applications/Monorail.app
+          sudo installer -pkg dl/Monorail-*.pkg -target /
+          test -d /Applications/Monorail.app
+          spctl -a -vvv -t exec /Applications/Monorail.app 2>&1 | grep -q "Notarized Developer ID"
+
+  installomator:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Installomator installs Monorail with our label (Team ID checked)
+        run: |
+          git clone --depth 1 https://github.com/Installomator/Installomator.git "$RUNNER_TEMP/Installomator"
+          cp packaging/installomator/monorail.sh "$RUNNER_TEMP/Installomator/fragments/labels/monorail.sh"
+          cd "$RUNNER_TEMP/Installomator"
+          sudo ./utils/assemble.sh monorail DEBUG=0 NOTIFY=silent 2>&1 | tee install.log
+          test "${PIPESTATUS[0]}" = 0
+          grep -q "D69G45342Y" install.log    # Installomator compared the download's Team ID with ours
+          test -d /Applications/Monorail.app
+          echo "### Installomator installed Monorail with our label" >> "$GITHUB_STEP_SUMMARY"

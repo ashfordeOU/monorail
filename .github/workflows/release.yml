@@ -80,13 +80,15 @@ jobs:
       - name: Notarise
         if: env.SKIP != '1' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
         run: |
+          # The DMG carries its own Developer ID signature (the app inside is signed already).
+          for file in dist/*.dmg; do codesign --force --timestamp --sign "$SIGN_IDENTITY" "$file"; done
           for file in dist/*.dmg dist/*.pkg; do
             xcrun notarytool submit "$file" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
             xcrun stapler staple "$file"
           done
           (cd dist && shasum -a 256 *.zip *.dmg *.pkg > SHA256SUMS)
           # Check them the way macOS will: Gatekeeper must say they're notarised by Ashforde.
-          for file in dist/*.dmg; do spctl -a -vvv -t install "$file" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; done
+          for file in dist/*.dmg; do spctl -a -vvv -t open --context context:primary-signature "$file" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; done
           if [ -n "${INSTALLER_IDENTITY:-}" ]; then
             for file in dist/*.pkg; do spctl -a -vvv -t install "$file" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; done
           fi

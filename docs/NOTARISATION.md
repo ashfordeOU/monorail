@@ -46,6 +46,7 @@ release after that keeps the permission.
 ## Checking a build
 
 ```bash
-spctl -a -vvv -t install Monorail-1.4.0.dmg     # "accepted, source=Notarized Developer ID"
-xcrun stapler validate Monorail-1.4.0.dmg
+spctl -a -vvv -t open --context context:primary-signature Monorail-1.7.16.dmg   # "accepted, source=Notarized Developer ID"
+spctl -a -vvv -t install Monorail-1.7.16.pkg   # the same for the pkg
+xcrun stapler validate Monorail-1.7.16.dmg
 ```

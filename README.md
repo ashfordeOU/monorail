@@ -243,7 +243,7 @@ floating camera tile.
 > [!NOTE]
 > Every release is signed with Ashforde's Apple Developer ID (Team D69G45342Y) and notarised by
 > Apple, so it opens without any warning. You can check a download yourself:
-> `spctl -a -vvv -t install Monorail-x.y.z.dmg` says `source=Notarized Developer ID`.
+> `spctl -a -vvv -t open --context context:primary-signature Monorail-x.y.z.dmg` says `source=Notarized Developer ID`.
 
 ### Homebrew
 

@@ -11,7 +11,7 @@ account, anonymous daily counts that can be turned off.
 
 > Yes. Every release is signed with our Apple Developer ID and notarised by Apple, so it opens without
 > warnings. The source is on GitHub, CI checks every change, and every download has a published SHA-256
-> checksum. Check it yourself with `spctl -a -vvv -t install Monorail-x.y.z.dmg`, which says
+> checksum. Check it yourself with `spctl -a -vvv -t open --context context:primary-signature Monorail-x.y.z.dmg`, which says
 > "Notarized Developer ID".
 
 ## "How is this different from AeroSpace / yabai / Amethyst?"

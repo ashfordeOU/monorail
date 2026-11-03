@@ -97,7 +97,11 @@ for pkg in "$IN"/*.pkg; do
 done
 
 # Check every file the way macOS will.
-for f in "$OUT"/*.dmg "$OUT"/*.pkg; do
+for f in "$OUT"/*.dmg; do
+    [ -e "$f" ] || continue
+    spctl -a -vvv -t open --context context:primary-signature "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID" || { echo "$(basename "$f") isn't accepted" >&2; exit 1; }
+done
+for f in "$OUT"/*.pkg; do
     [ -e "$f" ] || continue
     spctl -a -vvv -t install "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID" || { echo "$(basename "$f") isn't accepted" >&2; exit 1; }
 done

@@ -1076,15 +1076,15 @@ private struct SliderPopoverView: View {
                     .disabled(updater.isInstalling)
                     .help("Download, install and relaunch — your windows stay where they are")
                 }
-                Button(action: resetPairs) { Image(systemName: "wand.and.stars") }
+                Button(action: resetPairs) { Image(systemName: "wand.and.stars").accessibilityLabel(Text("Reset to smart pairs: windows of the same app together")) }
                     .help("Reset to smart pairs: windows of the same app together")
                 Button(action: togglePause) {
-                    Image(systemName: paused.value ? "play.fill" : "pause.fill")
+                    Image(systemName: paused.value ? "play.fill" : "pause.fill").accessibilityLabel(Text(paused.value ? "Resume tiling" : "Pause tiling"))
                 }
                 .help(paused.value ? "Resume tiling" : "Pause tiling")
-                Button(action: actions.showOverview) { Image(systemName: "square.grid.3x2") }
+                Button(action: actions.showOverview) { Image(systemName: "square.grid.3x2").accessibilityLabel("Overview") }
                     .help("Overview")
-                Button(action: openSettings) { Image(systemName: "gearshape") }
+                Button(action: openSettings) { Image(systemName: "gearshape").accessibilityLabel("Settings") }
                     .help("Settings")
             }
             .buttonStyle(.borderless)

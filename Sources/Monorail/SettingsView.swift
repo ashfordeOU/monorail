@@ -89,7 +89,7 @@ struct SettingsView: View {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                 TextField("Search settings", text: $query).textFieldStyle(.plain)
                 if !query.isEmpty {
-                    Button { query = "" } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain).foregroundStyle(.secondary)
+                    Button { query = "" } label: { Image(systemName: "xmark.circle.fill").accessibilityLabel("Clear") }.buttonStyle(.plain).foregroundStyle(.secondary)
                 }
             }
             .padding(.horizontal, 9).padding(.vertical, 6)
@@ -831,7 +831,7 @@ private struct AppsPane: View {
                             Button(role: .destructive) {
                                 store.settings.appRules.removeAll { $0.id == rule.id }
                             } label: {
-                                Image(systemName: "minus.circle")
+                                Image(systemName: "minus.circle").accessibilityLabel("Remove")
                             }
                             .buttonStyle(.borderless)
                         }
@@ -942,7 +942,7 @@ private struct AppsPane: View {
                             Text(bundleID).font(.caption).foregroundStyle(.secondary)
                             Spacer()
                             Button { store.settings.pauseForApps.removeAll { $0 == bundleID } } label: {
-                                Image(systemName: "minus.circle")
+                                Image(systemName: "minus.circle").accessibilityLabel("Remove")
                             }
                             .buttonStyle(.borderless)
                         }
@@ -978,7 +978,7 @@ private struct AppsPane: View {
                         Button {
                             store.settings.appPairs.removeAll { $0.id == pair.id }
                         } label: {
-                            Image(systemName: "trash")
+                            Image(systemName: "trash").accessibilityLabel("Delete")
                         }
                         .buttonStyle(.borderless)
                     }
@@ -1019,7 +1019,7 @@ private struct ProjectsSection: View {
                     Button {
                         store.settings.projects.removeAll { $0 == name }
                     } label: {
-                        Image(systemName: "minus.circle")
+                        Image(systemName: "minus.circle").accessibilityLabel("Remove")
                     }
                     .buttonStyle(.borderless)
                 }
@@ -1070,7 +1070,7 @@ private struct TemplatesSection: View {
                         Button {
                             store.settings.templates.removeAll { $0.id == template.id }
                         } label: {
-                            Image(systemName: "trash")
+                            Image(systemName: "trash").accessibilityLabel("Delete")
                         }
                         .buttonStyle(.borderless)
                     }
@@ -1083,7 +1083,7 @@ private struct TemplatesSection: View {
                             Button {
                                 template.items.removeAll { $0.id == entry.id }
                             } label: {
-                                Image(systemName: "minus.circle")
+                                Image(systemName: "minus.circle").accessibilityLabel("Remove")
                             }
                             .buttonStyle(.borderless)
                         }
@@ -1441,7 +1441,7 @@ private struct QuickLaunchSection: View {
                     Button {
                         store.settings.launchSlots[key] = nil
                     } label: {
-                        Image(systemName: "minus.circle")
+                        Image(systemName: "minus.circle").accessibilityLabel("Remove")
                     }
                     .buttonStyle(.borderless)
                 }
@@ -1533,7 +1533,7 @@ private struct AutomationPane: View {
                             Button {
                                 store.settings.autoRules.removeAll { $0.id == rule.id }
                             } label: {
-                                Image(systemName: "trash")
+                                Image(systemName: "trash").accessibilityLabel("Delete")
                             }
                             .buttonStyle(.borderless)
                         }
@@ -1611,7 +1611,7 @@ private struct AutomationPane: View {
                             NSPasteboard.general.clearContents()
                             NSPasteboard.general.setString(url, forType: .string)
                         } label: {
-                            Image(systemName: "doc.on.doc")
+                            Image(systemName: "doc.on.doc").accessibilityLabel("Copy")
                         }
                         .buttonStyle(.borderless)
                         .help("Copy")
@@ -1740,7 +1740,7 @@ private struct ProfilesSection: View {
                         Button {
                             store.settings.profiles.remove(at: index)
                         } label: {
-                            Image(systemName: "minus.circle")
+                            Image(systemName: "minus.circle").accessibilityLabel("Remove")
                         }
                         .buttonStyle(.borderless)
                     }
@@ -1789,7 +1789,7 @@ private struct CustomLayoutsSection: View {
                             Button {
                                 if layout.tiles < Column.maximumWindows { layout.rows.append(1) }
                             } label: {
-                                Image(systemName: "plus.rectangle")
+                                Image(systemName: "plus.rectangle").accessibilityLabel(Text("Add a column"))
                             }
                             .buttonStyle(.borderless)
                             .help("Add a column")
@@ -1797,7 +1797,7 @@ private struct CustomLayoutsSection: View {
                             Button {
                                 if layout.rows.count > 1 { layout.rows.removeLast() }
                             } label: {
-                                Image(systemName: "minus.rectangle")
+                                Image(systemName: "minus.rectangle").accessibilityLabel(Text("Remove the last column"))
                             }
                             .buttonStyle(.borderless)
                             .help("Remove the last column")
@@ -1810,7 +1810,7 @@ private struct CustomLayoutsSection: View {
                     Button {
                         store.settings.customLayouts.removeAll { $0.id == layout.id }
                     } label: {
-                        Image(systemName: "trash")
+                        Image(systemName: "trash").accessibilityLabel("Delete")
                     }
                     .buttonStyle(.borderless)
                 }
@@ -2056,7 +2056,7 @@ private struct ShortcutRow: View {
                         capture.stop()
                         store.settings.keymap.bindings[action] = Keymap.default.shortcuts(for: action)
                     } label: {
-                        Image(systemName: "arrow.uturn.backward")
+                        Image(systemName: "arrow.uturn.backward").accessibilityLabel(Text("Back to the default for this action"))
                     }
                     .buttonStyle(.borderless)
                     .help("Back to the default for this action")
@@ -2211,7 +2211,7 @@ private struct WorkspaceConfigSection: View {
                         .help("New windows skip this workspace")
                     if store.settings.workspaceConfigs[String(index)] != nil {
                         Button { store.settings.workspaceConfigs[String(index)] = nil } label: {
-                            Image(systemName: "arrow.uturn.backward")
+                            Image(systemName: "arrow.uturn.backward").accessibilityLabel(Text("Back to the defaults"))
                         }
                         .buttonStyle(.borderless)
                         .help("Back to the defaults")

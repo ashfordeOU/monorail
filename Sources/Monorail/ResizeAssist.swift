@@ -107,9 +107,9 @@ final class ResizeAssist {
                     Button(action: othersOut) { Label("Move others out", systemImage: "rectangle.stack.badge.minus") }
                         .help("Keep this window here and move the rest of the slide to a new slide")
                 }
-                Button(action: undo) { Image(systemName: "arrow.uturn.backward") }
+                Button(action: undo) { Image(systemName: "arrow.uturn.backward").accessibilityLabel("Undo the resize") }
                     .help("Undo the resize")
-                Button(action: keep) { Image(systemName: "xmark") }
+                Button(action: keep) { Image(systemName: "xmark").accessibilityLabel("Close") }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Dismiss")

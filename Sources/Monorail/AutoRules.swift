@@ -168,7 +168,7 @@ private struct PiPView: View {
             .onTapGesture(perform: open)
             if hovering {
                 Button(action: close) {
-                    Image(systemName: "xmark.circle.fill").font(.system(size: 16)).foregroundStyle(.white, .black.opacity(0.6))
+                    Image(systemName: "xmark.circle.fill").accessibilityLabel(Text("Close picture in picture")).font(.system(size: 16)).foregroundStyle(.white, .black.opacity(0.6))
                 }
                 .buttonStyle(.plain)
                 .padding(6)

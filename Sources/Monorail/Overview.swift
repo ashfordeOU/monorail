@@ -362,7 +362,7 @@ private struct StripRow: View {
                     Button {
                         startEditing()
                     } label: {
-                        Image(systemName: "pencil").font(.system(size: 11, weight: .semibold))
+                        Image(systemName: "pencil").accessibilityLabel("Edit").font(.system(size: 11, weight: .semibold))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.white.opacity(0.5))

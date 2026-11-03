@@ -319,7 +319,7 @@ struct SmartPane: View {
                         Text(rule.path).lineLimit(1).truncationMode(.middle)
                         Spacer()
                         Text("→ \(store.settings.workspaceName(rule.workspace))").foregroundStyle(.secondary)
-                        Button { store.settings.pathRules.removeAll { $0.id == rule.id } } label: { Image(systemName: "minus.circle") }
+                        Button { store.settings.pathRules.removeAll { $0.id == rule.id } } label: { Image(systemName: "minus.circle").accessibilityLabel("Remove") }
                             .buttonStyle(.borderless)
                     }
                 }
@@ -354,7 +354,7 @@ struct SmartPane: View {
                         HStack {
                             Text(UsageStats.appName(bundle))
                             Spacer()
-                            Button { store.settings.deepWorkApps.removeAll { $0 == bundle } } label: { Image(systemName: "minus.circle") }
+                            Button { store.settings.deepWorkApps.removeAll { $0 == bundle } } label: { Image(systemName: "minus.circle").accessibilityLabel("Remove") }
                                 .buttonStyle(.borderless)
                         }
                     }
@@ -438,7 +438,7 @@ struct DevicesPane: View {
                             Text("Note \(note)").monospacedDigit().frame(width: 80, alignment: .leading)
                             Text(Action(rawValue: action)?.title ?? action)
                             Spacer()
-                            Button { store.settings.midiMap[note] = nil } label: { Image(systemName: "minus.circle") }.buttonStyle(.borderless)
+                            Button { store.settings.midiMap[note] = nil } label: { Image(systemName: "minus.circle").accessibilityLabel("Remove") }.buttonStyle(.borderless)
                         }
                     }
                     Menu(learning.map { "Press a pad for “\(Action(rawValue: $0)?.title ?? $0)”…" } ?? "Learn a pad for…") {
@@ -491,7 +491,7 @@ struct DevicesPane: View {
                         HStack {
                             Text(UsageStats.appName(bundle))
                             Spacer()
-                            Button { store.settings.privateApps.removeAll { $0 == bundle } } label: { Image(systemName: "minus.circle") }
+                            Button { store.settings.privateApps.removeAll { $0 == bundle } } label: { Image(systemName: "minus.circle").accessibilityLabel("Remove") }
                                 .buttonStyle(.borderless)
                         }
                     }
@@ -716,7 +716,7 @@ struct StayAwakePane: View {
                             .labelsHidden().frame(width: 260)
                             Spacer()
                             Button { store.settings.awakeTriggers.removeAll { $0.id == trigger.id } } label: {
-                                Image(systemName: "minus.circle")
+                                Image(systemName: "minus.circle").accessibilityLabel("Remove")
                             }
                             .buttonStyle(.borderless)
                         }

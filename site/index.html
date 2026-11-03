@@ -26,6 +26,8 @@
   const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
   const z = parseFloat(localStorage.getItem('monorail-zoom')); if (z >= .8 && z <= 1.4) document.documentElement.style.setProperty('--zoom', z);
 } catch (e) {} })();
+/* If an app icon cannot load, show a lettered tile in its place. */
+function iconFallback(img) { const p = img.parentNode; p.classList.add('noimg'); if (img.alt) { p.setAttribute('role', 'img'); p.setAttribute('aria-label', img.alt); } img.remove(); }
 </script>
 <style>
 :root {
@@ -76,7 +78,7 @@ nav.top .links a:hover { color:var(--ink); }
 .btn.primary { color:#fff; background:linear-gradient(100deg, var(--pink), var(--plum)); box-shadow:0 10px 30px rgba(214,58,128,.35); }
 .btn.ghost { color:var(--ink); background:var(--card); border:1px solid var(--line); }
 .btn.small { padding:8px 16px; font-size:14px; }
-@media (max-width:1320px) { nav.top .links a.x { display:none; } }
+@media (max-width:1799px) { nav.top .links a.x { display:none; } }
 @media (max-width:1000px) { nav.top .links { display:none; } nav.top .prefs { margin-left:auto; } }
 @media (max-width:560px) { nav.top .brand small { display:none; } nav.top .wrap { gap:8px; } .prefs { gap:0; } .prefs .sep { display:none; } .prefs button { min-width:26px; padding:0 5px; } nav.top .btn.small { padding:7px 12px; font-size:13px; } }
 
@@ -149,7 +151,8 @@ h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; 
 .center { text-align:center; } .center .sub { margin:0 auto; }
 .reveal { opacity:0; transform:translateY(24px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
 .reveal.in { opacity:1; transform:none; }
-.steps { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:18px; margin-top:38px; }
+.steps { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; margin-top:38px; text-align:left; }
+@media (max-width:760px) { .steps { grid-template-columns:minmax(0,1fr); } }
 .step { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px; }
 .step .num { font-family:inherit; font-weight:800; font-size:14px; line-height:1; color:var(--plum); }
 .step h3 { margin:10px 0 6px; font-size:21px; }
@@ -157,7 +160,9 @@ h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; 
 .step .art { height:90px; margin:-4px -4px 14px; border-radius:14px; background:var(--soft); position:relative; overflow:hidden; }
 .step .art i { position:absolute; top:18%; bottom:18%; border-radius:7px; background:var(--c); animation:drift 6s var(--ease) infinite alternate; }
 @keyframes drift { from { transform:translateX(0); } to { transform:translateX(-26%); } }
-.grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:16px; margin-top:38px; }
+.grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-top:38px; }
+@media (max-width:1000px) { .grid { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+@media (max-width:600px) { .grid { grid-template-columns:minmax(0,1fr); } }
 .feature { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px; transition:transform .35s var(--ease), box-shadow .35s var(--ease); }
 .feature:hover { transform:translateY(-4px); box-shadow:0 20px 50px rgba(42,20,48,.12); }
 .feature .ic { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; font-size:21px; background:var(--soft); margin-bottom:12px; }
@@ -166,7 +171,11 @@ h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; 
 .feature p { margin:0; color:var(--muted); font-size:15px; }
 
 /* Practice pad */
-.pad { display:grid; grid-template-columns:1.1fr .9fr; gap:22px; margin-top:34px; align-items:start; }
+.pad { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:22px; margin-top:34px; align-items:stretch; }
+.pad > * { min-width:0; display:flex; flex-direction:column; }
+.pad .legend table { flex:1; }
+.checklist ul { flex:1; display:flex; flex-direction:column; }
+.checklist ul li { flex:1; }
 @media (max-width:860px) { .pad { grid-template-columns:1fr; } }
 .legend, .checklist { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px; }
 .legend { max-width:100%; overflow-x:auto; }
@@ -179,7 +188,7 @@ h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; 
 .checklist li.done { color:var(--ink); }
 .checklist li.done .tick { background:var(--w5); border-color:var(--w5); color:#fff; transform:scale(1.1); }
 .checklist ul { padding:0; margin:0; }
-.checklist .note { font-size:13px; color:var(--muted); margin-top:12px; }
+.checklist .note { font-size:14px; color:var(--muted); margin:14px 0 0; }
 
 /* Themes */
 .themes { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:30px; }
@@ -194,13 +203,16 @@ h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; 
 .mini-mac .row div:nth-child(2) { flex:1.6; }
 
 /* Numbers */
-.numbers { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-top:34px; }
+.numbers { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; margin-top:34px; }
+@media (max-width:640px) { .numbers { grid-template-columns:minmax(0,1fr); } }
 .number { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px; text-align:center; }
 .number b { display:block; font-size:44px; letter-spacing:-1px; }
 .number span { color:var(--muted); font-size:15px; }
 
 /* Privacy, FAQ, AI */
-.privacy { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px; margin-top:30px; }
+.privacy { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px; margin-top:30px; }
+@media (max-width:680px) { .privacy { grid-template-columns:minmax(0,1fr); } }
+.privacy > div { min-width:0; }
 .privacy div { padding:20px; border-radius:var(--radius); background:var(--soft); }
 .privacy b { display:block; margin-bottom:4px; }
 .privacy p { margin:0; color:var(--muted); font-size:15px; }
@@ -224,6 +236,49 @@ footer ul { list-style:none; padding:0; margin:0; display:grid; gap:6px; }
 footer a { color:var(--muted); text-decoration:none; }
 footer a:hover { color:var(--ink); }
 
+/* Monorail + Keeper */
+.kband { position:relative; overflow:hidden; padding:clamp(34px, 5vw, 56px) clamp(16px, 3vw, 40px); border-radius:28px; border:1px solid var(--line); background:radial-gradient(60% 80% at 15% 0%, color-mix(in srgb, var(--pink) 12%, transparent), transparent 70%), radial-gradient(60% 80% at 85% 0%, color-mix(in srgb, var(--w2) 12%, transparent), transparent 70%), var(--soft); }
+.kpair { display:flex; align-items:center; justify-content:center; margin:0 0 22px; }
+.kicon { position:relative; display:inline-block; flex:0 0 auto; width:var(--s); height:var(--s); --s:clamp(64px, 9vw, 88px); border-radius:22.5%; filter:drop-shadow(0 14px 24px rgba(42,20,48,.22)); }
+.kicon img { display:block; width:var(--s); height:var(--s); max-width:none; border-radius:inherit; }
+.kicon.noimg { display:inline-grid; place-items:center; color:#fff; font:800 calc(var(--s) * .5)/1 -apple-system, BlinkMacSystemFont, sans-serif; background:linear-gradient(145deg, #FF8BA0, #9B4DE0); }
+.kicon.noimg.m { background:linear-gradient(145deg, var(--coral), var(--plum)); }
+.kicon.noimg::after { content:attr(data-letter); }
+.klink { position:relative; width:clamp(56px, 10vw, 120px); height:2px; margin:0 clamp(8px, 1.6vw, 16px); background:repeating-linear-gradient(90deg, var(--plum) 0 6px, transparent 6px 12px); opacity:.75; }
+.klink i { position:absolute; top:50%; left:0; width:8px; height:8px; margin-top:-4px; border-radius:50%; background:var(--plum); box-shadow:0 0 0 4px color-mix(in srgb, var(--plum) 22%, transparent); animation:kping 3s ease-in-out infinite; }
+@keyframes kping { 0%, 100% { left:0; } 50% { left:calc(100% - 8px); } }
+.kgrid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-top:36px; text-align:left; }
+@media (max-width:1100px) { .kgrid { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+@media (max-width:560px) { .kgrid { grid-template-columns:minmax(0,1fr); } }
+.kcard { min-width:0; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 18px 20px; display:flex; flex-direction:column; }
+.kcard h3 { margin:14px 0 6px; font-size:18px; line-height:1.25; text-wrap:balance; }
+.kcard p { margin:0; color:var(--muted); font-size:15px; }
+.kart { position:relative; height:96px; border-radius:14px; overflow:hidden; background:linear-gradient(135deg, #3A2A6E, #7A2E78 60%, #C2456E); }
+.kart.strip .rail { position:absolute; left:6%; right:6%; top:34%; bottom:14%; animation:kslide 8s var(--ease) infinite; }
+.kart.strip .rail i { position:absolute; top:0; bottom:0; border-radius:6px; background:rgba(255,255,255,.9); box-shadow:0 4px 10px rgba(0,0,0,.2); }
+.kart.strip .rail i::before { content:""; position:absolute; left:0; right:0; top:0; height:7px; border-radius:6px 6px 0 0; background:var(--c); }
+@keyframes kslide { 0%, 18% { transform:translateX(0); } 42%, 62% { transform:translateX(-38%); } 86%, 100% { transform:translateX(0); } }
+.kart.strip .isl { position:absolute; left:50%; top:0; transform:translateX(-50%); display:flex; align-items:center; gap:6px; padding:5px 14px 6px; border-radius:0 0 14px 14px; background:#000; color:#fff; font:600 11px/1 -apple-system, BlinkMacSystemFont, sans-serif; white-space:nowrap; z-index:2; box-shadow:0 4px 10px rgba(0,0,0,.35); }
+.kart.strip .isl em { width:7px; height:7px; border-radius:50%; background:#45D18C; }
+.kart.awake { display:grid; place-items:center; }
+.kpill { grid-area:1/1; display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:12px; background:#1b1220; color:#fff; font:600 13px/1.2 -apple-system, BlinkMacSystemFont, sans-serif; white-space:nowrap; box-shadow:0 8px 20px rgba(0,0,0,.3); }
+.kpill small { padding:3px 8px; border-radius:999px; background:rgba(69,209,140,.22); color:#7BE7B0; font-size:11.5px; font-weight:700; }
+.kpill.ghost { width:150px; height:34px; opacity:0; background:rgba(27,18,32,.55); animation:kmerge 5s var(--ease) infinite; }
+@keyframes kmerge { 0% { opacity:.55; transform:translate(-26px, -16px); } 45% { opacity:.4; transform:translate(-10px, -6px); } 70%, 100% { opacity:0; transform:none; } }
+.kart.lid { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+.kart.lid svg { width:176px; height:40px; display:block; }
+.kart.lid .cab { fill:none; stroke:rgba(255,255,255,.55); stroke-width:2; stroke-linecap:round; }
+.kart.lid .dot { fill:#45D18C; animation:kblink 2s ease-in-out infinite; }
+@keyframes kblink { 50% { opacity:.35; } }
+.kart.lid .run { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; background:rgba(0,0,0,.35); color:#fff; font:600 11.5px/1.3 -apple-system, BlinkMacSystemFont, sans-serif; white-space:nowrap; }
+.kart.lid .run i { width:7px; height:7px; border-radius:50%; background:#45D18C; }
+.kart.local { display:flex; align-items:center; justify-content:center; gap:12px; padding:0 12px; }
+.kart.local .box { display:flex; align-items:center; gap:8px; padding:14px 14px; border:2px dashed rgba(255,255,255,.55); border-radius:14px; }
+.kart.local .box > i { width:24px; height:24px; border-radius:7px; background:linear-gradient(145deg, var(--coral), var(--plum)); box-shadow:0 4px 10px rgba(0,0,0,.25); }
+.kart.local .box > i.b { background:linear-gradient(145deg, #FF8BA0, #9B4DE0); }
+.kart.local .wire { position:relative; width:34px; height:2px; background:repeating-linear-gradient(90deg, #fff 0 4px, transparent 4px 8px); opacity:.85; }
+.kart.local .wire u { position:absolute; top:-3px; left:0; width:8px; height:8px; border-radius:50%; background:#fff; animation:kping 2.4s ease-in-out infinite; }
+.kart.local .cloud { width:40px; height:40px; color:#fff; flex:0 0 auto; }
 
 /* Docking playground */
 .dockwrap { max-width:980px; margin:28px auto 0; }
@@ -268,10 +323,13 @@ footer a:hover { color:var(--ink); }
 .platforms { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; max-width:980px; margin:28px auto 0; }
 @media (max-width: 760px) { .platforms { grid-template-columns:1fr; } }
 .platform { position:relative; padding:26px 24px; border-radius:20px; background:var(--card); border:1px solid var(--line); text-align:left; display:flex; flex-direction:column; gap:10px; }
-.platform .os { width:46px; height:46px; border-radius:13px; display:grid; place-items:center; font-size:24px; color:#fff; }
+.platform .os { flex:0 0 auto; width:52px; height:52px; border-radius:15px; display:grid; place-items:center; color:#fff; background:linear-gradient(145deg, var(--a), var(--b)); box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 0 0 1px rgba(255,255,255,.08), 0 8px 18px color-mix(in srgb, var(--b) 35%, transparent); }
+.platform .os svg { width:30px; height:30px; display:block; fill:none; stroke:#fff; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 1px 1px rgba(0,0,0,.18)); }
+.platform .os svg .f { fill:#fff; stroke:none; }
+.platform .os.mac { --a:#7A7884; --b:#2E2D35; } .platform .os.win { --a:#4AA3FF; --b:#1B5FD6; } .platform .os.lin { --a:#FFB938; --b:#E0691A; }
 .platform h3 { margin:4px 0 0; font-size:21px; }
 .platform p { margin:0; color:var(--muted); font-size:15px; line-height:1.5; flex:1; }
-.platform .badge { position:absolute; top:22px; right:20px; padding:5px 11px; border-radius:999px; font-family:inherit; font-weight:700; font-size:12px; line-height:1; letter-spacing:.04em; text-transform:uppercase; }
+.platform .badge { position:absolute; top:26px; right:20px; padding:5px 11px; border-radius:999px; font-family:inherit; font-weight:700; font-size:12px; line-height:1; letter-spacing:.04em; text-transform:uppercase; }
 .platform .badge.now { background:color-mix(in srgb, var(--w5) 18%, transparent); color:var(--ok); }
 .platform .badge.soon { background:color-mix(in srgb, var(--pink) 14%, transparent); color:var(--link); }
 .platform a.more { font-weight:700; color:var(--link); text-decoration:none; font-size:15px; }
@@ -302,6 +360,7 @@ footer a:hover { color:var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
   .reveal { opacity:1; transform:none; }
+  .kpill.ghost { opacity:0; }
 }
 </style>
 </head>
@@ -312,7 +371,7 @@ footer a:hover { color:var(--ink); }
   <div class="wrap">
     <a class="brand" href="#"><img src="assets/icon.png" alt="">Monorail <small>by Ashforde®</small></a>
     <div class="links">
-      <a href="#demo">Demo</a><a href="#how">How it works</a><a class="x" href="#docking">Docking</a><a href="#features">Features</a><a href="#trust">Safety</a><a class="x" href="#compare">Compare</a><a class="x" href="#shortcuts">Shortcuts</a><a class="x" href="#themes">Themes</a><a href="#faq">FAQ</a>
+      <a href="#demo">Demo</a><a href="#how">How it works</a><a class="x" href="#docking">Docking</a><a href="#features">Features</a><a href="#keeper">Keeper</a><a href="#trust">Safety</a><a class="x" href="#compare">Compare</a><a class="x" href="#shortcuts">Shortcuts</a><a class="x" href="#themes">Themes</a><a href="#faq">FAQ</a>
     </div>
     <div class="prefs" role="group" aria-label="Display">
       <button type="button" id="themebtn" title="Theme: follows your system" aria-label="Theme"></button>
@@ -418,7 +477,41 @@ footer a:hover { color:var(--ink); }
       <div class="feature"><div class="ic">📦</div><h3>Switch in a minute</h3><p>Imports your shortcuts, gaps and app rules from AeroSpace, yabai and skhd, or Rectangle.</p></div>
       <div class="feature"><div class="ic">🏷️</div><h3>Tags</h3><p>Keep a window on the workspaces you choose, or show another workspace alongside this one.</p></div>
       <div class="feature"><div class="ic">🔌</div><h3>Built to be scripted</h3><p>monorail:// links, a CLI with a live event stream, a local API, MCP for AI assistants, and shareable layout links.</p></div>
-      <div class="feature"><div class="ic">🤝</div><h3>Works with Keeper</h3><p>Monorail leaves the panels of Keeper, Ashforde's Mac suite, alone and shares one Stay Awake with it. <a href="keeper/">How they work together</a>.</p></div>
+    </div>
+  </section>
+
+  <section id="keeper" class="center reveal">
+    <div class="kband">
+      <div class="kpair">
+        <span class="kicon m" data-letter="M"><img src="assets/icon.png" alt="Monorail app icon" width="88" height="88" onerror="iconFallback(this)"></span>
+        <span class="klink" aria-hidden="true"><i></i></span>
+        <span class="kicon k" data-letter="K"><img src="https://raw.githubusercontent.com/ashfordeOU/keeper/main/build/icon.png" alt="Keeper app icon" width="88" height="88" onerror="iconFallback(this)"></span>
+      </div>
+      <div class="kicker">Monorail + Keeper</div>
+      <h2>Better <span class="grad">with Keeper</span></h2>
+      <p class="sub">Two Mac apps from Ashforde. Each works on its own; together they keep out of each other's way and share one Stay Awake.</p>
+      <div class="kgrid">
+        <div class="kcard">
+          <div class="kart strip" aria-hidden="true"><span class="rail"><i style="--c:var(--w1);left:0;width:30%"></i><i style="--c:var(--w2);left:32%;width:22%"></i><i style="--c:var(--w5);left:56%;width:28%"></i><i style="--c:var(--w4);left:86%;width:24%"></i><i style="--c:var(--w6);left:112%;width:26%"></i></span><b class="isl"><em></em>Island</b></div>
+          <h3>Keeper stays put</h3><p>Keeper's Island and widgets stay where they are while your windows slide.</p>
+        </div>
+        <div class="kcard">
+          <div class="kart awake" aria-hidden="true"><span class="kpill ghost" data-nocheck></span><span class="kpill">☕ Stay Awake <small>1 app</small></span></div>
+          <h3>One Stay Awake, not two</h3><p>Start it in either app and only one of them holds your Mac awake.</p>
+        </div>
+        <div class="kcard">
+          <div class="kart lid" aria-hidden="true"><svg viewBox="8 22 132 30"><path class="cab" d="M8 50 C 26 50, 26 44, 40 44"/><path d="M44 40 L56 26 H116 L128 40 Z" fill="#3b3a42"/><rect x="40" y="40" width="92" height="8" rx="3" fill="#232228"/><rect x="76" y="40" width="20" height="2.5" rx="1.2" fill="#121115"/><circle class="dot" cx="45" cy="44" r="2.6"/></svg><span class="run"><i></i>Still running</span></div>
+          <h3>Lid closed, safely</h3><p>Both keep a MacBook running with the lid closed, under the same rules.</p>
+        </div>
+        <div class="kcard">
+          <div class="kart local" aria-hidden="true"><span class="box"><i class="a"></i><span class="wire"><u></u></span><i class="b"></i></span><svg class="cloud" viewBox="0 0 80 80"><path d="M22 56h36a12 12 0 0 0 1-24 18 18 0 0 0-34-4 14 14 0 0 0-3 28z" fill="none" stroke="currentColor" stroke-width="4" opacity=".5"/><path d="M14 66L66 14" stroke="#E5484D" stroke-width="5" stroke-linecap="round"/></svg></div>
+          <h3>Only on your Mac</h3><p>They talk only on your Mac. No server in between.</p>
+        </div>
+      </div>
+      <div class="cta" style="margin-bottom:0">
+        <a class="btn primary" href="keeper/">See how they work together</a>
+        <a class="btn ghost" href="https://github.com/ashfordeOU/keeper/releases">Get Keeper</a>
+      </div>
     </div>
   </section>
 
@@ -514,9 +607,9 @@ footer a:hover { color:var(--ink); }
     <h2>On the Mac today. <span class="grad">Windows and Linux are coming.</span></h2>
     <p class="sub">The same strip, the same docking and the same shortcuts, made natively for each system.</p>
     <div class="platforms">
-      <div class="platform"><span class="badge now">Available</span><div class="os" style="background:linear-gradient(135deg,#5B5B66,#24242B)">⌘</div><h3>macOS</h3><p>macOS 13 or later, on Apple silicon and Intel. Free, with every feature.</p><a class="more dl" href="https://github.com/ashfordeOU/monorail/releases/latest">Download for Mac →</a></div>
-      <div class="platform"><span class="badge soon">Coming soon</span><div class="os" style="background:linear-gradient(135deg,#2F8CFF,#1B5FD6)">⊞</div><h3>Windows</h3><p>For Windows 11 and 10: one strip across your screens, drag-to-dock, saved views and the command palette.</p><a class="more" href="https://github.com/ashfordeOU/monorail/issues/new?title=I%27d%20like%20Monorail%20for%20Windows&amp;labels=windows">I want it on Windows →</a></div>
-      <div class="platform"><span class="badge soon">Coming soon</span><div class="os" style="background:linear-gradient(135deg,#F5B700,#E07A00)">🐧</div><h3>Linux</h3><p>For GNOME and KDE on Wayland and X11, with the same keyboard-first design.</p><a class="more" href="https://github.com/ashfordeOU/monorail/issues/new?title=I%27d%20like%20Monorail%20for%20Linux&amp;labels=linux">I want it on Linux →</a></div>
+      <div class="platform"><span class="badge now">Available</span><div class="os mac"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="5" y="6" width="18" height="12.5" rx="2"/><path d="M2.8 21.6h22.4"/><path d="M11.6 21.6l.5-1.2h3.8l.5 1.2"/></svg></div><h3>macOS</h3><p>macOS 13 or later, on Apple silicon and Intel. Free, with every feature.</p><a class="more dl" href="https://github.com/ashfordeOU/monorail/releases/latest">Download for Mac →</a></div>
+      <div class="platform"><span class="badge soon">Coming soon</span><div class="os win"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="5" y="5" width="8" height="8" rx="1.6"/><rect x="15" y="5" width="8" height="8" rx="1.6"/><rect x="5" y="15" width="8" height="8" rx="1.6"/><rect x="15" y="15" width="8" height="8" rx="1.6"/></svg></div><h3>Windows</h3><p>For Windows 11 and 10: one strip across your screens, drag-to-dock, saved views and the command palette.</p><a class="more" href="https://github.com/ashfordeOU/monorail/issues/new?title=I%27d%20like%20Monorail%20for%20Windows&amp;labels=windows">I want it on Windows →</a></div>
+      <div class="platform"><span class="badge soon">Coming soon</span><div class="os lin"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M14 3.6c-3.1 0-4.9 2.4-4.9 5.5 0 1.5-.6 2.7-1.5 4.1-1.1 1.6-2.1 3.5-2.1 5.6 0 3.2 3.6 5.1 8.5 5.1s8.5-1.9 8.5-5.1c0-2.1-1-4-2.1-5.6-.9-1.4-1.5-2.6-1.5-4.1 0-3.1-1.8-5.5-4.9-5.5z"/><path d="M14 12.6c-2 0-3.4 2.2-3.4 4.8s1.4 4.6 3.4 4.6 3.4-2 3.4-4.6-1.4-4.8-3.4-4.8z"/><circle class="f" cx="12.2" cy="8.4" r="1.05"/><circle class="f" cx="15.8" cy="8.4" r="1.05"/><path class="f" d="M12.6 10.3h2.8L14 12z"/><path d="M8.6 24.2c.6-1 2.2-1.3 3.4-.4M19.4 24.2c-.6-1-2.2-1.3-3.4-.4"/></svg></div><h3>Linux</h3><p>For GNOME and KDE on Wayland and X11, with the same keyboard-first design.</p><a class="more" href="https://github.com/ashfordeOU/monorail/issues/new?title=I%27d%20like%20Monorail%20for%20Linux&amp;labels=linux">I want it on Linux →</a></div>
     </div>
     <p class="hint" style="margin-top:18px">Star or watch <a href="https://github.com/ashfordeOU/monorail" style="color:inherit">the repository</a> to hear when they're ready.</p>
   </section>

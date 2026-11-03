@@ -43,9 +43,10 @@ img { max-width:100%; }
 .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 
 /* App icons, with a lettered tile if the image cannot load */
-.appicon { position:relative; display:inline-grid; place-items:center; flex:0 0 auto; width:var(--s, 64px); height:var(--s, 64px); border-radius:22.5%; }
-.appicon img { width:100%; height:100%; display:block; border-radius:inherit; }
-.appicon.noimg { color:#fff; font:800 calc(var(--s, 64px) * .5)/1 -apple-system, BlinkMacSystemFont, sans-serif; background:linear-gradient(145deg, var(--keeper1), var(--keeper2)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); }
+.appicon { position:relative; display:inline-block; vertical-align:middle; flex:0 0 auto; width:var(--s, 64px); height:var(--s, 64px); min-width:var(--s, 64px); border-radius:22.5%; }
+/* Explicit pixel size: Safari can otherwise size a 1024px icon from its intrinsic size inside grid/flex items. */
+.appicon img { width:var(--s, 64px); height:var(--s, 64px); max-width:none; display:block; border-radius:inherit; object-fit:contain; }
+.appicon.noimg { display:inline-grid; place-items:center; color:#fff; font:800 calc(var(--s, 64px) * .5)/1 -apple-system, BlinkMacSystemFont, sans-serif; background:linear-gradient(145deg, var(--keeper1), var(--keeper2)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); }
 .appicon.noimg::after { content:attr(data-letter); }
 .appicon.noimg.m { background:linear-gradient(145deg, var(--pink), var(--plum)); }
 
@@ -206,20 +207,58 @@ h2.title { font-size:clamp(30px, 4.6vw, 52px); letter-spacing:-.025em; line-heig
 .exception p { margin:0; flex:1 1 260px; color:var(--muted); font-size:15px; }
 .exception p b { color:var(--ink); }
 
-/* Lid closed */
-.lidart { display:block; width:100%; max-width:520px; height:auto; margin:0 auto; }
-.lidart .desk { fill:color-mix(in srgb, var(--ink) 6%, transparent); }
-.lidart .cable { stroke:var(--muted); }
+/* Lid closed: an animated MacBook (static closed + running when motion is reduced) */
+.lidstage { position:relative; container-type:inline-size; width:100%; max-width:540px; margin:0 auto; aspect-ratio:10/6.6; overflow:hidden; border-radius:20px; }
+.lidstage .scene { position:absolute; inset:0; perspective:140cqw; perspective-origin:50% 20%; }
+.mb { position:absolute; left:23cqw; top:37cqw; width:56cqw; height:0; transform-style:preserve-3d; transform:rotateX(-26deg); }
+.mb > * { position:absolute; left:0; }
+.mb .deck { top:0; width:100%; height:36cqw; transform-origin:top; transform:rotateX(90deg); border-radius:1.2cqw 1.2cqw 2.4cqw 2.4cqw; background:linear-gradient(180deg, #2f2e35, #232228); box-shadow:inset 0 0 0 .25cqw rgba(255,255,255,.08); }
+.mb .deck .keys { position:absolute; left:7%; right:7%; top:7%; height:42%; border-radius:.8cqw; background-color:#121115; background-image:linear-gradient(90deg, transparent 0 86%, #2a2930 86% 100%), linear-gradient(180deg, transparent 0 80%, #2a2930 80% 100%); background-size:calc(100% / 14) 100%, 100% calc(100% / 6); }
+.mb .deck .pad { position:absolute; left:33%; right:33%; top:56%; bottom:8%; border-radius:1cqw; background:#2b2a31; box-shadow:inset 0 0 0 .2cqw rgba(255,255,255,.07); }
+.mb .front { top:0; width:100%; height:1.8cqw; transform:translateZ(36cqw); border-radius:0 0 1.6cqw 1.6cqw; background:linear-gradient(#3b3a42, #18171c); }
+.mb .front::before { content:""; position:absolute; left:42%; right:42%; top:0; height:45%; border-radius:0 0 .8cqw .8cqw; background:#121115; }
+.mb .floor { top:0; left:-6cqw; width:68cqw; height:48cqw; transform-origin:top; transform:translateY(1.9cqw) translateZ(-6cqw) rotateX(90deg); border-radius:50%; background:radial-gradient(closest-side, rgba(20,8,24,.45), rgba(20,8,24,.18) 60%, transparent); }
+.mb .glow { top:0; left:-10cqw; width:76cqw; height:56cqw; transform-origin:top; transform:translateY(1.8cqw) translateZ(-10cqw) rotateX(90deg); border-radius:50%; background:radial-gradient(closest-side, rgba(69,209,140,.7), rgba(69,209,140,.22) 50%, transparent); opacity:1; animation:lidGlow 10s ease-in-out infinite; }
+.mb .glow i { position:absolute; inset:0; border-radius:50%; background:inherit; animation:breathe 2.6s ease-in-out infinite; }
+.mb .cable { top:0; left:auto; right:100%; width:22cqw; height:36cqw; transform-origin:top; transform:translateY(1.8cqw) rotateX(90deg); overflow:visible; }
+.mb .cable path { fill:none; stroke:color-mix(in srgb, var(--muted) 80%, transparent); stroke-width:2.4; stroke-linecap:round; }
+.mb .cable .plug { fill:#d9d5db; }
+.mb .cable .led { fill:#45D18C; animation:charge 2s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+.mb .cable .ledglow { fill:#45D18C; opacity:.35; animation:charge 2s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+.mb .lid { bottom:0; width:100%; height:35cqw; transform-origin:bottom; transform-style:preserve-3d; transform:translateY(-.7cqw) rotateX(-90deg); animation:lidClose 10s cubic-bezier(.45,.05,.3,1) infinite; }
+.mb .lid > div { position:absolute; inset:0; border-radius:1.8cqw 1.8cqw .6cqw .6cqw; backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+.mb .face { background:#0b0a0d; padding:1.4cqw 1.4cqw 1.8cqw; box-shadow:inset 0 0 0 .25cqw #2a2930; }
+.mb .face .scr { position:relative; width:100%; height:100%; border-radius:.6cqw; overflow:hidden; background:radial-gradient(120% 90% at 20% 10%, #4B3A8E, transparent 60%), linear-gradient(135deg,#3A2A6E,#7A2E78 55%,#C2456E); }
+.mb .face .scr::before { content:""; position:absolute; left:50%; top:0; width:20%; height:6%; transform:translateX(-50%); background:#000; border-radius:0 0 1cqw 1cqw; }
+.mb .face .scr i { position:absolute; top:16%; bottom:16%; border-radius:.8cqw; background:rgba(255,255,255,.88); box-shadow:0 .8cqw 1.6cqw rgba(0,0,0,.25); }
+.mb .face .scr i::before { content:""; position:absolute; left:0; right:0; top:0; height:12%; border-radius:.8cqw .8cqw 0 0; background:var(--c); opacity:.85; }
+.mb .face .dimmer { position:absolute; inset:0; border-radius:inherit; background:#000; opacity:0; animation:lidDim 10s ease-in-out infinite; }
+.mb .back { transform:rotateY(180deg); background:linear-gradient(160deg, #3a3940, #17161b 70%); box-shadow:inset 0 0 0 .25cqw rgba(255,255,255,.10); }
+.mb .back::after { content:""; position:absolute; left:46%; right:46%; top:44%; bottom:44%; border-radius:50%; background:radial-gradient(closest-side, rgba(255,255,255,.18), transparent); }
+.running { position:absolute; left:50%; top:20cqw; transform:translateX(-50%); display:flex; align-items:center; gap:9px; padding:8px 16px 8px 12px; border-radius:999px; background:#1b1220; color:#fff; box-shadow:0 10px 28px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.1); font:600 clamp(12px, 3cqw, 15px)/1.2 -apple-system, BlinkMacSystemFont, sans-serif; white-space:nowrap; animation:lidPill 10s ease-in-out infinite; }
+.running .live { position:relative; width:9px; height:9px; border-radius:50%; background:#45D18C; flex:0 0 auto; }
+.running .live::after { content:""; position:absolute; inset:-4px; border-radius:50%; border:2px solid #45D18C; opacity:0; animation:ring 2s ease-out infinite; }
+.running small { color:rgba(255,255,255,.62); font-weight:500; }
+@container (max-width:380px) { .running small { display:none; } }
+@keyframes lidClose { 0%, 10% { transform:translateY(-.7cqw) rotateX(12deg); } 38%, 86% { transform:translateY(-.7cqw) rotateX(-90deg); } 100% { transform:translateY(-.7cqw) rotateX(12deg); } }
+@keyframes lidDim { 0%, 12% { opacity:0; } 34%, 90% { opacity:.75; } 100% { opacity:0; } }
+@keyframes lidPill { 0%, 38% { opacity:0; transform:translate(-50%, 8px); } 46%, 84% { opacity:1; transform:translate(-50%, 0); } 90%, 100% { opacity:0; transform:translate(-50%, 8px); } }
+@keyframes lidGlow { 0%, 36% { opacity:0; } 46%, 84% { opacity:1; } 92%, 100% { opacity:0; } }
+@keyframes breathe { 0%, 100% { opacity:.55; } 50% { opacity:1; } }
+@keyframes charge { 0%, 100% { opacity:1; transform:scale(1); } 50% { opacity:.45; transform:scale(.8); } }
+@keyframes ring { 0% { opacity:.8; transform:scale(.6); } 100% { opacity:0; transform:scale(1.6); } }
 .rules { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:14px; margin:34px 0 0; padding:0; list-style:none; }
-@media (max-width:1060px) { .rules { grid-template-columns:repeat(3, minmax(0,1fr)); } }
-@media (max-width:700px) { .rules { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+/* Five cards: 3 + 2 on medium widths, 2 + 2 + 1 (full row) on small, so no row has a lone short card */
+@media (max-width:1060px) { .rules { grid-template-columns:repeat(6, minmax(0,1fr)); } .rule { grid-column:span 2; } .rule:nth-child(n+4) { grid-column:span 3; } }
+@media (max-width:700px) { .rules { grid-template-columns:repeat(2, minmax(0,1fr)); } .rule, .rule:nth-child(n+4) { grid-column:auto; } .rule:last-child { grid-column:1 / -1; } }
+@media (max-width:440px) { .rule:last-child { grid-column:auto; } }
 @media (max-width:440px) { .rules { grid-template-columns:minmax(0,1fr); } }
 .rule { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px; display:flex; flex-direction:column; gap:10px; min-width:0; }
 .rule .ic { width:44px; height:44px; border-radius:13px; display:grid; place-items:center; background:color-mix(in srgb, var(--c) 16%, transparent); color:var(--c); }
 .rule .ic svg { width:24px; height:24px; }
 .rule h3 { margin:0; font-size:17px; line-height:1.3; }
 .rule p { margin:0; color:var(--muted); font-size:14px; line-height:1.5; }
-.edition { display:inline-flex; align-items:center; gap:8px; margin-top:20px; padding:8px 14px; border-radius:999px; background:var(--soft); border:1px solid var(--line); font-size:14px; color:var(--muted); }
+.edition { display:inline-block; margin-top:20px; padding:8px 16px; border-radius:18px; line-height:1.45; background:var(--soft); border:1px solid var(--line); font-size:14px; color:var(--muted); }
 .edition b { color:var(--ink); }
 
 /* Menu mock */
@@ -243,22 +282,37 @@ h2.title { font-size:clamp(30px, 4.6vw, 52px); letter-spacing:-.025em; line-heig
 .menuscene .omit { margin:12px 0 0 auto; width:min(340px, 100%); text-align:right; font-size:12px; color:rgba(255,255,255,.75); }
 
 /* Private */
-.private { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:clamp(16px, 3vw, 28px); align-items:center; }
-@media (max-width:620px) { .private { grid-template-columns:minmax(0,1fr); } }
-.yourmac { position:relative; border:2px dashed color-mix(in srgb, var(--plum) 40%, var(--line)); border-radius:26px; padding:44px clamp(14px, 3vw, 28px) 26px; background:color-mix(in srgb, var(--soft) 60%, transparent); }
-.yourmac .label { position:absolute; top:-13px; left:22px; display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; background:var(--card); border:1px solid var(--line); font-size:13px; font-weight:700; }
-.yourmac .label svg { width:16px; height:16px; }
-.duo { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:10px; }
-.duo .app { display:flex; flex-direction:column; align-items:center; gap:8px; font-size:14px; font-weight:700; }
-.duo .appicon { --s:clamp(52px, 8vw, 72px); filter:drop-shadow(0 10px 18px rgba(42,20,48,.2)); }
-.wire { position:relative; display:flex; flex-direction:column; align-items:center; gap:8px; min-width:0; }
-.wire::before { content:""; position:absolute; left:0; right:0; top:50%; height:2px; background:repeating-linear-gradient(90deg, var(--plum) 0 6px, transparent 6px 12px); opacity:.6; }
-.wire span { position:relative; padding:4px 10px; border-radius:999px; background:var(--card); border:1px solid var(--line); font:600 12.5px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; color:var(--ink); max-width:100%; text-align:center; }
-.wire span.or { font:600 11px/1 -apple-system, sans-serif; color:var(--muted); border:0; background:transparent; padding:0 6px; }
-.wire span.or::before { content:""; position:absolute; inset:-3px -2px; background:color-mix(in srgb, var(--soft) 60%, var(--bg)); z-index:-1; border-radius:4px; }
-@media (max-width:420px) { .duo { grid-template-columns:minmax(0,1fr); justify-items:center; } .wire { padding:8px 0; } .wire::before { left:50%; right:auto; top:0; bottom:0; width:2px; height:auto; background:repeating-linear-gradient(180deg, var(--plum) 0 6px, transparent 6px 12px); } }
-.noserver { display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--muted); font-size:14px; font-weight:700; text-align:center; }
-.noserver svg { width:76px; height:76px; }
+.private { container-type:inline-size; padding:clamp(22px, 3.4vw, 36px) clamp(16px, 3vw, 32px); }
+.private .scene { display:flex; flex-direction:column; align-items:stretch; gap:18px; }
+.yourmac { position:relative; margin-top:12px; border:2px dashed color-mix(in srgb, var(--plum) 45%, var(--line)); border-radius:24px; padding:34px clamp(12px, 4cqw, 26px) 24px; background:color-mix(in srgb, var(--soft) 55%, transparent); }
+.yourmac .label { position:absolute; top:0; left:50%; transform:translate(-50%, -50%); display:inline-flex; align-items:center; gap:6px; padding:5px 13px; border-radius:999px; background:var(--card); border:1px solid color-mix(in srgb, var(--plum) 40%, var(--line)); font-size:13px; font-weight:700; line-height:1.2; white-space:nowrap; color:var(--ink); }
+.yourmac .label svg { width:16px; height:16px; flex:0 0 auto; color:var(--plum); }
+.duo { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; }
+.duo .app { display:flex; flex-direction:column; align-items:center; gap:8px; font-size:14px; font-weight:700; line-height:20px; white-space:nowrap; }
+.duo .app::before { content:""; height:20px; }
+.duo .appicon { --s:64px; filter:drop-shadow(0 10px 18px rgba(42,20,48,.22)); }
+.chan { display:grid; grid-template-columns:minmax(10px,1fr) auto minmax(10px,1fr); align-items:center; gap:8px; padding:0 8px; min-width:0; }
+.chan .ln { height:2px; background:repeating-linear-gradient(90deg, var(--plum) 0 6px, transparent 6px 12px); opacity:.7; border-radius:2px; }
+.chan .ln.r { background:repeating-linear-gradient(270deg, var(--plum) 0 6px, transparent 6px 12px); }
+.chan .via { display:flex; flex-direction:column; align-items:center; gap:5px; }
+.chan .pill { padding:5px 12px; border-radius:999px; background:var(--card); border:1px solid var(--line); box-shadow:0 2px 8px rgba(42,20,48,.08); font:600 12.5px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; color:var(--ink); white-space:nowrap; }
+.chan .or { font:700 11px/1 -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.noserver { display:flex; align-items:center; justify-content:center; gap:12px; padding:12px 16px; border-radius:18px; border:1px solid var(--line); background:color-mix(in srgb, #E5484D 6%, transparent); color:var(--muted); font-size:14px; font-weight:700; line-height:1.3; text-align:center; }
+.noserver svg { width:44px; height:44px; flex:0 0 auto; }
+.noserver span small { display:block; font-weight:500; font-size:12.5px; }
+@container (min-width:560px) {
+  .private .scene { flex-direction:row; align-items:center; gap:20px; }
+  .yourmac { flex:1 1 auto; margin-top:0; }
+  .noserver { flex:0 0 auto; flex-direction:column; width:136px; padding:18px 10px; gap:8px; }
+  .noserver svg { width:60px; height:60px; }
+}
+@container (min-width:640px) { .duo .appicon { --s:72px; } }
+@container (max-width:379px) {
+  .duo { grid-template-columns:minmax(0,1fr); justify-items:center; }
+  .duo .app::before { display:none; }
+  .chan { grid-template-columns:auto; grid-template-rows:22px auto 22px; justify-items:center; padding:8px 0; }
+  .chan .ln, .chan .ln.r { width:2px; height:100%; background:repeating-linear-gradient(180deg, var(--plum) 0 6px, transparent 6px 12px); }
+}
 
 /* Signed */
 .signed { display:grid; grid-template-columns:auto minmax(0,1fr); gap:clamp(18px, 3vw, 32px); align-items:center; padding:clamp(22px, 4vw, 40px); border-radius:28px; background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow); }
@@ -436,27 +490,22 @@ footer a:hover { color:var(--ink); text-decoration:underline; }
         <span class="edition"><b>Monorail:</b> download version only, not the App Store edition</span>
       </div>
       <div class="panel">
-        <svg class="lidart" viewBox="0 0 520 220" role="img" aria-label="Illustration: a closed MacBook on a desk, plugged in, still running.">
-          <defs>
-            <linearGradient id="alu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4952"/><stop offset=".55" stop-color="#2c2b32"/><stop offset="1" stop-color="#17161b"/></linearGradient>
-            <linearGradient id="top" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b3a42"/><stop offset=".5" stop-color="#55545c"/><stop offset="1" stop-color="#3b3a42"/></linearGradient>
-            <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#45D18C" stop-opacity=".55"/><stop offset="1" stop-color="#45D18C" stop-opacity="0"/></radialGradient>
-          </defs>
-          <ellipse class="desk" cx="230" cy="176" rx="210" ry="14"/>
-          <path d="M60 150 L80 112 H380 L400 150 Z" fill="url(#top)"/>
-          <rect x="56" y="150" width="348" height="18" rx="6" fill="url(#alu)"/>
-          <rect x="196" y="150" width="68" height="5" rx="2.5" fill="#121115"/>
-          <path d="M404 160 C 440 160, 440 120, 470 120 L 488 120" class="cable" fill="none" stroke-width="4" stroke-linecap="round"/>
-          <rect x="486" y="110" width="24" height="20" rx="5" fill="#ECE8EC" stroke="rgba(0,0,0,.18)"/>
-          <rect x="510" y="115" width="6" height="3" rx="1" fill="#9a98a0"/><rect x="510" y="122" width="6" height="3" rx="1" fill="#9a98a0"/>
-          <circle cx="400" cy="160" r="16" fill="url(#glow)"/>
-          <circle cx="400" cy="160" r="3.5" fill="#45D18C"/>
-          <g transform="translate(184 40)">
-            <rect width="152" height="40" rx="20" fill="#1b1220"/>
-            <circle cx="22" cy="20" r="5" fill="#45D18C"/>
-            <text x="36" y="25" fill="#fff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="600">Still running</text>
-          </g>
-        </svg>
+        <div class="lidstage" role="img" aria-label="Illustration: a black MacBook, plugged in with its charge light on, closes its lid and keeps running.">
+          <div class="scene" aria-hidden="true">
+            <div class="mb">
+              <div class="floor"></div>
+              <div class="glow"><i></i></div>
+              <svg class="cable" viewBox="0 0 220 360" preserveAspectRatio="none"><path d="M216 64 C 150 64, 140 200, 60 250 S -10 330, -40 360"/><rect class="plug" x="196" y="54" width="24" height="20" rx="4"/><circle class="ledglow" cx="204" cy="64" r="9"/><circle class="led" cx="204" cy="64" r="3.6"/></svg>
+              <div class="deck"><span class="keys"></span><span class="pad"></span></div>
+              <div class="front"></div>
+              <div class="lid">
+                <div class="face"><div class="scr"><i style="--c:var(--w1);left:6%;width:30%"></i><i style="--c:var(--w2);left:39%;width:24%"></i><i style="--c:var(--w5);left:66%;width:28%"></i></div><span class="dimmer"></span></div>
+                <div class="back"></div>
+              </div>
+            </div>
+          </div>
+          <div class="running" aria-hidden="true"><span class="live"></span>Still running <small>· lid closed, plugged in</small></div>
+        </div>
       </div>
     </div>
     <ul class="rules">
@@ -510,18 +559,20 @@ footer a:hover { color:var(--ink); text-decoration:underline; }
           <li><span><b>Your windows stay yours.</b> Nothing about your windows or files is sent anywhere.</span></li>
         </ul>
       </div>
-      <div class="panel private" role="img" aria-label="Diagram: Monorail and Keeper inside an outline labelled Your Mac, linked by localhost or an App Group folder. Outside, a crossed-out cloud labelled No server.">
-        <div class="yourmac" aria-hidden="true">
-          <span class="label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M1.5 19.5h21"/></svg>Your Mac</span>
-          <div class="duo">
-            <div class="app"><span class="appicon m" data-letter="M"><img src="../assets/icon.png" alt="" onerror="iconFallback(this)"></span>Monorail</div>
-            <div class="wire"><span>localhost</span><span class="or">or</span><span>App Group folder</span></div>
-            <div class="app"><span class="appicon k" data-letter="K"><img src="https://raw.githubusercontent.com/ashfordeOU/keeper/main/build/icon.png" alt="" onerror="iconFallback(this)"></span>Keeper</div>
+      <div class="panel private" role="img" aria-label="Diagram: Monorail and Keeper inside an outline labelled Your Mac, linked by localhost or an App Group folder. Outside it, a crossed-out cloud labelled No server.">
+        <div class="scene" aria-hidden="true">
+          <div class="yourmac">
+            <span class="label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M1.5 19.5h21"/></svg>Your Mac</span>
+            <div class="duo">
+              <div class="app"><span class="appicon m" data-letter="M"><img src="../assets/icon.png" alt="" width="72" height="72" onerror="iconFallback(this)"></span>Monorail</div>
+              <div class="chan"><i class="ln"></i><span class="via"><span class="pill" data-nowrap>localhost</span><span class="or">or</span><span class="pill" data-nowrap>App Group folder</span></span><i class="ln r"></i></div>
+              <div class="app"><span class="appicon k" data-letter="K"><img src="https://raw.githubusercontent.com/ashfordeOU/keeper/main/build/icon.png" alt="" width="72" height="72" onerror="iconFallback(this)"></span>Keeper</div>
+            </div>
           </div>
-        </div>
-        <div class="noserver" aria-hidden="true">
-          <svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 56h36a12 12 0 0 0 1-24 18 18 0 0 0-34-4 14 14 0 0 0-3 28z" stroke="currentColor" stroke-width="3.5" opacity=".55"/><path d="M14 66L66 14" stroke="#E5484D" stroke-width="4.5"/></svg>
-          No server
+          <div class="noserver">
+            <svg viewBox="0 0 80 80" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 56h36a12 12 0 0 0 1-24 18 18 0 0 0-34-4 14 14 0 0 0-3 28z" stroke="currentColor" stroke-width="3.5" opacity=".55"/><path d="M14 66L66 14" stroke="#E5484D" stroke-width="4.5"/></svg>
+            <span>No server<small>nothing in between</small></span>
+          </div>
         </div>
       </div>
     </div>

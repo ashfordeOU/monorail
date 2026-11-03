@@ -22,6 +22,9 @@ permissions:
 jobs:
   release:
     runs-on: macos-15
+    outputs:
+      tag: ${{ steps.handover.outputs.tag }}
+      ready: ${{ steps.handover.outputs.ready }}
     env:
       TAG: ${{ github.event.inputs.tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
       GH_TOKEN: ${{ github.token }}
@@ -159,8 +162,49 @@ jobs:
           if [ "${NOTARISED:-}" != "1" ]; then
             echo "This build is not notarized. If macOS says it can't verify the developer, open **System Settings → Privacy & Security** and click **Open Anyway**." >> notes.md
           fi
-      - name: Publish
+      - name: Hand over to publishing
+        # Publishing runs as its own job, with a fresh GitHub token however long Apple took
+        # (a token from the start of a long wait can be refused).
+        id: handover
         if: env.SKIP != '1'
+        run: |
+          cp notes.md dist/notes.md
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "ready=1" >> "$GITHUB_OUTPUT"
+      - name: Keep the finished files
+        if: env.SKIP != '1'
+        uses: actions/upload-artifact@v5
+        with:
+          name: release-ready
+          path: |
+            dist/*.zip
+            dist/*.dmg
+            dist/*.pkg
+            dist/SHA256SUMS
+            dist/notes.md
+          retention-days: 7
+
+  publish:
+    needs: release
+    if: needs.release.outputs.ready == '1'
+    runs-on: macos-15
+    env:
+      TAG: ${{ needs.release.outputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Get the finished files
+        uses: actions/download-artifact@v5
+        with:
+          name: release-ready
+          path: dist
+      - name: Check them once more
+        run: |
+          (cd dist && shasum -a 256 -c SHA256SUMS --ignore-missing)
+          mv dist/notes.md notes.md
+      - name: Publish
         run: |
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" dist/*.zip dist/*.dmg dist/*.pkg dist/SHA256SUMS --clobber
@@ -169,7 +213,6 @@ jobs:
               --title "Monorail ${TAG#v}" --notes-file notes.md --target "$GITHUB_SHA"
           fi
       - name: Update the Homebrew cask
-        if: env.SKIP != '1'
         env:
           SIGNING_KEY: ${{ secrets.COMMIT_SIGNING_KEY }}
         run: |

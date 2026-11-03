@@ -57,7 +57,7 @@ Turn on **Install updates automatically** in Settings → General to skip the qu
 
 ## Safe to install
 
-- **Notarised by Apple.** From 1.7.16, every release is signed with Ashforde OÜ's Apple Developer ID (Team `D69G45342Y`) and notarised by Apple, so it opens without a warning. To check a download yourself, run `spctl -a -vvv -t open --context context:primary-signature Monorail-x.y.z.dmg`; it reports `source=Notarized Developer ID`.
+- **Notarised by Apple.** Every release is signed with Ashforde OÜ's Apple Developer ID (Team `D69G45342Y`) and notarised by Apple, so it opens without a warning. To check a download yourself, run `spctl -a -vvv -t open --context context:primary-signature Monorail-x.y.z.dmg`; it reports `source=Notarized Developer ID`.
 - **Open source.** Every line is on GitHub under the [Functional Source License](LICENSE). Build it yourself if you like.
 - **Private.** No account. Everything Monorail learns stays on your Mac. The only data it sends is anonymous usage counts, which you can turn off. [Details](#privacy).
 - **One permission.** Accessibility, which macOS requires before any app can move windows. Others are asked for only when you turn on a feature that needs them.

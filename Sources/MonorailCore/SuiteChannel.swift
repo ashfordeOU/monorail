@@ -101,8 +101,17 @@ public final class SuiteChannel {
         else { return }
         let temporary = url.deletingLastPathComponent().appendingPathComponent(".\(url.lastPathComponent).\(UUID().uuidString).tmp")
         guard (try? data.write(to: temporary)) != nil else { return }
+        #if os(Windows)
+        // Windows' rename won't replace an existing file; ReplaceFile (behind replaceItemAt) does.
+        let fm = FileManager.default
+        let replaced = fm.fileExists(atPath: url.path)
+            ? (try? fm.replaceItemAt(url, withItemAt: temporary)) != nil
+            : (try? fm.moveItem(at: temporary, to: url)) != nil
+        if !replaced { try? fm.removeItem(at: temporary) }
+        #else
         // rename(2) replaces the old file in one step: readers see the old or the new, never half.
         if rename(temporary.path, url.path) != 0 { try? FileManager.default.removeItem(at: temporary) }
+        #endif
     }
 
     private func read(_ url: URL) -> [String: Any]? {

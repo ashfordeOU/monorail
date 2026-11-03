@@ -114,7 +114,7 @@ struct WhatsNewView: View {
         ("sparkles", "Say it", "Type “Slack and Mail side by side on 3” or “write the Q3 report” in the palette.", .commandPalette),
         ("cup.and.saucer.fill", "Stay Awake", "Keep your Mac awake for an hour, while downloading, or by itself.", .awake60),
         ("eye.slash", "Safe screen sharing", "Private windows step aside when you share. Mark one private now.", .markPrivate),
-        ("bell.badge", "AI agent alerts", "Run Claude Code or Codex: hear a chime when it waits for you.", .commandPalette),
+        ("bell.badge", "AI agent alerts", "Run an AI coding assistant in a terminal: hear a chime when it waits for you.", .commandPalette),
     ]
 
     var body: some View {

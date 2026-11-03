@@ -287,7 +287,7 @@ struct SmartPane: View {
             } header: {
                 Text("AI agents")
             } footer: {
-                Text("Watches terminal windows running Claude Code, Codex, Aider, Gemini and others; when one asks for approval you hear a chime, and the palette offers to take you there.")
+                Text("Watches terminal windows running AI coding assistants; when one asks for approval you hear a chime, and the palette offers to take you there.")
                     .font(.callout).foregroundStyle(.secondary)
             }
             Section {

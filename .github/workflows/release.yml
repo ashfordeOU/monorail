@@ -11,6 +11,10 @@ on:
       tag:
         description: "Tag to release (e.g. v0.1.0). Created from the selected branch if missing."
         required: true
+      resume_run:
+        description: "Finish an earlier run whose Apple review outlasted it: that run's ID (it reuses its files and submissions)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -30,6 +34,7 @@ jobs:
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+      RESUME: ${{ github.event.inputs.resume_run || '' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -55,7 +60,7 @@ jobs:
             exit 1
           fi
       - name: Test
-        if: env.SKIP != '1'
+        if: env.SKIP != '1' && env.RESUME == ''
         run: swift test
       - name: Import signing certificate
         # Signing with the same certificate every release keeps macOS
@@ -63,36 +68,75 @@ jobs:
         if: env.SKIP != '1' && env.MONORAIL_SIGNING_CERT != ''
         run: scripts/ci-import-signing-cert.sh
       - name: Warn about ad-hoc signing
-        if: env.SKIP != '1' && env.MONORAIL_SIGNING_CERT == ''
+        if: env.SKIP != '1' && env.RESUME == '' && env.MONORAIL_SIGNING_CERT == ''
         run: echo "::warning::MONORAIL_SIGNING_CERT is not set; this release is signed ad hoc and users must re-grant Accessibility after updating."
       - name: Build app
-        if: env.SKIP != '1'
+        if: env.SKIP != '1' && env.RESUME == ''
         run: scripts/build-app.sh
       - name: Install dmgbuild
-        if: env.SKIP != '1'
+        if: env.SKIP != '1' && env.RESUME == ''
         run: |
           python3 -m venv "$RUNNER_TEMP/dmg"
           "$RUNNER_TEMP/dmg/bin/pip" install --quiet dmgbuild
           echo "$RUNNER_TEMP/dmg/bin" >> "$GITHUB_PATH"
       - name: Package
-        if: env.SKIP != '1'
+        if: env.SKIP != '1' && env.RESUME == ''
         run: scripts/package.sh
-      - name: Notarise
-        if: env.SKIP != '1' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
+      - name: Send to Apple
+        if: env.SKIP != '1' && env.RESUME == '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
         run: |
           # The DMG carries its own Developer ID signature (the app inside is signed already).
           for file in dist/*.dmg; do codesign --force --timestamp --sign "$SIGN_IDENTITY" "$file"; done
+          # Both files go to Apple at once; their submission IDs are kept with the files.
+          : > dist/notarisation.txt
           for file in dist/*.dmg dist/*.pkg; do
-            xcrun notarytool submit "$file" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
-            xcrun stapler staple "$file"
+            id="$(xcrun notarytool submit "$file" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --output-format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+            echo "$(basename "$file") $id" | tee -a dist/notarisation.txt
           done
+      - name: Keep the files and submissions
+        # So a long first review from Apple can be finished later without sending anything again.
+        if: env.SKIP != '1' && env.RESUME == '' && hashFiles('dist/notarisation.txt') != ''
+        uses: actions/upload-artifact@v5
+        with:
+          name: release-files
+          path: |
+            dist/*.zip
+            dist/*.dmg
+            dist/*.pkg
+            dist/notarisation.txt
+          retention-days: 7
+      - name: Get the earlier run's files
+        if: env.SKIP != '1' && env.RESUME != ''
+        uses: actions/download-artifact@v5
+        with:
+          name: release-files
+          path: dist
+          run-id: ${{ github.event.inputs.resume_run }}
+          github-token: ${{ github.token }}
+      - name: Wait for Apple
+        if: env.SKIP != '1' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != '' && hashFiles('dist/notarisation.txt') != ''
+        run: |
+          # Up to 5 hours (a new team's first reviews can be slow), ending cleanly before GitHub's 6-hour limit.
+          while read -r name id; do
+            result="$(xcrun notarytool wait "$id" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --timeout 5h --output-format json || true)"
+            echo "$name: $result"
+            status="$(printf '%s' "$result" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status",""))' 2>/dev/null || true)"
+            if [ "$status" != "Accepted" ]; then
+              xcrun notarytool log "$id" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" || true
+              echo "::error::Apple hasn't accepted $name yet ($status). When it has, run Release again with resume_run = ${{ github.event.inputs.resume_run || github.run_id }}."
+              exit 1
+            fi
+            xcrun stapler staple "dist/$name"
+          done < dist/notarisation.txt
           (cd dist && shasum -a 256 *.zip *.dmg *.pkg > SHA256SUMS)
           # Check them the way macOS will: Gatekeeper must say they're notarised by Ashforde.
           for file in dist/*.dmg; do spctl -a -vvv -t open --context context:primary-signature "$file" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; done
-          if [ -n "${INSTALLER_IDENTITY:-}" ]; then
+          if [ -n "${INSTALLER_IDENTITY:-}${RESUME}" ]; then
             for file in dist/*.pkg; do spctl -a -vvv -t install "$file" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; done
           fi
-          spctl -a -vvv -t exec dist/Monorail.app 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID" || echo "::warning::the app itself has no stapled ticket (macOS looks it up online)"
+          if [ -d dist/Monorail.app ]; then
+            spctl -a -vvv -t exec dist/Monorail.app 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID" || echo "::warning::the app itself has no stapled ticket (macOS looks it up online)"
+          fi
           echo "NOTARISED=1" >> "$GITHUB_ENV"
       - name: Release notes
         if: env.SKIP != '1'

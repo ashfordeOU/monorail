@@ -22,6 +22,7 @@ jobs:
   smoke:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: macos-15
+    timeout-minutes: 25
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -41,7 +42,9 @@ jobs:
           for f in dl/Monorail-*.dmg; do spctl -a -vvv -t open --context context:primary-signature "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; xcrun stapler validate "$f"; done
           for f in dl/Monorail-*.pkg; do spctl -a -vvv -t install "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; xcrun stapler validate "$f"; done
       - name: Install from the DMG and open it
+        timeout-minutes: 6
         run: |
+          set -x
           mount="$(hdiutil attach dl/Monorail-*.dmg -nobrowse -noautoopen | awk -F '\t' '/\/Volumes\// {print $NF; exit}')"
           ditto "$mount/Monorail.app" /Applications/Monorail.app
           hdiutil detach "$mount"

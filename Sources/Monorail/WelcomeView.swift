@@ -139,6 +139,23 @@ struct WelcomeView: View {
                             selected: store.settings.sliderBar == .off
                         ) { store.settings.sliderBar = .off }
                     }
+                    Text("How do you want to start?").fontWeight(.medium).padding(.top, 4)
+                    HStack(spacing: 8) {
+                        ForEach(StarterSetup.allCases, id: \.self) { setup in
+                            Button(setup.title) {
+                                let bar = store.settings.sliderBar
+                                store.settings.apply(setup)
+                                store.settings.sliderBar = bar
+                                if setup == .switching { Importer.run(store: store) }
+                            }
+                            .help(setup.detail)
+                        }
+                    }
+                    Text(LocalizedStringKey(store.settings.showAllSettings
+                         ? "Every setting shows in Settings. Turn off **Show all settings** at the bottom of its sidebar for just the essentials."
+                         : "Settings shows the essentials. Turn on **Show all settings** at the bottom of its sidebar for everything."))
+                        .font(.callout).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("You can switch any time in Settings → Appearance.")
                         .font(.callout).foregroundStyle(.secondary)
                     Picker("Style", selection: styleBinding) {

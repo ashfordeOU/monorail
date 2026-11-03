@@ -176,6 +176,7 @@ public static class SettingKeys
     public const string AwakeDriveAlive = "awakeDriveAlive";
     public const string AwakeClosedLid = "awakeClosedLid";
     public const string AwakeClosedLidOnlyOnPower = "awakeClosedLidOnlyOnPower";
+    public const string ShowAllSettings = "showAllSettings";
     public const string EveningStrength = "eveningStrength";
     public const string EveningOn = "eveningOn";
     public const string EveningSchedule = "eveningSchedule";
@@ -481,6 +482,8 @@ public static class SettingDefaults
     public const bool AwakeClosedLid = false;
     /// <summary>Lid-closed mode only while plugged in (on battery, closing the lid puts the Mac to sleep).</summary>
     public const bool AwakeClosedLidOnlyOnPower = true;
+    /// <summary>Settings shows every section; off, only the essential ones (search still finds everything).</summary>
+    public const bool ShowAllSettings = false;
     /// <summary>Evening Mode: a warmer screen with less blue light. How strong, 0–1.</summary>
     public const double EveningStrength = 0.5;
     /// <summary>Turned on by hand (from the menu bar or Settings).</summary>

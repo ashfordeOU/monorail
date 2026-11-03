@@ -97,7 +97,7 @@ struct SettingsView: View {
             .padding(.horizontal, 10).padding(.top, 12).padding(.bottom, 6)
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
-                    ForEach(Self.groups, id: \.0) { group in
+                    ForEach(visibleGroups, id: \.0) { group in
                         Text(group.0.uppercased())
                             .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
                             .padding(.horizontal, 12).padding(.top, 12).padding(.bottom, 2)
@@ -106,6 +106,22 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal, 8).padding(.bottom, 12)
             }
+            Divider()
+            Toggle("Show all settings", isOn: $store.settings.showAllSettings)
+                .toggleStyle(.switch).controlSize(.small)
+                .help("Off: only the settings most people change. Search always finds every setting.")
+                .padding(.horizontal, 14).padding(.vertical, 10)
+        }
+    }
+
+    /// The sidebar's groups, without the advanced sections while "Show all settings" is off.
+    /// The section you're on always stays (search can open any of them).
+    private var visibleGroups: [(String, [SettingsTab])] {
+        Self.groups.compactMap { group in
+            let tabs = group.1.filter {
+                SettingsVisibility.isShown($0.rawValue, showAll: store.settings.showAllSettings) || $0 == navigation.tab
+            }
+            return tabs.isEmpty ? nil : (group.0, tabs)
         }
     }
 
@@ -186,6 +202,17 @@ private struct BasicsPane: View {
     var body: some View {
         Form {
             Section {
+                LabeledContent("Start as") {
+                    HStack {
+                        ForEach(StarterSetup.allCases, id: \.self) { setup in
+                            Button(setup.title) {
+                                store.settings.apply(setup)
+                                if setup == .switching { Importer.run(store: store) }
+                            }
+                            .help(setup.detail)
+                        }
+                    }
+                }
                 LabeledContent("Start from a style") {
                     HStack {
                         ForEach(StartStyle.allCases, id: \.self) { style in

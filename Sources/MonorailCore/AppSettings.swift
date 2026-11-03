@@ -832,6 +832,8 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var awakeClosedLid = false
     /// Lid-closed mode only while plugged in (on battery, closing the lid puts the Mac to sleep).
     public var awakeClosedLidOnlyOnPower = true
+    /// Settings shows every section; off, only the essential ones (search still finds everything).
+    public var showAllSettings = false
     /// Evening Mode: a warmer screen with less blue light. How strong, 0–1.
     public var eveningStrength = 0.5
     /// Turned on by hand (from the menu bar or Settings).
@@ -1049,7 +1051,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
-        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
     }
 
     public init(from decoder: Decoder) throws {
@@ -1224,6 +1226,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         awakeDriveAlive = value(.awakeDriveAlive, d.awakeDriveAlive)
         awakeClosedLid = value(.awakeClosedLid, d.awakeClosedLid)
         awakeClosedLidOnlyOnPower = value(.awakeClosedLidOnlyOnPower, d.awakeClosedLidOnlyOnPower)
+        showAllSettings = value(.showAllSettings, d.showAllSettings)
         eveningStrength = value(.eveningStrength, d.eveningStrength)
         eveningOn = value(.eveningOn, d.eveningOn)
         eveningSchedule = value(.eveningSchedule, d.eveningSchedule)

@@ -4,6 +4,12 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Start as Simple, Power user or Coming from another app**, in the welcome tour and Settings → Basics. Coming from another app opens the importer for AeroSpace, yabai and Rectangle.
+- **Show all settings**, at the bottom of the Settings sidebar. Off (the default for new installs), the sidebar shows the essentials: Basics, Shortcuts, Appearance, Evening Mode, Stay Awake and About. Search always finds every setting.
+
 ## [1.7.16] - 2026-11-03
 
 ### Changed

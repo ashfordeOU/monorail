@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 208,
+  "count": 209,
   "settings": [
     {
       "key": "layout",
@@ -1027,6 +1027,12 @@
       "type": "Bool",
       "default": "true",
       "about": "Lid-closed mode only while plugged in (on battery, closing the lid puts the Mac to sleep)."
+    },
+    {
+      "key": "showAllSettings",
+      "type": "Bool",
+      "default": "false",
+      "about": "Settings shows every section; off, only the essential ones (search still finds everything)."
     },
     {
       "key": "eveningStrength",

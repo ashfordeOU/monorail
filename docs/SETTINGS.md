@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-208 settings.
+209 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -180,6 +180,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `awakeDriveAlive` | During Stay Awake, keep external drives from spinning down. | `false` |
 | `awakeClosedLid` | During Stay Awake, keep running with the lid closed, even without an external display (asks for your password). | `false` |
 | `awakeClosedLidOnlyOnPower` | Lid-closed mode only while plugged in (on battery, closing the lid puts the Mac to sleep). | `true` |
+| `showAllSettings` | Settings shows every section; off, only the essential ones (search still finds everything). | `false` |
 | `eveningStrength` | Evening Mode: a warmer screen with less blue light. How strong, 0–1. | `0.5` |
 | `eveningOn` | Turned on by hand (from the menu bar or Settings). | `false` |
 | `eveningSchedule` | By hand only, or every day on a schedule. | `EveningSchedule.manual` |

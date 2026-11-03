@@ -206,6 +206,11 @@ jobs:
           mv dist/notes.md notes.md
       - name: Publish
         run: |
+          # Also under fixed names, so a plain link always gets the newest:
+          # https://github.com/ashfordeOU/monorail/releases/latest/download/Monorail.dmg
+          cp "dist/Monorail-${TAG#v}.dmg" dist/Monorail.dmg
+          cp "dist/Monorail-${TAG#v}.pkg" dist/Monorail.pkg
+          (cd dist && shasum -a 256 Monorail.dmg Monorail.pkg >> SHA256SUMS)
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" dist/*.zip dist/*.dmg dist/*.pkg dist/SHA256SUMS --clobber
           else

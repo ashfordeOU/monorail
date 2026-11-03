@@ -92,5 +92,5 @@ the signed build is out, a 30-second screen recording of the real app is worth a
 - [ ] Maker comment posted straight away.
 - [ ] The README links to the Product Hunt page (a badge from Product Hunt's embed page).
 - [ ] The latest release is published, with a DMG and checksums, and notarised.
-- [ ] Optional but worth it: a Developer ID and notarisation (add `APPLE_ID`, `APPLE_TEAM_ID`, `APPLE_APP_PASSWORD` and a Developer ID certificate as repository secrets), so first-time users don't see a Gatekeeper warning.
+- [x] A Developer ID and notarisation, so first-time users don't see a Gatekeeper warning (from 1.7.16; earlier releases re-signed).
 - [ ] Reply to every comment on the day.

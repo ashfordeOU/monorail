@@ -7,12 +7,12 @@ Facts to keep straight: macOS 13 or later, Apple silicon and Intel, free with no
 GitHub under FSL-1.1-ALv2 (becomes Apache 2.0 after two years), one permission (Accessibility), no
 account, anonymous daily counts that can be turned off.
 
-## "macOS says it can't verify the developer"
+## "Is it safe? Is it signed?"
 
-> Sorry about that: the Apple notarisation is on its way. Until then, open System Settings → Privacy &
-> Security and click **Open Anyway**, or install with Homebrew (`brew install --cask monorail` after
-> `brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail`), which skips the warning. Every
-> release is code-signed and has a published SHA-256 checksum.
+> Yes. Every release is signed with our Apple Developer ID and notarised by Apple, so it opens without
+> warnings. The source is on GitHub, CI checks every change, and every download has a published SHA-256
+> checksum. Check it yourself with `spctl -a -vvv -t install Monorail-x.y.z.dmg`, which says
+> "Notarized Developer ID".
 
 ## "How is this different from AeroSpace / yabai / Amethyst?"
 

@@ -241,10 +241,9 @@ floating camera tile.
 <p align="center"><img src="assets/readme/installer.png" alt="The Monorail installer: drag Monorail into Applications" width="560"></p>
 
 > [!NOTE]
-> Release builds are not yet notarized by Apple (the release pipeline notarizes
-> automatically once an Apple Developer ID is added). The first time you open Monorail,
-> macOS may say it can't verify the developer. Open **System Settings → Privacy & Security**
-> and click **Open Anyway**. The Terminal installer below avoids this step.
+> Every release is signed with Ashforde's Apple Developer ID (Team D69G45342Y) and notarised by
+> Apple, so it opens without any warning. You can check a download yourself:
+> `spctl -a -vvv -t install Monorail-x.y.z.dmg` says `source=Notarized Developer ID`.
 
 ### Homebrew
 
@@ -1203,20 +1202,18 @@ make run       # build and open the app
 
 ### Signing
 
-macOS ties the Accessibility permission to the app's code signature. Release
-builds are signed with Monorail's own certificate, so the permission carries
-over from one version to the next. (Updating from a release before 0.2.2 needs
-one last re-grant: remove Monorail from **Privacy & Security → Accessibility**
-with **–**, then open it again.)
+Releases are signed with Ashforde OU's **Developer ID Application** certificate (Team
+`D69G45342Y`), with the hardened runtime and a secure timestamp, and notarised and stapled by
+Apple. The pkg is signed with the **Developer ID Installer** certificate, for MDM tools and
+Installomator. macOS ties the Accessibility permission to the signature, so it carries over from
+one version to the next. (Updating from 1.7.15 or earlier needs one last re-grant: remove Monorail
+from **Privacy & Security → Accessibility** with **–**, then open it again.)
 
-The certificate is self-signed and lives in two repository secrets,
-`MONORAIL_SIGNING_CERT` and `MONORAIL_SIGNING_PASSWORD` (the older `MACSLIDER_*` names still work). To create or replace
-it, run this on your Mac. It uses the GitHub CLI if it's installed, and
-otherwise walks you through pasting the two secrets:
-
-```bash
-scripts/make-signing-cert.sh
-```
+The release pipeline reads the certificates and notarisation details from repository secrets:
+`MONORAIL_SIGNING_CERT` / `MONORAIL_SIGNING_PASSWORD` (Developer ID Application, `.p12`),
+`MONORAIL_INSTALLER_CERT` (Developer ID Installer), and `APPLE_ID`, `APPLE_TEAM_ID` and
+`APPLE_APP_PASSWORD` for notarisation. Setup and renewal are in
+[docs/NOTARISATION.md](docs/NOTARISATION.md).
 
 Local builds are signed ad hoc unless you set `SIGN_IDENTITY` to a code-signing
 identity (a name or SHA-1 hash, such as a Developer ID) before running

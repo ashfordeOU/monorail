@@ -638,6 +638,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self.publishSuiteHello()
             self.updateStatusItem()
         }
+        // The shared channel needs no Accessibility: Keeper can hand Stay Awake over before it's granted.
+        DispatchQueue.main.async { [weak self] in self?.startSuiteChannel() }
         if store.settings.awakeOnLaunch { awake.start(minutes: store.settings.awakeDefaultMinutes) }
     }
 

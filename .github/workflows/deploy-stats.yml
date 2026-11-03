@@ -1,0 +1,61 @@
+name: Deploy usage stats server
+
+# Puts the usage counts server (server/: a Cloudflare Worker and a D1 database) on Ashforde's
+# Cloudflare account, so nobody has to run anything on their own Mac. Run it by hand from the
+# Actions tab. It needs three repository secrets:
+#   CLOUDFLARE_API_TOKEN   a token from Cloudflare (My Profile → API Tokens → "Edit Cloudflare Workers"
+#                          template, plus Account → D1 → Edit)
+#   CLOUDFLARE_ACCOUNT_ID  shown on the Cloudflare dashboard's Workers & Pages page
+#   STATS_KEY              any long random password; it guards the dashboard
+# Safe to run again: it reuses the database and updates the Worker.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      STATS_KEY: ${{ secrets.STATS_KEY }}
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check the secrets
+        run: |
+          missing=""
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || missing="$missing CLOUDFLARE_API_TOKEN"
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          [ -n "$STATS_KEY" ] || missing="$missing STATS_KEY"
+          [ -z "$missing" ] || { echo "::error::Add these repository secrets first:$missing"; exit 1; }
+      - name: Create the database (once) and point the Worker at it
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 d1 create monorail-stats > create.txt 2>&1 || true
+          cat create.txt
+          id="$(npx --yes wrangler@4 d1 list --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const db=JSON.parse(s).find(d=>d.name==="monorail-stats");if(!db)process.exit(1);console.log(db.uuid)})')"
+          echo "Database: $id"
+          sed -i "s/^database_id = .*/database_id = \"$id\"/" wrangler.toml
+      - name: Create the tables
+        run: npx --yes wrangler@4 d1 execute monorail-stats --remote --file schema.sql --yes
+      - name: Deploy the Worker
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 deploy 2>&1 | tee deploy.txt
+          printf '%s' "$STATS_KEY" | npx --yes wrangler@4 secret put STATS_KEY
+          url="$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.txt | head -n1)"
+          {
+            echo "### Usage stats server is live"
+            echo "- Heartbeat endpoint: \`$url/v1/heartbeat\`"
+            echo "- Dashboard: \`$url/dashboard?key=<your STATS_KEY>\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Endpoint: $url/v1/heartbeat"

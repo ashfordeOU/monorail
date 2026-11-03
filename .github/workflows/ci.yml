@@ -60,6 +60,28 @@ jobs:
       - name: Self-test
         # Builds every Settings pane and checks actions, themes, languages and defaults (no permissions needed).
         run: dist/Monorail.app/Contents/MacOS/Monorail --self-test
+      - name: Idle cost (battery check)
+        # Runs the app for a minute doing nothing and reports what it costs. A window manager runs all
+        # day, so this should stay tiny. (No Accessibility on CI: the engine waits, but every
+        # background timer still runs.) Fails only when idle CPU or wake-ups are clearly too high.
+        run: |
+          app=dist/Monorail.app/Contents/MacOS/Monorail
+          # No usage counts or update checks from CI.
+          mkdir -p "$HOME/Library/Application Support/Monorail"
+          echo '{"shareUsageStats":false,"checkForUpdates":false,"usageNoticeShown":true}' > "$HOME/Library/Application Support/Monorail/settings.json"
+          "$app" > /dev/null 2>&1 &
+          pid=$!
+          sleep 20
+          cpu() { ps -o time= -p "$pid" | awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print $1*3600+$2*60+$3 }'; }
+          before="$(cpu)"
+          top -l 2 -s 60 -pid "$pid" -stats pid,cpu,idlew,mem,threads | tail -n 1 | tee idle.txt
+          after="$(cpu)"
+          kill "$pid" || true
+          used="$(echo "$after - $before" | bc -l)"
+          wakeups="$(awk '{print $3}' idle.txt)"
+          echo "CPU over 60 s idle: ${used} s · idle wake-ups/s: ${wakeups} · $(awk '{print $4}' idle.txt) memory"
+          echo "### Idle cost: ${used} s CPU per minute, ${wakeups} wake-ups/s, $(awk '{print $4}' idle.txt)" >> "$GITHUB_STEP_SUMMARY"
+          awk -v u="$used" -v w="${wakeups:-0}" 'BEGIN { if (u > 1.5 || w > 30) { print "Idle cost is too high"; exit 1 } }'
       - name: App Store edition compiles
         # The sandboxed edition (docs/APP-STORE.md) leaves features out with #if APPSTORE; keep it building.
         run: swift build -Xswiftc -DAPPSTORE --scratch-path .build-appstore

@@ -786,6 +786,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
+    /// "Also from Ashforde": Keeper's state and a way to open it, or to get it once it's released.
+    private func addAshfordeSection(to menu: NSMenu) {
+        let state: Companions.KeeperState
+        if let peer = activePeer, Companions.isKeeper(peer.bundleID) {
+            state = .running(awake: peer.isAwake)
+        } else if NSWorkspace.shared.urlForApplication(withBundleIdentifier: Companions.keeper) != nil {
+            state = .installed
+        } else {
+            state = .notInstalled
+        }
+        let rows = Companions.keeperMenu(state)
+        guard !rows.isEmpty else { return }
+        menu.addItem(.separator())
+        let header = NSMenuItem(title: L("Also from Ashforde"), action: nil, keyEquivalent: "")
+        header.isEnabled = false
+        menu.addItem(header)
+        for row in rows {
+            let item = NSMenuItem(title: row.title, action: row.link == nil ? nil : #selector(openAshfordeLink(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = row.link
+            item.isEnabled = row.link != nil
+            menu.addItem(item)
+        }
+    }
+
+    @objc private func openAshfordeLink(_ sender: NSMenuItem) {
+        guard let link = sender.representedObject as? String, let url = URL(string: link) else { return }
+        NSWorkspace.shared.open(url)
+    }
+
     /// Evening Mode in the menu bar menu: on or off, how warm, the schedule.
     private func eveningMenu() -> NSMenuItem {
         let settings = store.settings
@@ -2679,6 +2709,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         menu.addItem(awakeMenu())
         menu.addItem(eveningMenu())
+        addAshfordeSection(to: menu)
         let animate = item(L("Animate Windows"), #selector(toggleAnimationsFromMenu), action: .toggleAnimations)
         animate.state = store.settings.animate ? .on : .off
         animate.toolTip = "Off: windows move instantly. Everything else works the same, and it saves energy."

@@ -5,6 +5,33 @@ public enum Companions {
     /// Keeper by Ashforde (and its helper processes).
     public static let keeper = "io.github.ashfordeou.keeper"
 
+    /// Opens Keeper's main window.
+    public static let keeperHome = "keeper://home"
+    /// Where to get Keeper (its releases page: some releases may be for one platform only).
+    public static let keeperDownloads = "https://github.com/ashfordeOU/keeper/releases"
+    /// Keeper has a stable, notarised release to offer. Off until Keeper 1.0.0 is out.
+    public static let keeperDownloadable = false
+    public static let keeperTagline = "Your files, mail, calendar, notes and Mac tools in one suite, with a Dynamic Island, widgets and screen recording. Local-first."
+
+    /// What the menu's Ashforde section shows about Keeper.
+    public enum KeeperState: Equatable, Sendable {
+        case running(awake: Bool)
+        case installed
+        case notInstalled
+    }
+
+    /// The Ashforde section's rows: a title, and the link it opens (nil: just information).
+    public static func keeperMenu(_ state: KeeperState, downloadable: Bool = keeperDownloadable) -> [(title: String, link: String?)] {
+        switch state {
+        case .running(let awake):
+            return [(awake ? "Keeper: keeping your Mac awake" : "Keeper: running", nil), ("Open Keeper", keeperHome)]
+        case .installed:
+            return [("Open Keeper", keeperHome)]
+        case .notInstalled:
+            return downloadable ? [("Get Keeper…", keeperDownloads)] : []
+        }
+    }
+
     public static func isKeeper(_ bundleID: String?) -> Bool {
         guard let bundleID else { return false }
         return bundleID == keeper || bundleID.hasPrefix(keeper + ".")
@@ -111,6 +138,8 @@ public struct PeerHello: Equatable, Sendable {
     public var owns: Owns
     public var caps = Caps()
     public var awakeHandoff: AwakeHandoff?
+    /// Keeper is keeping the Mac awake (its hello's `state.awake`).
+    public var isAwake = false
     /// Its windows Monorail must leave alone (fixed titles).
     public var overlays: [String]
     /// Its links (keeper://awake, keeper://focus, keeper://stage).
@@ -144,6 +173,7 @@ public struct PeerHello: Equatable, Sendable {
                               links: (body["links"] as? [Any] ?? []).compactMap { $0 as? String })
         let caps = body["caps"] as? [String: Any] ?? [:]
         hello.caps = Caps(closedLid: caps["closedLid"] as? Bool ?? false, closedLidReady: caps["closedLidReady"] as? Bool ?? false)
+        hello.isAwake = (body["state"] as? [String: Any])?["awake"] as? Bool ?? false
         if let state = body["state"] as? [String: Any], let handoff = state["awakeHandoff"] as? [String: Any],
             let id = handoff["id"] as? String, let ok = handoff["ok"] as? Bool
         {

@@ -92,6 +92,16 @@ final class PeerTests: XCTestCase {
                        PeerHello.AwakeHandoff(id: "h2", ok: false, closedLid: true, reason: "denied"))
     }
 
+    func testTheAshfordeMenuShowsKeeper() {
+        XCTAssertEqual(Companions.keeperMenu(.running(awake: true)).map(\.title), ["Keeper: keeping your Mac awake", "Open Keeper"])
+        XCTAssertEqual(Companions.keeperMenu(.running(awake: false)).last?.link, "keeper://home")
+        XCTAssertEqual(Companions.keeperMenu(.installed).map(\.title), ["Open Keeper"])
+        XCTAssertTrue(Companions.keeperMenu(.notInstalled, downloadable: false).isEmpty, "nothing to offer before Keeper 1.0")
+        XCTAssertEqual(Companions.keeperMenu(.notInstalled, downloadable: true).first?.link, "https://github.com/ashfordeOU/keeper/releases")
+        let hello = PeerHello.decode(["app": "Keeper", "bundleID": "io.github.ashfordeou.keeper", "pid": 7, "state": ["awake": true]])
+        XCTAssertEqual(hello?.isAwake, true)
+    }
+
     func testRejectsHellosFromOtherApps() {
         XCTAssertNil(PeerHello.decode(["app": "Evil", "bundleID": "com.example.evil", "pid": 10]))
         XCTAssertNil(PeerHello.decode(["app": "Keeper", "bundleID": "io.github.ashfordeou.keeper"]))

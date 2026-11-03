@@ -189,6 +189,29 @@ struct WelcomeView: View {
                 .padding(6)
             }
 
+            if Companions.keeperDownloadable,
+                NSWorkspace.shared.urlForApplication(withBundleIdentifier: Companions.keeper) == nil
+            {
+                GroupBox {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "square.stack.3d.up").font(.title2).foregroundStyle(Color.accentColor)
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Also from Ashforde: Keeper").fontWeight(.medium)
+                            Text(Companions.keeperTagline).font(.callout).foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Text("It works with Monorail: one Stay Awake, and its panels are never tiled.")
+                                .font(.callout).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button("Get Keeper…") {
+                            if let url = URL(string: Companions.keeperDownloads) { NSWorkspace.shared.open(url) }
+                        }
+                    }
+                    .padding(6)
+                }
+            }
+
             GroupBox {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {

@@ -4,7 +4,7 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.7.14] - 2026-11-03
 
 ### Added
 - **Evening Mode**: less blue light from every display, easier on the eyes at night. Choose how warm with a slider (the screen changes as you drag), turn it on from the menu bar, or have it come on every evening on a schedule, fading in over 20 minutes. Screenshots and recordings keep their normal colours, and your displays' own calibration is kept. Settings → Evening Mode.

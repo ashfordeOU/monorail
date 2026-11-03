@@ -25,7 +25,7 @@ enum ScreenRender {
             }
             let whatsNew = WhatsNewView(version: Bundle.main.shortVersion, lines: notes, store: store, offersSwitches: true,
                                         tryAction: { _ in }, close: {})
-            if save(AnyView(whatsNew), width: 560, appearance: appearance, to: folder.appendingPathComponent("whats-new-\(name).png")) {
+            if save(AnyView(whatsNew), width: 620, appearance: appearance, to: folder.appendingPathComponent("whats-new-\(name).png")) {
                 written += 1
             }
         }

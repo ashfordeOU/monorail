@@ -26,6 +26,8 @@ jobs:
     env:
       MONORAIL_SIGNING_CERT: ${{ secrets.MONORAIL_SIGNING_CERT || secrets.MACSLIDER_SIGNING_CERT }}
       MONORAIL_SIGNING_PASSWORD: ${{ secrets.MONORAIL_SIGNING_PASSWORD || secrets.MACSLIDER_SIGNING_PASSWORD }}
+      MONORAIL_INSTALLER_CERT: ${{ secrets.MONORAIL_INSTALLER_CERT }}
+      MONORAIL_INSTALLER_PASSWORD: ${{ secrets.MONORAIL_INSTALLER_PASSWORD }}
     steps:
       - uses: actions/checkout@v5
         with:

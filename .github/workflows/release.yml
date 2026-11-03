@@ -23,6 +23,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       MONORAIL_SIGNING_CERT: ${{ secrets.MONORAIL_SIGNING_CERT || secrets.MACSLIDER_SIGNING_CERT }}
       MONORAIL_SIGNING_PASSWORD: ${{ secrets.MONORAIL_SIGNING_PASSWORD || secrets.MACSLIDER_SIGNING_PASSWORD }}
+      MONORAIL_INSTALLER_CERT: ${{ secrets.MONORAIL_INSTALLER_CERT }}
+      MONORAIL_INSTALLER_PASSWORD: ${{ secrets.MONORAIL_INSTALLER_PASSWORD }}
       # Notarisation turns on when these are set (an Apple Developer ID certificate
       # in MONORAIL_SIGNING_CERT, plus an app-specific password for the Apple ID).
       APPLE_ID: ${{ secrets.APPLE_ID }}

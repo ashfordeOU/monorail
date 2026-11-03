@@ -19,6 +19,9 @@ Team: **Ashforde OU**, Team ID **D69G45342Y**.
 2. **Export them together.** In Keychain Access → My Certificates, select both
    "Developer ID Application: Ashforde OU (D69G45342Y)" and "Developer ID Installer: Ashforde OU (D69G45342Y)"
    (each must have its private key underneath), right-click → **Export 2 items…** → `.p12` with a strong password.
+   If they're in the **System** keychain, macOS asks for an administrator's name and password, and may refuse;
+   then export each from Xcode instead (**Manage Certificates → right-click → Export Certificate**), and put the
+   Installer one in its own secrets, `MONORAIL_INSTALLER_CERT` (and `MONORAIL_INSTALLER_PASSWORD` if its password differs).
 3. **Wait for a bridge release to be out** (1.7.15 or later). Releases before it only accept updates
    signed with the old self-signed certificate; 1.7.15 also accepts Ashforde's Developer ID, so
    everyone can update to the first notarised build.

@@ -85,6 +85,12 @@ jobs:
             xcrun stapler staple "$file"
           done
           (cd dist && shasum -a 256 *.zip *.dmg *.pkg > SHA256SUMS)
+          # Check them the way macOS will: Gatekeeper must say they're notarised by Ashforde.
+          for file in dist/*.dmg; do spctl -a -vvv -t install "$file" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; done
+          if [ -n "${INSTALLER_IDENTITY:-}" ]; then
+            for file in dist/*.pkg; do spctl -a -vvv -t install "$file" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; done
+          fi
+          spctl -a -vvv -t exec dist/Monorail.app 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID" || echo "::warning::the app itself has no stapled ticket (macOS looks it up online)"
           echo "NOTARISED=1" >> "$GITHUB_ENV"
       - name: Release notes
         if: env.SKIP != '1'

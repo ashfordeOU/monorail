@@ -142,7 +142,12 @@ jobs:
               echo "::error::Apple hasn't accepted $name yet ($status). When it has, run Release again with resume_run = ${{ github.event.inputs.resume_run || github.run_id }}."
               exit 1
             fi
-            xcrun stapler staple "dist/$name"
+            # Attach Apple's ticket. Apple's ticket service sometimes drops the connection: try a few times.
+            for attempt in 1 2 3 4 5; do
+              xcrun stapler staple "dist/$name" && break
+              [ "$attempt" = 5 ] && { echo "::error::Couldn't attach Apple's ticket to $name. Run Release again with resume_run = ${{ github.event.inputs.resume_run || github.run_id }}."; exit 1; }
+              sleep $((attempt * 15))
+            done
           done < dist/notarisation.txt
           (cd dist && shasum -a 256 *.zip *.dmg *.pkg > SHA256SUMS)
           # Check them the way macOS will: Gatekeeper must say they're notarised by Ashforde.

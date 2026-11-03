@@ -1,0 +1,1 @@
+https://monorail-stats.talkmeout.workers.dev/v1/heartbeat

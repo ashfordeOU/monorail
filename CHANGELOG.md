@@ -4,6 +4,12 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.7.16] - 2026-11-03
+
+### Changed
+- **Signed with Ashforde's Apple Developer ID and notarised by Apple.** Monorail now opens without the "can't verify the developer" warning, and the pkg installer is signed for MDM tools (Jamf, Kandji, Intune) and Installomator.
+- Because the signature changed, macOS asks you once to allow Accessibility again after this update (System Settings → Privacy & Security → Accessibility: remove Monorail, then open it again). Updates after this one keep the permission.
+
 ## [1.7.15] - 2026-11-03
 
 ### Changed

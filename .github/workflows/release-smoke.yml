@@ -53,10 +53,14 @@ jobs:
           # No usage counts or update checks from CI; Evening Mode on for the next step.
           mkdir -p "$HOME/Library/Application Support/Monorail"
           echo '{"shareUsageStats":false,"checkForUpdates":false,"usageNoticeShown":true,"eveningOn":true,"eveningStrength":0.8}' > "$HOME/Library/Application Support/Monorail/settings.json"
-          open /Applications/Monorail.app
+          # Gatekeeper accepted it above. A person now clicks Open in macOS's first-launch dialog;
+          # nobody can on CI, so clear the download mark the way that click does, then open it.
+          xattr -dr com.apple.quarantine /Applications/Monorail.app
+          open /Applications/Monorail.app &
           sleep 15
           pgrep -x Monorail
       - name: Evening Mode warms the display, and quitting restores it
+        timeout-minutes: 4
         run: |
           blue="$(swift scripts/smoke/gamma.swift)"
           echo "blue with Evening Mode on: $blue"
@@ -66,6 +70,7 @@ jobs:
             awk -v b="$blue" 'BEGIN { exit !(b < 0.9) }' || { echo "Evening Mode didn't warm the display"; exit 1; }
           fi
       - name: Monorail answers Keeper on the shared channel
+        timeout-minutes: 4
         run: |
           if grep -q "com.ashforde.suite.changed" /Applications/Monorail.app/Contents/MacOS/Monorail; then
             swift scripts/smoke/suite.swift
@@ -73,8 +78,14 @@ jobs:
             echo "This release is older than the shared channel: skipped"
           fi
       - name: Quit cleanly
+        timeout-minutes: 3
         run: |
-          osascript -e 'tell application "Monorail" to quit' || pkill -x Monorail || true
+          # Ask it to quit like a person would (Apple events can wait on a permission prompt on CI,
+          # so give it 10 seconds), then make sure it's gone.
+          osascript -e 'tell application "Monorail" to quit' & asked=$!
+          for i in $(seq 1 10); do pgrep -x Monorail > /dev/null || break; sleep 1; done
+          kill "$asked" 2>/dev/null || true
+          pgrep -x Monorail > /dev/null && pkill -x Monorail || true
           sleep 3
           ! pgrep -x Monorail
           blue="$(swift scripts/smoke/gamma.swift)"
@@ -82,6 +93,7 @@ jobs:
           [ "$blue" = "unsupported" ] || awk -v b="$blue" 'BEGIN { exit !(b > 0.99) }'
           echo "### $TAG passed the smoke test on GitHub's Mac" >> "$GITHUB_STEP_SUMMARY"
       - name: The pkg installs (as MDM tools do)
+        timeout-minutes: 4
         run: |
           sudo rm -rf /Applications/Monorail.app
           sudo installer -pkg dl/Monorail-*.pkg -target /

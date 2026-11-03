@@ -91,7 +91,13 @@ h1 em { font-style:normal; white-space:nowrap; }
 .tabs { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
 .tab { padding:9px 16px; border-radius:999px; border:1px solid var(--line); background:var(--card); color:var(--muted); font-family:inherit; font-weight:600; font-size:14px; line-height:1; cursor:pointer; transition:all .25s var(--ease); }
 .tab[aria-selected="true"] { color:#fff; background:var(--deep); border-color:var(--deep); }
-.mac { position:relative; aspect-ratio:16/9.6; border-radius:22px; overflow:hidden; box-shadow:0 40px 100px rgba(42,20,48,.35), 0 0 0 1px rgba(0,0,0,.06); background:linear-gradient(135deg,#3A2A6E,#7A2E78 55%,#C2456E); }
+.laptop { position:relative; margin:0 auto; max-width:100%; }
+.laptop .lid { position:relative; padding:clamp(6px,1.6%,16px); padding-top:clamp(10px,2.2%,22px); border-radius:clamp(14px,2.4vw,26px) clamp(14px,2.4vw,26px) 6px 6px; background:#0d0b10; box-shadow:0 40px 100px rgba(42,20,48,.35), inset 0 0 0 1px rgba(255,255,255,.08), 0 0 0 1px rgba(0,0,0,.25); }
+.laptop .lid::before { content:""; position:absolute; top:clamp(3px,.8%,8px); left:50%; width:6px; height:6px; margin-left:-3px; border-radius:50%; background:#1f2a33; box-shadow:inset 0 0 0 1.5px #2b3a46; }
+.laptop .base { position:relative; height:clamp(10px,1.6vw,18px); margin:0 -6%; border-radius:0 0 18px 18px / 0 0 100% 100%; background:linear-gradient(#e4e2ea, #b9b6c2 70%, #8f8b99); box-shadow:0 18px 30px rgba(42,20,48,.22); }
+.laptop .base::before { content:""; position:absolute; top:0; left:50%; width:16%; height:45%; transform:translateX(-50%); border-radius:0 0 10px 10px; background:linear-gradient(#a9a5b3,#cfccd6); }
+@media (max-width:560px) { .laptop .base { margin:0 -3%; } }
+.mac { position:relative; aspect-ratio:16/9.6; border-radius:6px; overflow:hidden; background:linear-gradient(135deg,#3A2A6E,#7A2E78 55%,#C2456E); }
 .mac .menubar { position:absolute; inset:0 0 auto; height:5.2%; background:rgba(20,8,24,.35); backdrop-filter:blur(12px); display:flex; align-items:center; padding:0 2%; gap:2.2%; color:#fff; font:600 clamp(9px,1.25vw,13px)/1 -apple-system, sans-serif; z-index:5; }
 .mac .menubar .right { margin-left:auto; display:flex; align-items:center; gap:10px; }
 .pips { display:inline-flex; gap:3px; align-items:flex-end; height:12px; }
@@ -333,6 +339,7 @@ footer a:hover { color:var(--ink); }
         <button class="tab" role="tab" data-step="3" aria-selected="false">Say it</button>
         <button class="tab" role="tab" data-step="4" aria-selected="false">Focus</button>
       </div>
+      <div class="laptop"><div class="lid">
       <div class="mac" role="img" aria-label="A Mac running Monorail">
         <div class="menubar"><span></span><span>Finder</span><span style="opacity:.75">File</span><span style="opacity:.75">Edit</span><span style="opacity:.75">View</span>
           <div class="right"><span class="pips" id="pips"></span><span>☕</span><span id="clock">9:41</span></div></div>
@@ -341,6 +348,7 @@ footer a:hover { color:var(--ink); }
         <div class="toast" id="toast"></div>
         <div class="slider" aria-hidden="true"><div class="mini" id="mini"></div></div>
       </div>
+      </div><div class="base" aria-hidden="true"></div></div>
       <div class="caption" aria-live="polite"><div class="n" id="capn">1</div><p id="captext"></p></div>
       <p class="hint">Click the demo and use <kbd>←</kbd> <kbd>→</kbd> to slide, <kbd>N</kbd> for a new window, <kbd>F</kbd> for full width.</p>
     </div>

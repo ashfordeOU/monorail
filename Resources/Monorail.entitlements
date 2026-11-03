@@ -14,5 +14,10 @@
 	<!-- Snapshots that save browser tabs and Finder windows (opt-in). -->
 	<key>com.apple.security.automation.apple-events</key>
 	<true/>
+	<!-- The folder Ashforde's apps share (Monorail and Keeper talk through it inside the sandbox). -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>D69G45342Y.group.ashforde.suite</string>
+	</array>
 </dict>
 </plist>

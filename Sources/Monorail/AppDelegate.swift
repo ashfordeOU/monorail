@@ -635,6 +635,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self.integrations.update({ [weak self] in self?.currentState() }, settings: self.store.settings)
             self.awakeTicker?.invalidate()
             self.awakeTicker = on ? Timer.every(20) { [weak self] _ in self?.updateStatusItem() } : nil
+            self.publishSuiteHello()
             self.updateStatusItem()
         }
         if store.settings.awakeOnLaunch { awake.start(minutes: store.settings.awakeDefaultMinutes) }
@@ -1697,6 +1698,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         permissionTimer = nil
         input.start()
         engine.start()
+        startSuiteChannel()
         if engine.crashedLastRun {
             // After the windows are rescued and things have settled.
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in
@@ -2243,6 +2245,73 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             store.settings.appPairs.append(pair)
             engine.openPair(pair)
         }
+    }
+
+    // MARK: Ashforde suite channel (App Group + doorbell; works inside the sandbox)
+
+    private var suite: SuiteChannel?
+
+    private func startSuiteChannel() {
+        guard suite == nil,
+            let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: SuiteChannel.appGroup)
+        else { return }
+        suite = SuiteChannel(container: container)
+        DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name(SuiteChannel.doorbell), object: nil, queue: .main
+        ) { [weak self] _ in self?.suiteDoorbell() }
+        publishSuiteHello()
+        suiteDoorbell()
+    }
+
+    /// Monorail's hello, in the shape Keeper's PeerHello reads.
+    private var suiteHello: [String: Any] {
+        [
+            "app": "Monorail", "bundleID": Bundle.main.bundleIdentifier ?? BundleIDs.current,
+            "version": Bundle.main.shortVersion, "pid": Int(ProcessInfo.processInfo.processIdentifier),
+            "owns": ["awake": false, "focus": false, "stage": false],
+            "caps": ["closedLid": !Edition.isAppStore, "closedLidReady": false],
+            "state": ["awake": awake.isOn, "paused": engine.isPaused, "focusMode": engine.isFocusMode, "presenting": engine.isPresenting],
+            "links": ["monorail://settings", "monorail://awake", "monorail://awake/off"],
+        ]
+    }
+
+    private func publishSuiteHello() {
+        guard let suite else { return }
+        suite.writeHello("monorail", suiteHello)
+        ringSuiteDoorbell()
+    }
+
+    private func ringSuiteDoorbell() {
+        // No payload: the sandbox strips it. Whoever hears it reads the folders.
+        DistributedNotificationCenter.default().postNotificationName(
+            Notification.Name(SuiteChannel.doorbell), object: nil, userInfo: nil, deliverImmediately: true)
+    }
+
+    /// Someone changed something: read Keeper's hello, and answer requests left for Monorail.
+    private func suiteDoorbell() {
+        guard let suite else { return }
+        if let body = suite.hello(of: "keeper"), let hello = PeerHello.decode(body),
+            NSRunningApplication(processIdentifier: hello.pid)?.bundleIdentifier == hello.bundleID
+        {
+            peer = hello
+        }
+        let requests = suite.takeRequests(for: "monorail")
+        for request in requests {
+            switch request.op {
+            case "awake.on":
+                let minutes = request.args["for"].flatMap { Int($0.trimmingCharacters(in: CharacterSet.decimalDigits.inverted)) }
+                awake.start(minutes: minutes ?? store.settings.awakeDefaultMinutes, fromPeer: true)
+                suite.respond(to: request, ok: true, result: ["awake": awake.isOn])
+            case "awake.off":
+                awake.end()
+                suite.respond(to: request, ok: true, result: ["awake": awake.isOn])
+            case "peer":
+                suite.respond(to: request, ok: true, result: suiteHello)
+            default:
+                suite.respond(to: request, ok: false, reason: "unsupported")
+            }
+        }
+        if !requests.isEmpty { ringSuiteDoorbell() }
     }
 
     // MARK: Local API

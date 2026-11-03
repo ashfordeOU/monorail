@@ -76,3 +76,15 @@ Amphetamine does it, in pieces that each stay inside Apple's rules:
 
 Order: submit the App Store edition first without lid-closed mode, so the first review is simple;
 add the script installer in an update once it's approved; then the Enhancer.
+
+## Monorail and Keeper inside the sandbox
+
+The App Store edition has no local network API, so Monorail and Keeper talk through a folder only
+Ashforde's apps can open: the App Group `D69G45342Y.group.ashforde.suite` (agreed with Keeper,
+`Sources/MonorailCore/SuiteChannel.swift`). Each app writes `hello/<app>.json` (who it is and what
+it's doing), leaves requests in `requests/<to>/` and answers in `responses/<from>/`, and rings a
+doorbell (the distributed notification `com.ashforde.suite.changed`, with no payload). Both editions of
+both apps use it; the downloaded versions also keep the localhost API.
+
+Keeper's App Store edition is being built in Keeper's own repository; both apps go to the App Store
+together when it's ready.

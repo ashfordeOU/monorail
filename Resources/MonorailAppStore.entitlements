@@ -20,5 +20,10 @@
 	<!-- Calendar events for meeting layouts. -->
 	<key>com.apple.security.personal-information.calendars</key>
 	<true/>
+	<!-- The folder Ashforde's apps share (Monorail and Keeper talk through it inside the sandbox). -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>D69G45342Y.group.ashforde.suite</string>
+	</array>
 </dict>
 </plist>

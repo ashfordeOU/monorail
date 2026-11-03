@@ -83,7 +83,8 @@ Ashforde OU developer account:
 1. **Certificates:** in Xcode → Settings → Accounts → Ashforde OU → Manage Certificates → **+**:
    **Apple Distribution** and **Mac Installer Distribution**.
 2. **App ID and profile:** developer.apple.com → Identifiers → **+** → App ID
-   `org.ashforde.monorail.appstore`; then Profiles → **+** → **Mac App Store Connect** for that App ID
+   `org.ashforde.monorail.appstore`, with the **App Groups** capability on and the group
+   `D69G45342Y.group.ashforde.suite` (the folder Monorail and Keeper share); then Profiles → **+** → **Mac App Store Connect** for that App ID
    with the Apple Distribution certificate. Download the profile.
 3. **App Store Connect:** appstoreconnect.apple.com → Apps → **+** → New App: macOS, name
    "Monorail by Ashforde", bundle ID `org.ashforde.monorail.appstore`, SKU `monorail`.

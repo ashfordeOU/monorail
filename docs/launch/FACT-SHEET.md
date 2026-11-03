@@ -10,9 +10,9 @@ windows never squeeze the rest.
 | Price | Free, every feature, no window limits or Pro tier |
 | Licence | Source available on GitHub, FSL-1.1-ALv2 (each version becomes Apache 2.0 after two years) |
 | Privacy | No account, one permission (Accessibility), anonymous daily counts that can be turned off |
-| Install | https://ashfordeou.github.io/monorail/ · Homebrew · Nix · .pkg for IT teams |
+| Install | https://monorail.ashforde.org/ · Homebrew · Nix · .pkg for IT teams |
 | Source | https://github.com/ashfordeOU/monorail |
-| Press page | https://ashfordeou.github.io/monorail/press/ |
+| Press page | https://monorail.ashforde.org/press/ |
 
 ## About
 

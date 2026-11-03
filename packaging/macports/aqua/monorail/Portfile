@@ -19,7 +19,7 @@ long_description    Monorail by Ashforde® puts every window on one endless stri
                     slide in beside you and nothing you're using ever shrinks. Drag windows onto \
                     each other to dock or tab them, type what you want in plain words, and save \
                     views to jump back to.
-homepage            https://ashfordeou.github.io/monorail/
+homepage            https://monorail.ashforde.org/
 
 # A universal, signed app from the release (building needs the full Xcode toolchain).
 distname            Monorail-${version}

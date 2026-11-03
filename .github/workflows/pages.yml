@@ -32,8 +32,8 @@ jobs:
           cp -R assets/readme assets/launch public/assets/
           cp assets/icon.png public/assets/icon.png
           cp site/index.html public/404.html
-          printf 'User-agent: *\nAllow: /\nSitemap: https://ashfordeou.github.io/monorail/sitemap.xml\n' > public/robots.txt
-          base=https://ashfordeou.github.io/monorail
+          printf 'User-agent: *\nAllow: /\nSitemap: https://monorail.ashforde.org/sitemap.xml\n' > public/robots.txt
+          base=https://monorail.ashforde.org
           printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>%s/</loc></url><url><loc>%s/press/</loc></url><url><loc>%s/stats/</loc></url><url><loc>%s/keeper/</loc></url><url><loc>%s/support/</loc></url><url><loc>%s/privacy/</loc></url></urlset>\n' "$base" "$base" "$base" "$base" "$base" "$base" > public/sitemap.xml
           # The press kit: screenshots, icon, the docking GIF and the fact sheet, in one zip.
           kit=$(mktemp -d)/Monorail-press-kit

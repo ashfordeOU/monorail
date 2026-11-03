@@ -25,7 +25,7 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Scrolling window manager for macOS where nothing ever shrinks";
-    homepage = "https://ashfordeou.github.io/monorail/";
+    homepage = "https://monorail.ashforde.org/";
     license = lib.licenses.unfreeRedistributable; # Functional Source License 1.1
     platforms = lib.platforms.darwin;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];

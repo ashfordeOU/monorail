@@ -13,7 +13,7 @@ Alternatives:
 - Every window rides one rail: a smarter way to use your Mac
 - Your Mac's windows, on an endless strip that thinks with you
 
-**Link:** https://ashfordeou.github.io/monorail/ (source: https://github.com/ashfordeOU/monorail)
+**Link:** https://monorail.ashforde.org/ (source: https://github.com/ashfordeOU/monorail)
 
 **Topics:** Mac, Productivity, Developer Tools, Artificial Intelligence
 

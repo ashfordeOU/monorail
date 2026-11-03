@@ -10,9 +10,9 @@ Copy these into App Store Connect → the app → the version page. Character li
 | Price | Free |
 | Bundle ID | org.ashforde.monorail.appstore |
 | SKU | monorail |
-| Support URL | https://ashfordeou.github.io/monorail/support/ |
-| Marketing URL | https://ashfordeou.github.io/monorail/ |
-| Privacy policy URL | https://ashfordeou.github.io/monorail/privacy/ |
+| Support URL | https://monorail.ashforde.org/support/ |
+| Marketing URL | https://monorail.ashforde.org/ |
+| Privacy policy URL | https://monorail.ashforde.org/privacy/ |
 | Copyright | 2026 Ashforde OÜ |
 | Age rating | 4+ (no objectionable content) |
 | Screenshots (2880 × 1800) | `assets/appstore/01-hero.jpg` … `08-native-private.jpg`, in order |

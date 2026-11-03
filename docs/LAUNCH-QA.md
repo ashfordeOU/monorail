@@ -52,6 +52,6 @@ release from the website. Testing as a brand-new user is the point.
       sliding". Idle CPU should stay under about 0.1% and wake-ups near zero.
 
 ## 8. Website
-- [ ] https://ashfordeou.github.io/monorail/?ref=producthunt shows the Product Hunt welcome bar.
+- [ ] https://monorail.ashforde.org/?ref=producthunt shows the Product Hunt welcome bar.
 - [ ] The download button downloads the DMG directly and shows the version and size.
 - [ ] Light, dark and the text-size buttons work; the page fits a phone with no sideways scrolling.

@@ -337,7 +337,7 @@ def menubar():
         parts.append(f'<rect x="{tx}" y="{py + 60}" width="54" height="36" rx="7" fill="{APPS[i % len(APPS)]}" opacity="{0.55 if i == 5 else 0.22}"/>')
         tx += 60
     tx = px + 22
-    for i, title in enumerate(["Mail", "Claude Code", "Notes", "Documents"]):
+    for i, title in enumerate(["Mail", "Terminal", "Notes", "Documents"]):
         parts.append(f'<rect x="{tx}" y="{py + 124}" width="120" height="74" rx="10" fill="#fff" opacity="{0.16 if i == 2 else 0.07}"/>')
         parts.append(f'<rect x="{tx + 48}" y="{py + 146}" width="24" height="24" rx="6" fill="{APPS[(i + 2) % len(APPS)]}"/>')
         parts.append(f'<text x="{tx}" y="{py + 220}" font-family="{FONT}" font-size="12" fill="#fff" opacity="0.85">{i + 3}  {title}</text>')

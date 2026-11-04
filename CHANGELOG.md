@@ -6,6 +6,9 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- The welcome tour fits the screen on smaller Macs: it scrolls inside its window instead of running under the Dock.
+
 ## [1.7.17] - 2026-11-03
 
 ### Added

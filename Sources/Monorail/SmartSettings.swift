@@ -724,7 +724,12 @@ struct StayAwakePane: View {
                     Text("Never").tag(0)
                     ForEach([5, 10, 15, 20, 30, 50], id: \.self) { Text("\($0)%").tag($0) }
                 }
-                Toggle("Move the pointer now and then, so chat apps don’t show me as away", isOn: $store.settings.awakeMoveCursor)
+                Toggle("Keep me Available: keep chat apps showing you as available (Teams, Slack)", isOn: $store.settings.keepAvailable)
+                    .help("Keeps the Mac awake and tells macOS you’re active about once a minute while you’re away from the keyboard, so Teams, Slack and other chat apps don’t mark you away. Works without any permission.")
+                Text("Works without any permission. The display stays on while it’s on.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Toggle("Also move the pointer now and then (needs Accessibility)", isOn: $store.settings.awakeMoveCursor)
+                    .help("A one-point nudge for the few apps that only watch the pointer. Needs Accessibility; without it, Monorail tells macOS you’re active instead.")
                 if store.settings.awakeMoveCursor {
                     Stepper("Every \(store.settings.awakeMoveCursorMinutes) minutes", value: $store.settings.awakeMoveCursorMinutes, in: 1...30)
                 }

@@ -60,6 +60,10 @@ jobs:
       - name: Self-test
         # Builds every Settings pane and checks actions, themes, languages and defaults (no permissions needed).
         run: dist/Monorail.app/Contents/MacOS/Monorail --self-test
+      - name: Keep me Available check
+        # Declaring user activity should reset the idle time Teams and Slack read. Prints the numbers;
+        # never fails a runner without an input session.
+        run: dist/Monorail.app/Contents/MacOS/Monorail --self-check-available
       - name: First-run screens
         # Draws the welcome tour and What's New (light and dark) for a look before release.
         run: dist/Monorail.app/Contents/MacOS/Monorail --render-screens dist/screens

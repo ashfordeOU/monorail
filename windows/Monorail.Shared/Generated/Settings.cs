@@ -173,6 +173,8 @@ public static class SettingKeys
     public const string AwakeDefaultMinutes = "awakeDefaultMinutes";
     public const string AwakeBatteryCutoff = "awakeBatteryCutoff";
     public const string AwakeMoveCursor = "awakeMoveCursor";
+    public const string KeepAvailable = "keepAvailable";
+    public const string ArrangeScriptableApps = "arrangeScriptableApps";
     public const string AwakeMoveCursorMinutes = "awakeMoveCursorMinutes";
     public const string AwakeDriveAlive = "awakeDriveAlive";
     public const string AwakeClosedLid = "awakeClosedLid";
@@ -484,6 +486,10 @@ public static class SettingDefaults
     public const int AwakeBatteryCutoff = 10;
     /// <summary>During Stay Awake, nudge the pointer now and then so chat apps don’t mark you away.</summary>
     public const bool AwakeMoveCursor = false;
+    /// <summary>Keep me Available: keep the Mac awake and keep chat apps such as Teams and Slack showing you as available, by telling macOS you're active when it has been idle (no permission needed).</summary>
+    public const bool KeepAvailable = false;
+    /// <summary>Arrange scriptable apps (Safari, Finder, Terminal…) with Apple Events while Accessibility isn't allowed.</summary>
+    public const bool ArrangeScriptableApps = true;
     /// <summary>How often the pointer is nudged (minutes).</summary>
     public const int AwakeMoveCursorMinutes = 4;
     /// <summary>During Stay Awake, keep external drives from spinning down.</summary>

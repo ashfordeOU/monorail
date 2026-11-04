@@ -9,6 +9,7 @@ version and checksums in these files up to date after every release.
 | `autopkg/` | Munki and AutoPkg users | `autopkg run Monorail.pkg.recipe.yaml` |
 | `macports/` | MacPorts users | Submit the Portfile to github.com/macports/macports-ports, then `sudo port install monorail` |
 | `nix/` and `/flake.nix` | Nix and nix-darwin users | `nix profile install github:ashfordeOU/monorail` |
+| `mdm/` | IT teams | Deploy `Monorail-Accessibility.mobileconfig` with your MDM to allow Accessibility; see `docs/IT.md` |
 | `../scripts/build-appstore.sh` | The Mac App Store edition | See `docs/APP-STORE.md` |
 
 Every release also has a `.pkg` installer (signed once a Developer ID Installer certificate is

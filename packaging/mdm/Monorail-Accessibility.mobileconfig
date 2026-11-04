@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>PayloadDescription</key>
+			<string>Allows Monorail by Ashforde to arrange windows (Privacy &amp; Security → Accessibility).</string>
+			<key>PayloadDisplayName</key>
+			<string>Monorail: Accessibility</string>
+			<key>PayloadIdentifier</key>
+			<string>org.ashforde.monorail.pppc.tcc.A668AF31-7284-4A77-A88E-B38C8AC5F7E9</string>
+			<key>PayloadOrganization</key>
+			<string>Ashforde OÜ</string>
+			<key>PayloadType</key>
+			<string>com.apple.TCC.configuration-profile-policy</string>
+			<key>PayloadUUID</key>
+			<string>A668AF31-7284-4A77-A88E-B38C8AC5F7E9</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>Services</key>
+			<dict>
+				<key>Accessibility</key>
+				<array>
+					<dict>
+						<key>Allowed</key>
+						<true/>
+						<key>CodeRequirement</key>
+						<string>identifier "org.ashforde.monorail" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = D69G45342Y</string>
+						<key>Comment</key>
+						<string>Monorail moves and resizes other apps' windows. It asks for nothing else.</string>
+						<key>Identifier</key>
+						<string>org.ashforde.monorail</string>
+						<key>IdentifierType</key>
+						<string>bundleID</string>
+					</dict>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>Pre-approves Accessibility for Monorail by Ashforde, so it can arrange windows on managed Macs. Deliver it with your MDM: macOS ignores privacy settings in profiles a person installs by hand.</string>
+	<key>PayloadDisplayName</key>
+	<string>Monorail: allow window arranging</string>
+	<key>PayloadIdentifier</key>
+	<string>org.ashforde.monorail.pppc.E08E1A85-844B-4D70-BFAE-8A22568E83BE</string>
+	<key>PayloadOrganization</key>
+	<string>Ashforde OÜ</string>
+	<key>PayloadRemovalDisallowed</key>
+	<true/>
+	<key>PayloadScope</key>
+	<string>System</string>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>E08E1A85-844B-4D70-BFAE-8A22568E83BE</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>

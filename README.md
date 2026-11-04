@@ -117,7 +117,7 @@ they return as they were.
 
 - **Focus mode** (<kbd>⌃⌥B</kbd>) dims everything but the slide you're in, for 25 minutes or as long as you choose.
 - **Evening Mode** warms every display at night, with a slider that changes the screen as you drag. Turn it on from the menu bar or on a daily schedule that fades in and out over 20 minutes. Screenshots and recordings keep their normal colours.
-- **Stay Awake** keeps your Mac awake for a set time, until a clock time, while an app is open or while something downloads. In the download version, it can also keep a MacBook running with the lid closed. It asks for your password, and stops on its own if the Mac gets hot, in Low Power Mode, or on battery (unless you allow it, and then below 20%).
+- **Stay Awake** keeps your Mac awake for a set time, until a clock time, while an app is open or while something downloads. **Keep me Available** keeps Teams and Slack showing you as Available, with no permission needed. In the download version, it can also keep a MacBook running with the lid closed. It asks for your password, and stops on its own if the Mac gets hot, in Low Power Mode, or on battery (unless you allow it, and then below 20%).
 
 <p align="center"><img src="assets/readme/focus.svg" alt="Focus mode: the current slide bright, the windows on either side dimmed" width="100%"></p>
 
@@ -347,6 +347,9 @@ Every window is put back fully on screen. When Monorail starts again, it restore
 
 **Does it use AI in the cloud?**
 Not unless you ask it to. Sentences, predictions and suggestions run on your Mac, with no account and no network. The optional Assistant sends only the sentence, the names of open apps and Monorail's command list to Claude.
+
+**Can I use Monorail on a work Mac without admin rights?**
+Yes. It installs without an administrator into your own Applications folder. Stay Awake, Keep me Available, Evening Mode, the display controls and arranging scriptable apps (Safari, Chrome, Finder, Terminal and others) work straight away. Arranging every window needs Accessibility, which only an administrator can allow on a managed Mac; IT can approve it for Monorail in one step with a configuration profile. See [docs/IT.md](docs/IT.md).
 
 **Is it free?**
 Yes, with no trial or subscription. You can read, build, change and use the source for anything except a competing product or service. Each release becomes Apache 2.0 two years after it ships. See [docs/LICENSING.md](docs/LICENSING.md).

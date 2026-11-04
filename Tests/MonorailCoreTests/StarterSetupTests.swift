@@ -40,7 +40,7 @@ final class StarterSetupTests: XCTestCase {
 
         settings.applyExtras(for: .power)
         for extra in StarterExtra.allCases {
-            let expected = extra != .windowSwitcher && extra != .swipe
+            let expected = ![.windowSwitcher, .swipe, .keepAvailable].contains(extra)
             XCTAssertEqual(extra.isOn(in: settings), expected, "power: \(extra)")
         }
         XCTAssertEqual(settings.eveningSchedule, .sun)

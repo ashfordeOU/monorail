@@ -126,6 +126,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var notesSave: DispatchWorkItem?
     private var dimMonitor: Any?
     private let awake = StayAwake()
+    private let scriptable = ScriptableArranger()
     private let evening = EveningLight()
     let usage = UsageLog()
     private let telemetry = Telemetry()
@@ -166,6 +167,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         wireUp()
         handleTerminationSignals()
 
+        // Everything that doesn't move other apps' windows starts now, with or without Accessibility.
+        startEssentials()
         if Accessibility.isTrusted(prompt: false) {
             startEngine()
         } else {
@@ -175,7 +178,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             runUITest()
             return
         }
-        if !store.settings.hasCompletedOnboarding || !Accessibility.isTrusted(prompt: false) {
+        // The tour opens on a first run only: without Accessibility, the menu says what's
+        // needed instead of asking again at every launch.
+        if !store.settings.hasCompletedOnboarding {
             showWelcome()
         }
     }
@@ -634,6 +639,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         engine.peerOverlays = { [weak self] in self?.activePeer?.overlays ?? [] }
         awake.onNotice = { [weak self] message in self?.toast.show(message) }
+        awake.turnOffKeepAvailable = { [weak self] in self?.store.settings.keepAvailable = false }
+        scriptable.notice = { [weak self] text in self?.toast.show(text) }
+        scriptable.gap = { [weak self] in Double(self?.store.settings.layout.gap ?? 8) }
         awake.onChange = { [weak self] on, why in
             guard let self else { return }
             if self.store.settings.awakeNotify { self.toast.show(why) }
@@ -865,6 +873,135 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         parent.submenu = menu
         return parent
     }
+
+    /// "Keep me Available": the Mac stays awake and Teams, Slack and other chat apps keep showing
+    /// you as available. Works without any permission.
+    private func keepAvailableItem() -> NSMenuItem {
+        let entry = item(L("Keep me Available"), #selector(toggleKeepAvailableFromMenu), action: .keepAvailable)
+        entry.state = store.settings.keepAvailable ? .on : .off
+        entry.image = NSImage(systemSymbolName: "person.crop.circle.badge.checkmark", accessibilityDescription: nil)
+        entry.toolTip = "Keeps your Mac awake and Teams, Slack and other chat apps showing you as Available. No permission needed."
+        return entry
+    }
+
+    @objc private func toggleKeepAvailableFromMenu() {
+        var settings = store.settings
+        settings.keepAvailable.toggle()
+        store.settings = settings
+        awake.reconsider()
+        toast.show(settings.keepAvailable
+                   ? "Keep me Available on · your Mac stays awake and Teams and Slack show you as Available"
+                   : "Keep me Available off")
+    }
+
+    // MARK: Without Accessibility
+
+    /// Arranging scriptable apps with Apple Events: only until Accessibility is allowed, and not
+    /// in the App Store edition.
+    private var usesScriptableArranging: Bool {
+        ScriptableArranger.isAvailable && store.settings.arrangeScriptableApps && !engine.isRunning
+    }
+
+    private func scriptableMenu() -> NSMenuItem {
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        let name = scriptable.frontApp?.name
+        let header = NSMenuItem(
+            title: name.map { "Front window of \($0)" } ?? "Safari, Chrome, Finder, Terminal, Notes, Mail…",
+            action: nil, keyEquivalent: "")
+        header.isEnabled = false
+        menu.addItem(header)
+        for placement in ScriptPlacement.allCases {
+            let entry = item(placement.title, #selector(placeScriptableFromMenu(_:)))
+            entry.representedObject = placement.rawValue
+            entry.isEnabled = name != nil
+            menu.addItem(entry)
+        }
+        menu.addItem(item("Side by Side with the App Before", #selector(scriptableSideBySideFromMenu)))
+        menu.addItem(.separator())
+        let next = item("Next Window of This App", #selector(scriptableNextWindowFromMenu))
+        next.isEnabled = name != nil
+        menu.addItem(next)
+        let previous = item("Previous Window of This App", #selector(scriptablePreviousWindowFromMenu))
+        previous.isEnabled = name != nil
+        menu.addItem(previous)
+        menu.addItem(.separator())
+        menu.addItem(item("Automation Settings…", #selector(openAutomationSettings)))
+        let parent = NSMenuItem(title: "Arrange Scriptable Apps", action: nil, keyEquivalent: "")
+        parent.image = NSImage(systemSymbolName: "rectangle.split.2x1", accessibilityDescription: nil)
+        parent.toolTip = "Moves the windows of apps that can be scripted, without Accessibility. macOS asks once for each app."
+        parent.submenu = menu
+        return parent
+    }
+
+    private func scriptablePaletteCommands() -> [PaletteCommand] {
+        guard usesScriptableArranging else { return [] }
+        let app = scriptable.frontApp?.name ?? "the front app"
+        var list = ScriptPlacement.allCases.map { placement -> PaletteCommand in
+            PaletteCommand(
+                id: "scriptable-\(placement.rawValue)", title: "\(placement.title): \(app)",
+                subtitle: "Arrange a scriptable app · no Accessibility needed", symbol: "rectangle.split.2x1",
+                keywords: "arrange move window half left right fill full centre center scriptable"
+            ) { [weak self] in self?.scriptable.place(placement) }
+        }
+        list.append(PaletteCommand(
+            id: "scriptable-side-by-side", title: "Side by side: the last two scriptable apps",
+            subtitle: "Arrange scriptable apps · no Accessibility needed", symbol: "rectangle.split.2x1",
+            keywords: "pair split arrange scriptable two apps"
+        ) { [weak self] in self?.scriptable.sideBySide() })
+        list.append(PaletteCommand(
+            id: "scriptable-next-window", title: "Next window of \(app)", subtitle: "No Accessibility needed",
+            symbol: "macwindow.on.rectangle", keywords: "next window cycle switch scriptable"
+        ) { [weak self] in self?.scriptable.cycleWindows(forward: true) })
+        list.append(PaletteCommand(
+            id: "scriptable-previous-window", title: "Previous window of \(app)", subtitle: "No Accessibility needed",
+            symbol: "macwindow.on.rectangle", keywords: "previous window cycle switch scriptable"
+        ) { [weak self] in self?.scriptable.cycleWindows(forward: false) })
+        return list
+    }
+
+    @objc private func placeScriptableFromMenu(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? String, let placement = ScriptPlacement(rawValue: raw) else { return }
+        afterMenu { $0.scriptable.place(placement) }
+    }
+
+    @objc private func scriptableSideBySideFromMenu() { afterMenu { $0.scriptable.sideBySide() } }
+    @objc private func scriptableNextWindowFromMenu() { afterMenu { $0.scriptable.cycleWindows(forward: true) } }
+    @objc private func scriptablePreviousWindowFromMenu() { afterMenu { $0.scriptable.cycleWindows(forward: false) } }
+
+    @objc private func openAutomationSettings() {
+        if let url = URL(string: ScriptErrors.automationSettingsURL) { NSWorkspace.shared.open(url) }
+    }
+
+    /// Asks macOS once (the person chose to), and opens the Accessibility list.
+    @objc private func grantAccessibilityFromMenu() {
+        _ = Accessibility.isTrusted(prompt: true)
+        if let url = Accessibility.settingsURL { NSWorkspace.shared.open(url) }
+    }
+
+    /// What works without Accessibility, and how IT can allow it.
+    @objc private func explainWithoutAccessibility() {
+        afterMenu { _ in
+            let alert = NSAlert()
+            alert.messageText = "Using Monorail without Accessibility"
+            alert.informativeText = """
+                Moving other apps’ windows needs Accessibility. On a Mac your organisation manages, only an \
+                administrator can allow it, and IT can do that for Monorail in one step.
+
+                \(PermissionStatus.useWithout) Monorail won’t keep asking: choose Grant Accessibility Access \
+                in this menu whenever you’re ready.
+                """
+            alert.addButton(withTitle: "OK")
+            alert.addButton(withTitle: "Guide for IT…")
+            NSApp.activate(ignoringOtherApps: true)
+            if alert.runModal() == .alertSecondButtonReturn,
+                let url = URL(string: "https://github.com/ashfordeOU/monorail/blob/main/docs/IT.md")
+            {
+                NSWorkspace.shared.open(url)
+            }
+        }
+    }
+
 
     @objc private func toggleEveningFromMenu() {
         var settings = store.settings
@@ -1751,15 +1888,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             updater.check(userInitiated: true)
         case .toggleEvening:
             toggleEveningFromMenu()
+        case .keepAvailable:
+            toggleKeepAvailableFromMenu()
         case .displayBrighter, .displayDimmer:
-            guard let display = engine.activeDisplay() else { return }
+            guard let display = actionDisplay() else { return }
             displayMenu.step(display.uuid, name: display.name, brighter: action == .displayBrighter)
         case .displayMoreSpace, .displayLargerText, .displayDefaultResolution:
-            guard let display = engine.activeDisplay() else { return }
+            guard let display = actionDisplay() else { return }
             displayMenu.changeResolution(display.id, name: display.name, action: action)
         default:
             performAppActionV12(action)
         }
+    }
+
+    /// The display a display action applies to: the engine's choice, or (before it runs, without
+    /// Accessibility) the one under the pointer.
+    private func actionDisplay() -> (id: CGDirectDisplayID, uuid: String, name: String)? {
+        if let display = engine.activeDisplay() { return display }
+        let mouse = NSEvent.mouseLocation
+        let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
+        let point = CGPoint(x: mouse.x, y: primaryHeight - mouse.y)
+        let all = Display.all()
+        guard let display = all.first(where: { $0.frame.contains(point) }) ?? all.first else { return nil }
+        return (display.id, display.uuid, display.name)
     }
 
     /// After launching something "beside", pairs its window with the one you were in.
@@ -1791,21 +1942,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         apply(store.settings)
         updateStatusItem()
-        store.startCloudSync()
-        store.watchFile()
         autoRules.start()
-        startTelemetry()
         migrateMouseButtons()
         EventStream.shared.start()
-        // After an update: what changed. (Not on a first install.)
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-        if store.settings.hasCompletedOnboarding, !version.isEmpty, store.settings.lastSeenVersion != version {
-            if !store.settings.lastSeenVersion.isEmpty || store.settings.hasCompletedOnboarding {
-                whatsNew.store = store
-                whatsNew.show(version: version)
-            }
-        }
-        if store.settings.lastSeenVersion != version { store.settings.lastSeenVersion = version }
         weekly.stats = stats
         weekly.workspaceTitle = { [weak self] index in self?.engine.workspaceTitle(index) ?? "" }
         weekly.isEnabled = { [weak self] in self?.store.settings.weeklySummary ?? false }
@@ -1820,11 +1959,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
-    /// Polls until the user grants Accessibility, then starts.
+    /// What needs no Accessibility: settings, sync, usage counts and What's New. Stay Awake,
+    /// Evening Mode and the display controls are wired up in `wireUp`. Runs once, at launch.
+    private func startEssentials() {
+        apply(store.settings)
+        store.startCloudSync()
+        store.watchFile()
+        startTelemetry()
+        // After an update: what changed. (Not on a first install.)
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        if store.settings.hasCompletedOnboarding, !version.isEmpty, store.settings.lastSeenVersion != version {
+            whatsNew.store = store
+            whatsNew.show(version: version)
+        }
+        if store.settings.lastSeenVersion != version { store.settings.lastSeenVersion = version }
+        updateStatusItem()
+    }
+
+    /// Waits quietly for Accessibility (never asks again by itself), then starts. macOS posts a
+    /// notification when the list changes; the slow timer is a fallback.
     private func waitForPermission() {
-        permissionTimer = Timer.every(1.5) { [weak self] _ in
-            guard Accessibility.isTrusted(prompt: false) else { return }
-            self?.startEngine()
+        let check: () -> Void = { [weak self] in
+            guard let self, self.permissionTimer != nil, Accessibility.isTrusted(prompt: false) else { return }
+            self.startEngine()
+            self.updateStatusItem()
+            self.toast.show("Accessibility allowed · Monorail now arranges your windows")
+        }
+        permissionTimer = Timer.every(5) { _ in check() }
+        DistributedNotificationCenter.default().addObserver(
+            forName: NSNotification.Name("com.apple.accessibility.api"), object: nil, queue: .main
+        ) { _ in
+            // The answer is stored a moment after the notification.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { check() }
         }
     }
 
@@ -2750,7 +2916,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         list.append(PaletteCommand(id: "settings", title: "Open Settings", symbol: "gearshape") { [weak self] in
             self?.showSettings()
         })
-        return v12PaletteCommands() + list
+        return scriptablePaletteCommands() + v12PaletteCommands() + list
     }
 
     private func saveAppPair(from id: WindowID) {
@@ -2861,9 +3027,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         if !trusted {
-            menu.addItem(item("Grant Accessibility Access…", #selector(showWelcomeFromMenu)))
+            menu.addItem(item(L("Grant Accessibility Access…"), #selector(grantAccessibilityFromMenu)))
+            menu.addItem(item("Using Monorail Without It…", #selector(explainWithoutAccessibility)))
+            if usesScriptableArranging { menu.addItem(scriptableMenu()) }
+            menu.addItem(.separator())
         }
         menu.addItem(awakeMenu())
+        menu.addItem(keepAvailableItem())
         menu.addItem(eveningMenu())
         menu.addItem(displayMenu.menuItem())
         addAshfordeSection(to: menu)
@@ -2871,6 +3041,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         animate.state = store.settings.animate ? .on : .off
         animate.toolTip = "Off: windows move instantly. Everything else works the same, and it saves energy."
         menu.addItem(animate)
+
+        // Without Accessibility the window tools can't work: the menu keeps to what does.
+        guard engine.isRunning else {
+            menu.addItem(.separator())
+            menu.addItem(item(L("Command Palette…"), #selector(showPalette), action: .commandPalette))
+            addFooter(to: menu)
+            return
+        }
 
         let windows = engine.activeStripWindows()
         if !windows.isEmpty {
@@ -3033,6 +3211,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(parent)
         }
 
+        addFooter(to: menu)
+    }
+
+    /// Settings, help, updates and Quit, at the foot of the menu.
+    private func addFooter(to menu: NSMenu) {
         menu.addItem(.separator())
         menu.addItem(item(L("Settings…"), #selector(showSettingsFromMenu), key: ","))
         menu.addItem(item(L("Send Feedback…"), #selector(sendFeedbackFromMenu)))
@@ -3269,7 +3452,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func checkForUpdates() { updater.check(userInitiated: true) }
 
     private func headerTitle(trusted: Bool) -> String {
-        if !trusted { return "Monorail needs Accessibility access" }
+        if !trusted { return PermissionStatus.headline }
         if engine.isPaused { return "Monorail is paused" }
         if let status = engine.status() {
             let workspace = engine.workspaceCount > 1

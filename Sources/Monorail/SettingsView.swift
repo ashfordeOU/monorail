@@ -234,6 +234,9 @@ private struct BasicsPane: View {
                 Toggle("Windows of the same app share a slide", isOn: $store.settings.groupByApp)
                 LabeledSlider(title: "Gap between windows", value: $store.settings.layout.gap, range: 0...40)
                 Toggle("Animate windows", isOn: $store.settings.animate)
+                Toggle("Arrange scriptable apps without Accessibility (Safari, Finder, Terminal…)", isOn: $store.settings.arrangeScriptableApps)
+                    .hiddenInAppStore()
+                    .help("Until Accessibility is allowed, the menu and command palette can still move the windows of Safari, Chrome, Finder, Terminal and other scriptable apps. macOS asks once for each app, and you can answer without an administrator.")
             } header: {
                 Text("Windows")
             }

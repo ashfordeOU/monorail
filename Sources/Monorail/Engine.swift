@@ -300,7 +300,7 @@ final class Engine {
         case .windowSwitcher:
             onShowSwitcher()
             return
-        case .toggleEvening, .displayBrighter, .displayDimmer, .displayMoreSpace, .displayLargerText, .displayDefaultResolution:
+        case .toggleEvening, .keepAvailable, .displayBrighter, .displayDimmer, .displayMoreSpace, .displayLargerText, .displayDefaultResolution:
             onAppAction(action)
             return
         case .overview:
@@ -314,6 +314,15 @@ final class Engine {
             return
         default:
             break
+        }
+        // Without Accessibility the engine never starts, but these don't need it.
+        if !isRunning, action.worksWithoutAccessibility {
+            switch action {
+            case .commandPalette: onShowPalette()
+            case .cheatSheet: onCheatSheet()
+            default: onAppAction(action)
+            }
+            return
         }
         guard isRunning, !isPaused else { return }
         if let n = action.viewNumber { return goToView(n) }

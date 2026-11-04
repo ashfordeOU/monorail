@@ -311,6 +311,7 @@ public static class Actions
     public const string StashWindow = "stash-window";
     public const string UnstashAll = "unstash-all";
     public const string EveningMode = "evening-mode";
+    public const string KeepAvailable = "keep-available";
 
     public static readonly ActionInfo[] All =
     {
@@ -618,5 +619,6 @@ public static class Actions
         new("stash-window", "Stash the window at the screen edge (again to bring it back)", false, false),
         new("unstash-all", "Bring back every stashed window", false, false),
         new("evening-mode", "Evening Mode on or off", false, false),
+        new("keep-available", "Keep me Available on or off (Teams, Slack)", false, false),
     };
 }

@@ -17,6 +17,7 @@ final class StayAwake {
     private var timer: Timer?
     private var activityTimer: Timer?
     private var lastCursorNudge = Date()
+    private var lastActivityDeclared = Date.distantPast
     private var lastDriveWrite = Date.distantPast
     private var closedLidOn = false
     private var lidRequestPending = false
@@ -33,6 +34,8 @@ final class StayAwake {
     var settings: () -> AppSettings = { AppSettings() }
     /// Safety messages (lid-closed mode stopped because of heat or battery), always shown.
     var onNotice: (String) -> Void = { _ in }
+    /// Turns "Keep me Available" off (ending Stay Awake by hand ends it too).
+    var turnOffKeepAvailable: () -> Void = {}
     /// Called when Stay Awake turns on or off, or its session changes.
     var onChange: (_ on: Bool, _ why: String) -> Void = { _, _ in }
 
@@ -89,6 +92,7 @@ final class StayAwake {
     /// Ends a manual session (triggers may still keep the Mac awake).
     func end() {
         session = nil
+        if settings().keepAvailable { turnOffKeepAvailable() }
         evaluate(announce: true)
     }
 
@@ -98,6 +102,11 @@ final class StayAwake {
         } else {
             start(minutes: settings().awakeDefaultMinutes)
         }
+    }
+
+    /// Looks again now, and says what changed (after "Keep me Available" is switched).
+    func reconsider() {
+        evaluate(announce: true)
     }
 
     /// Re-applies settings (display on or off, closed lid) to a running session.
@@ -116,7 +125,8 @@ final class StayAwake {
             if thriftTick { return }
         }
         // Nothing to watch: no session, nothing on, no triggers. Costs nothing.
-        if session == nil, !isOn, !announce, !settings.awakeTriggersOn || settings.awakeTriggers.allSatisfy({ !$0.isEnabled }) {
+        if session == nil, !isOn, !announce, !settings.keepAvailable,
+            !settings.awakeTriggersOn || settings.awakeTriggers.allSatisfy({ !$0.isEnabled }) {
             return
         }
         let context = currentContext(needsNetwork: needsNetwork(settings), needsCPU: needsCPU(settings))
@@ -133,7 +143,9 @@ final class StayAwake {
             return
         }
         let trigger = settings.awakeTriggersOn ? settings.awakeTriggers.first { AwakeRules.isActive($0, in: context) } : nil
-        let shouldBeOn = session != nil || trigger != nil
+        // "Keep me Available" keeps the Mac awake for as long as it's on (but not on a flat battery).
+        let available = settings.keepAvailable && !AwakeRules.batteryTooLow(context, cutoff: settings.awakeBatteryCutoff)
+        let shouldBeOn = session != nil || trigger != nil || available
         let changed = shouldBeOn != isOn || trigger?.id != triggeredBy?.id
         triggeredBy = session == nil ? trigger : nil
         if shouldBeOn != isOn { applyAssertions(on: shouldBeOn) }
@@ -141,7 +153,8 @@ final class StayAwake {
         updateClosedLid(awake: shouldBeOn)
         if changed || announce {
             if shouldBeOn {
-                let reason = session?.describe(appName: UsageStats.appName) ?? trigger.map { $0.kind.title.lowercased() } ?? ""
+                let reason = session?.describe(appName: UsageStats.appName) ?? trigger.map { $0.kind.title.lowercased() }
+                    ?? (available ? "keeping you Available" : "")
                 onChange(true, "Stay Awake on · \(reason)")
             } else {
                 onChange(false, why.isEmpty ? "Stay Awake off · your Mac can sleep again" : "\(why) · your Mac can sleep again")
@@ -202,17 +215,42 @@ final class StayAwake {
 
     /// Cursor nudges and drive writes, at their own pace.
     private func keepAlive(_ settings: AppSettings) {
-        if settings.awakeMoveCursor,
-            Date().timeIntervalSince(lastCursorNudge) >= Double(max(settings.awakeMoveCursorMinutes, 1)) * 60
+        let idle = Self.idleSeconds()
+        let now = Date()
+        // Chat apps (Teams, Slack) mark you away from the system idle time. Declaring user
+        // activity resets it and needs no permission; moving the pointer needs Accessibility.
+        if AwakePresence.shouldDeclareActivity(
+            awake: true, keepAvailable: settings.keepAvailable, moveCursor: settings.awakeMoveCursor,
+            idleSeconds: idle, sinceLastDeclare: now.timeIntervalSince(lastActivityDeclared))
         {
-            lastCursorNudge = Date()
-            let idle = CGEventSource.secondsSinceLastEventType(.hidSystemState, eventType: CGEventType(rawValue: ~0)!)
-            if idle > 50 { Self.nudgeCursor() }
+            lastActivityDeclared = now
+            Self.declareActivity()
+        }
+        if AwakePresence.shouldNudgeCursor(
+            awake: true, moveCursor: settings.awakeMoveCursor || settings.keepAvailable,
+            canPostEvents: Accessibility.isTrusted(prompt: false), everyMinutes: settings.awakeMoveCursorMinutes,
+            idleSeconds: idle, sinceLastNudge: now.timeIntervalSince(lastCursorNudge))
+        {
+            lastCursorNudge = now
+            Self.nudgeCursor()
         }
         if settings.awakeDriveAlive, Date().timeIntervalSince(lastDriveWrite) >= 240 {
             lastDriveWrite = Date()
             Self.touchDrives()
         }
+    }
+
+    /// Seconds since the last keyboard, mouse or trackpad input (what chat apps read as "away").
+    static func idleSeconds() -> Double {
+        CGEventSource.secondsSinceLastEventType(.hidSystemState, eventType: CGEventType(rawValue: ~0)!)
+    }
+
+    /// Tells macOS someone is at the Mac: resets the idle time. No permission needed.
+    @discardableResult
+    static func declareActivity() -> Bool {
+        var id: IOPMAssertionID = 0
+        let result = IOPMAssertionDeclareUserActivity("Monorail Keep me Available" as CFString, kIOPMUserActiveLocal, &id)
+        return result == kIOReturnSuccess
     }
 
     /// One point there and back: invisible, but enough for chat apps to see you're around.

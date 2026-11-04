@@ -50,7 +50,7 @@ extension AppSettings {
 /// The "Pick your extras" checklist in the welcome tour (and the switches in What's New): one line
 /// each, bound to real settings. Which start ticked depends on the starter setup.
 public enum StarterExtra: String, CaseIterable, Sendable {
-    case swipe, windowSwitcher, edgeSnapping, eveningSunset, terminalsTogether, awakeInMenuBar, agentChime, usageCounts
+    case swipe, windowSwitcher, edgeSnapping, eveningSunset, terminalsTogether, awakeInMenuBar, keepAvailable, agentChime, usageCounts
 
     public var title: String {
         switch self {
@@ -60,6 +60,7 @@ public enum StarterExtra: String, CaseIterable, Sendable {
         case .eveningSunset: return "Evening Mode from sunset to sunrise"
         case .terminalsTogether: return "Keep terminals together"
         case .awakeInMenuBar: return "Stay Awake in the menu bar"
+        case .keepAvailable: return "Keep Teams and Slack showing you as Available"
         case .agentChime: return "Chime when your AI coding assistant is waiting"
         case .usageCounts: return "Anonymous usage counts"
         }
@@ -74,6 +75,7 @@ public enum StarterExtra: String, CaseIterable, Sendable {
         case .eveningSunset: return settings.eveningSchedule == .sun
         case .terminalsTogether: return settings.groupTerminals
         case .awakeInMenuBar: return settings.awakeShowTime
+        case .keepAvailable: return settings.keepAvailable
         case .agentChime: return settings.agentAlerts
         case .usageCounts: return settings.shareUsageStats
         }
@@ -91,6 +93,7 @@ public enum StarterExtra: String, CaseIterable, Sendable {
             if on { settings.eveningSchedule = .sun } else if settings.eveningSchedule == .sun { settings.eveningSchedule = .manual }
         case .terminalsTogether: settings.groupTerminals = on
         case .awakeInMenuBar: settings.awakeShowTime = on
+        case .keepAvailable: settings.keepAvailable = on
         case .agentChime: settings.agentAlerts = on
         case .usageCounts: settings.shareUsageStats = on
         }
@@ -98,11 +101,11 @@ public enum StarterExtra: String, CaseIterable, Sendable {
 
     /// Which extras a starter setup ticks. Simple keeps to the gentle ones; the others take most,
     /// but never the ones that take over system gestures and shortcuts (the ⌘Tab switcher and
-    /// three-finger swipes): those stay off unless ticked.
+    /// three-finger swipes) or keep the Mac awake for good (Keep me Available): those stay off unless ticked.
     public static func defaults(for setup: StarterSetup) -> Set<StarterExtra> {
         switch setup {
         case .simple: return [.terminalsTogether, .awakeInMenuBar, .agentChime, .usageCounts]
-        case .power, .switching: return Set(allCases).subtracting([.windowSwitcher, .swipe])
+        case .power, .switching: return Set(allCases).subtracting([.windowSwitcher, .swipe, .keepAvailable])
         }
     }
 

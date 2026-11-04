@@ -6,6 +6,16 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Keep me Available.** A new item next to Stay Awake keeps your Mac awake and keeps Teams, Slack and other chat apps showing you as Available. While you're away from the keyboard it tells macOS you're active about once a minute, which needs no permission; with Accessibility it can also nudge the pointer. It's an action you can give a key, and a choice in the welcome tour's extras.
+- **Monorail on Macs where you can't allow Accessibility.** Stay Awake, Keep me Available, Evening Mode, display brightness and resolution, the command palette, What's New and Settings now work straight away, before Accessibility is allowed or without it. The menu says once that window arranging needs Accessibility, offers **Grant Accessibility Access…** and **Using Monorail Without It…**, and no longer opens the welcome tour at every launch.
+- **Arrange scriptable apps without Accessibility.** Until Accessibility is allowed, the menu and command palette can put Safari, Google Chrome, Finder, Terminal, Notes, Mail, TextEdit, Pages, Numbers, Keynote, Preview and iTerm2 in the left or right half, fill the screen or centre them, place the last two side by side, and switch between an app's windows. macOS asks once for each app, and you can answer without an administrator. Not in the App Store edition.
+- **A guide for IT** ([docs/IT.md](docs/IT.md)) and a configuration profile that allows Accessibility for Monorail in one step through an MDM (`packaging/mdm/Monorail-Accessibility.mobileconfig`).
+
+### Changed
+- The install script puts Monorail in your own Applications folder (`~/Applications`) when `/Applications` needs an administrator, and says so. Updates work from there too.
+- The pointer nudge in Stay Awake is now **Also move the pointer now and then (needs Accessibility)**; without Accessibility, Monorail keeps you available by telling macOS you're active instead.
+
 ## [1.7.20] - 2026-11-04
 
 ### Fixed

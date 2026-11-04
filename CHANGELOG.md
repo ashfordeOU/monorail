@@ -6,6 +6,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.21] - 2026-11-04
+
 ### Fixed
 - **Live previews:** asking for them now always adds Monorail to Screen & System Audio Recording in System Settings, so it can be switched on there.
 

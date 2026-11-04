@@ -13,7 +13,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string>Monorail by Ashforde®</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.ashforde.macslider</string>
+	<string>org.ashforde.monorail</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

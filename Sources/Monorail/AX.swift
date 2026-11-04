@@ -122,6 +122,25 @@ enum Accessibility {
         return AXIsProcessTrustedWithOptions([key: prompt] as CFDictionary)
     }
 
+    static let settingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+
+    /// When Monorail is switched on in Accessibility but macOS still says no (the entry belongs to an
+    /// earlier copy or signature), clears macOS's stored answer for Monorail and asks afresh.
+    static func resetAndAsk() {
+        let ids = Set([Bundle.main.bundleIdentifier ?? BundleIDs.current] + BundleIDs.all)
+        for id in ids {
+            let reset = Process()
+            reset.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+            reset.arguments = ["reset", "Accessibility", id]
+            reset.standardOutput = FileHandle.nullDevice
+            reset.standardError = FileHandle.nullDevice
+            try? reset.run()
+            reset.waitUntilExit()
+        }
+        _ = isTrusted(prompt: true)
+        if let url = settingsURL { NSWorkspace.shared.open(url) }
+    }
+
     /// Bounds how long a single AX call may block on an unresponsive app.
     static func setGlobalTimeout(_ seconds: Float) {
         AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), seconds)

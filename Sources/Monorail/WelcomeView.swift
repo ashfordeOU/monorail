@@ -147,19 +147,20 @@ struct WelcomeView: View {
                         Text(
                             trusted
                                 ? "Done. Monorail can now arrange your windows."
-                                : "macOS needs your permission before any app can move other apps’ windows. Monorail asks for nothing else, works offline and collects no data."
+                                : "macOS needs your permission before any app can move other apps’ windows. Monorail asks for nothing else."
                         )
                         .font(.callout).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                         if !trusted {
                             Button(L("Open Accessibility Settings")) {
                                 _ = Accessibility.isTrusted(prompt: true)
-                                if let url = URL(
-                                    string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
-                                {
-                                    NSWorkspace.shared.open(url)
-                                }
+                                if let url = Accessibility.settingsURL { NSWorkspace.shared.open(url) }
                             }
+                            // Switched on but still refused: the entry belongs to an earlier copy.
+                            Button("Switched on but still not working? Reset and ask again") {
+                                Accessibility.resetAndAsk()
+                            }
+                            .buttonStyle(.link).font(.callout)
                         }
                     }
                 }

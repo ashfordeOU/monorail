@@ -6,6 +6,14 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.19] - 2026-11-04
+
+### Changed
+- **Monorail now uses its own identifier, org.ashforde.monorail**, instead of the one from its first name. Your settings, layouts and workspaces come with you. macOS sees the new identifier as a new app, so it asks you once to allow Accessibility again.
+
+### Fixed
+- **If Accessibility is switched on but Monorail still can't move windows** (macOS's stored answer belonged to an earlier copy), the welcome tour offers **Reset and ask again**, which clears it and asks afresh.
+
 ## [1.7.18] - 2026-11-04
 
 ### Fixed

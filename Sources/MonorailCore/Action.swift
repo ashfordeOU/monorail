@@ -307,6 +307,7 @@ public enum Action: String, Codable, CaseIterable, Sendable {
     case stashWindow = "stash-window"
     case unstashAll = "unstash-all"
     case toggleEvening = "evening-mode"
+    case keepAvailable = "keep-available"
 
     public var title: String {
         switch self {
@@ -551,6 +552,7 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         case .stashWindow: return "Stash the window at the screen edge (again to bring it back)"
         case .unstashAll: return "Bring back every stashed window"
         case .toggleEvening: return "Evening Mode on or off"
+        case .keepAvailable: return "Keep me Available on or off (Teams, Slack)"
         default:
             if let n = columnNumber { return "Focus column \(n)" }
             if let n = workspaceNumber { return "Switch to workspace \(n)" }
@@ -657,7 +659,7 @@ public enum Action: String, Codable, CaseIterable, Sendable {
         .focusDisplay1, .focusDisplay2, .focusDisplay3, .focusDisplay4, .focusDisplay5, .focusDisplay6, .focusDisplay7, .focusDisplay8, .focusDisplay9,
         .sendToDisplay1, .sendToDisplay2, .sendToDisplay3, .sendToDisplay4, .sendToDisplay5, .sendToDisplay6, .sendToDisplay7, .sendToDisplay8, .sendToDisplay9,
         .displayBrighter, .displayDimmer, .displayMoreSpace, .displayLargerText, .displayDefaultResolution,
-        .stashWindow, .unstashAll, .toggleEvening,
+        .stashWindow, .unstashAll, .toggleEvening, .keepAvailable,
     ])
 
     /// The slide layout a "Slide layout: …" action sets (nil for tabs).

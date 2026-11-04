@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-217 settings.
+219 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -177,6 +177,8 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `awakeDefaultMinutes` | How long Stay Awake lasts when toggled on (0 = until you end it). | `0` |
 | `awakeBatteryCutoff` | End Stay Awake when the battery drops to this percent on battery power (0 = never). | `10` |
 | `awakeMoveCursor` | During Stay Awake, nudge the pointer now and then so chat apps don’t mark you away. | `false` |
+| `keepAvailable` | Keep me Available: keep the Mac awake and keep chat apps such as Teams and Slack showing you as available, by telling macOS you're active when it has been idle (no permission needed). | `false` |
+| `arrangeScriptableApps` | Arrange scriptable apps (Safari, Finder, Terminal…) with Apple Events while Accessibility isn't allowed. | `true` |
 | `awakeMoveCursorMinutes` | How often the pointer is nudged (minutes). | `4` |
 | `awakeDriveAlive` | During Stay Awake, keep external drives from spinning down. | `false` |
 | `awakeClosedLid` | During Stay Awake, keep running with the lid closed, even without an external display (asks for your password). | `false` |

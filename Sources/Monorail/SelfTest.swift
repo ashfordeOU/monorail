@@ -84,5 +84,20 @@ enum SelfTest {
         failures.forEach { print("FAILED: \($0)") }
         return 1
     }
+
+    /// Measures the idle time, waits about three seconds without input, declares user activity
+    /// (as Keep me Available does) and measures again: it should drop. Never fails for a runner
+    /// without an input session; it prints the numbers either way.
+    static func checkAvailable() -> Int32 {
+        let before0 = StayAwake.idleSeconds()
+        Thread.sleep(forTimeInterval: 3)
+        let before = StayAwake.idleSeconds()
+        let declared = StayAwake.declareActivity()
+        Thread.sleep(forTimeInterval: 0.5)
+        let after = StayAwake.idleSeconds()
+        print("Keep me Available check: idle \(before0) s at start; declaring activity \(declared ? "succeeded" : "failed")")
+        print("Keep me Available check \(AwakePresence.idleCheckVerdict(before: before, after: after))")
+        return 0
+    }
 }
 #endif

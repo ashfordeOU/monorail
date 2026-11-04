@@ -5,6 +5,9 @@ import AppKit
 if CommandLine.arguments.contains("--mcp") { MCPServer.run() }
 // `Monorail --self-test` checks the app's own pieces without touching any windows (run in CI).
 if CommandLine.arguments.contains("--self-test") { exit(SelfTest.run()) }
+// `Monorail --self-check-available` checks that telling macOS you're active resets its idle time,
+// which is how Keep me Available keeps Teams and Slack showing you as available (run in CI).
+if CommandLine.arguments.contains("--self-check-available") { exit(SelfTest.checkAvailable()) }
 // `Monorail --render-screens <folder>` draws the welcome tour and What's New to PNG files (CI).
 if let index = CommandLine.arguments.firstIndex(of: "--render-screens"), CommandLine.arguments.count > index + 1 {
     exit(ScreenRender.run(into: URL(fileURLWithPath: CommandLine.arguments[index + 1])))

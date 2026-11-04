@@ -1,12 +1,20 @@
 #!/bin/bash
-# Installs the latest Monorail release into /Applications.
+# Installs the latest Monorail release into /Applications, or into ~/Applications when
+# /Applications isn't writable (a standard account on a managed Mac): no administrator needed.
 #   curl -fsSL https://raw.githubusercontent.com/ashfordeOU/monorail/main/scripts/install.sh | bash
 set -euo pipefail
 
+[ "$(uname -s)" = "Darwin" ] || { echo "Monorail runs on macOS only." >&2; exit 1; }
+
 REPO="ashfordeOU/monorail"
 DEST="/Applications"
-
-[ "$(uname -s)" = "Darwin" ] || { echo "Monorail runs on macOS only." >&2; exit 1; }
+if [ ! -w "$DEST" ] || { [ -e "$DEST/Monorail.app" ] && [ ! -w "$DEST/Monorail.app" ]; }; then
+    DEST="$HOME/Applications"
+    mkdir -p "$DEST"
+    echo "==> /Applications needs an administrator, so Monorail goes in your own Applications folder: $DEST"
+    echo "    It works the same from there, and keeps itself up to date."
+    [ -e "/Applications/Monorail.app" ] && echo "    An older copy stays in /Applications: ask an administrator to remove it, or update it there."
+fi
 
 echo "==> Finding the latest release"
 URL="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
@@ -34,4 +42,6 @@ xattr -dr com.apple.quarantine "${DEST}/Monorail.app" 2>/dev/null || true
 
 echo "==> Opening Monorail"
 open "${DEST}/Monorail.app"
-echo "Done. Grant Accessibility access when asked."
+echo "Done. To arrange every window, Monorail needs Accessibility (System Settings → Privacy & Security)."
+echo "On a managed Mac, ask IT: https://github.com/ashfordeOU/monorail/blob/main/docs/IT.md"
+echo "Stay Awake, Keep me Available, Evening Mode and the display controls work without it."

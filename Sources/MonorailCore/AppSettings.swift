@@ -826,6 +826,11 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var awakeBatteryCutoff = 10
     /// During Stay Awake, nudge the pointer now and then so chat apps don’t mark you away.
     public var awakeMoveCursor = false
+    /// Keep me Available: keep the Mac awake and keep chat apps such as Teams and Slack showing you
+    /// as available, by telling macOS you're active when it has been idle (no permission needed).
+    public var keepAvailable = false
+    /// Arrange scriptable apps (Safari, Finder, Terminal…) with Apple Events while Accessibility isn't allowed.
+    public var arrangeScriptableApps = true
     /// How often the pointer is nudged (minutes).
     public var awakeMoveCursorMinutes = 4
     /// During Stay Awake, keep external drives from spinning down.
@@ -1082,7 +1087,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case borderFromAppIcon, focusFlash, sliderOpacity, sliderScale, plainOverview, overviewIconsOnly, menuBarShowsTitle
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
-        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
+        case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
     }
 
     public init(from decoder: Decoder) throws {
@@ -1255,6 +1260,8 @@ public struct AppSettings: Equatable, Codable, Sendable {
         awakeBatteryCutoff = value(.awakeBatteryCutoff, d.awakeBatteryCutoff)
         awakeMoveCursor = value(.awakeMoveCursor, d.awakeMoveCursor)
         awakeMoveCursorMinutes = value(.awakeMoveCursorMinutes, d.awakeMoveCursorMinutes)
+        keepAvailable = value(.keepAvailable, d.keepAvailable)
+        arrangeScriptableApps = value(.arrangeScriptableApps, d.arrangeScriptableApps)
         awakeDriveAlive = value(.awakeDriveAlive, d.awakeDriveAlive)
         awakeClosedLid = value(.awakeClosedLid, d.awakeClosedLid)
         awakeClosedLidOnlyOnPower = value(.awakeClosedLidOnlyOnPower, d.awakeClosedLidOnlyOnPower)

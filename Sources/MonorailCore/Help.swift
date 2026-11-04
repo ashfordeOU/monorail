@@ -16,6 +16,8 @@ public enum HelpIndex {
     }
 
     public static let all: [Answer] = [
+        .init(question: "Stay Available in Teams and Slack", answer: "Keep me Available in the menu bar keeps your Mac awake and chat apps showing you as available. No permission needed.", target: .settings("awake"), keywords: ["available", "away", "teams", "slack", "status", "idle", "presence"]),
+        .init(question: "Use Monorail without Accessibility", answer: "Stay Awake, Keep me Available, Evening Mode, the display controls and arranging scriptable apps work without it. On a managed Mac, IT can allow Accessibility for Monorail with a profile (docs/IT.md).", target: .settings("general"), keywords: ["accessibility", "permission", "admin", "administrator", "managed", "mdm"]),
         .init(question: "Keep my Mac awake", answer: "Stay Awake in the menu bar: for a while, while an app is open, or by itself with triggers.", target: .settings("awake"), keywords: ["awake", "sleep", "caffeinate", "amphetamine", "display", "lid"]),
         .init(question: "Reduce blue light in the evening", answer: "Evening Mode in the menu bar: a warmer screen, as strong as you like, by hand or every evening on a schedule.", target: .settings("evening"), keywords: ["evening", "night", "blue light", "warm", "eyes", "night shift", "f.lux", "flux", "amber"]),
         .init(question: "See all my windows", answer: "⌃⌥O opens the overview of every workspace and slide.", target: .action(.overview), keywords: ["overview", "see", "all", "windows", "expose", "mission"]),

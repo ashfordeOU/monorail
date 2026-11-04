@@ -49,7 +49,7 @@
 	<key>NSCalendarsUsageDescription</key>
 	<string>Monorail looks at your upcoming events to open video calls a minute before they start. Your calendar never leaves your Mac.</string>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>If you turn on “Save browser tabs and Finder windows” in snapshots, Monorail asks your browser and Finder which tabs and folders are open, so it can reopen them. They stay on this Mac.</string>
+	<string>Without Accessibility, Monorail can arrange the windows of apps such as Safari, Finder and Terminal by asking them to move their windows. With “Save browser tabs and Finder windows” on, it also asks your browser and Finder which tabs and folders are open, so snapshots can reopen them. Nothing leaves this Mac.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Voice commands: Monorail listens only while you hold the voice command, on this Mac.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

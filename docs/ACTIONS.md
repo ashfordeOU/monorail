@@ -6,7 +6,7 @@ Run any action from the command palette (⌃⌥/), with `open -g monorail://<nam
 the local API (`POST /action`), MCP (`perform_action`), AppleScript or a script (`monorail.perform`).
 Give any of them a key in **Settings → Shortcuts**.
 
-304 actions.
+305 actions.
 
 | Action | Name | Default key |
 | --- | --- | --- |
@@ -314,3 +314,4 @@ Give any of them a key in **Settings → Shortcuts**.
 | Stash the window at the screen edge (again to bring it back) | `stash-window` | none (add one in Settings) |
 | Bring back every stashed window | `unstash-all` | none (add one in Settings) |
 | Evening Mode on or off | `evening-mode` | none (add one in Settings) |
+| Keep me Available on or off (Teams, Slack) | `keep-available` | none (add one in Settings) |

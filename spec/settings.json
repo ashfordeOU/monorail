@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 217,
+  "count": 219,
   "settings": [
     {
       "key": "layout",
@@ -1009,6 +1009,18 @@
       "type": "Bool",
       "default": "false",
       "about": "During Stay Awake, nudge the pointer now and then so chat apps don’t mark you away."
+    },
+    {
+      "key": "keepAvailable",
+      "type": "Bool",
+      "default": "false",
+      "about": "Keep me Available: keep the Mac awake and keep chat apps such as Teams and Slack showing you as available, by telling macOS you're active when it has been idle (no permission needed)."
+    },
+    {
+      "key": "arrangeScriptableApps",
+      "type": "Bool",
+      "default": "true",
+      "about": "Arrange scriptable apps (Safari, Finder, Terminal…) with Apple Events while Accessibility isn't allowed."
     },
     {
       "key": "awakeMoveCursorMinutes",

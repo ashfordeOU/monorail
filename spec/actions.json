@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/Action.swift",
-  "count": 304,
+  "count": 305,
   "actions": [
     {
       "name": "focus-left",
@@ -1823,6 +1823,12 @@
     {
       "name": "evening-mode",
       "title": "Evening Mode on or off",
+      "defaultKey": false,
+      "numbered": false
+    },
+    {
+      "name": "keep-available",
+      "title": "Keep me Available on or off (Teams, Slack)",
       "defaultKey": false,
       "numbered": false
     }

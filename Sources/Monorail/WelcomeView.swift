@@ -161,6 +161,9 @@ struct WelcomeView: View {
                                 Accessibility.resetAndAsk()
                             }
                             .buttonStyle(.link).font(.callout)
+                            Text("A work Mac where only IT can allow it? Carry on without it: Stay Awake, Keep me Available, Evening Mode, the display controls and arranging scriptable apps work straight away. Monorail won’t keep asking.")
+                                .font(.caption).foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                 }

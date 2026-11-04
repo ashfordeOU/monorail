@@ -314,6 +314,7 @@ export const ACTIONS = [
   { name: "stash-window", title: "Stash the window at the screen edge (again to bring it back)", defaultKey: false, numbered: false },
   { name: "unstash-all", title: "Bring back every stashed window", defaultKey: false, numbered: false },
   { name: "evening-mode", title: "Evening Mode on or off", defaultKey: false, numbered: false },
+  { name: "keep-available", title: "Keep me Available on or off (Teams, Slack)", defaultKey: false, numbered: false },
 ] as const satisfies readonly ActionInfo[];
 
 export type ActionName = (typeof ACTIONS)[number]['name'];

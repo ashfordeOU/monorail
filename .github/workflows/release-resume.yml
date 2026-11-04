@@ -1,0 +1,57 @@
+name: Resume a release
+
+# When a release stops while waiting for Apple (a long review, or Apple's servers dropping the
+# connection), start it again from the same files and submissions, so nobody has to. Only for
+# that step: a failed build or test is never retried. At most 4 tries a day, so a real problem
+# stops and shows as a failed run (GitHub emails the owner).
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  resume:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RUN: ${{ github.event.workflow_run.id }}
+    steps:
+      - name: Resume if it stopped waiting for Apple
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          failed_step="$(gh api "repos/$repo/actions/runs/$RUN/jobs" --jq '[.jobs[].steps[] | select(.conclusion == "failure") | .name][0] // ""')"
+          echo "Failed step: $failed_step"
+          if [ "$failed_step" != "Wait for Apple" ]; then
+            echo "Not a wait for Apple: leaving it for a person."
+            exit 0
+          fi
+          since="$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)"
+          tries="$(gh api "repos/$repo/actions/workflows/release.yml/runs?created=>$since&per_page=100" --jq '.workflow_runs | length')"
+          if [ "$tries" -ge 5 ]; then
+            echo "::error::Release has run $tries times today; not resuming again. Check Apple's notarisation history."
+            exit 1
+          fi
+          # The tag the run was building: its version file at that commit.
+          sha="$(gh api "repos/$repo/actions/runs/$RUN" --jq .head_sha)"
+          version="$(gh api "repos/$repo/contents/VERSION?ref=$sha" --jq .content | base64 -d | tr -d '[:space:]')"
+          # A resumed run must point at the run that holds the files: the original one.
+          origin="$(gh api "repos/$repo/actions/runs/$RUN/artifacts" --jq '[.artifacts[].name] | index("release-files")')"
+          from="$RUN"
+          if [ "$origin" = "null" ]; then
+            # This run was itself a resume; find the run that still holds release-files for this version.
+            from="$(gh api "repos/$repo/actions/workflows/release.yml/runs?per_page=30" --jq '.workflow_runs[].id' | while read -r id; do
+              if gh api "repos/$repo/actions/runs/$id/artifacts" --jq '[.artifacts[].name] | index("release-files")' | grep -qv null; then echo "$id"; break; fi
+            done)"
+          fi
+          [ -n "$from" ] || { echo "::error::No run with the release files found."; exit 1; }
+          echo "Resuming v$version from run $from"
+          # Give Apple a little longer before asking again.
+          sleep 600
+          gh workflow run release.yml -R "$repo" --ref main -f tag="v$version" -f resume_run="$from"

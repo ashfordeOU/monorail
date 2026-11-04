@@ -5,9 +5,6 @@
 name: Release smoke test
 
 on:
-  workflow_run:
-    workflows: ["Release"]
-    types: [completed]
   workflow_dispatch:
     inputs:
       tag:

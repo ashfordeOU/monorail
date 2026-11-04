@@ -49,6 +49,9 @@ final class WindowWriter {
     }
 
     private func queue(for pid: pid_t) -> DispatchQueue {
+        // Monorail's own windows (the practice windows) must be moved on the main thread:
+        // AppKit stops the app if one of its windows is moved from another thread.
+        if pid == getpid() { return .main }
         if let queue = queues[pid] { return queue }
         let queue = DispatchQueue(label: "org.ashforde.monorail.writer.\(pid)", qos: .userInteractive)
         queues[pid] = queue

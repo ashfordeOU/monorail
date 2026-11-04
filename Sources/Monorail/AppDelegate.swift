@@ -3380,6 +3380,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let root = ScrollView(.vertical) { view }.frame(width: 560, height: height)
             let window = NSWindow(contentViewController: NSHostingController(rootView: root))
             window.title = "Welcome to \(Brand.full)"
+            window.keepInFront()
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
             window.center()

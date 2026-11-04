@@ -6,6 +6,12 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.20] - 2026-11-04
+
+### Fixed
+- **Practice with demo windows no longer quits Monorail.** Monorail's own practice windows are now moved on the main thread, as macOS requires.
+- **The welcome tour and What's New stay in front** of other windows and never end up in a tab group.
+
 ## [1.7.19] - 2026-11-04
 
 ### Changed

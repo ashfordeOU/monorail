@@ -198,9 +198,14 @@ final class Engine {
         registerWorkspaceNotifications()
         sync()
         attentionTimer = Timer.every(3) { [weak self] _ in
-            guard !Dormancy.shouldSkip() else { return }
-            self?.refreshAttention()
-            self?.refreshAgents()
+            guard let self, !Dormancy.shouldSkip() else { return }
+            // While nobody's at the Mac, check a quarter as often: reading the Dock is the most
+            // expensive thing Monorail does when idle. Assistants are still noticed within ~12 s.
+            self.attentionTicks &+= 1
+            let idle = CGEventSource.secondsSinceLastEventType(.hidSystemState, eventType: CGEventType(rawValue: ~0)!)
+            guard idle < 60 || self.attentionTicks % 4 == 0 else { return }
+            if idle < 60 || self.attentionTicks % 8 == 0 { self.refreshAttention() }
+            self.refreshAgents()
         }
         edgeShyApps.formUnion(Quirks.edgeShy)
         Self.fetchQuirks()
@@ -3682,6 +3687,8 @@ final class Engine {
     /// Apps showing a badge in the Dock (unread mail, messages…), by name.
     private(set) var attentionApps: Set<String> = []
     private var attentionTimer: Timer?
+
+    private var attentionTicks = 0
 
     private func refreshAttention() {
         guard settings.attentionMarkers, isRunning,

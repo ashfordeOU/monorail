@@ -6,6 +6,11 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.23] - 2026-11-04
+
+### Changed
+- **Lighter while you're away.** When nobody has touched the Mac for a minute, Monorail checks the Dock and terminal windows a quarter as often, so it uses even less of your battery when idle.
+
 ## [1.7.22] - 2026-11-04
 
 ### Fixed

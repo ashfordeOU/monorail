@@ -5,10 +5,14 @@ name: Resume a release
 # that step: a failed build or test is never retried. At most 4 tries a day, so a real problem
 # stops and shows as a failed run (GitHub emails the owner).
 
+# Started by the Release workflow itself when it fails (GitHub doesn't run "after Release"
+# workflows for runs an automation started), or by hand with the failed run's ID.
 on:
-  workflow_run:
-    workflows: ["Release"]
-    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "The failed Release run"
+        required: true
 
 permissions:
   actions: write
@@ -16,11 +20,10 @@ permissions:
 
 jobs:
   resume:
-    if: github.event.workflow_run.conclusion == 'failure'
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
-      RUN: ${{ github.event.workflow_run.id }}
+      RUN: ${{ github.event.inputs.run_id }}
     steps:
       - name: Resume if it stopped waiting for Apple
         run: |

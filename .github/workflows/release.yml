@@ -18,8 +18,9 @@ on:
 
 permissions:
   contents: write
-  # Resuming reads the earlier run (its commit and its files).
-  actions: read
+  # Resuming reads the earlier run (its commit and its files), and the release starts its
+  # follow-up workflows itself (GitHub doesn't run "after Release" workflows for automated runs).
+  actions: write
 
 jobs:
   release:
@@ -205,6 +206,9 @@ jobs:
             dist/SHA256SUMS
             dist/notes.md
           retention-days: 7
+      - name: Resume later if Apple was the holdup
+        if: failure()
+        run: gh workflow run release-resume.yml -R "$GITHUB_REPOSITORY" --ref main -f run_id="${{ github.run_id }}"
 
   publish:
     needs: release
@@ -292,3 +296,6 @@ jobs:
           git commit -m "Packages: Monorail ${version}" || exit 0
           git fetch origin main && git rebase origin/main
           git push origin HEAD:main
+      - name: Start the release smoke test
+        if: success()
+        run: gh workflow run release-smoke.yml -R "$GITHUB_REPOSITORY" --ref main -f tag="$TAG"

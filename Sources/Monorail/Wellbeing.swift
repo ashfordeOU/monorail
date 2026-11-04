@@ -61,6 +61,8 @@ final class DeepWork {
 /// macOS screen sharing) so private windows can step aside.
 final class ScreenShareWatch {
     private var timer: Timer?
+    /// Every 2 s while you're at the Mac, every 6 s while you're away.
+    private var poller = RestingPoller(every: 3)
     private(set) var isSharing = false
     var onChange: (Bool) -> Void = { _ in }
 
@@ -87,7 +89,7 @@ final class ScreenShareWatch {
     }
 
     private func check() {
-        guard !Dormancy.shouldSkip() else { return }
+        guard isSharing || !poller.shouldSkip() else { return }
         guard let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
             as? [[String: Any]]
         else { return }

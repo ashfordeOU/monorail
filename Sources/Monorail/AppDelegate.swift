@@ -133,6 +133,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let dockPreview = DockPreview()
     private let gapHandles = GapHandles()
     private var awakeTicker: Timer?
+    /// Every 4 s while you're at the Mac, every 16 s while you're away.
+    private var barAsidePoller = RestingPoller(every: 4)
     private var barAsideTimer: Timer?
     private var scriptsOn = false
     private let statusMenu = NSMenu()
@@ -306,7 +308,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self?.sliderBar.update() }
         }
         barAsideTimer = Timer.every(4) { [weak self] _ in
-            guard let self, self.store.settings.sliderBarStepsAside, self.store.settings.sliderBar == .always else { return }
+            guard let self, self.store.settings.sliderBarStepsAside, self.store.settings.sliderBar == .always,
+                !self.barAsidePoller.shouldSkip()
+            else { return }
             self.sliderBar.update()
         }
         sliderBar.mapsProvider = { [weak self] in

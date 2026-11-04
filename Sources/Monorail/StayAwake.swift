@@ -202,7 +202,8 @@ final class StayAwake {
 
     private func tickActivity() {
         let settings = self.settings()
-        let idle = CGEventSource.secondsSinceLastEventType(.hidSystemState, eventType: CGEventType(rawValue: ~0)!)
+        // The person's own idle time: Monorail's pointer nudges don't count as being at the Mac.
+        let idle = UserIdle.seconds
         if settings.awakeLockAfterMinutes > 0, idle >= Double(settings.awakeLockAfterMinutes) * 60 {
             Self.lockScreen()
             return
@@ -258,6 +259,7 @@ final class StayAwake {
     /// One point there and back: invisible, but enough for chat apps to see you're around.
     private static func nudgeCursor() {
         guard let location = CGEvent(source: nil)?.location else { return }
+        UserIdle.noteNudge()
         for point in [CGPoint(x: location.x + 1, y: location.y), location] {
             CGEvent(mouseEventSource: CGEventSource(stateID: .hidSystemState), mouseType: .mouseMoved,
                     mouseCursorPosition: point, mouseButton: .left)?

@@ -6,7 +6,15 @@ set -euo pipefail
 pid="$(pgrep -x Monorail | head -n1 || true)"
 [ -n "$pid" ] || { echo "Monorail isn't running. Open it, then run this again."; exit 1; }
 seconds="${1:-60}"
-version="$(defaults read /Applications/Monorail.app/Contents/Info CFBundleShortVersionString 2>/dev/null || echo "?")"
+# The version of the copy that's running (not the one on disk, which may have been updated since).
+app="$(ps -o comm= -p "$pid" | sed 's#/Contents/MacOS/.*##')"
+version="$(defaults read "$app/Contents/Info" CFBundleShortVersionString 2>/dev/null || echo "?")"
+started="$(LC_ALL=C date -j -f '%a %b %d %T %Y' "$(ps -o lstart= -p "$pid" | xargs)" +%s 2>/dev/null || true)"
+changed="$(stat -f %m "$app/Contents/Info.plist" 2>/dev/null || true)"
+if [ -n "$started" ] && [ -n "$changed" ] && [ "$started" -lt "$changed" ]; then
+  echo "Monorail was updated after it started: quit and reopen it, then run this again." >&2
+  exit 1
+fi
 model="$(sysctl -n hw.model)"; cores="$(sysctl -n hw.ncpu)"
 power="$(pmset -g batt | grep -q "Battery Power" && echo "on battery" || echo "on power")"
 tosec() { awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print $1*3600+$2*60+$3+$4/100 }'; }

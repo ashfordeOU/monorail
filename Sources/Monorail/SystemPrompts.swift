@@ -27,12 +27,18 @@ final class SystemPrompts {
     var onChange: (Bool) -> Void = { _ in }
 
     private var timer: Timer?
+    /// Every second while you're at the Mac; every 5 s while you're away (a prompt also brings
+    /// its app forward, which checks at once).
+    private var poller = RestingPoller(every: 5)
     private var placed: Set<Int> = []
     private let ownPID = ProcessInfo.processInfo.processIdentifier
 
     func start() {
         timer?.invalidate()
-        timer = Timer.every(1.0) { [weak self] _ in self?.check() }
+        timer = Timer.every(1.0) { [weak self] _ in
+            guard let self else { return }
+            if self.isUp || !self.poller.shouldSkip() { self.check() }
+        }
         let center = NSWorkspace.shared.notificationCenter
         for name in [NSWorkspace.didActivateApplicationNotification, NSWorkspace.didLaunchApplicationNotification] {
             center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in

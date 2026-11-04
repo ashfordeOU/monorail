@@ -30,6 +30,52 @@ enum Dormancy {
     }
 }
 
+/// How long since a person last touched the keyboard, mouse or trackpad. Monorail's own
+/// pointer nudges (Keep me Available) reset the system's idle time, so they're left out here:
+/// otherwise Monorail would think someone is always at the Mac and never rest.
+enum UserIdle {
+    /// When Monorail last nudged the pointer, and when the person last did something before that.
+    private static var lastNudge: CFTimeInterval = 0
+    private static var lastRealInput: CFTimeInterval = 0
+
+    private static func systemIdle() -> Double {
+        CGEventSource.secondsSinceLastEventType(.hidSystemState, eventType: CGEventType(rawValue: ~0)!)
+    }
+
+    /// Call just before posting a pointer nudge.
+    static func noteNudge() {
+        let now = CACurrentMediaTime()
+        let lastInput = now - systemIdle()
+        // If the newest input was itself a nudge, the person's last input is still the one before.
+        if lastNudge == 0 || abs(lastInput - lastNudge) > 1.5 { lastRealInput = lastInput }
+        lastNudge = now
+    }
+
+    static var seconds: Double {
+        let idle = systemIdle()
+        let now = CACurrentMediaTime()
+        if lastNudge > 0, abs((now - idle) - lastNudge) <= 1.5 { return now - lastRealInput }
+        return idle
+    }
+
+    /// Nobody has touched the Mac for a minute.
+    static var isAway: Bool { seconds >= 60 }
+}
+
+/// A poller that runs every round while someone is at the Mac, and one round in `every`
+/// while nobody is (or while the Mac is asleep, never).
+struct RestingPoller {
+    let every: Int
+    private var tick = 0
+    init(every: Int) { self.every = max(every, 1) }
+
+    mutating func shouldSkip() -> Bool {
+        if Dormancy.shouldSkip() { return true }
+        tick &+= 1
+        return UserIdle.isAway && tick % every != 0
+    }
+}
+
 /// How much Monorail has cost since launch, for Settings → About.
 enum EnergyReport {
     static let launched = Date()

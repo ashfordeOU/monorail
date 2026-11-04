@@ -202,7 +202,7 @@ final class Engine {
             // While nobody's at the Mac, check a quarter as often: reading the Dock is the most
             // expensive thing Monorail does when idle. Assistants are still noticed within ~12 s.
             self.attentionTicks &+= 1
-            let idle = CGEventSource.secondsSinceLastEventType(.hidSystemState, eventType: CGEventType(rawValue: ~0)!)
+            let idle = UserIdle.seconds
             guard idle < 60 || self.attentionTicks % 4 == 0 else { return }
             if idle < 60 || self.attentionTicks % 8 == 0 { self.refreshAttention() }
             self.refreshAgents()
@@ -2334,8 +2334,11 @@ final class Engine {
     }
 
     private func window(for element: AXUIElement) -> ManagedWindow? {
+        // Comparing elements is local; asking for the window number is a round trip to the app,
+        // so it's only the fallback (an element that came back as a different object).
+        if let window = windows.values.first(where: { CFEqual($0.element, element) }) { return window }
         if let id = element.windowID, let window = windows[id] { return window }
-        return windows.values.first { CFEqual($0.element, element) }
+        return nil
     }
 
     // MARK: - Dialogs
@@ -2768,7 +2771,8 @@ final class Engine {
     /// column width; dropping a dragged window moves its column to where it
     /// was dropped. Either way the layout is re-applied after mouse-up.
     private func userMovedOrResized(_ element: AXUIElement, resized: Bool) {
-        if let window = window(for: element), window.key == nil, window.id != scratchpad {
+        let found = window(for: element)
+        if let window = found, window.key == nil, window.id != scratchpad {
             // Dragging a stashed window out takes it out of the stash, where it was dropped.
             if stashes[window.id] != nil {
                 guard NSEvent.pressedMouseButtons != 0 else { return }
@@ -2786,12 +2790,12 @@ final class Engine {
                 whenMouseIsUp { [weak self] in self?.finishFloatingDock(window) }
             }
         }
-        if !resized, !animator.isRunning, NSEvent.pressedMouseButtons != 0, let window = window(for: element),
+        if !resized, !animator.isRunning, NSEvent.pressedMouseButtons != 0, let window = found,
             CACurrentMediaTime() - window.appliedAt > 0.3
         {
             onWindowDrag(window.id)
         }
-        guard !animator.isRunning, let window = window(for: element),
+        guard !animator.isRunning, let window = found,
             CACurrentMediaTime() - window.appliedAt > 0.3, let key = window.key, let applied = window.lastApplied,
             let frame = element.frame
         else { return }
@@ -6097,17 +6101,28 @@ final class Engine {
 
     /// Ten times a second while anything is stashed: the pointer at a sliver slides its window
     /// out; once the pointer has left a revealed window (and it doesn't have focus), it slides back.
+    /// Where the pointer was on the last stash check, and how many checks have run.
+    private var stashPointer: CGPoint?
+    private var stashTicks = 0
+
     private func trackStashes() {
         guard isRunning, !isPaused else { return }
         guard !stashes.isEmpty else { return stopStashTimer() }
         let location = NSEvent.mouseLocation
+        stashTicks &+= 1
+        // Nothing to do while every stash is tucked away and the pointer hasn't moved: no calls
+        // to other apps. Closed windows are still noticed within a couple of seconds.
+        let anyRevealed = stashes.values.contains { $0.revealed }
+        if !anyRevealed, location == stashPointer, stashTicks % 20 != 0 { return }
+        stashPointer = location
         let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
         let point = CGPoint(x: location.x, y: primaryHeight - location.y)
         let now = CACurrentMediaTime()
         var focusedID: WindowID?
         var checkedFocus = false
+        let checkAlive = anyRevealed || stashTicks % 10 == 0
         for (id, stash) in stashes {
-            guard let window = windows[id], window.element.isAlive, let display = stashDisplay(stash) else {
+            guard let window = windows[id], !checkAlive || window.element.isAlive, let display = stashDisplay(stash) else {
                 stashes[id] = nil
                 continue
             }

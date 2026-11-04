@@ -6,6 +6,16 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.24] - 2026-11-04
+
+### Changed
+- **Even lighter while you're away.** Measured with a profile on a MacBook Pro: the checks for system prompts, screen sharing and the slider bar now run a fifth to a third as often when nobody is at the Mac, and stashed windows cost nothing while the pointer is still.
+- **Fewer calls to other apps.** Monorail recognises a window it already manages without asking the app, which makes moving and resizing windows cheaper too.
+
+### Fixed
+- **Lock after idle works with Keep me Available.** Monorail's own tiny pointer moves no longer count as you being at the Mac.
+- **The performance check measures the copy that's running,** and asks you to reopen Monorail if it was updated since it started.
+
 ## [1.7.23] - 2026-11-04
 
 ### Changed

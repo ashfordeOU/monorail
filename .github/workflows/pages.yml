@@ -5,7 +5,7 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "assets/**", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
+    paths: ["site/**", "assets/**", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -34,7 +34,11 @@ jobs:
           cp site/index.html public/404.html
           printf 'User-agent: *\nAllow: /\nSitemap: https://monorail.ashforde.org/sitemap.xml\n' > public/robots.txt
           base=https://monorail.ashforde.org
-          printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>%s/</loc></url><url><loc>%s/press/</loc></url><url><loc>%s/stats/</loc></url><url><loc>%s/keeper/</loc></url><url><loc>%s/support/</loc></url><url><loc>%s/privacy/</loc></url></urlset>\n' "$base" "$base" "$base" "$base" "$base" "$base" > public/sitemap.xml
+          {
+            printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+            for page in "" download/ changelog/ press/ stats/ keeper/ support/ privacy/; do printf '<url><loc>%s/%s</loc></url>' "$base" "$page"; done
+            printf '</urlset>\n'
+          } > public/sitemap.xml
           # The press kit: screenshots, icon, the docking GIF and the fact sheet, in one zip.
           kit=$(mktemp -d)/Monorail-press-kit
           mkdir -p "$kit/screenshots"
@@ -44,6 +48,218 @@ jobs:
           cp site/icons/icon-512.png "$kit/monorail-icon-512.png"
           cp docs/launch/FACT-SHEET.md "$kit/FACT-SHEET.md"
           (cd "$(dirname "$kit")" && zip -qr "$GITHUB_WORKSPACE/public/press/monorail-press-kit.zip" Monorail-press-kit)
+      - name: Build the changelog page
+        # CHANGELOG.md (Keep a Changelog) becomes /changelog/ in the site's look:
+        # headings, nested bullet lists, paragraphs, **bold**, [links](…) and `code`, all HTML-escaped.
+        run: |
+          mkdir -p public/changelog
+          python3 - CHANGELOG.md public/changelog/index.html <<'PY'
+          import datetime, html, re, sys
+
+          src, dest = sys.argv[1], sys.argv[2]
+          lines = open(src, encoding="utf-8").read().splitlines()
+          REPO = "https://github.com/ashfordeOU/monorail"
+
+          def inline(text):
+              codes = []
+              def keep(m):
+                  codes.append("<code>" + html.escape(m.group(1)) + "</code>")
+                  return "\x00%d\x00" % (len(codes) - 1)
+              text = re.sub(r"`([^`]+)`", keep, text)
+              text = html.escape(text, quote=True)
+              def link(m):
+                  href = m.group(2)
+                  if not re.match(r"(https?://|mailto:|#|\.{0,2}/)", href):
+                      return m.group(0)
+                  return '<a href="%s">%s</a>' % (href, m.group(1))
+              text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", link, text)
+              text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
+              text = re.sub(r"(?<![\w*])\*([^*\s][^*]*?)\*(?![\w*])", r"<em>\1</em>", text)
+              return re.sub("\x00(\\d+)\x00", lambda m: codes[int(m.group(1))], text)
+
+          intro, releases = [], []
+          cur = None            # the release being built: dict(version, date, body=[])
+          out = intro           # where the next HTML goes
+          stack = []            # indent levels of the open <ul>s
+          item = None           # text of the list item being read
+          para = []             # lines of the paragraph being read
+
+          def flush_item():
+              global item
+              if item is not None:
+                  out.append(inline(item))
+                  item = None
+          def flush_para():
+              if para:
+                  out.append("<p>" + inline(" ".join(para)) + "</p>")
+                  para.clear()
+          def close_lists():
+              flush_item()
+              while stack:
+                  out.append("</li></ul>")
+                  stack.pop()
+          def close_all():
+              close_lists()
+              flush_para()
+
+          for raw in lines:
+              line = raw.rstrip()
+              m_item = re.match(r"^( *)[-*+] +(.*)$", line)
+              if not line.strip():
+                  flush_item(); flush_para()
+              elif line.startswith("# "):
+                  close_all()
+              elif line.startswith("## "):
+                  close_all()
+                  m = re.match(r"^## +\[?([^\]]+?)\]?(?: +[-–] +(\d{4}-\d{2}-\d{2}))?\s*$", line)
+                  version, date = (m.group(1), m.group(2)) if m else (line[3:].strip(), None)
+                  cur = {"version": version, "date": date, "body": []}
+                  releases.append(cur)
+                  out = cur["body"]
+              elif re.match(r"^#{3,6} ", line):
+                  close_all()
+                  out.append("<h3>" + inline(line.lstrip("#").strip()) + "</h3>")
+              elif m_item:
+                  flush_para(); flush_item()
+                  level = len(m_item.group(1)) // 2
+                  while stack and stack[-1] > level:
+                      out.append("</li></ul>")
+                      stack.pop()
+                  if stack and stack[-1] == level:
+                      out.append("</li><li>")
+                  else:
+                      out.append("<ul><li>")
+                      stack.append(level)
+                  item = m_item.group(2)
+              elif item is not None and raw.startswith(" "):
+                  item += " " + line.strip()
+              else:
+                  close_lists()
+                  para.append(line.strip())
+          close_all()
+
+          def slug(v):
+              return "v" + re.sub(r"[^0-9A-Za-z.]+", "-", v).strip("-") if re.match(r"\d", v) else re.sub(r"[^a-z0-9]+", "-", v.lower()).strip("-")
+          def nice(d):
+              day = datetime.date.fromisoformat(d)
+              return "%d %s %d" % (day.day, day.strftime("%B"), day.year)
+
+          releases = [r for r in releases if "".join(r["body"]).strip()]
+          articles, chips = [], []
+          for i, r in enumerate(releases):
+              v, sid = html.escape(r["version"]), slug(r["version"])
+              numbered = bool(re.match(r"\d", r["version"]))
+              meta, badge = [], ""
+              if i == 0 and numbered:
+                  badge = '<span class="latest">Latest</span> '
+              if r["date"]:
+                  meta.append('<time datetime="%s">%s</time>' % (r["date"], nice(r["date"])))
+              if numbered:
+                  meta.append('<a href="%s/releases/tag/%s">On GitHub</a>' % (REPO, sid))
+              articles.append('<article class="rel" id="%s"><header><h2><a href="#%s">%s</a></h2><p class="meta">%s</p></header><div class="body">%s</div></article>'
+                              % (sid, sid, v, badge + " · ".join(meta), "\n".join(r["body"])))
+              chips.append('<a href="#%s">%s</a>' % (sid, v))
+          latest = releases[0] if releases else None
+
+          page = """<!doctype html>
+          <html lang="en">
+          <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Monorail Changelog</title>
+          <meta name="description" content="Every Monorail release, newest first: what was added, changed and fixed in the scrolling window manager for Mac.">
+          <link rel="canonical" href="https://monorail.ashforde.org/changelog/">
+          <link rel="icon" href="../favicon.ico" sizes="48x48">
+          <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+          <meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
+          <meta name="theme-color" content="#120914" media="(prefers-color-scheme: dark)">
+          <script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+          <style>
+          :root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --coral:#FF9E62; --pink:#F66270; --plum:#D63A80; --link:#D63A80; --ok:#177A45; color-scheme:light; }
+          @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; } }
+          :root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; }
+          * { box-sizing:border-box; }
+          html { scroll-behavior:smooth; }
+          body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+          a { color:var(--link); }
+          .wrap { max-width:900px; margin:0 auto; padding:0 16px; }
+          .top { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:22px 0; }
+          .brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; white-space:nowrap; }
+          .brand img { width:30px; height:30px; border-radius:8px; }
+          .top nav { display:flex; flex-wrap:wrap; gap:6px 16px; margin-left:auto; font-size:15px; }
+          .top nav a { color:var(--muted); text-decoration:none; }
+          @media (max-width:560px) { .top nav { order:3; width:100%; margin-left:0; } .top .btn { margin-left:auto; } }
+          .top nav a:hover, .top nav a[aria-current] { color:var(--ink); }
+          .btn { display:inline-flex; align-items:center; padding:9px 18px; border-radius:999px; font-weight:700; font-size:15px; text-decoration:none; color:#fff; background:linear-gradient(100deg, var(--pink), var(--plum)); box-shadow:0 8px 22px rgba(214,58,128,.3); }
+          .hero { padding:40px 0 8px; }
+          .kicker { font-weight:800; font-size:13px; line-height:1; letter-spacing:2px; text-transform:uppercase; color:var(--link); }
+          h1 { font-size:clamp(36px, 7vw, 60px); line-height:1.04; letter-spacing:-1.5px; margin:14px 0 12px; }
+          .grad { background:linear-gradient(100deg, var(--coral), var(--pink) 45%, var(--plum)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+          .lede { color:var(--muted); font-size:19px; margin:0; max-width:680px; }
+          .lede p { margin:0 0 6px; }
+          .jump { margin:22px 0 0; }
+          .jump summary { cursor:pointer; font-weight:700; color:var(--muted); font-size:15px; }
+          .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+          .chips a { padding:5px 11px; border-radius:999px; background:var(--card); border:1px solid var(--line); color:var(--ink); text-decoration:none; font-size:13.5px; font-weight:600; font-variant-numeric:tabular-nums; }
+          .chips a:hover { border-color:var(--pink); }
+          .rel { margin-top:22px; padding:clamp(18px, 3.5vw, 30px); border-radius:20px; background:var(--card); border:1px solid var(--line); scroll-margin-top:16px; }
+          .rel header { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; }
+          .rel h2 { margin:0; font-size:clamp(24px, 4vw, 30px); letter-spacing:-.5px; line-height:1.2; }
+          .rel h2 a { color:var(--ink); text-decoration:none; }
+          .rel h2 a:hover { color:var(--link); }
+          .meta { margin:0; color:var(--muted); font-size:14.5px; }
+          .meta a { color:var(--muted); }
+          .latest { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--ok); background:color-mix(in srgb, var(--ok) 14%, transparent); }
+          .body { overflow-wrap:anywhere; }
+          .body > p { color:var(--muted); margin:12px 0 0; }
+          .body h3 { margin:22px 0 8px; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--link); }
+          .body ul { margin:0; padding-left:22px; }
+          .body li { margin:7px 0; }
+          .body li::marker { color:var(--plum); }
+          .body li ul { margin-top:4px; }
+          .body li li { margin:4px 0; color:var(--muted); font-size:16px; }
+          code { font:.86em/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--soft); padding:1px 6px; border-radius:6px; }
+          footer { padding:48px 0 44px; color:var(--muted); font-size:14px; }
+          footer nav { display:flex; flex-wrap:wrap; gap:6px 18px; margin-bottom:10px; }
+          footer a { color:var(--muted); }
+          @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+          </style>
+          </head>
+          <body>
+          <div class="wrap">
+            <header class="top">
+              <a class="brand" href="../"><img src="../assets/icon.png" alt="" width="30" height="30">Monorail</a>
+              <nav aria-label="Site"><a href="../#features">Features</a><a href="./" aria-current="page">Changelog</a><a href="../support/">Support</a><a href="../privacy/">Privacy</a></nav>
+              <a class="btn" href="../download/">Download</a>
+            </header>
+            <main>
+              <section class="hero">
+                <div class="kicker">Changelog</div>
+                <h1>What's <span class="grad">new</span></h1>
+                <div class="lede">@@INTRO@@</div>
+                @@LATEST@@
+                <details class="jump"><summary>Every version (@@COUNT@@)</summary><nav class="chips" aria-label="Versions">@@CHIPS@@</nav></details>
+              </section>
+              @@ARTICLES@@
+            </main>
+            <footer>
+              <nav aria-label="More"><a href="../">Monorail</a><a href="../download/">Download</a><a href="../privacy/">Privacy</a><a href="../support/">Support</a><a href="@@REPO@@/blob/main/CHANGELOG.md">CHANGELOG.md on GitHub</a><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></nav>
+              <p>© Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ. The Monorail name and icon are trademarks of Ashforde OÜ.</p>
+            </footer>
+          </div>
+          </body>
+          </html>
+          """
+          latestline = ""
+          if latest and re.match(r"\d", latest["version"]):
+              latestline = '<p class="lede" style="margin-top:10px;font-size:16px">Latest: <a href="#%s">%s</a>%s</p>' % (
+                  slug(latest["version"]), html.escape(latest["version"]), " · " + nice(latest["date"]) if latest["date"] else "")
+          for key, value in (("@@REPO@@", REPO), ("@@INTRO@@", "\n".join(intro)), ("@@LATEST@@", latestline),
+                             ("@@COUNT@@", str(len(chips))), ("@@CHIPS@@", "".join(chips)), ("@@ARTICLES@@", "\n".join(articles))):
+              page = page.replace(key, value)
+          open(dest, "w", encoding="utf-8").write(page)
+          print("changelog: %d releases" % len(releases))
+          PY
       - uses: actions/configure-pages@v5
         with:
           # Turns Pages on (source: GitHub Actions) the first time, if the token is allowed to.

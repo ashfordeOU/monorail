@@ -105,6 +105,7 @@ jobs:
           $code = $LASTEXITCODE
           Write-Host ("Without swiftCore.dll: exit code 0x{0:X8}" -f $code)
           if ($code -eq 0) { throw "Monorail.exe started without swiftCore.dll, so the toolchain is still reachable and the check above proves nothing" }
+          exit 0  # the failure above was the expected one
       - name: Self-check as a standard user (Basic User token, no administrator rights)
         timeout-minutes: 5
         run: |
@@ -131,6 +132,7 @@ jobs:
           if (-not (Select-String -Path "$out\self-check.txt" -Pattern "administrator: no" -SimpleMatch -Quiet)) {
             throw "the standard-user run still had administrator rights"
           }
+          exit 0
       - name: UI test from the unzipped folder (release build, toolchain off PATH, real Notepad windows)
         timeout-minutes: 10
         run: |

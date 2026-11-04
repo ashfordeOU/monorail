@@ -3372,7 +3372,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             view.practiceWindows = { [weak self] open in
                 if open { self?.openDemoWindows() } else { self?.closeDemoWindows() }
             }
-            let window = NSWindow(contentViewController: NSHostingController(rootView: view))
+            // Never taller than the screen: on a laptop the tour scrolls inside its window
+            // instead of running under the Dock.
+            let ideal = NSHostingView(rootView: view).fittingSize.height
+            let room = (NSScreen.main ?? NSScreen.screens.first)?.visibleFrame.height ?? 800
+            let height = min(ideal, max(room - 60, 400))
+            let root = ScrollView(.vertical) { view }.frame(width: 560, height: height)
+            let window = NSWindow(contentViewController: NSHostingController(rootView: root))
             window.title = "Welcome to \(Brand.full)"
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false

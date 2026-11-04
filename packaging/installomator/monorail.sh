@@ -5,7 +5,7 @@
 monorail)
     name="Monorail"
     type="pkg"
-    packageID="org.ashforde.macslider"
+    packageID="org.ashforde.monorail"
     downloadURL="$(downloadURLFromGit ashfordeOU monorail)"
     appNewVersion="$(versionFromGit ashfordeOU monorail)"
     expectedTeamID="D69G45342Y"

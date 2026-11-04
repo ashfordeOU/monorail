@@ -1,12 +1,15 @@
 #if os(Windows)
 import Foundation
+import MonorailCore
+import MonorailEngine
 import WinSDK
 
 /// Monorail's icon in the notification area (the tray), with its menu: pause and resume, open
-/// the settings file, reload it, quit. Clicking the icon (either button) opens the menu.
+/// the settings file, reload it, Stay Awake, quit. Clicking the icon (either button) opens the menu.
 enum WindowsTray {
     enum Command: Int {
         case togglePause = 1, openSettings, reloadSettings, quit
+        case awakeOff = 10, awakeHour, awakeUntilTurnedOff, awakeKeepChatAvailable
     }
 
     /// Called with the menu item chosen.
@@ -90,7 +93,15 @@ enum WindowsTray {
             (.quit, "Quit Monorail"),
         ]
         for (command, title) in items {
-            if command == .quit { _ = AppendMenuW(menu, UINT(MF_SEPARATOR), 0, nil) }
+            if command == .quit {
+                _ = AppendMenuW(menu, UINT(MF_SEPARATOR), 0, nil)
+                if let awake = awakeMenu() {
+                    _ = WindowsStayAwake.describe().withCString(encodedAs: UTF16.self) {
+                        AppendMenuW(menu, UINT(MF_STRING | MF_POPUP), UINT_PTR(UInt(bitPattern: Int(bitPattern: UnsafeMutableRawPointer(awake)))), $0)
+                    }
+                    _ = AppendMenuW(menu, UINT(MF_SEPARATOR), 0, nil)
+                }
+            }
             _ = title.withCString(encodedAs: UTF16.self) { AppendMenuW(menu, UINT(MF_STRING), UINT_PTR(command.rawValue), $0) }
         }
         var point = POINT()
@@ -100,6 +111,31 @@ enum WindowsTray {
         // The chosen item arrives as WM_COMMAND (handled in trayProc).
         _ = TrackPopupMenu(menu, UINT(TPM_RIGHTBUTTON), point.x, point.y, 0, window, nil)
         _ = PostMessageW(window, UINT(WM_NULL), 0, 0)
+    }
+
+    /// Stay Awake's submenu: off, for an hour, until turned off, and keeping chat apps available.
+    /// Destroyed with the menu it's added to.
+    private static func awakeMenu() -> HMENU? {
+        guard let menu = CreatePopupMenu() else { return nil }
+        let settings = WindowsStayAwake.settings
+        let mode: Command
+        switch settings.session() {
+        case nil: mode = .awakeOff
+        case .until?: mode = .awakeHour
+        default: mode = .awakeUntilTurnedOff
+        }
+        let items: [(Command, String, Bool)] = [
+            (.awakeOff, "Off", mode == .awakeOff),
+            (.awakeHour, "For 1 Hour", mode == .awakeHour),
+            (.awakeUntilTurnedOff, "Until Turned Off", mode == .awakeUntilTurnedOff),
+            (.awakeKeepChatAvailable, "Keep Chat Apps Showing Me as Available", settings.keepChatAvailable),
+        ]
+        for (command, title, checked) in items {
+            if command == .awakeKeepChatAvailable { _ = AppendMenuW(menu, UINT(MF_SEPARATOR), 0, nil) }
+            let flags = UINT(MF_STRING) | (checked ? UINT(MF_CHECKED) : 0)
+            _ = title.withCString(encodedAs: UTF16.self) { AppendMenuW(menu, flags, UINT_PTR(command.rawValue), $0) }
+        }
+        return menu
     }
 
     fileprivate static func chose(_ id: Int) {

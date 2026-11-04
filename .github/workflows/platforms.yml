@@ -47,6 +47,123 @@ jobs:
           path: windows-ui-test.json
           if-no-files-found: ignore
 
+  # The portable Windows build: no installer, no admin, "unzip and run Monorail.exe" (like
+  # Caffeine). Built in release, packaged with every DLL it loads (found by dumpbin, not
+  # guessed), then proved portable: run from the unzipped, read-only folder with the Swift
+  # toolchain off PATH, and again with a standard user's token.
+  portable-windows:
+    name: Portable package (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: compnerd/gha-setup-swift@main
+        with:
+          branch: swift-6.1-release
+          tag: 6.1-RELEASE
+      - name: Build Monorail for Windows (release)
+        # The Swift runtime is bundled next to the exe rather than linked statically: static
+        # linking of the runtime and Foundation isn't supported by the 6.1 Windows toolchain.
+        run: swift build -c release --product MonorailWindows
+      - name: Assemble Monorail-Windows-portable (Monorail.exe, its DLLs, README.txt) and zip it
+        run: ./windows/portable/package.ps1
+      - name: Unzip into a fresh read-only folder, as someone would from Downloads
+        run: |
+          $test = "$env:RUNNER_TEMP\portable"
+          Remove-Item $test -Recurse -Force -ErrorAction SilentlyContinue
+          Expand-Archive Monorail-Windows-portable.zip -DestinationPath $test
+          $dir = "$test\Monorail-Windows-portable"
+          Get-ChildItem $dir | Format-Table Name, Length
+          # Readable and runnable by everyone (the standard-user run below), writable by nobody:
+          # Monorail must never write next to its exe.
+          icacls $test /grant "*S-1-1-0:(OI)(CI)RX" | Out-Null
+          icacls $dir /deny "*S-1-1-0:(OI)(CI)(W,DC)" | Out-Null
+          icacls $dir
+          "PORTABLE_DIR=$dir" >> $env:GITHUB_ENV
+      - name: Self-check from the unzipped folder, with the Swift toolchain off PATH
+        timeout-minutes: 5
+        run: |
+          # No "missing DLL" dialog box: a missing DLL must fail the step, not wait for a click.
+          Add-Type -Namespace Win32 -Name ErrorMode -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetErrorMode(uint mode);'
+          [Win32.ErrorMode]::SetErrorMode(0x8003) | Out-Null
+          $env:Path = "C:\Windows\System32;C:\Windows"
+          Set-Location $env:RUNNER_TEMP
+          & "$env:PORTABLE_DIR\Monorail.exe" --self-check
+          if ($LASTEXITCODE -ne 0) { throw ("Monorail.exe --self-check failed: exit code 0x{0:X8}" -f $LASTEXITCODE) }
+      - name: The check catches a missing DLL (proves the toolchain really is off PATH)
+        timeout-minutes: 5
+        run: |
+          Add-Type -Namespace Win32 -Name ErrorMode -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetErrorMode(uint mode);'
+          [Win32.ErrorMode]::SetErrorMode(0x8003) | Out-Null
+          $broken = "$env:RUNNER_TEMP\portable-broken"
+          Remove-Item $broken -Recurse -Force -ErrorAction SilentlyContinue
+          Expand-Archive Monorail-Windows-portable.zip -DestinationPath $broken
+          Remove-Item "$broken\Monorail-Windows-portable\swiftCore.dll"
+          $env:Path = "C:\Windows\System32;C:\Windows"
+          & "$broken\Monorail-Windows-portable\Monorail.exe" --self-check
+          $code = $LASTEXITCODE
+          Write-Host ("Without swiftCore.dll: exit code 0x{0:X8}" -f $code)
+          if ($code -eq 0) { throw "Monorail.exe started without swiftCore.dll, so the toolchain is still reachable and the check above proves nothing" }
+      - name: Self-check as a standard user (Basic User token, no administrator rights)
+        timeout-minutes: 5
+        run: |
+          $out = "$env:RUNNER_TEMP\standard-user"
+          New-Item -ItemType Directory $out -Force | Out-Null
+          icacls $out /grant "*S-1-1-0:(OI)(CI)F" | Out-Null
+          @(
+            '@echo off',
+            'set PATH=C:\Windows\System32;C:\Windows',
+            "cd /d `"$out`"",
+            "`"$env:PORTABLE_DIR\Monorail.exe`" --self-check > `"$out\self-check.txt`" 2>&1",
+            "echo %ERRORLEVEL%> `"$out\exit.txt`""
+          ) | Set-Content "$out\run.cmd" -Encoding ascii
+          # runas /trustlevel:0x20000 starts it with the Administrators group removed, as on an
+          # IT-managed PC where the user isn't an administrator.
+          runas /trustlevel:0x20000 "cmd /c $out\run.cmd"
+          $deadline = (Get-Date).AddSeconds(90)
+          while (-not (Test-Path "$out\exit.txt") -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 1 }
+          Start-Sleep -Seconds 1
+          if (Test-Path "$out\self-check.txt") { Get-Content "$out\self-check.txt" }
+          if (-not (Test-Path "$out\exit.txt")) { throw "the standard-user run didn't finish" }
+          $code = [int](Get-Content "$out\exit.txt" -Raw).Trim()
+          if ($code -ne 0) { throw "Monorail.exe --self-check as a standard user failed: exit code $code" }
+          if (-not (Select-String -Path "$out\self-check.txt" -Pattern "administrator: no" -SimpleMatch -Quiet)) {
+            throw "the standard-user run still had administrator rights"
+          }
+      - name: UI test from the unzipped folder (release build, toolchain off PATH, real Notepad windows)
+        timeout-minutes: 10
+        run: |
+          Add-Type -Namespace Win32 -Name ErrorMode -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetErrorMode(uint mode);'
+          [Win32.ErrorMode]::SetErrorMode(0x8003) | Out-Null
+          $env:Path = "C:\Windows\System32;C:\Windows"
+          Set-Location $env:GITHUB_WORKSPACE
+          & "$env:PORTABLE_DIR\Monorail.exe" --ci-test
+          if ($LASTEXITCODE -ne 0) { throw "Monorail.exe --ci-test failed: exit code $LASTEXITCODE" }
+      - name: Keep the portable zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: Monorail-Windows-portable
+          path: Monorail-Windows-portable.zip
+          retention-days: 30
+          if-no-files-found: error
+      - name: Keep the DLL list and the UI test's report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-portable-report
+          path: |
+            Monorail-Windows-portable-dlls.txt
+            windows-ui-test.json
+          retention-days: 30
+          if-no-files-found: ignore
+      # A future Windows beta release (needs the owner's approval, and ideally code signing first)
+      # would attach Monorail-Windows-portable.zip to the GitHub Release here, for example:
+      #   - name: Attach the portable zip to the beta release
+      #     if: startsWith(github.ref, 'refs/tags/windows-beta-')
+      #     env:
+      #       GH_TOKEN: ${{ github.token }}   # and `permissions: contents: write` on this job
+      #     run: gh release upload "$env:GITHUB_REF_NAME" Monorail-Windows-portable.zip --clobber
+
   core-ts:
     name: TypeScript core (Linux, for GNOME and KDE)
     runs-on: ubuntu-latest

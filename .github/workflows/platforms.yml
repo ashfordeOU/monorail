@@ -117,7 +117,7 @@ jobs:
             'set PATH=C:\Windows\System32;C:\Windows',
             "cd /d `"$out`"",
             "`"$env:PORTABLE_DIR\Monorail.exe`" --self-check > `"$out\self-check.txt`" 2>&1",
-            "echo %ERRORLEVEL%> `"$out\exit.txt`""
+            "> `"$out\exit.txt`" echo %ERRORLEVEL%"  # redirect first: 'echo 0> file' would redirect handle 0
           ) | Set-Content "$out\run.cmd" -Encoding ascii
           # runas /trustlevel:0x20000 starts it with the Administrators group removed, as on an
           # IT-managed PC where the user isn't an administrator.
@@ -132,7 +132,7 @@ jobs:
           if (Test-Path "$out\self-check.txt") { Get-Content "$out\self-check.txt" }
           if ($null -eq $code) { throw "the standard-user run didn't finish" }
           if ($code -ne 0) { throw "Monorail.exe --self-check as a standard user failed: exit code $code" }
-          if (-not (Select-String -Path "$out\self-check.txt" -Pattern "administrator: no" -SimpleMatch -Quiet)) {
+          if (-not (Select-String -Path "$out\self-check.txt" -Pattern "administrator rights: no" -SimpleMatch -Quiet)) {
             throw "the standard-user run still had administrator rights"
           }
           exit 0

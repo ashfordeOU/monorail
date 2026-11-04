@@ -20,7 +20,7 @@ enum WindowsSelfCheck {
         let exe = executablePath()
         print("Monorail for Windows (beta) self-check")
         print("exe: \(exe)")
-        print("administrator: \(isAdministrator() ? "yes" : "no"), elevated: \(isElevated() ? "yes" : "no")")
+        print("administrator rights: \(isAdministrator() ? "yes" : "no") (token marked elevated: \(isElevated() ? "yes" : "no"))")
 
         // Settings are per user, so Monorail runs from a read-only or unzipped Downloads folder.
         let settings = WindowsSettings.url

@@ -53,8 +53,8 @@ jobs:
           git checkout -B main origin/main
           before="$(git rev-list --count main)"
           git tag > "$RUNNER_TEMP/tags.txt"
-          # Keeps every author, committer, date, message and tree; only adds the signature.
-          git filter-branch -f --commit-filter 'git commit-tree -S "$@"' --tag-name-filter cat -- main --tags
+          # Keeps every author, committer, date and tree; adds the signature and drops tool attribution lines.
+          git filter-branch -f --msg-filter 'sed -E "/^(Co-Authored-By|Co-authored-by): .*(Claude|anthropic)/d; /^Claude-Session:/d"' --commit-filter 'git commit-tree -S "$@"' --tag-name-filter cat -- main --tags
           after="$(git rev-list --count main)"
           [ "$before" = "$after" ] || { echo "::error::commit count changed ($before -> $after)"; exit 1; }
           # Every commit must carry a good signature from exactly this key.

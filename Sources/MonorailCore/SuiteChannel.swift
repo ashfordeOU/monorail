@@ -1,5 +1,7 @@
 import Foundation
-#if canImport(Glibc)
+#if os(Windows)
+import WinSDK
+#elseif canImport(Glibc)
 import Glibc
 #endif
 
@@ -102,12 +104,14 @@ public final class SuiteChannel {
         let temporary = url.deletingLastPathComponent().appendingPathComponent(".\(url.lastPathComponent).\(UUID().uuidString).tmp")
         guard (try? data.write(to: temporary)) != nil else { return }
         #if os(Windows)
-        // Windows' rename won't replace an existing file; ReplaceFile (behind replaceItemAt) does.
-        let fm = FileManager.default
-        let replaced = fm.fileExists(atPath: url.path)
-            ? (try? fm.replaceItemAt(url, withItemAt: temporary)) != nil
-            : (try? fm.moveItem(at: temporary, to: url)) != nil
-        if !replaced { try? fm.removeItem(at: temporary) }
+        // Windows' rename won't replace an existing file; MoveFileEx with REPLACE_EXISTING does, in one step.
+        func native(_ u: URL) -> String { u.withUnsafeFileSystemRepresentation { $0.map { String(cString: $0) } } ?? u.path }
+        let moved = native(temporary).withCString(encodedAs: UTF16.self) { from in
+            native(url).withCString(encodedAs: UTF16.self) { to in
+                MoveFileExW(from, to, DWORD(MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)).boolValue
+            }
+        }
+        if !moved { try? FileManager.default.removeItem(at: temporary) }
         #else
         // rename(2) replaces the old file in one step: readers see the old or the new, never half.
         if rename(temporary.path, url.path) != 0 { try? FileManager.default.removeItem(at: temporary) }

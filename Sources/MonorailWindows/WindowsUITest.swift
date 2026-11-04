@@ -237,6 +237,19 @@ enum WindowsUITest {
             check(before.allSatisfy { engine.isManaged($0) }, "closing that desktop brings the first desktop's windows back onto the strip")
         }
 
+        // Stay Awake: keeps the PC and display awake, and F15 keeps chat apps seeing input.
+        check(WindowsStayAwake.apply(StayAwakeSettings(mode: .until(Date().addingTimeInterval(3600)))) && WindowsStayAwake.isAwake,
+              "Stay Awake for an hour: SetThreadExecutionState accepted it")
+        Win32WindowSystem.pump(for: 1.2)
+        let sent = WindowsStayAwake.nudge()
+        Win32WindowSystem.pump(for: 0.2)
+        let idle = WindowsStayAwake.idleSeconds() ?? -1
+        check(sent == 2 && idle >= 0 && idle < 1, "the chat-app nudge (F15) counts as input (sent \(sent), idle \(idle) s)")
+        check(!WindowsStayAwake.tick(now: Date().addingTimeInterval(1800)) && WindowsStayAwake.isAwake, "half an hour in, still awake")
+        check(WindowsStayAwake.tick(now: Date().addingTimeInterval(3601)) && !WindowsStayAwake.isAwake, "after the hour, Stay Awake ends")
+        check(WindowsStayAwake.lastPrevious == WindowsStayAwake.awakeState,
+              "and Windows had the PC and display kept awake (0x\(String(WindowsStayAwake.lastPrevious, radix: 16)))")
+
         system.stop()
         for p in processes where p.isRunning { p.terminate() }
         return finish(tiled)

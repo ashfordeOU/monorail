@@ -115,6 +115,16 @@ version and runs it against real windows there.
 - [x] Tray icon (pause and resume, open and reload settings, quit) and settings: `%APPDATA%\Monorail\settings.json`
   in the Mac format, written with defaults on first run, picked up live when edited; the layout
   and app rules set to float apply (a rule like `notepad.exe` matches the Windows app)
+- [x] Portable build: no installer, no admin. `Monorail-Windows-portable.zip` (Monorail.exe, the
+  Swift and Visual C++ runtime DLLs it loads, found by dumpbin rather than guessed, and a
+  README.txt), built in release by CI on every push and kept as a workflow artifact for 30 days.
+  CI unzips it into a read-only folder and runs it with the Swift toolchain off PATH and again with
+  a standard user's token. Settings stay per user (`%APPDATA%\Monorail`); nothing goes next to the
+  exe or into the registry. Not code-signed yet, so SmartScreen warns; not published as a release
+  until the owner approves one
+- [x] Stay Awake, like Caffeine: off, for an hour or until turned off from the tray, keeping the
+  PC and display awake and (on by default) chat apps showing you as available by pressing F15
+  after 50 seconds idle; no administrator rights needed, kept in the per-user settings
 - [ ] Signed installer (MSIX or EXE) and winget (needs the owner's code signing)
 - [ ] Alpha on a real PC (needs the owner)
 

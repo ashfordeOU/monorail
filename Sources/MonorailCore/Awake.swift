@@ -226,3 +226,25 @@ public enum AwakeFormat {
         return s >= 3600 ? String(format: "%d:%02d", s / 3600, (s % 3600) / 60) : String(format: "%d:%02d", s / 60, s % 60)
     }
 }
+
+// MARK: - Keeping chat apps showing you as available (Windows)
+
+/// During Stay Awake, chat apps (Teams, Slack) still mark you away after a few minutes without
+/// input. Once the PC has been idle this long, the Windows version sends a harmless key press
+/// (F15, which no app uses, as Caffeine does); that resets the idle time, so the next one comes
+/// after another `idleLimit`. Standard users can do this, no administrator needed.
+public enum AwakeNudge {
+    /// Idle time before a nudge: under a minute, well inside the shortest away timer (Teams: 5 minutes).
+    public static let idleLimit: TimeInterval = 50
+
+    /// Whether to send a nudge now.
+    public static func isDue(awake: Bool, keepAvailable: Bool, idle: TimeInterval, limit: TimeInterval = idleLimit) -> Bool {
+        awake && keepAvailable && idle >= limit
+    }
+
+    /// Idle time from GetTickCount and GetLastInputInfo's tick (milliseconds since start-up, both
+    /// wrapping every 49.7 days), right across a wrap.
+    public static func idleSeconds(now: UInt32, lastInput: UInt32) -> TimeInterval {
+        TimeInterval(now &- lastInput) / 1000
+    }
+}

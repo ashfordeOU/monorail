@@ -1,5 +1,7 @@
 #if os(macOS)
 import AppKit
+import IOKit
+import IOKit.pwr_mgt
 import MonorailCore
 import MonorailEngine
 import SwiftUI
@@ -97,7 +99,45 @@ enum SelfTest {
         let after = StayAwake.idleSeconds()
         print("Keep me Available check: idle \(before0) s at start; declaring activity \(declared ? "succeeded" : "failed")")
         print("Keep me Available check \(AwakePresence.idleCheckVerdict(before: before, after: after))")
+        // Other ways that need no permission, measured the same way (and with IOKit's own idle clock).
+        func trial(_ name: String, _ act: () -> Void) {
+            Thread.sleep(forTimeInterval: 2)
+            let b = StayAwake.idleSeconds(), hb = hidIdleSeconds()
+            act()
+            Thread.sleep(forTimeInterval: 0.5)
+            let a = StayAwake.idleSeconds(), ha = hidIdleSeconds()
+            print("Keep me Available trial \(name): event idle \(Int(b)) → \(Int(a)) s; HID idle \(hb.map { String(Int($0)) } ?? "?") → \(ha.map { String(Int($0)) } ?? "?") s")
+        }
+        trial("warp pointer") {
+            if let p = CGEvent(source: nil)?.location {
+                CGWarpMouseCursorPosition(CGPoint(x: p.x + 1, y: p.y)); CGWarpMouseCursorPosition(p)
+            }
+        }
+        trial("user-is-active assertion") {
+            var id: IOPMAssertionID = 0
+            if IOPMAssertionCreateWithName("PreventUserIdleDisplaySleep" as CFString, IOPMAssertionLevel(kIOPMAssertionLevelOn),
+                                           "Monorail check" as CFString, &id) == kIOReturnSuccess {
+                IOPMAssertionRelease(id)
+            }
+            _ = StayAwake.declareActivity()
+        }
+        trial("posted mouse move (needs Accessibility)") {
+            if let p = CGEvent(source: nil)?.location {
+                CGEvent(mouseEventSource: CGEventSource(stateID: .hidSystemState), mouseType: .mouseMoved,
+                        mouseCursorPosition: p, mouseButton: .left)?.post(tap: .cghidEventTap)
+            }
+        }
         return 0
+    }
+
+    /// IOKit's idle time (what some apps read instead of the event clock), in seconds.
+    static func hidIdleSeconds() -> Double? {
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOHIDSystem"))
+        guard service != 0 else { return nil }
+        defer { IOObjectRelease(service) }
+        guard let value = IORegistryEntryCreateCFProperty(service, "HIDIdleTime" as CFString, kCFAllocatorDefault, 0)?
+            .takeRetainedValue() as? NSNumber else { return nil }
+        return value.doubleValue / 1_000_000_000
     }
 }
 #endif

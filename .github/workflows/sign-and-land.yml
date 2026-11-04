@@ -66,9 +66,10 @@ jobs:
           # Re-create each new commit with a signature; authors, dates and messages stay as they were.
           git rebase --force-rebase --exec 'git commit --amend --no-edit --no-verify -S' "$old"
           git log --format='%h %G? %an %s' "$old..HEAD"
-          git push origin HEAD:main
+          # GitHub sometimes answers a push with a passing server error: try a few times.
+          for i in 1 2 3 4 5; do git push origin HEAD:main && break; [ "$i" = 5 ] && exit 1; sleep $((i * 10)); done
           # Keep incoming equal to main, so the next push builds on the signed commits.
-          git push --force origin HEAD:incoming
+          for i in 1 2 3; do git push --force origin HEAD:incoming && break; sleep $((i * 10)); done
           echo "landed=true" >> "$GITHUB_OUTPUT"
           changed="$(git diff --name-only "$old" HEAD)"
           if echo "$changed" | grep -qx 'VERSION'; then

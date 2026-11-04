@@ -108,7 +108,7 @@ public final class SuiteChannel {
         func native(_ u: URL) -> String { u.withUnsafeFileSystemRepresentation { $0.map { String(cString: $0) } } ?? u.path }
         let moved = native(temporary).withCString(encodedAs: UTF16.self) { from in
             native(url).withCString(encodedAs: UTF16.self) { to in
-                MoveFileExW(from, to, DWORD(MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)).boolValue
+                MoveFileExW(from, to, DWORD(MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
             }
         }
         if !moved { try? FileManager.default.removeItem(at: temporary) }

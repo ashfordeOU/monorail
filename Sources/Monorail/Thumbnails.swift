@@ -19,6 +19,11 @@ enum WindowThumbnails {
 
     static func requestAccess() {
         requested = true
+        // On recent macOS the older request alone may not add Monorail to the Screen Recording
+        // list; asking ScreenCaptureKit for the window list does, and shows macOS's prompt.
+        if #available(macOS 14.0, *) {
+            Task { _ = try? await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true) }
+        }
         // Shows the system prompt the first time; after that, macOS only
         // allows changing it in System Settings.
         if !CGRequestScreenCaptureAccess(),

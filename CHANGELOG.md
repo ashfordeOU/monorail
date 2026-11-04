@@ -6,6 +6,9 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- **Live previews:** asking for them now always adds Monorail to Screen & System Audio Recording in System Settings, so it can be switched on there.
+
 ### Added
 - **Keep me Available.** A new item next to Stay Awake keeps your Mac awake and keeps Teams, Slack and other chat apps showing you as Available. While you're away from the keyboard it tells macOS you're active about once a minute, which needs no permission; with Accessibility it can also nudge the pointer. It's an action you can give a key, and a choice in the welcome tour's extras.
 - **Monorail on Macs where you can't allow Accessibility.** Stay Awake, Keep me Available, Evening Mode, display brightness and resolution, the command palette, What's New and Settings now work straight away, before Accessibility is allowed or without it. The menu says once that window arranging needs Accessibility, offers **Grant Accessibility Access…** and **Using Monorail Without It…**, and no longer opens the welcome tour at every launch.

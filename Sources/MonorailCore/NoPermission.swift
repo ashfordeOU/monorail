@@ -183,8 +183,9 @@ public enum ScriptSource {
 // MARK: - Staying "Available" in chat apps
 
 /// When Stay Awake tells macOS someone is at the Mac, so chat apps such as Teams and Slack keep
-/// showing you as available. They read the system's idle time; declaring user activity resets it
-/// and needs no permission. Moving the pointer (posting an event) needs Accessibility.
+/// showing you as available. They read the system's idle time. Measured on macOS: a posted
+/// pointer move resets it (and went through without Accessibility); declaring user activity alone
+/// doesn't, but is kept as a harmless extra.
 public enum AwakePresence {
     /// Declare activity only once the Mac has been idle this long (seconds)…
     public static let idleThreshold: Double = 50

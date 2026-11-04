@@ -217,8 +217,9 @@ final class StayAwake {
     private func keepAlive(_ settings: AppSettings) {
         let idle = Self.idleSeconds()
         let now = Date()
-        // Chat apps (Teams, Slack) mark you away from the system idle time. Declaring user
-        // activity resets it and needs no permission; moving the pointer needs Accessibility.
+        // Chat apps (Teams, Slack) mark you away from the system idle time. Measured on CI: only a
+        // posted pointer move resets it (declaring user activity or warping the pointer doesn't),
+        // and the move went through without Accessibility, so Keep me Available always tries it.
         if AwakePresence.shouldDeclareActivity(
             awake: true, keepAvailable: settings.keepAvailable, moveCursor: settings.awakeMoveCursor,
             idleSeconds: idle, sinceLastDeclare: now.timeIntervalSince(lastActivityDeclared))
@@ -228,7 +229,8 @@ final class StayAwake {
         }
         if AwakePresence.shouldNudgeCursor(
             awake: true, moveCursor: settings.awakeMoveCursor || settings.keepAvailable,
-            canPostEvents: Accessibility.isTrusted(prompt: false), everyMinutes: settings.awakeMoveCursorMinutes,
+            canPostEvents: settings.keepAvailable || Accessibility.isTrusted(prompt: false),
+            everyMinutes: settings.keepAvailable ? 1 : settings.awakeMoveCursorMinutes,
             idleSeconds: idle, sinceLastNudge: now.timeIntervalSince(lastCursorNudge))
         {
             lastCursorNudge = now
@@ -257,7 +259,8 @@ final class StayAwake {
     private static func nudgeCursor() {
         guard let location = CGEvent(source: nil)?.location else { return }
         for point in [CGPoint(x: location.x + 1, y: location.y), location] {
-            CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: point, mouseButton: .left)?
+            CGEvent(mouseEventSource: CGEventSource(stateID: .hidSystemState), mouseType: .mouseMoved,
+                    mouseCursorPosition: point, mouseButton: .left)?
                 .post(tap: .cghidEventTap)
         }
     }

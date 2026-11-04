@@ -6,6 +6,11 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.22] - 2026-11-04
+
+### Fixed
+- **Keep me Available now keeps Teams and Slack on Available.** Tested on a Mac: only a tiny pointer move resets the idle time chat apps read, so Keep me Available makes one about once a minute while you're away, also where Accessibility isn't allowed.
+
 ## [1.7.21] - 2026-11-04
 
 ### Fixed

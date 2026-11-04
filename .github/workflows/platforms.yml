@@ -77,7 +77,8 @@ jobs:
           # Readable and runnable by everyone (the standard-user run below), writable by nobody:
           # Monorail must never write next to its exe.
           icacls $test /grant "*S-1-1-0:(OI)(CI)RX" | Out-Null
-          icacls $dir /deny "*S-1-1-0:(OI)(CI)(W,DC)" | Out-Null
+          # Specific rights: icacls's plain W also denies SYNCHRONIZE and READ_CONTROL, which stops the exe starting.
+          icacls $dir /deny "*S-1-1-0:(OI)(CI)(WD,AD,WEA,WA,DC)" | Out-Null
           icacls $dir
           "PORTABLE_DIR=$dir" >> $env:GITHUB_ENV
       - name: Self-check from the unzipped folder, with the Swift toolchain off PATH

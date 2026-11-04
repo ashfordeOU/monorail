@@ -17,7 +17,8 @@ sample="$(top -l 2 -s "$seconds" -d -pid "$pid" -stats pid,idlew,mem,power 2>/de
 after="$(ps -o time= -p "$pid" | tr -d ' ' | tosec)"
 cpu="$(awk -v a="$after" -v b="$before" -v s="$seconds" 'BEGIN { printf "%.2f", (a-b)/s*100 }')"
 wakes="$(echo "$sample" | awk -v s="$seconds" '{ gsub(/\+/, "", $2); printf "%.1f", $2/s }')"
-mem="$(echo "$sample" | awk '{ print $3 }')"
+# Delta mode reports the change in memory; take the total from a plain sample.
+mem="$(top -l 1 -pid "$pid" -stats pid,mem 2>/dev/null | awk -v p="$pid" '$1==p { print $2 }' | tail -n1)"
 energy="$(echo "$sample" | awk '{ print $4 }')"
 echo
 echo "Monorail $version · $model · $power · idle ${seconds}s"

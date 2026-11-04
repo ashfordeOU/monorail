@@ -36,8 +36,10 @@ jobs:
           ls -l dl
       - name: Gatekeeper accepts the downloads
         run: |
-          for f in dl/Monorail-*.dmg; do spctl -a -vvv -t open --context context:primary-signature "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; xcrun stapler validate "$f"; done
-          for f in dl/Monorail-*.pkg; do spctl -a -vvv -t install "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; xcrun stapler validate "$f"; done
+          # Apple's ticket service sometimes drops the connection: ask again a few times.
+          validate() { for i in 1 2 3 4 5; do xcrun stapler validate "$1" && return 0; sleep $((i * 10)); done; return 1; }
+          for f in dl/Monorail-*.dmg; do spctl -a -vvv -t open --context context:primary-signature "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; validate "$f"; done
+          for f in dl/Monorail-*.pkg; do spctl -a -vvv -t install "$f" 2>&1 | tee /dev/stderr | grep -q "Notarized Developer ID"; validate "$f"; done
       - name: Install from the DMG and open it
         timeout-minutes: 6
         run: |

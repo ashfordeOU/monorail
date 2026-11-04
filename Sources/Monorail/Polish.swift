@@ -68,6 +68,7 @@ final class WhatsNew {
         }) { [weak self] in self?.window?.close() }
         let window = NSWindow(contentViewController: NSHostingController(rootView: view))
         window.title = "What’s New in \(Brand.full) \(version)"
+        window.keepInFront()
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
         window.center()
@@ -223,6 +224,17 @@ final class WeeklySummary {
             center.add(UNNotificationRequest(identifier: "weekly-\(week)", content: content, trigger: nil))
             DispatchQueue.main.async { UserDefaults.standard.set(week, forKey: Self.sentKey) }
         }
+    }
+}
+extension NSWindow {
+    /// For Monorail's own messages (welcome, What's New, permissions): stays in front of other
+    /// windows, never joins a tab group, and follows you to the Space you're on.
+    func keepInFront() {
+        level = .floating
+        tabbingMode = .disallowed
+        collectionBehavior.insert([.moveToActiveSpace, .fullScreenAuxiliary])
+        collectionBehavior.remove(.canJoinAllSpaces)
+        hidesOnDeactivate = false
     }
 }
 #endif

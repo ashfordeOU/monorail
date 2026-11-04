@@ -123,11 +123,14 @@ jobs:
           # IT-managed PC where the user isn't an administrator.
           runas /trustlevel:0x20000 "cmd /c $out\run.cmd"
           $deadline = (Get-Date).AddSeconds(90)
-          while (-not (Test-Path "$out\exit.txt") -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 1 }
-          Start-Sleep -Seconds 1
+          $code = $null
+          while ($null -eq $code -and (Get-Date) -lt $deadline) {
+            Start-Sleep -Seconds 1
+            $text = Get-Content "$out\exit.txt" -Raw -ErrorAction SilentlyContinue
+            if ($text -and $text.Trim()) { $code = [int]$text.Trim() }
+          }
           if (Test-Path "$out\self-check.txt") { Get-Content "$out\self-check.txt" }
-          if (-not (Test-Path "$out\exit.txt")) { throw "the standard-user run didn't finish" }
-          $code = [int](Get-Content "$out\exit.txt" -Raw).Trim()
+          if ($null -eq $code) { throw "the standard-user run didn't finish" }
           if ($code -ne 0) { throw "Monorail.exe --self-check as a standard user failed: exit code $code" }
           if (-not (Select-String -Path "$out\self-check.txt" -Pattern "administrator: no" -SimpleMatch -Quiet)) {
             throw "the standard-user run still had administrator rights"

@@ -1,0 +1,140 @@
+name: Machine checks
+
+# Checks that used to need the owner's own machines, done on GitHub's instead (run by hand from
+# the Actions tab). Nothing here is released or published.
+#   mac-shared-engine: grants Accessibility on GitHub's Mac (possible there, not on a normal Mac),
+#     runs `Monorail --shared-engine` on real TextEdit windows, and checks it sees them open, take
+#     focus and close, and arranges them.
+#   windows-desktops: does Windows 11 on GitHub have virtual desktops (Windows Server didn't)? Makes
+#     one with Ctrl+Win+D and closes it with Ctrl+Win+F4, counting desktops before and after.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mac-shared-engine:
+    name: Shared engine on real windows (macOS)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Use the newest Xcode
+        run: |
+          latest="$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -n1)"
+          [ -n "$latest" ] && sudo xcode-select -s "$latest/Contents/Developer"
+          xcodebuild -version
+      - name: Throwaway signing certificate
+        run: |
+          scripts/make-signing-cert.sh --out "$RUNNER_TEMP/throwaway"
+          echo "MONORAIL_SIGNING_CERT=$(cat "$RUNNER_TEMP/throwaway/cert.p12.b64")" >> "$GITHUB_ENV"
+          echo "MONORAIL_SIGNING_PASSWORD=$(cat "$RUNNER_TEMP/throwaway/password")" >> "$GITHUB_ENV"
+      - name: Import signing certificate
+        run: scripts/ci-import-signing-cert.sh
+      - name: Build app
+        run: scripts/build-app.sh
+      - name: Allow Accessibility for this build
+        # GitHub's Macs run with System Integrity Protection off, so the permission database can be
+        # written directly (by bundle ID and by path, as macOS may look up either).
+        run: |
+          set -euo pipefail
+          app="$PWD/dist/Monorail.app"
+          bin="$app/Contents/MacOS/Monorail"
+          id="$(defaults read "$app/Contents/Info" CFBundleIdentifier)"
+          db="/Library/Application Support/com.apple.TCC/TCC.db"
+          for client in "$id:0" "$bin:1"; do
+            name="${client%:*}"; type="${client##*:}"
+            sudo sqlite3 "$db" "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, indirect_object_identifier, flags, last_modified) VALUES ('kTCCServiceAccessibility', '$name', $type, 2, 4, 1, 'UNUSED', 0, CAST(strftime('%s','now') AS INTEGER));"
+          done
+          sudo sqlite3 "$db" "SELECT client, auth_value FROM access WHERE service = 'kTCCServiceAccessibility';"
+          sudo killall -9 tccd 2>/dev/null || true
+      - name: Run the shared engine while TextEdit windows open, take focus and close
+        run: |
+          set -uo pipefail
+          bin="$PWD/dist/Monorail.app/Contents/MacOS/Monorail"
+          mkdir -p "$RUNNER_TEMP/docs"
+          for n in one two three; do echo "Window $n" > "$RUNNER_TEMP/docs/$n.txt"; done
+          "$bin" --shared-engine > engine.log 2>&1 &
+          engine=$!
+          sleep 5
+          if ! kill -0 "$engine" 2>/dev/null; then
+            cat engine.log
+            echo "::error::The shared engine stopped at once (most likely no Accessibility access)."
+            exit 1
+          fi
+          # Open three windows one by one.
+          for n in one two three; do open -a TextEdit "$RUNNER_TEMP/docs/$n.txt"; sleep 3; done
+          # Focus: another app, then TextEdit again.
+          open -a Finder; sleep 2; open -a TextEdit; sleep 2
+          # Close one window, then quit TextEdit.
+          osascript -e 'tell application "TextEdit" to close front window saving no' || true
+          sleep 3
+          osascript -e 'tell application "TextEdit" to quit saving no' || killall TextEdit || true
+          sleep 3
+          kill -INT "$engine" 2>/dev/null || true
+          sleep 1
+          cat engine.log
+      - name: Check what the engine saw
+        run: |
+          set -euo pipefail
+          created="$(grep -c 'event: created' engine.log || true)"
+          destroyed="$(grep -c 'event: destroyed' engine.log || true)"
+          focused="$(grep -c 'event: focused' engine.log || true)"
+          moved="$(grep -oE 'windows moved: [0-9]+' engine.log | awk '{ s += $3 } END { print s + 0 }')"
+          {
+            echo "### Shared engine on GitHub's Mac"
+            echo "| Opened | Closed | Focus changes | Windows moved |"
+            echo "|---|---|---|---|"
+            echo "| $created | $destroyed | $focused | $moved |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "opened $created, closed $destroyed, focus changes $focused, windows moved $moved"
+          fail=0
+          [ "$created" -ge 3 ] || { echo "::error::Expected 3 windows to open, saw $created"; fail=1; }
+          [ "$destroyed" -ge 1 ] || { echo "::error::Expected windows to close, saw $destroyed"; fail=1; }
+          [ "$focused" -ge 1 ] || { echo "::error::Expected focus changes, saw $focused"; fail=1; }
+          [ "$moved" -ge 1 ] || { echo "::error::Expected the engine to arrange windows, it moved $moved"; fail=1; }
+          exit $fail
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: shared-engine-log
+          path: engine.log
+
+  windows-desktops:
+    name: Virtual desktops (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-11-arm, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Make a desktop with Ctrl+Win+D, close it with Ctrl+Win+F4
+        shell: pwsh
+        run: |
+          Add-Type @"
+          using System; using System.Runtime.InteropServices;
+          public static class Keys {
+            [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
+            public static void Chord(byte key) {
+              keybd_event(0x11, 0, 0, UIntPtr.Zero); keybd_event(0x5B, 0, 0, UIntPtr.Zero);
+              keybd_event(key, 0, 0, UIntPtr.Zero); keybd_event(key, 0, 2, UIntPtr.Zero);
+              keybd_event(0x5B, 0, 2, UIntPtr.Zero); keybd_event(0x11, 0, 2, UIntPtr.Zero);
+            }
+          }
+          "@
+          function Desktops {
+            $ids = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops' -ErrorAction SilentlyContinue).VirtualDesktopIDs
+            if ($ids) { [int]($ids.Length / 16) } else { 1 }
+          }
+          $os = (Get-CimInstance Win32_OperatingSystem).Caption
+          $shell = [bool](Get-Process explorer -ErrorAction SilentlyContinue)
+          $before = Desktops
+          [Keys]::Chord(0x44); Start-Sleep -Seconds 3
+          $made = Desktops
+          [Keys]::Chord(0x73); Start-Sleep -Seconds 3
+          $after = Desktops
+          $works = $made -gt $before
+          "### Virtual desktops on $os" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "Explorer running: $shell · desktops before $before, after Ctrl+Win+D $made, after Ctrl+Win+F4 $after · works: $works" | Add-Content $env:GITHUB_STEP_SUMMARY
+          "$os · explorer $shell · desktops $before -> $made -> $after · works: $works"

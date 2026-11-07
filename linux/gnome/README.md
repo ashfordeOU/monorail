@@ -7,9 +7,14 @@ Ubuntu 24.04). It's a beta: it does the core of what Monorail does, and not much
   top bar), half the screen wide by default, with 8-pixel gaps: the same rules as the Mac and
   Windows versions (`spec/strip.md`).
 - The strip scrolls just far enough to show the focused window whole. Windows scrolled off screen
-  wait just past the edge, hidden, until you come back to them.
+  wait just past the edge, hidden, until you come back to them (just below the screen instead,
+  where another monitor is past the edge).
 - Closing a window closes the gap.
-- Each workspace has its own strip, on each monitor.
+- Each monitor has its own strip, on each workspace; focusing and scrolling on one never moves the
+  windows on another. With GNOME's default of workspaces on the primary monitor only, every other
+  monitor keeps one strip that stays as it is when you switch workspace.
+- Moving a window to another monitor (Super+Shift+Left/Right, the window menu, or dragging it
+  there) takes it off its strip, closing the gap, and onto the other monitor's, at the same width.
 - Dialogs, windows that can't be resized and windows kept out of the taskbar are left floating.
 - Turning it off (or locking the screen) puts every window back on screen; turning it on again
   puts them back in the same order and widths.
@@ -86,6 +91,18 @@ window closes the gap, dialogs and fixed-size and skip-taskbar windows float, wo
 own strips, X11 windows tile too, GNOME's shortcuts are given back, and turning the extension off
 and on keeps the strip. Any error from the extension in GNOME Shell's log fails it too.
 
+With Monorail off its test interface has gone, so `run-ci.sh` also installs a small test-only
+extension, `test/probe` (never shipped), that reads every window's frame straight from Mutter and
+moves windows and the pointer as a person would. Through it the tests check that turning Monorail
+off brings parked windows back on screen.
+
+With more than one monitor (`MONORAIL_VIRTUAL_MONITORS="1280x800 1024x768"`) it runs the
+several-monitor checks instead: a window opened on each monitor tiles on that monitor's strip in its
+work area, focus and scrolling on one strip leave the other's windows alone, parked windows stay on
+their own monitor, a window moved to the other monitor leaves its strip (gap closed) and tiles on the
+other, workspaces, and off and on keeping both strips. `MONORAIL_WORKSPACES_ONLY_ON_PRIMARY=true`
+(GNOME's default in a session) or `false` picks how workspaces span the monitors; CI runs both.
+
 It needs `gnome-shell`, `xwayland`, `gjs` with `gir1.2-gtk-4.0`, `dbus` and a world-writable
 `/tmp/.X11-unix`. GitHub runs it on Ubuntu 24.04 for every push (`.github/workflows/platforms.yml`,
 job "GNOME extension"), and keeps the report, GNOME Shell's log and the zip as artefacts.
@@ -96,4 +113,5 @@ gives quicker answers while trying things out.
 ## Not yet
 
 Slides with several windows, docking, saved views, animations, a preferences window, a panel
-indicator, touchpad gestures, several monitors tested on real hardware, and extensions.gnome.org.
+indicator, touchpad gestures, several monitors tested on real hardware (they're tested on virtual
+monitors), and extensions.gnome.org.

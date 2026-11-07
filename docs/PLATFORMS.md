@@ -145,8 +145,8 @@ GitHub's Ubuntu 24.04 runners in a real GNOME Shell (46) running headless.
   one, half width, full work-area height, 8-pixel gaps (the spec's defaults); the strip scrolls to
   show the focused window whole; closing a window closes the gap; dialogs, fixed-size and
   skip-taskbar windows float; each workspace has its own strip; turning it off and on (as on locking
-  the screen) restores the strip. Off, it also brings parked windows back on screen (written, not
-  yet checked by CI: the test interface goes away with the extension)
+  the screen) restores the strip. Off, it also brings parked windows back on screen (CI checks this
+  through a test-only probe extension that reads frames straight from Mutter)
 - [x] Shortcuts as GSettings keybindings named after the shared actions: Super+Alt+Left/Right,
   Home/End, Shift to move, W to cycle width, F for full width. GNOME 46 uses Super+Alt+Left/Right
   for workspaces (CI found it); Monorail takes over just those keys while it's on and gives them back
@@ -157,14 +157,25 @@ GitHub's Ubuntu 24.04 runners in a real GNOME Shell (46) running headless.
   tests, builds the zip, checks the built core in GJS, then starts `gnome-shell --headless --wayland
   --virtual-monitor 1280x800` on its own D-Bus session with the extension and a test-only D-Bus
   interface (`MONORAIL_TEST=1`). It opens real GTK 4 windows (Wayland and X11), presses the real
-  shortcuts through a virtual keyboard and checks 31 things against frames read from inside the
+  shortcuts through a virtual keyboard and checks 33 things against frames read from inside the
   shell: side by side without overlap at full height, focus and scrolling, moving columns, widths,
-  closing, dialogs, workspaces, X11, giving GNOME's keys back, off and on. Any error from the
-  extension in the shell's log fails it. The report, the shell's log and the zip are kept as
-  artefacts. All 31 pass on a local Ubuntu 24.04 with GNOME Shell 46.0
+  closing, dialogs, workspaces, X11, giving GNOME's keys back, off and on (parked windows back on
+  screen). Any error from the extension in the shell's log fails it. The report, the shell's log
+  and the zip are kept as artefacts. All 33 pass on a local Ubuntu 24.04 with GNOME Shell 46.0
+- [x] Several monitors, tested on GitHub's headless GNOME Shell with two virtual monitors (1280×800
+  and 1024×768), both with workspaces on the primary monitor only (a GNOME session's default) and
+  with a workspace on every monitor: a window opened on each monitor tiles on that monitor's strip
+  in its work area; focus and scrolling on one strip leave the other's windows alone; a window
+  moved to the other monitor leaves its strip (gap closed) and tiles on the other, keeping its
+  width; off and on keeps both strips. The checks found that windows on a second monitor weren't
+  tiled at all with GNOME's default (Mutter puts them on every workspace), that a window parked
+  towards the other monitor counted as that monitor's (it now waits just below its own), and that
+  moving a window to another monitor left it on the old strip. 26 and 27 checks, all passing
+  locally on GNOME Shell 46.0
 - [ ] Slides with several windows, docking, saved views, animations, preferences window, panel
   indicator, gestures
-- [ ] Several monitors and a real GNOME session (needs a Linux machine), GNOME 47 to 49
+- [ ] A real GNOME session (needs a Linux machine), on real monitors
+- [ ] GNOME 47 to 49
 - [ ] extensions.gnome.org (needs the owner's account); companion app
 
 ## What needs the owner

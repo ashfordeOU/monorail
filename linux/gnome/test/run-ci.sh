@@ -2,11 +2,15 @@
 # Runs Monorail for GNOME (beta) in a real, headless GNOME Shell and tests it on real windows.
 #
 #   linux/gnome/test/run-ci.sh [output directory]
+#   MONORAIL_VIRTUAL_MONITORS="1280x800 1024x768" linux/gnome/test/run-ci.sh [output directory]
 #
-# Installs the built zip (linux/gnome/dist) for a throwaway user home, starts GNOME Shell on its
-# own D-Bus session as a headless Wayland compositor with one 1280×800 virtual monitor and the
-# test interface turned on (MONORAIL_TEST=1), then runs run-tests.js. Writes report.json,
-# report.txt and gnome-shell.log to the output directory. Exits non-zero when anything fails.
+# Installs the built zip (linux/gnome/dist) for a throwaway user home, with the test-only probe
+# extension (test/probe) beside it, starts GNOME Shell on its own D-Bus session as a headless
+# Wayland compositor with one 1280×800 virtual monitor (or the monitors in
+# MONORAIL_VIRTUAL_MONITORS) and the test interface turned on (MONORAIL_TEST=1), then runs
+# run-tests.js: the main checks on one monitor, the several-monitor checks on more. Writes
+# report.json, report.txt and gnome-shell.log to the output directory. Exits non-zero when
+# anything fails.
 #
 # Needs gnome-shell (45 or later), gjs with GTK 4, dbus and, for the X11 check, Xwayland.
 set -euo pipefail
@@ -40,8 +44,19 @@ say "Monorail for GNOME (beta): UI test"
 say "$(gnome-shell --version), $(gjs --version 2>/dev/null || echo 'gjs ?')"
 
 gnome-extensions install --force "$zip"
+# The probe reads windows straight from Mutter, so the tests can see them with Monorail off too.
+probe="monorail-test-probe@ashforde.org"
+mkdir -p "$XDG_DATA_HOME/gnome-shell/extensions/$probe"
+cp "$here/probe/metadata.json" "$here/probe/extension.js" "$XDG_DATA_HOME/gnome-shell/extensions/$probe/"
 gsettings set org.gnome.shell disable-user-extensions false
-gsettings set org.gnome.shell enabled-extensions "['$uuid']"
+gsettings set org.gnome.shell enabled-extensions "['$uuid', '$probe']"
+# A GNOME session has workspaces on the primary monitor only (the other monitors show the same
+# windows on every workspace); without one Mutter's default is a workspace on every monitor.
+# MONORAIL_WORKSPACES_ONLY_ON_PRIMARY=true|false picks one.
+if [[ -n "${MONORAIL_WORKSPACES_ONLY_ON_PRIMARY:-}" ]]; then
+    gsettings set org.gnome.mutter workspaces-only-on-primary "$MONORAIL_WORKSPACES_ONLY_ON_PRIMARY"
+fi
+say "Workspaces on the primary monitor only: $(gsettings get org.gnome.mutter workspaces-only-on-primary)"
 # No welcome tour or other first-login windows getting in the way.
 gsettings set org.gnome.shell welcome-dialog-last-shown-version '999' 2>/dev/null || true
 
@@ -49,7 +64,11 @@ export MONORAIL_TEST=1
 export XDG_SESSION_TYPE=wayland
 # Software rendering: the runners have no GPU.
 export LIBGL_ALWAYS_SOFTWARE=1
-gnome-shell --headless --wayland --virtual-monitor 1280x800 > "$out/gnome-shell.log" 2>&1 &
+read -r -a monitors <<< "${MONORAIL_VIRTUAL_MONITORS:-1280x800}"
+monitor_args=()
+for monitor in "${monitors[@]}"; do monitor_args+=(--virtual-monitor "$monitor"); done
+say "Virtual monitors: ${monitors[*]}"
+gnome-shell --headless --wayland "${monitor_args[@]}" > "$out/gnome-shell.log" 2>&1 &
 shell=$!
 stop_shell() {
     kill "$shell" 2>/dev/null || true
@@ -90,7 +109,7 @@ x11_auth="$(ls "$XDG_RUNTIME_DIR"/.mutter-Xwaylandauth.* 2>/dev/null | head -n 1
 [[ -n "$x11_auth" ]] && export XAUTHORITY="$x11_auth"
 say "Wayland display $WAYLAND_DISPLAY, X11 display $DISPLAY"
 status=0
-gjs -m "$here/run-tests.js" --report "$out/report.json" 2>&1 | tee -a "$report" || status=$?
+gjs -m "$here/run-tests.js" --report "$out/report.json" --monitors "${#monitors[@]}" 2>&1 | tee -a "$report" || status=$?
 
 # Any error or warning from the extension fails the run, even when every check passed. GNOME
 # Shell only names the extension's files in its log for those (in their stack traces).

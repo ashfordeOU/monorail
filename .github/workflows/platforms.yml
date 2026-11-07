@@ -226,12 +226,26 @@ jobs:
       - name: Build the extension zip
         run: linux/gnome/build.sh
       - name: Syntax check of the extension and test scripts
-        run: for f in linux/gnome/extension/*.js linux/gnome/test/*.js linux/gnome/tools/*.mjs; do node --check "$f"; done
+        run: for f in linux/gnome/extension/*.js linux/gnome/test/*.js linux/gnome/test/probe/*.js linux/gnome/tools/*.mjs; do node --check "$f"; done
       - name: The built core runs in GJS (GNOME Shell's JavaScript engine)
         run: gjs -m linux/gnome/test/core-in-gjs.js "$PWD/linux/gnome/build/monorail@ashforde.org"
       - name: UI test in a real, headless GNOME Shell (real windows, real shortcuts)
         timeout-minutes: 15
-        run: linux/gnome/test/run-ci.sh "$RUNNER_TEMP/gnome-test"
+        run: linux/gnome/test/run-ci.sh "$RUNNER_TEMP/gnome-test/one-monitor"
+      - name: UI test on two monitors, workspaces on the primary monitor only (as in a GNOME session)
+        if: ${{ !cancelled() }}
+        timeout-minutes: 10
+        env:
+          MONORAIL_VIRTUAL_MONITORS: 1280x800 1024x768
+          MONORAIL_WORKSPACES_ONLY_ON_PRIMARY: 'true'
+        run: linux/gnome/test/run-ci.sh "$RUNNER_TEMP/gnome-test/two-monitors"
+      - name: UI test on two monitors, a workspace on every monitor
+        if: ${{ !cancelled() }}
+        timeout-minutes: 10
+        env:
+          MONORAIL_VIRTUAL_MONITORS: 1280x800 1024x768
+          MONORAIL_WORKSPACES_ONLY_ON_PRIMARY: 'false'
+        run: linux/gnome/test/run-ci.sh "$RUNNER_TEMP/gnome-test/two-monitors-every-workspace"
       - name: Keep the extension zip
         if: always()
         uses: actions/upload-artifact@v4

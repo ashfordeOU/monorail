@@ -12,6 +12,14 @@ import {clampScroll, defaultLayoutConfig, layout, revealFocused} from './core/la
  * turning it back on puts every window back in the same order and width. Window ids only. */
 let remembered = null;
 
+/** The key of the strips that belong to no single workspace: with GNOME's default of workspaces
+ * on the primary monitor only, every other monitor shows the same windows on every workspace, so
+ * each of those monitors has one strip for all of them. */
+const ALL_WORKSPACES = 'all-workspaces';
+
+/** A parked window keeps this much of itself on its monitor (Mutter keeps 75 pixels on screen). */
+const PARKED_ON_SCREEN = 76;
+
 /** Fully maximised (both directions), on GNOME 45 to 49. */
 const isMaximized = window => typeof window.is_maximized === 'function'
     ? window.is_maximized() : window.get_maximized() === Meta.MaximizeFlags.BOTH;
@@ -22,12 +30,15 @@ const isPartlyMaximized = window => typeof window.get_maximized === 'function'
 const sameFrame = (a, b) => Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1 &&
     Math.abs(a.width - b.width) <= 1 && Math.abs(a.height - b.height) <= 1;
 
+const intersects = (a, b) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
+
 export class Tiler {
     constructor(settings) {
         this._settings = settings;
         this.config = defaultLayoutConfig();
         this._readSettings();
-        /** @type {Map<Meta.Workspace, Map<number, Strip>>} */
+        /** @type {Map<Meta.Workspace | ALL_WORKSPACES, Map<number, Strip>>} */
         this._strips = new Map();
         /** id → {window, workspace, monitor, signals} for every window being watched */
         this._watched = new Map();
@@ -46,6 +57,7 @@ export class Tiler {
         const connect = (object, signal, handler) => this._signals.push([object, object.connect(signal, handler)]);
         connect(display, 'window-created', (_d, window) => this._watch(window, true));
         connect(display, 'notify::focus-window', () => this._focusChanged());
+        connect(display, 'grab-op-begin', (_d, window) => this._grabBegan(window));
         connect(display, 'grab-op-end', (_d, window) => this._grabEnded(window));
         connect(global.workspace_manager, 'workspace-removed', () => this._pruneWorkspaces());
         connect(global.workspace_manager, 'active-workspace-changed', () => this._workspaceChanged());
@@ -67,6 +79,12 @@ export class Tiler {
             .filter(window => window)
             .sort((a, b) => rank(a.get_id()) - rank(b.get_id()) || a.get_stable_sequence() - b.get_stable_sequence());
         for (const window of windows) this._watch(window, false, order.find(entry => entry.id === window.get_id()));
+        // Each strip (one per monitor and workspace) gets back its own focus and scroll.
+        for (const saved of order.filter(entry => entry.focused)) {
+            const entry = this._watched.get(saved.id);
+            const strip = entry?.workspace ? this._stripFor(entry.workspace, entry.monitor, false) : undefined;
+            if (strip?.focus(saved.id)) strip.scroll = saved.scroll;
+        }
         remembered = null;
         this._focusChanged();
         this.layoutNow();
@@ -77,9 +95,12 @@ export class Tiler {
         remembered = [];
         for (const monitors of this._strips.values()) {
             for (const strip of monitors.values()) {
+                const focused = strip.focusedWindow;
                 for (const column of strip.columns) {
-                    for (const id of column.windows)
-                        remembered.push({id, width: column.width, isFullWidth: column.isFullWidth});
+                    for (const id of column.windows) {
+                        remembered.push({id, width: column.width, isFullWidth: column.isFullWidth,
+                            focused: id === focused, scroll: strip.scroll});
+                    }
                 }
             }
         }
@@ -107,9 +128,28 @@ export class Tiler {
         if (window.get_window_type() !== Meta.WindowType.NORMAL) return false;
         if (window.get_transient_for() || window.is_attached_dialog()) return false;
         if (window.is_skip_taskbar() || window.is_override_redirect()) return false;
-        if (window.is_on_all_workspaces() || !window.get_workspace()) return false;
+        if (!window.get_workspace()) return false;
+        if (window.is_on_all_workspaces() && !this._sharedByMonitor(window)) return false;
         if (window.minimized || !window.allows_resize()) return false;
         return true;
+    }
+
+    /** On every workspace only because it's on a monitor that isn't the primary one (GNOME's
+     * default: workspaces on the primary monitor only). */
+    _sharedByMonitor(window) {
+        return window.is_on_all_workspaces() && Meta.prefs_get_workspaces_only_on_primary() &&
+            !window.is_on_primary_monitor();
+    }
+
+    /** The key of the strip for this workspace and monitor. */
+    _keyFor(workspace, monitor) {
+        return Meta.prefs_get_workspaces_only_on_primary() && monitor !== global.display.get_primary_monitor()
+            ? ALL_WORKSPACES : workspace;
+    }
+
+    /** The real workspace behind a strip's key. */
+    _workspaceOf(key) {
+        return key === ALL_WORKSPACES ? global.workspace_manager.get_active_workspace() : key;
     }
 
     _watch(window, isNew, restore) {
@@ -126,6 +166,7 @@ export class Tiler {
             window.connect('notify::above', refresh),
             window.connect('notify::on-all-workspaces', refresh),
             window.connect('notify::window-type', refresh),
+            window.connect('monitor-changed', () => this._monitorChanged(entry)),
         );
         if (isNew) {
             // A new window's type, parent and size are settled once it's shown (on Wayland, after
@@ -185,19 +226,30 @@ export class Tiler {
         this._stripFor(entry.workspace, entry.monitor, false)?.remove(entry.window.get_id());
         entry.workspace = null;
         entry.monitor = -1;
+        entry.placedParked = false;
+        entry.requested = null;
     }
 
     /** Puts the window on the strip it belongs to, or takes it off when it shouldn't be tiled. */
-    _refresh(entry, restore = undefined) {
+    _refresh(entry, restore = undefined, followMonitor = false) {
         if (!entry.shown) return;
         const window = entry.window;
+        // A parked window that had to wait over another monitor is still on its own strip, even if
+        // Mutter now shows it on every workspace because of where it is.
+        if (entry.workspace && entry.placedParked && !followMonitor &&
+            this._sharedByMonitor(window) !== (entry.workspace === ALL_WORKSPACES)) return;
         const tileable = this.isTileable(window);
-        const workspace = tileable ? window.get_workspace() : null;
-        // A tiled window stays on its monitor's strip even when parked over the next monitor.
+        const workspace = tileable ? (this._sharedByMonitor(window) ? ALL_WORKSPACES : window.get_workspace()) : null;
+        // A tiled window stays on its monitor's strip unless it was moved to another monitor.
         const monitor = !tileable ? -1
-            : entry.workspace === workspace && entry.monitor >= 0 && entry.monitor < global.display.get_n_monitors()
+            : !followMonitor && entry.workspace === workspace && entry.monitor >= 0 && entry.monitor < global.display.get_n_monitors()
                 ? entry.monitor : window.get_monitor();
         if (entry.workspace === workspace && entry.monitor === monitor) return;
+        // Moved from one monitor's strip to another's: it keeps its width, and takes that strip's
+        // focus only if it has the keyboard focus (as with Super+Shift+arrow).
+        const from = entry.workspace ? this._stripFor(entry.workspace, entry.monitor, false) : undefined;
+        const at = from?.locate(window.get_id());
+        const moved = tileable && at && entry.monitor !== monitor ? from.columns[at.column] : null;
         this._takeOff(entry);
         if (!tileable) {
             this.scheduleLayout();
@@ -206,8 +258,8 @@ export class Tiler {
         if (isPartlyMaximized(window)) this._unmaximize(window);
         const strip = this._stripFor(workspace, monitor, true);
         const focused = global.display.focus_window === window;
-        const width = restore ? restore.width : this.config.defaultWidth;
-        strip.insert(window.get_id(), width, restore ? 'end' : 'afterFocused', restore ? focused : true);
+        const width = restore ? restore.width : moved?.width ?? this.config.defaultWidth;
+        strip.insert(window.get_id(), width, restore ? 'end' : 'afterFocused', restore || moved ? focused : true);
         if (restore?.isFullWidth) strip.columns[strip.locate(window.get_id()).column].isFullWidth = true;
         entry.workspace = workspace;
         entry.monitor = monitor;
@@ -232,12 +284,35 @@ export class Tiler {
         if (strip?.focus(window.get_id())) this.scheduleLayout();
     }
 
+    _grabBegan(window) {
+        const entry = window && this._watched.get(window.get_id());
+        if (entry) entry.grabbed = true;
+    }
+
+    /** Moved to another monitor (Super+Shift+arrow, or the window menu): the window leaves its
+     * strip, which closes the gap, and joins the strip of the monitor it's on now. Monorail's own
+     * moves don't count, and a drag counts when it ends. */
+    _monitorChanged(entry) {
+        if (!entry.workspace || entry.grabbed || entry.placedParked) return;
+        const window = entry.window;
+        if (window.get_monitor() === entry.monitor) return;
+        if (entry.requested && sameFrame(window.get_frame_rect(), entry.requested)) return;
+        this._refresh(entry, undefined, true);
+    }
+
     /** After a drag the window goes back in line; after a resize its column keeps the new width. */
     _grabEnded(window) {
         const entry = window && this._watched.get(window.get_id());
         if (!entry?.workspace) return;
+        entry.grabbed = false;
+        // Dragged to another monitor: it joins that monitor's strip.
+        if (window.get_monitor() !== entry.monitor && !entry.placedParked) {
+            this._refresh(entry, undefined, true);
+            this.layoutNow();
+            return;
+        }
         const strip = this._stripFor(entry.workspace, entry.monitor, false);
-        const area = entry.workspace.get_work_area_for_monitor(entry.monitor);
+        const area = this._workspaceOf(entry.workspace).get_work_area_for_monitor(entry.monitor);
         const frame = window.get_frame_rect();
         const at = strip?.locate(window.get_id());
         if (at && !strip.columns[at.column].isFullWidth) {
@@ -269,7 +344,7 @@ export class Tiler {
         const alive = new Set();
         for (let i = 0; i < manager.get_n_workspaces(); i++) alive.add(manager.get_workspace_by_index(i));
         for (const workspace of [...this._strips.keys()]) {
-            if (!alive.has(workspace)) this._strips.delete(workspace);
+            if (workspace !== ALL_WORKSPACES && !alive.has(workspace)) this._strips.delete(workspace);
         }
     }
 
@@ -293,7 +368,8 @@ export class Tiler {
         const entry = window && this._watched.get(window.get_id());
         if (entry?.workspace) return this._stripFor(entry.workspace, entry.monitor, false);
         const workspace = global.workspace_manager.get_active_workspace();
-        return this._stripFor(workspace, global.display.get_current_monitor(), false);
+        const monitor = global.display.get_current_monitor();
+        return this._stripFor(this._keyFor(workspace, monitor), monitor, false);
     }
 
     /** Runs a shared action (spec/actions.json) on the focused strip. */
@@ -341,14 +417,15 @@ export class Tiler {
             GLib.source_remove(this._layoutSource);
             this._layoutSource = 0;
         }
-        for (const [workspace, monitors] of this._strips) {
+        const active = global.workspace_manager.get_active_workspace();
+        for (const [key, monitors] of this._strips) {
             for (const [monitor, strip] of monitors) {
                 if (strip.isEmpty || monitor >= global.display.get_n_monitors()) continue;
-                const area = workspace.get_work_area_for_monitor(monitor);
+                const area = this._workspaceOf(key).get_work_area_for_monitor(monitor);
                 const viewport = {x: area.x, y: area.y, width: area.width, height: area.height};
                 clampScroll(strip, this.config, viewport.width);
                 revealFocused(strip, this.config, viewport.width);
-                const showing = workspace === global.workspace_manager.get_active_workspace();
+                const showing = key === ALL_WORKSPACES || key === active;
                 for (const placement of layout(strip, this.config, viewport)) {
                     const entry = this._watched.get(placement.window);
                     const window = entry?.window;
@@ -356,15 +433,36 @@ export class Tiler {
                     // Mutter keeps at least 75 pixels of a window on screen, so a parked window
                     // would overlap its neighbour: it's hidden until it comes back.
                     this._setParked(entry, placement.isParked && showing);
-                    const frame = placement.frame;
-                    if (sameFrame(window.get_frame_rect(), frame)) continue;
-                    if (placement.isParked && entry.requested && sameFrame(entry.requested, frame)) continue;
+                    entry.placedParked = placement.isParked;
+                    const frame = placement.isParked ? this._parkingFrame(placement.frame, monitor, area) : placement.frame;
+                    const requestedBefore = entry.requested;
                     entry.requested = frame;
+                    if (sameFrame(window.get_frame_rect(), frame)) continue;
+                    if (placement.isParked && requestedBefore && sameFrame(requestedBefore, frame)) continue;
                     // As a user move: Mutter would otherwise keep the whole window on screen.
                     window.move_resize_frame(true, frame.x, frame.y, frame.width, frame.height);
                 }
             }
         }
+    }
+
+    /** Where a parked window waits: beside its monitor, as the core says, unless another monitor is
+     * there. Then it waits just below its monitor (or above), so that it isn't over the other
+     * monitor: Mutter would count it as that monitor's window. */
+    _parkingFrame(frame, monitor, area) {
+        const display = global.display;
+        const others = [];
+        for (let i = 0; i < display.get_n_monitors(); i++) {
+            if (i !== monitor) others.push(display.get_monitor_geometry(i));
+        }
+        const free = f => !others.some(other => intersects(f, other));
+        if (free(frame)) return frame;
+        const x = clamp(frame.x, area.x, area.x + area.width - frame.width);
+        const below = {x, y: area.y + area.height - PARKED_ON_SCREEN, width: frame.width, height: frame.height};
+        if (free(below)) return below;
+        const above = {x, y: area.y - frame.height + PARKED_ON_SCREEN, width: frame.width, height: frame.height};
+        if (free(above)) return above;
+        return frame;
     }
 
     _setParked(entry, parked) {
@@ -385,8 +483,11 @@ export class Tiler {
         const area = window.get_workspace().get_work_area_for_monitor(monitor);
         const frame = window.get_frame_rect();
         const width = Math.min(frame.width, area.width);
-        const x = Math.min(Math.max(frame.x, area.x), area.x + area.width - width);
-        if (x !== frame.x || width !== frame.width) window.move_resize_frame(false, x, frame.y, width, frame.height);
+        const height = Math.min(frame.height, area.height);
+        const x = clamp(frame.x, area.x, area.x + area.width - width);
+        const y = clamp(frame.y, area.y, area.y + area.height - height);
+        if (x !== frame.x || y !== frame.y || width !== frame.width || height !== frame.height)
+            window.move_resize_frame(false, x, y, width, height);
     }
 
     // MARK: For the test interface
@@ -410,17 +511,20 @@ export class Tiler {
                 parked: Boolean(entry?.parked),
                 visible: Boolean(window.get_compositor_private()?.visible),
                 workspace: window.get_workspace()?.index() ?? -1,
+                onAllWorkspaces: window.is_on_all_workspaces(),
                 monitor: window.get_monitor(),
+                stripMonitor: entry?.workspace ? entry.monitor : -1,
                 minimized: window.minimized,
                 focused: global.display.focus_window === window,
                 frame: {x: f.x, y: f.y, width: f.width, height: f.height},
             };
         });
         const strips = [];
-        for (const [workspace, monitors] of this._strips) {
+        for (const [key, monitors] of this._strips) {
             for (const [monitor, strip] of monitors) {
                 strips.push({
-                    workspace: workspace.index(),
+                    // -1: the strip of a monitor that shows the same windows on every workspace
+                    workspace: key === ALL_WORKSPACES ? -1 : key.index(),
                     monitor,
                     scroll: strip.scroll,
                     focusedColumn: strip.focusedColumn,
@@ -432,11 +536,18 @@ export class Tiler {
         const active = manager.get_active_workspace();
         for (let i = 0; i < global.display.get_n_monitors(); i++) {
             const a = active.get_work_area_for_monitor(i);
-            monitors.push({index: i, workArea: {x: a.x, y: a.y, width: a.width, height: a.height}});
+            const g = global.display.get_monitor_geometry(i);
+            monitors.push({
+                index: i,
+                primary: i === global.display.get_primary_monitor(),
+                geometry: {x: g.x, y: g.y, width: g.width, height: g.height},
+                workArea: {x: a.x, y: a.y, width: a.width, height: a.height},
+            });
         }
         return {
             activeWorkspace: active.index(),
             workspaces: manager.get_n_workspaces(),
+            workspacesOnlyOnPrimary: Meta.prefs_get_workspaces_only_on_primary(),
             config: this.config,
             monitors,
             windows,

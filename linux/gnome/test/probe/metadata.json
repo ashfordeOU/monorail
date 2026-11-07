@@ -1,0 +1,7 @@
+{
+  "uuid": "monorail-test-probe@ashforde.org",
+  "name": "Monorail test probe",
+  "description": "For Monorail's automated UI tests only: reports every window's frame straight from Mutter, whether Monorail is on or off, and moves windows and the pointer as a person would. Does nothing unless GNOME Shell was started with MONORAIL_TEST=1.",
+  "shell-version": ["45", "46", "47", "48", "49"],
+  "url": "https://github.com/ashfordeOU/monorail"
+}

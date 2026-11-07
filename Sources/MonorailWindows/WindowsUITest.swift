@@ -222,7 +222,9 @@ enum WindowsUITest {
         let before = ours(system, pids).filter { engine.isManaged($0.id) }.map(\.id)
         WindowsKeys.press(WindowsKeys.Binding(action: .focusLeft, modifiers: WindowsKeys.control | WindowsKeys.win, key: 0x44))
         Win32WindowSystem.pump(for: 2.5)
-        let visible = Set(system.windows().map(\.id))
+        // Windows on another desktop are still "visible" to Windows, only cloaked: count the ones
+        // that can be tiled here (cloaked ones aren't), or the switch looks like it did nothing.
+        let visible = Set(system.windows().filter(\.isStandard).map(\.id))
         if before.allSatisfy({ visible.contains($0) }) {
             log.append("info virtual desktops: Ctrl+Win+D changed nothing on this machine, skipped")
             print("info virtual desktops unavailable here; skipped")

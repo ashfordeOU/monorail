@@ -99,8 +99,9 @@ version and runs it against real windows there.
   (a scaled second display is still to be tried on a real PC)
 - [ ] Workspaces as Windows virtual desktops. Written: Windows hides (cloaks) other desktops'
   windows, so switching desktops takes them off the strip and brings the new desktop's on. The UI
-  test makes and closes a real desktop (Ctrl+Win+D, Ctrl+Win+F4), but GitHub's Windows machines
-  have no virtual desktops (the shortcut does nothing there), so it needs a real PC. Each desktop
+  test makes and closes a real desktop (Ctrl+Win+D, Ctrl+Win+F4), and GitHub's Windows Server 2025
+  machine does have them (the Machine checks probe: 1 → 2 → 1 desktops); the UI test had been
+  skipping them by mistake (windows on another desktop still count as visible to Windows). Each desktop
   keeps its own slide order and widths when you come back (tested against the fake). Still to do:
   shortcuts to switch desktop and send a window to one (Windows has no public API for those)
 - [x] Shortcuts from the shared keymap: Win+Alt with arrows, Home, End, W, F, comma and full stop
@@ -160,7 +161,7 @@ The scheduled check-ins work through this list in order and tick items off.
   - [x] Window events (created, destroyed, moved, focused, minimised, restored, title on request) from Accessibility observers, started and stopped by the self-test
   - [x] `SharedEngine` in MonorailEngine: strips per display from any WindowSystem (new windows slide in, closed and minimised ones leave and come back where they were, focus scrolls, hidden apps, unplugged displays), tested against the fake
   - [x] The shared engine drives the Mac through it, kept apart from the shipping app: `Monorail --shared-engine` runs only the shared engine on real windows and logs every event (the self-test starts it in CI)
-  - [ ] Tried on a real Mac. First run (owner, 1.7.12): took over 11 windows on one display and followed drags; found a loop (macOS's own screen changes re-placed every window), fixed. Second run: check focus, open and close (needs the owner: quit Monorail, run `/Applications/Monorail.app/Contents/MacOS/Monorail --shared-engine` in Terminal, open and close a few windows, Ctrl-C)
+  - [x] Tried on a real Mac. First run (owner, 1.7.12): took over 11 windows on one display and followed drags; found a loop (macOS's own screen changes re-placed every window), fixed. Second run on GitHub's Mac (the Machine checks workflow grants Accessibility there): saw 3 TextEdit windows open and 3 close, 5 focus changes, and arranged them (7 moves)
 - [x] `core-ts/`: TypeScript project skeleton running the golden tests (split trees first)
   - [x] Split trees and dock zones, passing `split-tree.json` and `dock-zones.json` (18 cases), in CI on Linux
   - [x] The strip and slide layouts (`Arrangement`: tiles, moving focus inside a slide, entering a slide), passing `strip.json`, with two new cases for focus inside a slide that Swift passes too

@@ -1,31 +1,26 @@
-# Builds the Mac App Store edition, signs it with the App Store certificates, checks it with Apple
-# and uploads it to App Store Connect (it appears in TestFlight first). Run by hand from Actions.
-# Needs the secrets in scripts/ci-import-appstore-certs.sh plus APPLE_ID and APPLE_APP_PASSWORD.
 name: App Store
+
+# The Mac App Store edition (docs/APP-STORE.md). Run by hand from the Actions tab.
+#   sandbox-check: builds the edition with Apple's sandbox on, allows it Accessibility on GitHub's Mac
+#     (possible there, not on a normal Mac), and checks it still sees and arranges real windows.
+#   upload: when the App Store secrets are set, signs it for the App Store and uploads it to App Store
+#     Connect, where it appears in TestFlight. Nothing is submitted for review: that's done by hand.
+# Secrets for the upload (the owner adds them; never in the repository):
+#   APPSTORE_APP_CERT, APPSTORE_APP_CERT_PASSWORD             Apple Distribution .p12 (base64)
+#   APPSTORE_INSTALLER_CERT, APPSTORE_INSTALLER_CERT_PASSWORD Mac Installer Distribution .p12 (base64)
+#   APPSTORE_PROFILE                                          Mac App Store provisioning profile (base64)
+#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY                        App Store Connect API key (the .p8 text)
 
 on:
   workflow_dispatch:
-    inputs:
-      upload:
-        description: "Upload to App Store Connect (off: build and check only)"
-        type: boolean
-        default: true
 
 permissions:
   contents: read
 
 jobs:
-  appstore:
+  sandbox-check:
+    name: Sandboxed edition arranges real windows (macOS)
     runs-on: macos-15
-    env:
-      MONORAIL_APPSTORE_CERT: ${{ secrets.MONORAIL_APPSTORE_CERT }}
-      MONORAIL_APPSTORE_PASSWORD: ${{ secrets.MONORAIL_APPSTORE_PASSWORD }}
-      MONORAIL_APPSTORE_INSTALLER_CERT: ${{ secrets.MONORAIL_APPSTORE_INSTALLER_CERT }}
-      MONORAIL_APPSTORE_INSTALLER_PASSWORD: ${{ secrets.MONORAIL_APPSTORE_INSTALLER_PASSWORD }}
-      MONORAIL_APPSTORE_PROFILE: ${{ secrets.MONORAIL_APPSTORE_PROFILE }}
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -35,30 +30,158 @@ jobs:
           latest="$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -n1)"
           [ -n "$latest" ] && sudo xcode-select -s "$latest/Contents/Developer"
           xcodebuild -version
-      - name: Import the App Store certificates and profile
-        run: scripts/ci-import-appstore-certs.sh
-      - name: Build the App Store edition
-        run: scripts/build-appstore.sh
-      - name: Check the signature
+      - name: Throwaway signing certificate
         run: |
-          app=dist/AppStore/Monorail.app
-          codesign --verify --strict --deep "$app"
-          codesign -d --entitlements - --xml "$app" | plutil -p - | tee entitlements.txt
-          grep -q "com.apple.security.app-sandbox" entitlements.txt
-          grep -q "D69G45342Y.org.ashforde.monorail.appstore" entitlements.txt
-          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$app/Contents/Info.plist" | grep -qx "org.ashforde.monorail.appstore"
-          pkgutil --check-signature dist/AppStore/Monorail-*.pkg
-      - name: Validate with App Store Connect
+          scripts/make-signing-cert.sh --out "$RUNNER_TEMP/throwaway"
+          echo "MONORAIL_SIGNING_CERT=$(cat "$RUNNER_TEMP/throwaway/cert.p12.b64")" >> "$GITHUB_ENV"
+          echo "MONORAIL_SIGNING_PASSWORD=$(cat "$RUNNER_TEMP/throwaway/password")" >> "$GITHUB_ENV"
+      - name: Import signing certificate
+        run: scripts/ci-import-signing-cert.sh
+      - name: Build the App Store edition (sandboxed)
+        run: APP_SIGN_IDENTITY="$SIGN_IDENTITY" scripts/build-appstore.sh
+      - name: The sandbox is on and the updater is left out
         run: |
-          xcrun altool --validate-app -f dist/AppStore/Monorail-*.pkg -t macos \
-            -u "$APPLE_ID" -p "$APPLE_APP_PASSWORD" --output-format normal
-      - name: Upload to App Store Connect
-        if: github.event.inputs.upload == 'true'
+          set -euo pipefail
+          app="dist/AppStore/Monorail.app"
+          codesign -d --entitlements - "$app" 2>/dev/null | tee entitlements.txt
+          grep -q "com.apple.security.app-sandbox" entitlements.txt || { echo "::error::No sandbox entitlement"; exit 1; }
+          id="$(defaults read "$PWD/$app/Contents/Info" CFBundleIdentifier)"
+          [ "$id" = "org.ashforde.monorail.appstore" ] || { echo "::error::Wrong bundle ID $id"; exit 1; }
+          echo "Bundle ID $id, sandboxed"
+      - name: Allow Accessibility for this build
+        # GitHub's Macs run with System Integrity Protection off, so the permission database can be written.
         run: |
-          xcrun altool --upload-app -f dist/AppStore/Monorail-*.pkg -t macos \
-            -u "$APPLE_ID" -p "$APPLE_APP_PASSWORD" --output-format normal
-          echo "### Uploaded: it shows in App Store Connect → TestFlight after Apple processes it (about 15–60 minutes)" >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          app="$PWD/dist/AppStore/Monorail.app"
+          bin="$app/Contents/MacOS/Monorail"
+          db="/Library/Application Support/com.apple.TCC/TCC.db"
+          for client in "org.ashforde.monorail.appstore:0" "$bin:1"; do
+            name="${client%:*}"; type="${client##*:}"
+            sudo sqlite3 "$db" "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, indirect_object_identifier, flags, last_modified) VALUES ('kTCCServiceAccessibility', '$name', $type, 2, 4, 1, 'UNUSED', 0, CAST(strftime('%s','now') AS INTEGER));"
+          done
+          sudo killall -9 tccd 2>/dev/null || true
+      - name: Run the sandboxed engine while TextEdit windows open, take focus and close
+        run: |
+          set -uo pipefail
+          bin="$PWD/dist/AppStore/Monorail.app/Contents/MacOS/Monorail"
+          mkdir -p "$RUNNER_TEMP/docs"
+          for n in one two three; do echo "Window $n" > "$RUNNER_TEMP/docs/$n.txt"; done
+          "$bin" --shared-engine > engine.log 2>&1 &
+          engine=$!
+          sleep 6
+          if ! kill -0 "$engine" 2>/dev/null; then
+            cat engine.log
+            echo "::error::The sandboxed engine stopped at once (no Accessibility inside the sandbox?)."
+            exit 1
+          fi
+          for n in one two three; do open -a TextEdit "$RUNNER_TEMP/docs/$n.txt"; sleep 3; done
+          open -a Finder; sleep 2; open -a TextEdit; sleep 2
+          osascript -e 'tell application "TextEdit" to close front window saving no' || true
+          sleep 3
+          osascript -e 'tell application "TextEdit" to quit saving no' || killall TextEdit || true
+          sleep 3
+          kill -INT "$engine" 2>/dev/null || true
+          sleep 1
+          cat engine.log
+      - name: Check what the sandboxed engine saw
+        run: |
+          set -euo pipefail
+          created="$(grep -c 'event: created' engine.log || true)"
+          destroyed="$(grep -c 'event: destroyed' engine.log || true)"
+          focused="$(grep -c 'event: focused' engine.log || true)"
+          moved="$(grep -oE 'windows moved: [0-9]+' engine.log | awk '{ s += $3 } END { print s + 0 }')"
+          {
+            echo "### App Store edition, sandboxed, on GitHub's Mac"
+            echo "| Opened | Closed | Focus changes | Windows moved |"
+            echo "|---|---|---|---|"
+            echo "| $created | $destroyed | $focused | $moved |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          fail=0
+          [ "$created" -ge 3 ] || { echo "::error::Expected 3 windows to open, saw $created"; fail=1; }
+          [ "$destroyed" -ge 1 ] || { echo "::error::Expected windows to close, saw $destroyed"; fail=1; }
+          [ "$focused" -ge 1 ] || { echo "::error::Expected focus changes, saw $focused"; fail=1; }
+          [ "$moved" -ge 1 ] || { echo "::error::Expected the engine to arrange windows, it moved $moved"; fail=1; }
+          exit $fail
       - uses: actions/upload-artifact@v5
+        if: always()
         with:
-          name: monorail-appstore
-          path: dist/AppStore/Monorail-*.pkg
+          name: appstore-sandbox-check
+          path: |
+            engine.log
+            entitlements.txt
+
+  upload:
+    name: Sign for the App Store and upload to TestFlight
+    needs: sandbox-check
+    runs-on: macos-15
+    env:
+      APP_CERT: ${{ secrets.APPSTORE_APP_CERT }}
+      APP_CERT_PASSWORD: ${{ secrets.APPSTORE_APP_CERT_PASSWORD }}
+      INSTALLER_CERT: ${{ secrets.APPSTORE_INSTALLER_CERT }}
+      INSTALLER_CERT_PASSWORD: ${{ secrets.APPSTORE_INSTALLER_CERT_PASSWORD }}
+      PROFILE: ${{ secrets.APPSTORE_PROFILE }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY: ${{ secrets.ASC_KEY }}
+    steps:
+      - name: Check the App Store secrets
+        id: secrets
+        run: |
+          missing=""
+          for name in APP_CERT APP_CERT_PASSWORD INSTALLER_CERT INSTALLER_CERT_PASSWORD PROFILE ASC_KEY_ID ASC_ISSUER_ID ASC_KEY; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "### Upload skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "Add the App Store secrets first (docs/APP-STORE.md). Missing:$missing" >> "$GITHUB_STEP_SUMMARY"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v5
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          fetch-depth: 0
+      - name: Use the newest Xcode
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          latest="$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -n1)"
+          [ -n "$latest" ] && sudo xcode-select -s "$latest/Contents/Developer"
+      - name: Import the App Store certificates and profile
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          keychain="$RUNNER_TEMP/appstore.keychain-db"; pass="$(openssl rand -hex 16)"
+          security create-keychain -p "$pass" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$pass" "$keychain"
+          printf '%s' "$APP_CERT" | base64 --decode > "$RUNNER_TEMP/app.p12"
+          printf '%s' "$INSTALLER_CERT" | base64 --decode > "$RUNNER_TEMP/installer.p12"
+          security import "$RUNNER_TEMP/app.p12" -k "$keychain" -P "$APP_CERT_PASSWORD" -T /usr/bin/codesign
+          security import "$RUNNER_TEMP/installer.p12" -k "$keychain" -P "$INSTALLER_CERT_PASSWORD" -T /usr/bin/productbuild
+          rm -f "$RUNNER_TEMP/app.p12" "$RUNNER_TEMP/installer.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$pass" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          app_id="$(security find-identity -v -p codesigning "$keychain" | awk -F'"' '/Apple Distribution|3rd Party Mac Developer Application/ {print $2; exit}')"
+          installer_id="$(security find-identity -v "$keychain" | awk -F'"' '/Mac Installer Distribution|3rd Party Mac Developer Installer/ {print $2; exit}')"
+          [ -n "$app_id" ] || { echo "::error::No Apple Distribution certificate in APPSTORE_APP_CERT"; exit 1; }
+          [ -n "$installer_id" ] || { echo "::error::No Mac Installer Distribution certificate in APPSTORE_INSTALLER_CERT"; exit 1; }
+          echo "APP_SIGN_IDENTITY=$app_id" >> "$GITHUB_ENV"
+          echo "INSTALLER_SIGN_IDENTITY=$installer_id" >> "$GITHUB_ENV"
+          printf '%s' "$PROFILE" | base64 --decode > "$RUNNER_TEMP/Monorail_App_Store.provisionprofile"
+          echo "PROVISIONING_PROFILE=$RUNNER_TEMP/Monorail_App_Store.provisionprofile" >> "$GITHUB_ENV"
+          echo "Signing with: $app_id / $installer_id"
+      - name: Build and sign for the App Store
+        if: steps.secrets.outputs.ready == 'true'
+        run: scripts/build-appstore.sh
+      - name: Upload to App Store Connect (TestFlight)
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s\n' "$ASC_KEY" > ~/.appstoreconnect/private_keys/AuthKey_"$ASC_KEY_ID".p8
+          pkg="$(ls dist/AppStore/Monorail-*.pkg | head -n1)"
+          xcrun altool --validate-app -f "$pkg" -t macos --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          xcrun altool --upload-app -f "$pkg" -t macos --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          rm -f ~/.appstoreconnect/private_keys/AuthKey_"$ASC_KEY_ID".p8
+          echo "### Uploaded $(basename "$pkg") to App Store Connect; it shows in TestFlight once Apple has processed it" >> "$GITHUB_STEP_SUMMARY"

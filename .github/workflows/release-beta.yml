@@ -36,7 +36,7 @@ jobs:
           path: dist/windows
       - uses: actions/download-artifact@v5
         with:
-          name: Monorail-GNOME
+          name: monorail-gnome-extension
           path: dist/gnome
       - name: Name the files and write checksums
         run: |

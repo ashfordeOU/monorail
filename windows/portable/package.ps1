@@ -71,7 +71,8 @@ while ($queue.Count -gt 0) {
 }
 
 foreach ($source in $bundled.Values) { Copy-Item $source $Out }
-$version = (Get-Content VERSION -Raw).Trim()
+# A beta release names its own version; otherwise the repository's.
+$version = if ($env:MONORAIL_BETA_VERSION) { $env:MONORAIL_BETA_VERSION } else { (Get-Content VERSION -Raw).Trim() }
 (Get-Content windows\portable\README.txt -Raw).Replace("{VERSION}", $version).Replace("`r`n", "`n").Replace("`n", "`r`n") |
     Set-Content (Join-Path $Out "README.txt") -NoNewline -Encoding utf8
 Copy-Item LICENSE (Join-Path $Out "LICENSE.txt")

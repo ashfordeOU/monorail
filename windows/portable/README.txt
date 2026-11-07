@@ -28,6 +28,8 @@ Win+Alt; run from a terminal, Monorail prints the ones it got):
   F                          full width
   , (comma)                  stack into the slide on the left
   . (full stop)              unstack
+  Page Down / Page Up        next / previous virtual desktop
+  Shift + Page Down / Up     take the focused window to the next / previous desktop
 
 Quitting
 --------

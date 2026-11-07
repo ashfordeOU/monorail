@@ -94,8 +94,11 @@ final class Updater: ObservableObject {
 
     private static func parse(_ data: Data) -> Release? {
         let object = try? JSONSerialization.jsonObject(with: data)
-        // The beta channel gets a list: take the newest that isn't a draft.
-        let candidate = (object as? [[String: Any]])?.first { ($0["draft"] as? Bool) != true } ?? object as? [String: Any]
+        // The beta channel gets a list: take the newest Mac release that isn't a draft (Mac
+        // versions are tagged vX.Y.Z; the Windows and Linux betas share the list under other tags).
+        let candidate = (object as? [[String: Any]])?.first {
+            ($0["draft"] as? Bool) != true && (($0["tag_name"] as? String)?.hasPrefix("v") ?? false)
+        } ?? object as? [String: Any]
         guard let json = candidate,
             let tag = json["tag_name"] as? String,
             let assets = json["assets"] as? [[String: Any]]

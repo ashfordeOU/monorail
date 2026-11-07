@@ -66,7 +66,8 @@ jobs:
           bin="$PWD/dist/AppStore/Monorail.app/Contents/MacOS/Monorail"
           mkdir -p "$RUNNER_TEMP/docs"
           for n in one two three; do echo "Window $n" > "$RUNNER_TEMP/docs/$n.txt"; done
-          "$bin" --shared-engine > engine.log 2>&1 &
+          # Through a pseudo-terminal so the engine's lines arrive as they happen.
+          script -q engine.log "$bin" --shared-engine > /dev/null 2>&1 &
           engine=$!
           sleep 6
           if ! kill -0 "$engine" 2>/dev/null; then
@@ -83,6 +84,14 @@ jobs:
           kill -INT "$engine" 2>/dev/null || true
           sleep 1
           cat engine.log
+      - name: What the sandbox and the permission system said (for diagnosis)
+        if: always()
+        run: |
+          log show --last 15m --style compact --predicate '(sender == "Sandbox" OR subsystem == "com.apple.sandbox.reporting") AND eventMessage CONTAINS[c] "monorail"' 2>/dev/null | tail -n 80 | tee sandbox.log || true
+          echo "----- permission decisions -----"
+          log show --last 15m --style compact --predicate 'subsystem == "com.apple.TCC" AND eventMessage CONTAINS[c] "monorail"' 2>/dev/null | tail -n 40 | tee -a sandbox.log || true
+          echo "----- TextEdit -----"
+          pgrep -lf TextEdit || echo "TextEdit isn't running"
       - name: Check what the sandboxed engine saw
         run: |
           set -euo pipefail
@@ -109,6 +118,7 @@ jobs:
           path: |
             engine.log
             entitlements.txt
+            sandbox.log
 
   upload:
     name: Sign for the App Store and upload to TestFlight

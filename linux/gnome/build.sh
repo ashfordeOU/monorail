@@ -17,7 +17,8 @@ cp "$here/extension/schemas/"*.gschema.xml "$build/schemas/"
 glib-compile-schemas --strict "$build/schemas"
 
 # The version shown in the Extensions app follows the other platforms' (one version for all).
-version="$(tr -d '[:space:]' < "$root/VERSION")"
+# A beta release names its own version; otherwise the repository's.
+version="${MONORAIL_BETA_VERSION:-$(tr -d '[:space:]' < "$root/VERSION")}"
 sed "s/@VERSION@/$version/" "$here/extension/metadata.json" > "$build/metadata.json"
 
 node --no-warnings "$here/tools/core-to-js.mjs" "$build/core"

@@ -27,6 +27,9 @@ enum WindowsKeys {
         (.moveLeft, 0x25, true), (.moveRight, 0x27, true), (.moveUp, 0x26, true), (.moveDown, 0x28, true),
         (.cycleWidth, 0x57, false), (.cycleWidthBackward, 0x57, true), (.toggleFullWidth, 0x46, false),
         (.consumeIntoLeft, 0xBC, false), (.expel, 0xBE, false),
+        // Windows' virtual desktops (see WindowsDesktops): Page Down and Page Up, Shift to take the window along.
+        (.nextWorkspace, 0x22, false), (.previousWorkspace, 0x21, false),
+        (.moveToNextWorkspace, 0x22, true), (.moveToPreviousWorkspace, 0x21, true),
     ]
 
     /// The first choice for every action (Win+Alt…).
@@ -79,7 +82,7 @@ enum WindowsKeys {
         if modifiers & win != 0 { parts.append("Win") }
         if modifiers & alt != 0 { parts.append("Alt") }
         if modifiers & shift != 0 { parts.append("Shift") }
-        let names: [UInt32: String] = [0x25: "Left", 0x27: "Right", 0x26: "Up", 0x28: "Down", 0x24: "Home", 0x23: "End", 0xBC: ",", 0xBE: "."]
+        let names: [UInt32: String] = [0x25: "Left", 0x27: "Right", 0x26: "Up", 0x28: "Down", 0x24: "Home", 0x23: "End", 0xBC: ",", 0xBE: ".", 0x21: "PageUp", 0x22: "PageDown"]
         parts.append(names[key] ?? String(UnicodeScalar(UInt8(key))))
         return parts.joined(separator: "+")
     }

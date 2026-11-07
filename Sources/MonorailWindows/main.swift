@@ -77,7 +77,7 @@ let hasTray = WindowsTray.show()
 if !hasTray { print("No tray icon (the taskbar isn't running); Ctrl-C stops Monorail.") }
 let missing = WindowsKeys.register()
 Win32WindowSystem.onHotKey = { id in
-    if let action = WindowsKeys.action(forHotKey: id) { engine.perform(action) }
+    if let action = WindowsKeys.action(forHotKey: id), !WindowsDesktops.perform(action) { engine.perform(action) }
 }
 for action in missing { print("Every shortcut for \(action.title) is taken by another app; it has no key.") }
 print("Shortcuts: " + WindowsKeys.active.map { "\($0.label) \($0.action.title.lowercased())" }.joined(separator: " · "))

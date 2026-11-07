@@ -103,7 +103,7 @@ enum WindowsUITest {
         Win32WindowSystem.onHotKey = { id in
             guard let action = WindowsKeys.action(forHotKey: id) else { return }
             pressed.append(action)
-            engine.perform(action)
+            if !WindowsDesktops.perform(action) { engine.perform(action) }
         }
         if let display = engine.activeDisplay, let before = engine.strips[display]?.focusedWindow,
             let right = WindowsKeys.binding(for: .focusRight), let left = WindowsKeys.binding(for: .focusLeft)
@@ -234,6 +234,43 @@ enum WindowsUITest {
             Win32WindowSystem.pump(for: 2)
             let fresh = ours(system, pids).filter { !before.contains($0.id) }
             check(!fresh.isEmpty && fresh.allSatisfy { engine.isManaged($0.id) }, "a window opened on the new desktop is tiled there")
+            let freshIDs = fresh.map(\.id)
+            func shownHere(_ id: WindowID) -> Bool { system.window(id)?.isStandard == true }
+
+            // Monorail's own desktop shortcuts, pressed through Windows' input like a person would.
+            if let previous = WindowsKeys.binding(for: .previousWorkspace), let next = WindowsKeys.binding(for: .nextWorkspace),
+                let carryBack = WindowsKeys.binding(for: .moveToPreviousWorkspace)
+            {
+                WindowsKeys.press(previous)
+                Win32WindowSystem.pump(for: 2.5)
+                check(pressed.contains(.previousWorkspace), "pressing \(previous.label) reaches Monorail")
+                check(before.allSatisfy { shownHere($0) && engine.isManaged($0) },
+                      "\(previous.label) goes back to the first desktop: its windows are shown and on the strip")
+                check(freshIDs.allSatisfy { !shownHere($0) && !engine.isManaged($0) },
+                      "and the second desktop's window is hidden and off the strip")
+
+                WindowsKeys.press(next)
+                Win32WindowSystem.pump(for: 2.5)
+                check(freshIDs.allSatisfy { shownHere($0) && engine.isManaged($0) } && before.allSatisfy { !shownHere($0) },
+                      "\(next.label) goes on to the second desktop again")
+
+                // Take the second desktop's window back to the first desktop with it.
+                if let carried = freshIDs.first {
+                    system.focus(carried)
+                    Win32WindowSystem.pump(for: 0.8)
+                    WindowsKeys.press(carryBack)
+                    Win32WindowSystem.pump(for: 3)
+                    check(before.allSatisfy { shownHere($0) }, "\(carryBack.label) switches to the first desktop")
+                    check(shownHere(carried) && engine.isManaged(carried),
+                          "and the window came along: shown on the first desktop and tiled there")
+                    check(system.focusedWindow() == carried, "and it keeps focus")
+                }
+                // Back to the second desktop to close it.
+                WindowsKeys.press(next)
+                Win32WindowSystem.pump(for: 2.5)
+            } else {
+                check(false, "the desktop shortcuts are registered")
+            }
             WindowsKeys.press(WindowsKeys.Binding(action: .focusLeft, modifiers: WindowsKeys.control | WindowsKeys.win, key: 0x73))
             Win32WindowSystem.pump(for: 2.5)
             check(before.allSatisfy { engine.isManaged($0) }, "closing that desktop brings the first desktop's windows back onto the strip")

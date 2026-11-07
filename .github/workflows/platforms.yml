@@ -192,3 +192,56 @@ jobs:
       - name: Golden tests against the TypeScript core
         working-directory: core-ts
         run: npm test
+
+  # Monorail for GNOME (beta), linux/gnome: built from the shared TypeScript core, installed into a
+  # real GNOME Shell running headless on this machine (Wayland, one 1280x800 virtual monitor,
+  # Xwayland for X11 apps), then tested on real GTK windows with the real shortcuts. Every window's
+  # frame is read from inside the shell through a test-only D-Bus interface (MONORAIL_TEST=1).
+  gnome-extension:
+    name: GNOME extension (Linux, beta; real GNOME Shell, headless)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install GNOME Shell, Xwayland, GJS with GTK 4 and D-Bus
+        run: |
+          sudo apt-get update -q
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends \
+            gnome-shell mutter xwayland gjs gir1.2-gtk-4.0 dbus dbus-x11 dbus-user-session \
+            dconf-service dconf-gsettings-backend libglib2.0-bin gsettings-desktop-schemas \
+            libgl1-mesa-dri libegl-mesa0 zip unzip
+          gnome-shell --version
+          gjs --version
+          # Xwayland needs a socket folder anyone can write to.
+          sudo mkdir -p /tmp/.X11-unix
+          sudo chmod 1777 /tmp/.X11-unix
+      - name: Shared core tests (TypeScript, the same golden files as the Swift core)
+        working-directory: core-ts
+        run: npm test
+      - name: Build the extension zip
+        run: linux/gnome/build.sh
+      - name: Syntax check of the extension and test scripts
+        run: for f in linux/gnome/extension/*.js linux/gnome/test/*.js linux/gnome/tools/*.mjs; do node --check "$f"; done
+      - name: The built core runs in GJS (GNOME Shell's JavaScript engine)
+        run: gjs -m linux/gnome/test/core-in-gjs.js "$PWD/linux/gnome/build/monorail@ashforde.org"
+      - name: UI test in a real, headless GNOME Shell (real windows, real shortcuts)
+        timeout-minutes: 15
+        run: linux/gnome/test/run-ci.sh "$RUNNER_TEMP/gnome-test"
+      - name: Keep the extension zip
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monorail-gnome-extension
+          path: linux/gnome/dist/monorail@ashforde.org.shell-extension.zip
+          retention-days: 30
+          if-no-files-found: ignore
+      - name: Keep the UI test's report and GNOME Shell's log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gnome-ui-test
+          path: ${{ runner.temp }}/gnome-test
+          if-no-files-found: ignore

@@ -132,6 +132,41 @@ version and runs it against real windows there.
 - [ ] Signed installer (MSIX or EXE) and winget (needs the owner's code signing)
 - [ ] Alpha on a real PC (needs the owner)
 
+## Phase 3 checklist (Linux: GNOME beta)
+
+A GNOME Shell extension in `linux/gnome` (GNOME 45 and later, ES modules), labelled beta, tested on
+GitHub's Ubuntu 24.04 runners in a real GNOME Shell (46) running headless.
+
+- [x] The shared core runs the strip: `core-ts` gained the strip's geometry (`src/layout.ts`: widths,
+  gaps, reveal, parking, frames, ported from MonorailCore's `LayoutConfig` and `Strip.layout`) and
+  cycle width and full width, with tests; `linux/gnome/build.sh` turns the core into plain
+  JavaScript for GJS (Node's own type stripping, no dependencies) and zips the extension
+- [x] Extension: new normal windows join the strip of their workspace and monitor beside the focused
+  one, half width, full work-area height, 8-pixel gaps (the spec's defaults); the strip scrolls to
+  show the focused window whole; closing a window closes the gap; dialogs, fixed-size and
+  skip-taskbar windows float; each workspace has its own strip; turning it off and on (as on locking
+  the screen) restores the strip. Off, it also brings parked windows back on screen (written, not
+  yet checked by CI: the test interface goes away with the extension)
+- [x] Shortcuts as GSettings keybindings named after the shared actions: Super+Alt+Left/Right,
+  Home/End, Shift to move, W to cycle width, F for full width. GNOME 46 uses Super+Alt+Left/Right
+  for workspaces (CI found it); Monorail takes over just those keys while it's on and gives them back
+  in place when it's off (a setting turns this off)
+- [x] Mutter keeps at least 75 pixels of any window on screen (CI found it), so parked windows go
+  as far off as Mutter allows and are hidden until they come back
+- [x] CI ("GNOME extension" in `platforms.yml`): installs GNOME Shell, Xwayland and GJS, runs the core
+  tests, builds the zip, checks the built core in GJS, then starts `gnome-shell --headless --wayland
+  --virtual-monitor 1280x800` on its own D-Bus session with the extension and a test-only D-Bus
+  interface (`MONORAIL_TEST=1`). It opens real GTK 4 windows (Wayland and X11), presses the real
+  shortcuts through a virtual keyboard and checks 31 things against frames read from inside the
+  shell: side by side without overlap at full height, focus and scrolling, moving columns, widths,
+  closing, dialogs, workspaces, X11, giving GNOME's keys back, off and on. Any error from the
+  extension in the shell's log fails it. The report, the shell's log and the zip are kept as
+  artefacts. All 31 pass on a local Ubuntu 24.04 with GNOME Shell 46.0
+- [ ] Slides with several windows, docking, saved views, animations, preferences window, panel
+  indicator, gestures
+- [ ] Several monitors and a real GNOME session (needs a Linux machine), GNOME 47 to 49
+- [ ] extensions.gnome.org (needs the owner's account); companion app
+
 ## What needs the owner
 
 - Windows code signing (Azure Trusted Signing, about $10 a month) and a Microsoft Store account.

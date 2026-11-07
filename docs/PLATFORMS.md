@@ -194,7 +194,7 @@ The scheduled check-ins work through this list in order and tick items off.
   - [x] Step 4: windows kept on several workspaces (`WorkspaceTags`), with tests
   - [x] Step 5: saved views, nine per display (`SavedViews`, same saved format), with tests
   - [x] Step 6: where returning windows and reopened apps go back to (`ReturnMemory`), with tests
-- [ ] macOS backend implements WindowSystem
+- [x] macOS backend implements WindowSystem
   - [x] `AXWindowSystem`: displays, windows, focus, batched moves, minimise, close, and app and display events through Accessibility; checked by the self-test on every build
   - [x] Window events (created, destroyed, moved, focused, minimised, restored, title on request) from Accessibility observers, started and stopped by the self-test
   - [x] `SharedEngine` in MonorailEngine: strips per display from any WindowSystem (new windows slide in, closed and minimised ones leave and come back where they were, focus scrolls, hidden apps, unplugged displays), tested against the fake
@@ -207,4 +207,4 @@ The scheduled check-ins work through this list in order and tick items off.
   - [x] A Swift test that `spec/actions.json` matches the Swift core exactly (it caught 9 wrong titles, now fixed)
   - [ ] Settings import (`import-aerospace`) in TypeScript, when the Linux companion app needs it
 - [x] Generators for C# and TypeScript definitions: `scripts/gen-defs.py` turns `spec/` into `core-ts/src/generated/` and `windows/Monorail.Shared/Generated/` (actions, setting keys, plain defaults); CI checks they're current, builds the C# on Windows, and the TypeScript parser uses them
-- [ ] Phase 0 review: report to the owner, decide on Phase 1 start. Written up in [PHASE0-REVIEW.md](PHASE0-REVIEW.md); waiting on the owner (the real-Mac event check, then go or wait)
+- [x] Phase 0 review: report to the owner, decide on Phase 1 start. Written up in [PHASE0-REVIEW.md](PHASE0-REVIEW.md). The real-Mac event check passed on GitHub's Mac (7 Nov), and the owner chose to go ahead: the Windows and GNOME betas were released as 0.1.0 the same day

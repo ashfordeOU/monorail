@@ -30,6 +30,13 @@ system-wide hot keys.
 
 ## Steps (once the Apple Developer account is approved)
 
+The automated way: add the App Store secrets listed at the top of `.github/workflows/appstore.yml`,
+then run **App Store** from the Actions tab. It first checks on GitHub's Mac that the sandboxed
+edition still sees and arranges real windows, then signs it and uploads it to App Store Connect,
+where it appears in TestFlight. What to paste into App Store Connect is in
+[APP-STORE-LISTING.md](APP-STORE-LISTING.md). The manual steps below do the same by hand.
+
+
 1. **App Store Connect → Apps → +**: a new macOS app named "Monorail by Ashforde", bundle ID
    `org.ashforde.monorail.appstore`, SKU `monorail`.
 2. **Certificates** (developer.apple.com → Certificates): create **Apple Distribution** and

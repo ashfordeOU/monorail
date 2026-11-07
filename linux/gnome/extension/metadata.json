@@ -1,0 +1,9 @@
+{
+  "uuid": "monorail@ashforde.org",
+  "name": "Monorail for GNOME (beta)",
+  "description": "Scrolling tiling, beta. New windows open side by side in a strip of columns at full height, and the strip scrolls to keep the focused window on screen. Each workspace has its own strip. Super+Alt+Left/Right moves focus, Super+Alt+Shift+Left/Right moves a column, Super+Alt+W cycles its width and Super+Alt+F makes it full width. Dialogs and other small windows are left floating.",
+  "shell-version": ["45", "46", "47", "48", "49"],
+  "url": "https://github.com/ashfordeOU/monorail",
+  "settings-schema": "org.gnome.shell.extensions.monorail",
+  "version-name": "@VERSION@ beta"
+}

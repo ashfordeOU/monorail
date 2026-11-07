@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Monorail for GNOME (beta). Shortcut names are the shared action names in spec/actions.json. -->
+<schemalist>
+  <schema id="org.gnome.shell.extensions.monorail" path="/org/gnome/shell/extensions/monorail/">
+    <key name="focus-left" type="as">
+      <default><![CDATA[['<Super><Alt>Left']]]></default>
+      <summary>Focus left</summary>
+    </key>
+    <key name="focus-right" type="as">
+      <default><![CDATA[['<Super><Alt>Right']]]></default>
+      <summary>Focus right</summary>
+    </key>
+    <key name="focus-first" type="as">
+      <default><![CDATA[['<Super><Alt>Home']]]></default>
+      <summary>Focus the first column</summary>
+    </key>
+    <key name="focus-last" type="as">
+      <default><![CDATA[['<Super><Alt>End']]]></default>
+      <summary>Focus the last column</summary>
+    </key>
+    <key name="move-left" type="as">
+      <default><![CDATA[['<Super><Alt><Shift>Left']]]></default>
+      <summary>Move the column left</summary>
+    </key>
+    <key name="move-right" type="as">
+      <default><![CDATA[['<Super><Alt><Shift>Right']]]></default>
+      <summary>Move the column right</summary>
+    </key>
+    <key name="cycle-width" type="as">
+      <default><![CDATA[['<Super><Alt>w']]]></default>
+      <summary>Cycle the column's width</summary>
+    </key>
+    <key name="cycle-width-backward" type="as">
+      <default><![CDATA[['<Super><Alt><Shift>w']]]></default>
+      <summary>Cycle the column's width backwards</summary>
+    </key>
+    <key name="full-width" type="as">
+      <default><![CDATA[['<Super><Alt>f']]]></default>
+      <summary>Full width (press again to go back)</summary>
+    </key>
+    <key name="take-over-gnome-shortcuts" type="b">
+      <default>true</default>
+      <summary>Take over GNOME's own shortcuts that clash with Monorail's</summary>
+      <description>GNOME uses Super+Alt+Left/Right to switch workspace and Super+Shift+Alt+Left/Right to move a window to another workspace (both also have Super+Page Up/Down and Ctrl+Alt+arrows). While Monorail is on it takes those keys and gives them back when it's turned off.</description>
+    </key>
+    <key name="released-shortcuts" type="s">
+      <default>'[]'</default>
+      <summary>GNOME shortcuts Monorail has taken over, to give back (kept here in case GNOME Shell stops first)</summary>
+    </key>
+    <key name="gap" type="i">
+      <range min="0" max="64"/>
+      <default>8</default>
+      <summary>Space between columns, in pixels</summary>
+    </key>
+    <key name="edge-gap" type="i">
+      <range min="0" max="64"/>
+      <default>8</default>
+      <summary>Space between the strip and the screen edges, in pixels</summary>
+    </key>
+    <key name="default-width" type="d">
+      <range min="0.1" max="1.0"/>
+      <default>0.5</default>
+      <summary>Width of a new column, as a share of the screen</summary>
+    </key>
+  </schema>
+</schemalist>

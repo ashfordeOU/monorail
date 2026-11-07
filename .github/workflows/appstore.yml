@@ -72,11 +72,14 @@ jobs:
           bin="$PWD/dist/AppStore/Monorail.app/Contents/MacOS/Monorail"
           mkdir -p "$RUNNER_TEMP/docs"
           for n in one two three; do echo "Window $n" > "$RUNNER_TEMP/docs/$n.txt"; done
-          # Through a pseudo-terminal so the engine's lines arrive as they happen.
-          script -q engine.log "$bin" --shared-engine > /dev/null 2>&1 &
-          engine=$!
+          # Opened the way a person opens it (through Launch Services), so macOS holds Monorail itself
+          # responsible for its permissions, not the script that started it.
+          app="$PWD/dist/AppStore/Monorail.app"
+          : > engine.log
+          open -n --stdout "$PWD/engine.log" --stderr "$PWD/engine.log" "$app" --args --shared-engine
           sleep 6
-          if ! kill -0 "$engine" 2>/dev/null; then
+          engine="$(pgrep -f "$app/Contents/MacOS/Monorail" | head -n1 || true)"
+          if [ -z "$engine" ]; then
             cat engine.log
             echo "::error::The sandboxed engine stopped at once (no Accessibility inside the sandbox?)."
             exit 1

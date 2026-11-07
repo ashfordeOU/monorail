@@ -1,0 +1,75 @@
+name: Windows and Linux beta release
+
+# Publishes a beta of Monorail for Windows (portable zip) and GNOME (extension zip) as a GitHub
+# pre-release tagged beta-<version>. Run by hand from the Actions tab. Every check in Platforms runs
+# first, on GitHub's Windows and Linux machines, and nothing is published unless they all pass.
+# Pre-releases are never "latest", so the Mac download links and the Mac app's updates (which only
+# take vX.Y.Z tags) are unaffected.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Beta version, e.g. 0.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  checks:
+    uses: ./.github/workflows/platforms.yml
+    with:
+      beta_version: ${{ github.event.inputs.version }}
+
+  publish:
+    needs: checks
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ github.event.inputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: Monorail-Windows-portable
+          path: dist/windows
+      - uses: actions/download-artifact@v5
+        with:
+          name: Monorail-GNOME
+          path: dist/gnome
+      - name: Name the files and write checksums
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          cp "$(find dist/windows -name '*.zip' | head -n1)" "out/Monorail-Windows-beta-$VERSION.zip"
+          cp "$(find dist/gnome -name '*.zip' | head -n1)" "out/monorail@ashforde.org.shell-extension.zip"
+          (cd out && sha256sum * > SHA256SUMS-beta.txt)
+          cat out/SHA256SUMS-beta.txt
+      - name: Publish the pre-release
+        run: |
+          set -euo pipefail
+          tag="beta-$VERSION"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "::error::$tag already exists; pick a new version."
+            exit 1
+          fi
+          cat > notes.md <<EOF
+          Beta of Monorail for **Windows** and **Linux (GNOME)**. Every check ran on GitHub's Windows
+          and Linux machines before this was published; it hasn't been tried by many people on their
+          own PCs yet, so expect rough edges and please [tell us what you find](https://github.com/ashfordeOU/monorail/issues).
+
+          **Windows (10 and 11):** download \`Monorail-Windows-beta-$VERSION.zip\`, unzip it anywhere and run
+          \`Monorail.exe\`. No installer and no administrator rights. It isn't code-signed yet, so
+          SmartScreen may ask: choose *More info* → *Run anyway*. The read-me inside lists the shortcuts.
+
+          **Linux (GNOME 45 or later):** download \`monorail@ashforde.org.shell-extension.zip\`, then run
+          \`gnome-extensions install monorail@ashforde.org.shell-extension.zip\`, log out and back in, and
+          run \`gnome-extensions enable monorail@ashforde.org\`.
+
+          Checksums are in \`SHA256SUMS-beta.txt\`. Monorail for Mac is unchanged by this release.
+          EOF
+          sed -i 's/^          //' notes.md
+          gh release create "$tag" out/* --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "Monorail for Windows and Linux $VERSION (beta)" --notes-file notes.md
+          echo "### Published [$tag](https://github.com/$GITHUB_REPOSITORY/releases/tag/$tag)" >> "$GITHUB_STEP_SUMMARY"

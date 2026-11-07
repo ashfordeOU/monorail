@@ -101,7 +101,9 @@ version and runs it against real windows there.
   windows, so switching desktops takes them off the strip and brings the new desktop's on. The UI
   test makes and closes a real desktop (Ctrl+Win+D, Ctrl+Win+F4), and GitHub's Windows Server 2025
   machine does have them (the Machine checks probe: 1 → 2 → 1 desktops); the UI test had been
-  skipping them by mistake (windows on another desktop still count as visible to Windows). Each desktop
+  skipping them by mistake (windows on another desktop still count as visible to Windows). Now it
+  runs and passes there: a new desktop takes the old one's windows off the strip, a window opened
+  on it is tiled, and closing it brings the first desktop's windows back. Each desktop
   keeps its own slide order and widths when you come back (tested against the fake). Still to do:
   shortcuts to switch desktop and send a window to one (Windows has no public API for those)
 - [x] Shortcuts from the shared keymap: Win+Alt with arrows, Home, End, W, F, comma and full stop

@@ -97,15 +97,16 @@ version and runs it against real windows there.
   GitHub's Windows Server 2025 runner: 13 checks, windows placed to the pixel)
 - [x] Per-monitor DPI awareness (v2): positions are real pixels on every display, scaled or not
   (a scaled second display is still to be tried on a real PC)
-- [ ] Workspaces as Windows virtual desktops. Written: Windows hides (cloaks) other desktops'
+- [x] Workspaces as Windows virtual desktops. Written: Windows hides (cloaks) other desktops'
   windows, so switching desktops takes them off the strip and brings the new desktop's on. The UI
   test makes and closes a real desktop (Ctrl+Win+D, Ctrl+Win+F4), and GitHub's Windows Server 2025
   machine does have them (the Machine checks probe: 1 → 2 → 1 desktops); the UI test had been
   skipping them by mistake (windows on another desktop still count as visible to Windows). Now it
   runs and passes there: a new desktop takes the old one's windows off the strip, a window opened
   on it is tiled, and closing it brings the first desktop's windows back. Each desktop
-  keeps its own slide order and widths when you come back (tested against the fake). Still to do:
-  shortcuts to switch desktop and send a window to one (Windows has no public API for those)
+  keeps its own slide order and widths when you come back (tested against the fake). Next and previous desktop (Win+Alt+Page Down/Up) and taking the window
+  along (with Shift) press Windows' own Ctrl+Win+arrows, and carry a window by hiding it, switching
+  and showing it again (no undocumented Windows parts); all tested there with real windows.
 - [x] Shortcuts from the shared keymap: Win+Alt with arrows, Home, End, W, F, comma and full stop
   (Shift to move). Windows 11 and Server 2025 keep Win+Alt+arrows, W and F, which CI found, so the
   whole set moves to Ctrl+Win+Alt when Win+Alt isn't free; the UI test presses them through

@@ -14,6 +14,8 @@ export interface Column {
   windows: WindowID[];
   active: number;
   width: number;
+  /** Uses the whole usable width for now, keeping `width` to go back to. */
+  isFullWidth: boolean;
   isTabbed: boolean;
   isTall: boolean;
   arrangement: Arrangement;
@@ -24,7 +26,7 @@ export interface Column {
 }
 
 export const column = (windows: WindowID[], width: number, extra: Partial<Column> = {}): Column => ({
-  windows, active: 0, width: clampWidth(width), isTabbed: false, isTall: false, arrangement: 'stack',
+  windows, active: 0, width: clampWidth(width), isFullWidth: false, isTabbed: false, isTall: false, arrangement: 'stack',
   split: defaultSplit, isCustom: false, ...extra,
 });
 
@@ -226,6 +228,41 @@ export class Strip {
     this.columns.splice(this.focusedColumn + 1, 0, column([window], source.width, { isCustom: true }));
     this.focusedColumn += 1;
     return true;
+  }
+
+  /** Steps the focused slide to the next (or previous) width preset, wrapping round. */
+  cycleWidth(presets: number[], forward = true) {
+    const col = this.columns[this.focusedColumn];
+    if (!col || presets.length === 0) return;
+    const current = col.isFullWidth ? 1 : col.width;
+    const sorted = [...presets].sort((a, b) => a - b);
+    const next = forward
+      ? (sorted.find((p) => p > current + 0.01) ?? sorted[0])
+      : ([...sorted].reverse().find((p) => p < current - 0.01) ?? sorted[sorted.length - 1]);
+    col.width = clampWidth(next);
+    col.isFullWidth = false;
+  }
+
+  /** Grows or shrinks the focused slide by `delta` (a share of the usable width). */
+  adjustWidth(delta: number) {
+    const col = this.columns[this.focusedColumn];
+    if (!col) return;
+    col.width = clampWidth((col.isFullWidth ? 1 : col.width) + delta);
+    col.isFullWidth = false;
+  }
+
+  /** Full width and back to the width the slide had. */
+  toggleFullWidth() {
+    const col = this.columns[this.focusedColumn];
+    if (col) col.isFullWidth = !col.isFullWidth;
+  }
+
+  /** Sets the width of the slide holding `window`, e.g. after it was resized by hand. */
+  setWidth(width: number, window: WindowID) {
+    const at = this.locate(window);
+    if (!at) return;
+    this.columns[at.column].width = clampWidth(width);
+    this.columns[at.column].isFullWidth = false;
   }
 
   /** Puts `window` into a new slide at `index`. */

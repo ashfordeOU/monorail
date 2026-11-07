@@ -9,16 +9,18 @@
 [![Latest release](https://img.shields.io/github/v/release/ashfordeOU/monorail?label=version&color=F66270)](https://github.com/ashfordeOU/monorail/releases/latest)
 ![macOS 13+](https://img.shields.io/badge/macOS-13%2B-2A1430?logo=apple)
 ![Universal](https://img.shields.io/badge/Apple%20silicon%20%2B%20Intel-universal-D63A80)
+[![Windows and GNOME: beta](https://img.shields.io/badge/Windows%20%2B%20GNOME-beta-7A5A70)](#windows-and-linux-beta)
 ![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-FF9E62)
 [![CI](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml/badge.svg)](https://github.com/ashfordeOU/monorail/actions/workflows/ci.yml)
 
-[Install](#install) · [Safe to install](#safe-to-install) · [Features](#features) · [Getting started](#getting-started) · [Shortcuts](#keyboard-shortcuts) · [Settings](#settings) · [Automation](#automation) · [Privacy](#privacy) · [FAQ](#faq)
+[Install](#install) · [Windows and Linux](#windows-and-linux-beta) · [Safe to install](#safe-to-install) · [Features](#features) · [Getting started](#getting-started) · [Shortcuts](#keyboard-shortcuts) · [Settings](#settings) · [Automation](#automation) · [Privacy](#privacy) · [FAQ](#faq)
 
 </div>
 
 ---
 
-**Monorail by Ashforde®** is a scrolling window manager for your Mac.
+**Monorail by Ashforde®** is a scrolling window manager for your Mac. Betas for
+[Windows and Linux (GNOME)](#windows-and-linux-beta) are out too.
 
 Other tilers squeeze every new window into the space you already have. Monorail puts each window
 on a strip that runs past the edges of your display, so nothing shrinks. Open a window and it
@@ -54,6 +56,28 @@ Monorail checks GitHub once a day. When a new version is out, its menu shows
 **Update to Monorail …**, and **Install and Relaunch** downloads it, checks it against the published
 SHA-256 checksum and Monorail's code signature, and reopens with your windows where they were.
 Turn on **Install updates automatically** in Settings → General to skip the question.
+
+## Windows and Linux (beta)
+
+The same strip on Windows and on Linux with GNOME, numbered like the Mac version and released with
+it. Download both from the [beta releases](https://github.com/ashfordeOU/monorail/releases?q=beta)
+or [monorail.ashforde.org](https://monorail.ashforde.org/#platforms).
+
+| | Windows 10 and 11 | Linux: GNOME 45 or later |
+|---|---|---|
+| Get it | `Monorail-Windows-beta-x.y.z.zip` | `monorail@ashforde.org.shell-extension.zip` |
+| Install | Unzip anywhere and run `Monorail.exe`. No installer and no administrator rights, so it runs on work PCs. | `gnome-extensions install monorail@ashforde.org.shell-extension.zip`, log out and back in, then `gnome-extensions enable monorail@ashforde.org`. |
+| Shortcuts | <kbd>Win</kbd><kbd>Alt</kbd> with arrows (focus; <kbd>⇧</kbd> to move), <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>W</kbd> (width), <kbd>F</kbd> (full width), <kbd>,</kbd> and <kbd>.</kbd> (stack, unstack), <kbd>Page Down</kbd>/<kbd>Page Up</kbd> (next or previous virtual desktop; <kbd>⇧</kbd> takes the window along). Where Windows already uses them, the same keys with <kbd>Ctrl</kbd><kbd>Win</kbd><kbd>Alt</kbd> or <kbd>Ctrl</kbd><kbd>Alt</kbd>. | <kbd>Super</kbd><kbd>Alt</kbd> with <kbd>←</kbd>/<kbd>→</kbd> (focus; <kbd>⇧</kbd> to move), <kbd>W</kbd> (width; <kbd>⇧</kbd> backwards), <kbd>F</kbd> (full width). While it's on, it takes over GNOME's own <kbd>Super</kbd><kbd>Alt</kbd>+arrow shortcuts and gives them back when it's turned off (a setting stops this). |
+| Also | One strip per screen, workspaces as virtual desktops, Stay Awake and Keep me Available (keeps Teams and Slack on Available) from the tray icon, settings in a text file. | One strip per workspace and per screen, windows moved between screens follow, dialogs and fixed-size windows float. |
+| Not yet | Code signing (SmartScreen asks once: *More info* → *Run anyway*), a settings window, animations. | extensions.gnome.org, KDE, preferences, animations, slides of several windows. |
+
+Every change is tested on GitHub's Windows and Linux machines with real windows: on Windows the
+UI test tiles real Notepad windows, presses the shortcuts through Windows' own input, and switches
+and carries windows between virtual desktops; on Linux the extension runs in a real, headless GNOME
+Shell with one and with two screens. Few people have used the betas on their own computers yet, so
+please [tell us what you find](https://github.com/ashfordeOU/monorail/issues). Details and the
+plan: [docs/PLATFORMS.md](docs/PLATFORMS.md), [windows/portable/README.txt](windows/portable/README.txt)
+and [linux/gnome/README.md](linux/gnome/README.md).
 
 ## Safe to install
 
@@ -351,6 +375,9 @@ Not unless you ask it to. Sentences, predictions and suggestions run on your Mac
 **Can I use Monorail on a work Mac without admin rights?**
 Yes. It installs without an administrator into your own Applications folder. Stay Awake, Keep me Available, Evening Mode, the display controls and arranging scriptable apps (Safari, Chrome, Finder, Terminal and others) work straight away. Arranging every window needs Accessibility, which only an administrator can allow on a managed Mac; IT can approve it for Monorail in one step with a configuration profile. See [docs/IT.md](docs/IT.md).
 
+**Is there a Windows or Linux version?**
+Yes, in beta: Windows 10 and 11 (unzip and run, no administrator rights) and GNOME 45 or later. See [Windows and Linux (beta)](#windows-and-linux-beta).
+
 **Is it free?**
 Yes, with no trial or subscription. You can read, build, change and use the source for anything except a competing product or service. Each release becomes Apache 2.0 two years after it ships. See [docs/LICENSING.md](docs/LICENSING.md).
 
@@ -376,7 +403,18 @@ Privacy & Security → Accessibility. Release signing and notarisation are descr
 The layout model (`Sources/MonorailCore`) is plain Swift with no AppKit, so it's unit-tested on
 macOS and Linux. The app (`Sources/Monorail`) applies it to real windows through the Accessibility
 API, and reacts to macOS notifications instead of polling. Measure its energy use on your own Mac
-with `scripts/measure-performance.sh`.
+with `scripts/measure-performance.sh`, or the one-minute check `scripts/perf-check.sh`.
+
+The Windows and GNOME betas share the platform-free engine (`Sources/MonorailEngine`) and, for
+GNOME, its TypeScript port (`core-ts/`), checked against the same golden tests in `spec/`:
+
+```bash
+swift build -c release --product MonorailWindows   # Windows, with the Swift 6.1 toolchain
+.build/release/MonorailWindows.exe --ci-test        # the Windows UI test, on a real desktop
+linux/gnome/build.sh                                # the GNOME extension zip, in linux/gnome/dist
+linux/gnome/test/run-ci.sh "$PWD/gnome-test"        # its UI test in a headless GNOME Shell
+(cd core-ts && npm test)                            # the TypeScript core's golden tests
+```
 
 ## Contributing
 

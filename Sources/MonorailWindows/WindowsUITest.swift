@@ -238,6 +238,8 @@ enum WindowsUITest {
             func shownHere(_ id: WindowID) -> Bool { system.window(id)?.isStandard == true }
 
             // Monorail's own desktop shortcuts, pressed through Windows' input like a person would.
+            // (The shortcuts were let go after the tests above; take them again.)
+            WindowsKeys.register()
             if let previous = WindowsKeys.binding(for: .previousWorkspace), let next = WindowsKeys.binding(for: .nextWorkspace),
                 let carryBack = WindowsKeys.binding(for: .moveToPreviousWorkspace)
             {

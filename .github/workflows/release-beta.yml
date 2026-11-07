@@ -13,6 +13,10 @@ on:
         description: "Leave empty to use Monorail's own version (the VERSION file, same as the Mac). Only for a second beta of the same version, e.g. 1.7.24-2"
         required: false
         default: ""
+      remove_beta:
+        description: "An older beta's tag to delete once this one is out (its tag is kept), e.g. beta-0.1.0"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -77,3 +81,12 @@ jobs:
           gh release create "$tag" out/* --target "$GITHUB_SHA" --prerelease --latest=false \
             --title "Monorail $VERSION for Windows and Linux (beta)" --notes-file notes.md
           echo "### Published [$tag](https://github.com/$GITHUB_REPOSITORY/releases/tag/$tag)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove the older beta it replaces
+        if: github.event.inputs.remove_beta != ''
+        env:
+          OLD: ${{ github.event.inputs.remove_beta }}
+        run: |
+          set -euo pipefail
+          case "$OLD" in beta-*) ;; *) echo "::error::Only beta releases can be removed here."; exit 1 ;; esac
+          gh release delete "$OLD" -R "$GITHUB_REPOSITORY" --yes   # keeps the tag
+          echo "Removed the $OLD release (tag kept)" >> "$GITHUB_STEP_SUMMARY"

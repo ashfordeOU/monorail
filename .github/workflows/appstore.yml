@@ -55,9 +55,15 @@ jobs:
           app="$PWD/dist/AppStore/Monorail.app"
           bin="$app/Contents/MacOS/Monorail"
           db="/Library/Application Support/com.apple.TCC/TCC.db"
+          # Store the app's code requirement with the grant, as System Settings does: the sandbox
+          # only lets an app reach other apps' windows when the grant matches its signature.
+          codesign -d -r- "$app" 2>&1 | sed -n 's/^designated => //p' > "$RUNNER_TEMP/req.txt"
+          cat "$RUNNER_TEMP/req.txt"
+          csreq -r "$RUNNER_TEMP/req.txt" -b "$RUNNER_TEMP/req.bin"
+          req="X'$(xxd -p "$RUNNER_TEMP/req.bin" | tr -d '\n')'"
           for client in "org.ashforde.monorail.appstore:0" "$bin:1"; do
             name="${client%:*}"; type="${client##*:}"
-            sudo sqlite3 "$db" "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, indirect_object_identifier, flags, last_modified) VALUES ('kTCCServiceAccessibility', '$name', $type, 2, 4, 1, 'UNUSED', 0, CAST(strftime('%s','now') AS INTEGER));"
+            sudo sqlite3 "$db" "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, csreq, indirect_object_identifier, flags, last_modified) VALUES ('kTCCServiceAccessibility', '$name', $type, 2, 4, 1, $req, 'UNUSED', 0, CAST(strftime('%s','now') AS INTEGER));"
           done
           sudo killall -9 tccd 2>/dev/null || true
       - name: Run the sandboxed engine while TextEdit windows open, take focus and close
@@ -77,9 +83,8 @@ jobs:
           fi
           for n in one two three; do open -a TextEdit "$RUNNER_TEMP/docs/$n.txt"; sleep 3; done
           open -a Finder; sleep 2; open -a TextEdit; sleep 2
-          osascript -e 'tell application "TextEdit" to close front window saving no' || true
-          sleep 3
-          osascript -e 'tell application "TextEdit" to quit saving no' || killall TextEdit || true
+          # Close the windows by ending TextEdit (Apple Events to it timed out on this machine).
+          killall TextEdit 2>/dev/null || true
           sleep 3
           kill -INT "$engine" 2>/dev/null || true
           sleep 1

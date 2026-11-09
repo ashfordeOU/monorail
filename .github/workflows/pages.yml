@@ -35,6 +35,21 @@ jobs:
           cp -R assets/readme assets/launch public/assets/
           cp assets/icon.png public/assets/icon.png
           cp site/index.html public/404.html
+          # The FAQ as structured data, so search results can show the answers (built from the page itself).
+          python3 - public/index.html <<'PY'
+          import html, json, re, sys
+          path = sys.argv[1]
+          page = open(path, encoding="utf-8").read()
+          def text(fragment):
+              return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", fragment))).strip()
+          faqs = re.findall(r"<details><summary>(.*?)</summary>(.*?)</details>", page, re.S)
+          data = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+              {"@type": "Question", "name": text(q), "acceptedAnswer": {"@type": "Answer", "text": text(a)}} for q, a in faqs]}
+          tag = '<script type="application/ld+json">%s</script>\n</head>' % json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+          page = page.replace("</head>", tag, 1)
+          open(path, "w", encoding="utf-8").write(page)
+          print("FAQ structured data: %d questions" % len(faqs))
+          PY
           printf 'User-agent: *\nAllow: /\nSitemap: https://monorail.ashforde.org/sitemap.xml\n' > public/robots.txt
           base=https://monorail.ashforde.org
           {

@@ -70,10 +70,18 @@ jobs:
                   return "\x00%d\x00" % (len(codes) - 1)
               text = re.sub(r"`([^`]+)`", keep, text)
               text = html.escape(text, quote=True)
+              # Guides published on the site; links to other files in the repository keep only their words.
+              GUIDES = {"IT.md": "it", "ACTIONS.md": "actions", "SETTINGS.md": "settings", "COMPATIBILITY.md": "compatibility",
+                        "SECURITY.md": "security", "LICENSE": "licence", "TRADEMARKS.md": "trademarks"}
               def link(m):
                   href = m.group(2)
-                  if not re.match(r"(https?://|mailto:|#|\.{0,2}/)", href):
-                      return m.group(0)
+                  if "github.com/ashfordeOU/monorail" in href:
+                      return m.group(1)
+                  if not re.match(r"(https?://|mailto:|#)", href):
+                      name = href.split("#")[0].rstrip("/").split("/")[-1]
+                      if name in GUIDES:
+                          return '<a href="../docs/%s/">%s</a>' % (GUIDES[name], m.group(1))
+                      return m.group(1)
                   return '<a href="%s">%s</a>' % (href, m.group(1))
               text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", link, text)
               text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)

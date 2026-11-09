@@ -15,7 +15,7 @@ cask "monorail" do
   end
 
   auto_updates true
-  depends_on macos: ">= :ventura"
+  depends_on macos: :ventura
 
   app "Monorail.app"
 

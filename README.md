@@ -48,7 +48,7 @@ Nix: `nix profile install github:ashfordeOU/monorail`. MacPorts: a
 Portfile in [`packaging/macports`](packaging/macports), to use as a local port until it's accepted
 upstream. IT teams: every release has a signed `.pkg` for Jamf, Kandji, Mosyle, Intune and Munki,
 plus an [Installomator label](packaging/installomator) and [AutoPkg recipes](packaging/autopkg).
-A lighter, sandboxed Mac App Store edition is coming ([what's different](docs/APP-STORE.md)).
+There's no Mac App Store version: Apple's sandbox doesn't let store apps move other apps' windows ([why](docs/APP-STORE.md)).
 
 ### Updates
 

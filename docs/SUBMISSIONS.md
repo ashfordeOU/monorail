@@ -87,6 +87,10 @@ gh pr create --fill
 
 ## 4. The Mac App Store
 
+**Parked.** On a real Mac, the sandbox blocked Accessibility even with it granted, and Apple allows
+window managers only as Developer ID downloads. See [APP-STORE.md](APP-STORE.md#status-parked-november-2026).
+The steps below are kept in case that changes.
+
 The sandboxed edition builds in CI on every change. What only the owner can do, all in the
 Ashforde OU developer account:
 

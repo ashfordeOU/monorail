@@ -1,7 +1,7 @@
 #!/bin/bash
 # Installs the latest Monorail release into /Applications, or into ~/Applications when
 # /Applications isn't writable (a standard account on a managed Mac): no administrator needed.
-#   curl -fsSL https://raw.githubusercontent.com/ashfordeOU/monorail/main/scripts/install.sh | bash
+#   curl -fsSL https://monorail.ashforde.org/install.sh | bash
 set -euo pipefail
 
 [ "$(uname -s)" = "Darwin" ] || { echo "Monorail runs on macOS only." >&2; exit 1; }
@@ -17,7 +17,7 @@ if [ ! -w "$DEST" ] || { [ -e "$DEST/Monorail.app" ] && [ ! -w "$DEST/Monorail.a
 fi
 
 echo "==> Finding the latest release"
-URL="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
+URL="$(curl -fsSL "https://monorail.ashforde.org/releases/latest.json" \
     | grep -o '"browser_download_url": *"[^"]*/Monorail-[^"]*\.zip"' | head -n1 | sed 's/.*"\(https[^"]*\)"/\1/')"
 [ -n "$URL" ] || { echo "No release found." >&2; exit 1; }
 
@@ -43,5 +43,5 @@ xattr -dr com.apple.quarantine "${DEST}/Monorail.app" 2>/dev/null || true
 echo "==> Opening Monorail"
 open "${DEST}/Monorail.app"
 echo "Done. To arrange every window, Monorail needs Accessibility (System Settings → Privacy & Security)."
-echo "On a managed Mac, ask IT: https://github.com/ashfordeOU/monorail/blob/main/docs/IT.md"
+echo "On a managed Mac, ask IT: https://monorail.ashforde.org/docs/it/"
 echo "Stay Awake, Keep me Available, Evening Mode and the display controls work without it."

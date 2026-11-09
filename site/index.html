@@ -620,7 +620,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
         <tr><td>Workspaces</td><td><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>1</kbd>…<kbd>9</kbd></td></tr>
         <tr><td>Undo</td><td><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>Z</kbd></td></tr>
       </table>
-      <p style="margin:14px 0 0;font-size:14px;color:var(--muted)">All 270 actions: <a href="https://github.com/ashfordeOU/monorail/blob/main/docs/ACTIONS.md">the full list</a>.</p></div>
+      <p style="margin:14px 0 0;font-size:14px;color:var(--muted)">All 270 actions: <a href="docs/actions/">the full list</a>.</p></div>
       <div class="checklist"><h3>Practice pad</h3><ul id="practice">
         <li data-k="left"><span class="tick">✓</span>Slide left: ⌃⌥←</li>
         <li data-k="right"><span class="tick">✓</span>Slide right: ⌃⌥→</li>
@@ -647,7 +647,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
   <section class="center reveal">
     <div class="kicker">Light on your battery</div>
     <h2>So light you'll forget it's running</h2>
-    <p class="sub">Measured on a 14-inch MacBook Pro with M4 Pro, on battery, managing real windows, idle for five minutes, Monorail 1.7.24. Measure it on yours with <a href="https://github.com/ashfordeOU/monorail/blob/main/scripts/perf-check.sh">a one-minute check in Terminal</a>.</p>
+    <p class="sub">Measured on a 14-inch MacBook Pro with M4 Pro, on battery, managing real windows, idle for five minutes, Monorail 1.7.24. Measure it on yours with <a href="perf-check.sh">a one-minute check in Terminal</a>.</p>
     <div class="numbers">
       <div class="number"><b class="grad" data-count="0.15" data-dec="2" data-suffix="%">0%</b><span>of one core</span></div>
       <div class="number"><b class="grad" data-count="0" data-dec="0">0</b><span>wake-ups a second</span></div>
@@ -664,17 +664,17 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
       <div><b>Source on GitHub, tested on every change</b><p>Every line is public under the Functional Source License. Every change is tested on macOS, Windows and Linux, and every release is built from that source by GitHub Actions, not on someone's laptop.</p></div>
       <div><b>Check your download</b><p>Each release lists SHA-256 checksums in SHA256SUMS: compare them with <code>shasum -a 256 Monorail-*.dmg</code>. <code>spctl -a -vvv -t open --context context:primary-signature Monorail-*.dmg</code> should say "Notarized Developer ID".</p></div>
     </div>
-    <p class="hint">Made by Ashforde OÜ, a company in the European Union. <a href="support/">Support</a> · <a href="privacy/">Privacy</a> · <a href="https://github.com/ashfordeOU/monorail/security/policy">Security</a></p>
+    <p class="hint">Made by Ashforde OÜ, a company in the European Union. <a href="support/">Support</a> · <a href="privacy/">Privacy</a> · <a href="docs/security/">Security</a></p>
   </section>
 
   <section id="install" class="center reveal">
     <div class="kicker">Other ways to install</div>
     <h2>However you like to install apps</h2>
     <div class="privacy" style="text-align:left">
-      <div><b>Homebrew</b><p><code>brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail &amp;&amp; brew install --cask monorail</code><br>After that, Monorail updates itself.</p></div>
-      <div><b>Terminal</b><p>Downloads the latest release into Applications.<br><code>curl -fsSL https://raw.githubusercontent.com/ashfordeOU/monorail/main/scripts/install.sh | bash</code></p></div>
+      <div><b>Homebrew</b><p><code>brew install --cask ashfordeou/monorail/monorail</code><br>After that, Monorail updates itself.</p></div>
+      <div><b>Terminal</b><p>Downloads the latest release into Applications.<br><code>curl -fsSL https://monorail.ashforde.org/install.sh | bash</code></p></div>
       <div><b>For IT and MDM</b><p>A signed, notarised <a class="pkg" href="download/pkg/">.pkg</a> for Jamf, Kandji, Mosyle, Intune and Munki, an Installomator label, and every setting manageable with a configuration profile.</p></div>
-      <div><b>Every version</b><p>All releases, release notes and checksums are on <a href="https://github.com/ashfordeOU/monorail/releases">GitHub Releases</a>.</p></div>
+      <div><b>Every version</b><p>What changed in each version is in the <a href="changelog/">changelog</a>, and every download comes with <a href="releases/latest/SHA256SUMS">checksums</a>.</p></div>
     </div>
   </section>
 
@@ -728,7 +728,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
       <div class="platform"><div class="os win"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="5" y="5" width="8" height="8" rx="1.6"/><rect x="15" y="5" width="8" height="8" rx="1.6"/><rect x="5" y="15" width="8" height="8" rx="1.6"/><rect x="15" y="15" width="8" height="8" rx="1.6"/></svg></div><h3>Windows <span class="badge soon">Beta</span></h3><p>For Windows 11 and 10. Unzip and run: no installer and no administrator rights, even on a work PC. Virtual desktops, Stay Awake and Keep me Available included.</p><a class="more" href="download/windows/">Download the Windows beta →</a></div>
       <div class="platform"><div class="os lin"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M14 3.6c-3.1 0-4.9 2.4-4.9 5.5 0 1.5-.6 2.7-1.5 4.1-1.1 1.6-2.1 3.5-2.1 5.6 0 3.2 3.6 5.1 8.5 5.1s8.5-1.9 8.5-5.1c0-2.1-1-4-2.1-5.6-.9-1.4-1.5-2.6-1.5-4.1 0-3.1-1.8-5.5-4.9-5.5z"/><path d="M14 12.6c-2 0-3.4 2.2-3.4 4.8s1.4 4.6 3.4 4.6 3.4-2 3.4-4.6-1.4-4.8-3.4-4.8z"/><circle class="f" cx="12.2" cy="8.4" r="1.05"/><circle class="f" cx="15.8" cy="8.4" r="1.05"/><path class="f" d="M12.6 10.3h2.8L14 12z"/><path d="M8.6 24.2c.6-1 2.2-1.3 3.4-.4M19.4 24.2c-.6-1-2.2-1.3-3.4-.4"/></svg></div><h3>Linux <span class="badge soon">Beta</span></h3><p>A GNOME Shell extension for GNOME 45 or later, on Wayland and X11, one strip per workspace and per screen. KDE is next.</p><a class="more" href="download/linux/">Download the GNOME beta →</a></div>
     </div>
-    <p class="hint" style="margin-top:18px">The betas are tested on every change on Windows and Linux machines, but few people have used them on their own computers yet. <a href="https://github.com/ashfordeOU/monorail/issues" style="color:inherit">Tell us what you find</a>.</p>
+    <p class="hint" style="margin-top:18px">The betas are tested on every change on Windows and Linux machines, but few people have used them on their own computers yet. <a href="mailto:contact@ashforde.org?subject=Monorail%20beta" style="color:inherit">Tell us what you find</a>.</p>
   </section>
 
   <section id="faq" class="reveal">
@@ -736,7 +736,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
     <div class="faq">
       <details><summary>Is it really free?</summary><p>Yes. Every feature, including docking, tab groups, saved views, scripting and every display, with no trial, subscription or window limits. The source is on GitHub under the Functional Source License.</p></details>
       <details><summary>Is it safe to install?</summary><p>Yes. Every release is signed with Ashforde's Apple Developer ID and notarised by Apple, so macOS opens it without warnings. <a href="#trust">Safe to install</a> shows how to check a download yourself.</p></details>
-      <details><summary>Can I use Monorail on a work Mac without admin rights?</summary><p>Yes. It installs without an administrator into your own Applications folder. Stay Awake, Keep me Available, Evening Mode, the display controls and arranging scriptable apps such as Safari, Finder and Terminal work straight away. Arranging every window needs Accessibility, which only an administrator can allow on a managed Mac, and IT can approve it for Monorail in one step: <a href="https://github.com/ashfordeOU/monorail/blob/main/docs/IT.md">the guide for IT</a>.</p></details>
+      <details><summary>Can I use Monorail on a work Mac without admin rights?</summary><p>Yes. It installs without an administrator into your own Applications folder. Stay Awake, Keep me Available, Evening Mode, the display controls and arranging scriptable apps such as Safari, Finder and Terminal work straight away. Arranging every window needs Accessibility, which only an administrator can allow on a managed Mac, and IT can approve it for Monorail in one step: <a href="docs/it/">the guide for IT</a>.</p></details>
       <details><summary>Will it fight my other window tools?</summary><p>It can, so quit other window managers and turn off Stage Manager. Settings → General → Mac setup checks for both.</p></details>
       <details><summary>What happens to my windows if I quit?</summary><p>Every window comes back on screen. Next time Monorail starts, your layout returns.</p></details>
       <details><summary>Does it work with multiple displays, projectors and Sidecar?</summary><p>Yes: each display gets its own strip, an unplugged display's windows come back when you reconnect, and Sidecar iPads fit every slide.</p></details>
@@ -761,9 +761,8 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
     <p class="sub">Download Monorail, allow Accessibility, and you're sliding in under a minute.</p>
     <div class="cta">
       <a class="btn primary two dl" href="download/" data-smartdl><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl"><span data-dl-label>Download for Mac</span><small data-dl-sub>macOS 13 or later · notarised by Apple</small></span></a>
-      <a class="btn ghost" href="https://github.com/ashfordeOU/monorail">Star on GitHub</a>
     </div>
-    <code class="install">brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail &amp;&amp; brew install --cask monorail</code>
+    <code class="install">brew install --cask ashfordeou/monorail/monorail</code>
     <div class="trust" style="margin-top:16px"><span class="notarised">Notarised by Apple</span><span>Free</span><span>No account</span><span>macOS 13+</span></div>
   </div>
 </main>
@@ -775,8 +774,8 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
       <p>Every window rides one rail. A free scrolling window manager for Mac, by Ashforde OÜ, a company in the European Union.</p>
     </div>
     <div><h2>Monorail</h2><ul><li><a href="#features">Features</a></li><li><a class="dl" href="download/">Download</a></li><li><a href="changelog/">Changelog</a></li><li><a href="privacy/">Privacy</a></li><li><a href="stats/">Download stats</a></li></ul></div>
-    <div><h2>Help</h2><ul><li><a href="support/">Support</a></li><li><a href="https://github.com/ashfordeOU/monorail#readme">Documentation</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/docs/ACTIONS.md">All actions</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/docs/SETTINGS.md">All settings</a></li><li><a href="https://github.com/ashfordeOU/monorail/security/policy">Security</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/docs/TESTING.md">Testing guide</a></li><li><a href="https://github.com/ashfordeOU/monorail/issues">Report a problem</a></li></ul></div>
-    <div><h2>Ashforde</h2><ul><li><a href="https://keeper.ashforde.org">Keeper</a></li><li><a href="keeper/">Monorail + Keeper</a></li><li><a href="https://github.com/ashfordeOU/monorail">GitHub</a></li><li><a href="https://github.com/ashfordeOU/monorail/tree/main/extensions">Extensions</a></li><li><a href="https://github.com/ashfordeOU/monorail/blob/main/LICENSE">Licence</a></li><li><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></li></ul></div>
+    <div><h2>Help</h2><ul><li><a href="support/">Support</a></li><li><a href="docs/actions/">All actions</a></li><li><a href="docs/settings/">All settings</a></li><li><a href="docs/it/">For IT</a></li><li><a href="docs/compatibility/">Compatibility</a></li><li><a href="docs/security/">Security</a></li><li><a href="mailto:contact@ashforde.org?subject=Monorail%20problem">Report a problem</a></li></ul></div>
+    <div><h2>Ashforde</h2><ul><li><a href="https://keeper.ashforde.org">Keeper</a></li><li><a href="keeper/">Monorail + Keeper</a></li><li><a href="docs/licence/">Licence</a></li><li><a href="docs/trademarks/">Trademarks</a></li><li><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></li></ul></div>
   </div>
   <p class="wrap legal">© Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ. Source-available under the Functional Source License (FSL-1.1-ALv2). The Monorail name and icon are trademarks of Ashforde OÜ. This site has no tracking and no cookies.</p>
 </footer>

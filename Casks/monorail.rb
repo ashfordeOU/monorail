@@ -2,14 +2,16 @@ cask "monorail" do
   version "1.7.24"
   sha256 "35959317945e7125b67a516b381ef2f56a5c14b9cf2dde5aa0bb118fae612f13"
 
-  url "https://github.com/ashfordeOU/monorail/releases/download/v#{version}/Monorail-#{version}.dmg"
+  url "https://monorail.ashforde.org/releases/v#{version}/Monorail-#{version}.dmg"
   name "Monorail by Ashforde®"
   desc "Scrolling window manager: every window rides one rail"
-  homepage "https://github.com/ashfordeOU/monorail"
+  homepage "https://monorail.ashforde.org/"
 
   livecheck do
-    url :url
-    strategy :github_latest
+    url "https://monorail.ashforde.org/releases/latest.json"
+    strategy :json do |json|
+      json["tag_name"]&.delete_prefix("v")
+    end
   end
 
   auto_updates true

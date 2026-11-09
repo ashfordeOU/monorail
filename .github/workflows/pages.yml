@@ -5,7 +5,7 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "assets/**", "scripts/mirror-releases.py", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
+    paths: ["site/**", "assets/**", "scripts/mirror-releases.py", "scripts/render-docs.py", "scripts/install.sh", "docs/IT.md", "docs/ACTIONS.md", "docs/SETTINGS.md", "docs/COMPATIBILITY.md", "SECURITY.md", "LICENSE", "TRADEMARKS.md", "scripts/perf-check.sh", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
   # Once a day as well, so the downloads on the site always match the newest release.
   schedule:
@@ -39,7 +39,7 @@ jobs:
           base=https://monorail.ashforde.org
           {
             printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-            for page in "" download/ changelog/ press/ stats/ keeper/ support/ privacy/; do printf '<url><loc>%s/%s</loc></url>' "$base" "$page"; done
+            for page in "" download/ changelog/ press/ stats/ keeper/ support/ privacy/ docs/it/ docs/actions/ docs/settings/ docs/compatibility/ docs/security/ docs/licence/ docs/trademarks/; do printf '<url><loc>%s/%s</loc></url>' "$base" "$page"; done
             printf '</urlset>\n'
           } > public/sitemap.xml
           # The press kit: screenshots, icon, the docking GIF and the fact sheet, in one zip.
@@ -157,8 +157,8 @@ jobs:
                   badge = '<span class="latest">Latest</span> '
               if r["date"]:
                   meta.append('<time datetime="%s">%s</time>' % (r["date"], nice(r["date"])))
-              if numbered:
-                  meta.append('<a href="%s/releases/tag/%s">On GitHub</a>' % (REPO, sid))
+              if i == 0 and numbered:
+                  meta.append('<a href="../download/">Download</a>')
               articles.append('<article class="rel" id="%s"><header><h2><a href="#%s">%s</a></h2><p class="meta">%s</p></header><div class="body">%s</div></article>'
                               % (sid, sid, v, badge + " · ".join(meta), "\n".join(r["body"])))
               chips.append('<a href="#%s">%s</a>' % (sid, v))
@@ -246,7 +246,7 @@ jobs:
               @@ARTICLES@@
             </main>
             <footer>
-              <nav aria-label="More"><a href="../">Monorail</a><a href="../download/">Download</a><a href="../privacy/">Privacy</a><a href="../support/">Support</a><a href="@@REPO@@/blob/main/CHANGELOG.md">CHANGELOG.md on GitHub</a><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></nav>
+              <nav aria-label="More"><a href="../">Monorail</a><a href="../download/">Download</a><a href="../privacy/">Privacy</a><a href="../support/">Support</a><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></nav>
               <p>© Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ. The Monorail name and icon are trademarks of Ashforde OÜ.</p>
             </footer>
           </div>
@@ -263,6 +263,12 @@ jobs:
           open(dest, "w", encoding="utf-8").write(page)
           print("changelog: %d releases" % len(releases))
           PY
+      - name: Publish the guides and the install script
+        run: |
+          pip install --quiet markdown
+          python3 scripts/render-docs.py public
+          cp scripts/install.sh public/install.sh
+          cp scripts/perf-check.sh public/perf-check.sh
       - name: Copy the newest releases onto the site
         # Downloads and the app's update checks come from monorail.ashforde.org/releases/, so they
         # keep working when the repository is private.

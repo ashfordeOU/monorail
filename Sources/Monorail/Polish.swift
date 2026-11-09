@@ -171,7 +171,7 @@ struct WhatsNewView: View {
             }
             .frame(height: 240)
             HStack {
-                Link("Full changelog", destination: URL(string: "https://github.com/ashfordeOU/monorail/blob/main/CHANGELOG.md")!)
+                Link("Full changelog", destination: URL(string: "https://monorail.ashforde.org/changelog/")!)
                 Spacer()
                 if offersSwitches, !newSwitches.isEmpty {
                     Button("Not now", action: close).keyboardShortcut(.cancelAction)

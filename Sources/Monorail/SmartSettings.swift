@@ -70,17 +70,27 @@ struct UsageSection: View {
     }
 }
 
-/// A bug report on GitHub, filled in with what helps (no window titles or personal data).
+/// An email to Ashforde, filled in with what helps (no window titles or personal data). The person
+/// sees and can change everything before sending it.
 enum ProblemReport {
+    static let address = "contact@ashforde.org"
+
+    /// Opens a new email in the person's mail app.
+    static func email(subject: String, body: String) {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = address
+        // Mail apps cope with long messages, but keep it within what every one accepts.
+        components.queryItems = [URLQueryItem(name: "subject", value: subject),
+                                 URLQueryItem(name: "body", value: String(body.prefix(6000)))]
+        if let url = components.url { NSWorkspace.shared.open(url) }
+    }
+
     /// An idea or feedback, with the version filled in.
     static func feedback() {
         let info = ProcessInfo.processInfo
-        var components = URLComponents(string: "https://github.com/ashfordeOU/monorail/issues/new")!
-        components.queryItems = [
-            URLQueryItem(name: "template", value: "feedback.yml"),
-            URLQueryItem(name: "version", value: "Monorail \(Bundle.main.shortVersion) · macOS \(info.operatingSystemVersion.majorVersion).\(info.operatingSystemVersion.minorVersion)"),
-        ]
-        if let url = components.url { NSWorkspace.shared.open(url) }
+        email(subject: "Monorail feedback",
+              body: "\n\n---\nMonorail \(Bundle.main.shortVersion) · macOS \(info.operatingSystemVersion.majorVersion).\(info.operatingSystemVersion.minorVersion)\n")
     }
 
     static func open() {
@@ -89,9 +99,7 @@ enum ProblemReport {
         body += "Monorail \(Bundle.main.shortVersion) · macOS \(info.operatingSystemVersionString)\n"
         body += "\(CrashReporter.reports.count) crash or hang reports on this Mac (attach them from the folder that just opened)\n\n"
         if let log = UsageBridge.log { body += "```\n\(log.text)\n```\n" }
-        var components = URLComponents(string: "https://github.com/ashfordeOU/monorail/issues/new")!
-        components.queryItems = [URLQueryItem(name: "title", value: "Problem: "), URLQueryItem(name: "body", value: body)]
-        if let url = components.url { NSWorkspace.shared.open(url) }
+        email(subject: "Monorail problem", body: body)
         try? FileManager.default.createDirectory(at: CrashReporter.folder, withIntermediateDirectories: true)
         if !CrashReporter.reports.isEmpty { NSWorkspace.shared.open(CrashReporter.folder) }
     }
@@ -100,7 +108,7 @@ enum ProblemReport {
 extension ProblemReport {
     private static let askedKey = "crashPromptVersion"
 
-    /// After an unexpected quit: asks once per version what happened, and opens an issue with the
+    /// After an unexpected quit: asks once per version what happened, and opens an email with the
     /// versions and a private summary of macOS's crash report.
     static func askAfterCrash(store: SettingsStore) {
         let version = Bundle.main.shortVersion
@@ -122,9 +130,7 @@ extension ProblemReport {
         let info = ProcessInfo.processInfo.operatingSystemVersion
         let summary = latestCrashReport().flatMap { CrashFeedback.summary(ips: $0) }
         let body = CrashFeedback.issueBody(version: version, macOS: "\(info.majorVersion).\(info.minorVersion).\(info.patchVersion)", summary: summary)
-        var components = URLComponents(string: "https://github.com/ashfordeOU/monorail/issues/new")!
-        components.queryItems = [URLQueryItem(name: "title", value: "Crash: Monorail \(version)"), URLQueryItem(name: "body", value: body)]
-        if let url = components.url { NSWorkspace.shared.open(url) }
+        email(subject: "Crash: Monorail \(version)", body: body)
     }
 
     /// macOS's newest crash report for Monorail from the last week, if there is one.

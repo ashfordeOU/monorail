@@ -224,7 +224,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `slideArrangement` | Layout of new slides, unless an app rule says otherwise. | `.grid` |
 | `workspaceCount` | Workspaces per display (1...9). Each has its own strip. | `4` |
 | `workspaceNames` | Names for workspaces, by index; empty or missing means "Workspace N". | `[]` |
-| `checkForUpdates` | Look for new versions on GitHub once a day. | `true` |
+| `checkForUpdates` | Look for new versions on monorail.ashforde.org once a day. | `true` |
 | `installUpdatesAutomatically` | Install new versions without asking (Monorail relaunches itself). | `false` |
 | `rulesVersion` | Bumped when new default app rules ship, so existing settings pick them up once. | `AppSettings.currentRulesVersion` |
 | `hasCompletedOnboarding` | Set once the welcome tour has been shown. | `false` |

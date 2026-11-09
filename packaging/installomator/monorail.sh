@@ -6,7 +6,7 @@ monorail)
     name="Monorail"
     type="pkg"
     packageID="org.ashforde.monorail"
-    downloadURL="$(downloadURLFromGit ashfordeOU monorail)"
-    appNewVersion="$(versionFromGit ashfordeOU monorail)"
+    downloadURL="https://monorail.ashforde.org/releases/latest/Monorail.pkg"
+    appNewVersion="$(curl -fsL https://monorail.ashforde.org/releases/latest.json | grep -o '"tag_name": *"v[^"]*"' | sed -E 's/.*"v([^"]*)"/\1/')"
     expectedTeamID="D69G45342Y"
     ;;

@@ -5,14 +5,17 @@ import MonorailCore
 import Security
 import SwiftUI
 
-/// Keeps Monorail up to date from GitHub releases: finds a newer version,
+/// Keeps Monorail up to date: finds a newer version on monorail.ashforde.org,
 /// downloads it, checks its SHA-256 checksum and code signature, swaps it in
-/// and relaunches. Checking GitHub is Monorail's only network request, and
-/// it can be turned off in Settings.
+/// and relaunches. The update check can be turned off in Settings.
 final class Updater: ObservableObject {
-    static let releasesURL = URL(string: "https://github.com/ashfordeOU/monorail/releases/latest")!
-    private static let apiURL = URL(string: "https://api.github.com/repos/ashfordeOU/monorail/releases/latest")!
+    static let releasesURL = URL(string: "https://monorail.ashforde.org/changelog/")!
+    /// The website's copy of the newest release (scripts/mirror-releases.py), in GitHub's format.
+    private static let feedURL = URL(string: "https://monorail.ashforde.org/releases/latest.json")!
     /// With betas: the newest few releases, including pre-releases.
+    private static let allReleasesFeedURL = URL(string: "https://monorail.ashforde.org/releases/index.json")!
+    /// Used only if the website can't be reached.
+    private static let apiURL = URL(string: "https://api.github.com/repos/ashfordeOU/monorail/releases/latest")!
     private static let allReleasesURL = URL(string: "https://api.github.com/repos/ashfordeOU/monorail/releases?per_page=10")!
     /// Also offer beta (pre-release) versions.
     var betaChannel = false
@@ -62,13 +65,12 @@ final class Updater: ObservableObject {
     func check(userInitiated: Bool) {
         // The App Store keeps the App Store edition up to date.
         guard !Edition.isAppStore else { return }
-        var request = URLRequest(url: betaChannel ? Self.allReleasesURL : Self.apiURL, timeoutInterval: 15)
-        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+        let urls = betaChannel ? [Self.allReleasesFeedURL, Self.allReleasesURL] : [Self.feedURL, Self.apiURL]
+        Self.fetchRelease(from: urls) { [weak self] release in
             DispatchQueue.main.async {
                 UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.lastCheckKey)
                 guard let self else { return }
-                guard error == nil, let data, let release = Self.parse(data) else {
+                guard let release else {
                     if userInitiated {
                         self.alert("Couldn’t check for updates", "Check your internet connection and try again.")
                     }
@@ -89,6 +91,18 @@ final class Updater: ObservableObject {
                     self.offer(release)
                 }
             }
+        }
+    }
+
+    /// Tries each address in turn and hands back the first release it can read.
+    private static func fetchRelease(from urls: [URL], completion: @escaping (Release?) -> Void) {
+        guard let url = urls.first else { return completion(nil) }
+        var request = URLRequest(url: url, timeoutInterval: 15)
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            let ok = error == nil && ((response as? HTTPURLResponse)?.statusCode ?? 0) == 200
+            if ok, let data, let release = parse(data) { return completion(release) }
+            fetchRelease(from: Array(urls.dropFirst()), completion: completion)
         }.resume()
     }
 

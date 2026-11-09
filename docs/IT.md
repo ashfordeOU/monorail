@@ -25,17 +25,17 @@ Choose whichever suits your tools. Every release is signed with Ashforde OÜ's D
 
 | Method | How |
 |---|---|
-| Signed installer package | `Monorail-<version>.pkg` from the [latest release](https://github.com/ashfordeOU/monorail/releases/latest). It installs into `/Applications`; deploy it with Jamf, Kandji, Mosyle, Intune or any MDM. |
-| Installomator | Use the `monorail` label: `Installomator.sh monorail`. The label is in [`packaging/installomator/monorail.sh`](../packaging/installomator/monorail.sh). |
-| AutoPkg and Munki | [`packaging/autopkg/`](../packaging/autopkg/) has download and pkg recipes. |
-| Homebrew | `brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail && brew install --cask monorail` |
-| Without an administrator | `curl -fsSL https://raw.githubusercontent.com/ashfordeOU/monorail/main/scripts/install.sh \| bash`. When `/Applications` isn't writable, it installs into `~/Applications` instead and says so. |
+| Signed installer package | [`Monorail.pkg`](https://monorail.ashforde.org/releases/latest/Monorail.pkg), always the newest version. It installs into `/Applications`; deploy it with Jamf, Kandji, Mosyle, Intune or any MDM. |
+| Installomator | Use the `monorail` label: `Installomator.sh monorail`. Ask contact@ashforde.org for the label until it is in Installomator itself. |
+| AutoPkg and Munki | Download and pkg recipes are available from contact@ashforde.org. |
+| Homebrew | `brew install --cask ashfordeou/monorail/monorail` |
+| Without an administrator | `curl -fsSL https://monorail.ashforde.org/install.sh \| bash`. When `/Applications` isn't writable, it installs into `~/Applications` instead and says so. |
 
 Monorail's bundle identifier is `org.ashforde.monorail`.
 
 ### Updates
 
-The direct-download build checks GitHub for new releases and verifies each one (checksum, then a
+The direct-download build checks monorail.ashforde.org for new releases and verifies each one (checksum, then a
 code signature that must match the running copy) before replacing itself in the folder it runs
 from. That works in `~/Applications` without an administrator. In `/Applications` on a standard
 account it can't replace itself, so update it with your usual tools instead, or turn off **Check
@@ -131,5 +131,5 @@ add a launch agent with your usual tools).
 
 ## Questions
 
-Open an issue at [github.com/ashfordeOU/monorail](https://github.com/ashfordeOU/monorail/issues), or
-see [SECURITY.md](../SECURITY.md) to report a security problem privately.
+Write to [contact@ashforde.org](mailto:contact@ashforde.org), or see [SECURITY.md](../SECURITY.md) to
+report a security problem privately.

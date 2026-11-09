@@ -2191,8 +2191,8 @@ private struct AboutPane: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 380)
             HStack(spacing: 16) {
-                Link("Website & source", destination: URL(string: "https://github.com/ashfordeOU/monorail")!)
-                Link("Report an issue", destination: URL(string: "https://github.com/ashfordeOU/monorail/issues")!)
+                Link("Website", destination: URL(string: "https://monorail.ashforde.org")!)
+                Link("Report a problem", destination: URL(string: "mailto:contact@ashforde.org?subject=Monorail%20problem")!)
             }
             Text("\(Brand.full) · © Ashforde OÜ · Functional Source License 1.1")
                 .font(.footnote).foregroundStyle(.secondary)

@@ -999,7 +999,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             alert.addButton(withTitle: "Guide for IT…")
             NSApp.activate(ignoringOtherApps: true)
             if alert.runModal() == .alertSecondButtonReturn,
-                let url = URL(string: "https://github.com/ashfordeOU/monorail/blob/main/docs/IT.md")
+                let url = URL(string: "https://monorail.ashforde.org/docs/it/")
             {
                 NSWorkspace.shared.open(url)
             }

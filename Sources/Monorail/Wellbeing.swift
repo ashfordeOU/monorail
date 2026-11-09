@@ -357,7 +357,7 @@ enum SetupExporter {
         .card p{opacity:.75;margin:6px 0 0;font-size:14px}code{background:#ffffff1a;padding:2px 6px;border-radius:6px}
         a{color:#9cf}</style></head><body><main>
         <h1>My Monorail setup</h1><p class=sub>Theme: \(esc(settings.theme.title)) · \(settings.workspaceCount) workspaces ·
-        made with <a href="https://github.com/ashfordeOU/monorail">Monorail by Ashforde®</a></p>
+        made with <a href="https://monorail.ashforde.org">Monorail by Ashforde®</a></p>
         <h2>Workspaces</h2><div class=grid>\(cards)</div>
         <h2>App rules</h2><ul>\(rules.isEmpty ? "<li>None</li>" : rules)</ul>
         <h2>Try it</h2><p>Get Monorail, then open the <code>.monorail</code> file shared with this page to use the same layouts.</p>

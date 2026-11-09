@@ -8,9 +8,18 @@ on:
     tags-ignore: ["v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      full:
+        description: "Run the Windows checks too (always on unless the SAVE_CI_MINUTES variable is true)"
+        type: boolean
+        default: false
   # The Windows and Linux beta release (release-beta.yml) runs every check here first.
   workflow_call:
     inputs:
+      full:
+        type: boolean
+        required: false
+        default: true
       beta_version:
         type: string
         required: false
@@ -26,6 +35,9 @@ permissions:
 jobs:
   core-windows:
     name: Core tests (Windows)
+    # SAVE_CI_MINUTES (a repository variable) keeps Mac and Windows machines for full runs: a private
+    # repository pays for them by the minute. Linux checks still run on every change.
+    if: vars.SAVE_CI_MINUTES != 'true' || inputs.full
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v5
@@ -60,6 +72,7 @@ jobs:
   # toolchain off PATH, and again with a standard user's token.
   portable-windows:
     name: Portable package (Windows)
+    if: vars.SAVE_CI_MINUTES != 'true' || inputs.full
     runs-on: windows-latest
     timeout-minutes: 60
     env:

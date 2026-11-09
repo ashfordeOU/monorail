@@ -6,6 +6,11 @@ on:
     tags-ignore: ["v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      full:
+        description: "Run the Mac checks too (always on unless the SAVE_CI_MINUTES variable is true)"
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -22,6 +27,9 @@ jobs:
 
   macos:
     name: Build & test (macOS)
+    # SAVE_CI_MINUTES (a repository variable) keeps Mac and Windows machines for full runs: a private
+    # repository pays for them by the minute. Linux checks still run on every change.
+    if: vars.SAVE_CI_MINUTES != 'true' || inputs.full
     runs-on: macos-15
     env:
       MONORAIL_SIGNING_CERT: ${{ secrets.MONORAIL_SIGNING_CERT || secrets.MACSLIDER_SIGNING_CERT }}

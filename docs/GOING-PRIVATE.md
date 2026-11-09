@@ -11,7 +11,7 @@ private.
 | Guides (IT, actions, settings, compatibility, security, licence, trademarks) | `monorail.ashforde.org/docs/…`, built from the Markdown by `scripts/render-docs.py` |
 | Install script | `curl -fsSL https://monorail.ashforde.org/install.sh \| bash` |
 | Feedback, crashes, security reports | An email to contact@ashforde.org |
-| Homebrew | `brew install --cask ashfordeou/monorail/monorail`, from a small public tap repository, `ashfordeOU/homebrew-monorail`, that holds only `Casks/monorail.rb` |
+| Homebrew | `brew tap ashfordeou/monorail && brew trust ashfordeou/monorail && brew install --cask monorail`, from a small public tap repository, `ashfordeOU/homebrew-monorail`, that holds only `Casks/monorail.rb` |
 
 ## Order
 

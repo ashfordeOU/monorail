@@ -32,7 +32,7 @@ slides in next to the one you're using. Move focus and the strip glides just far
 
 | Download | Homebrew | Terminal |
 | --- | --- | --- |
-| [Monorail-x.y.z.dmg](https://github.com/ashfordeOU/monorail/releases/latest) | `brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail && brew install --cask monorail` | `curl -fsSL https://raw.githubusercontent.com/ashfordeOU/monorail/main/scripts/install.sh \| bash` |
+| [Monorail.dmg](https://monorail.ashforde.org/download/) | `brew tap ashfordeou/monorail && brew trust ashfordeou/monorail && brew install --cask monorail` | `curl -fsSL https://monorail.ashforde.org/install.sh \| bash` |
 
 1. Open the DMG and drag Monorail onto Applications. (The Terminal script downloads the latest release, installs it in `/Applications` and opens it for you.)
 2. Open Monorail and allow **Accessibility** when asked. The welcome tour shows you where.

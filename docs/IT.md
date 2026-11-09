@@ -28,7 +28,7 @@ Choose whichever suits your tools. Every release is signed with Ashforde OÜ's D
 | Signed installer package | [`Monorail.pkg`](https://monorail.ashforde.org/releases/latest/Monorail.pkg), always the newest version. It installs into `/Applications`; deploy it with Jamf, Kandji, Mosyle, Intune or any MDM. |
 | Installomator | Use the `monorail` label: `Installomator.sh monorail`. Ask contact@ashforde.org for the label until it is in Installomator itself. |
 | AutoPkg and Munki | Download and pkg recipes are available from contact@ashforde.org. |
-| Homebrew | `brew install --cask ashfordeou/monorail/monorail` |
+| Homebrew | `brew tap ashfordeou/monorail && brew trust ashfordeou/monorail && brew install --cask monorail` |
 | Without an administrator | `curl -fsSL https://monorail.ashforde.org/install.sh \| bash`. When `/Applications` isn't writable, it installs into `~/Applications` instead and says so. |
 
 Monorail's bundle identifier is `org.ashforde.monorail`.

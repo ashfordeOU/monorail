@@ -671,7 +671,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
     <div class="kicker">Other ways to install</div>
     <h2>However you like to install apps</h2>
     <div class="privacy" style="text-align:left">
-      <div><b>Homebrew</b><p><code>brew install --cask ashfordeou/monorail/monorail</code><br>After that, Monorail updates itself.</p></div>
+      <div><b>Homebrew</b><p><code>brew tap ashfordeou/monorail &amp;&amp; brew trust ashfordeou/monorail &amp;&amp; brew install --cask monorail</code><br>After that, Monorail updates itself.</p></div>
       <div><b>Terminal</b><p>Downloads the latest release into Applications.<br><code>curl -fsSL https://monorail.ashforde.org/install.sh | bash</code></p></div>
       <div><b>For IT and MDM</b><p>A signed, notarised <a class="pkg" href="download/pkg/">.pkg</a> for Jamf, Kandji, Mosyle, Intune and Munki, an Installomator label, and every setting manageable with a configuration profile.</p></div>
       <div><b>Every version</b><p>What changed in each version is in the <a href="changelog/">changelog</a>, and every download comes with <a href="releases/latest/SHA256SUMS">checksums</a>.</p></div>
@@ -762,7 +762,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
     <div class="cta">
       <a class="btn primary two dl" href="download/" data-smartdl><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl"><span data-dl-label>Download for Mac</span><small data-dl-sub>macOS 13 or later · notarised by Apple</small></span></a>
     </div>
-    <code class="install">brew install --cask ashfordeou/monorail/monorail</code>
+    <code class="install">brew tap ashfordeou/monorail &amp;&amp; brew trust ashfordeou/monorail &amp;&amp; brew install --cask monorail</code>
     <div class="trust" style="margin-top:16px"><span class="notarised">Notarised by Apple</span><span>Free</span><span>No account</span><span>macOS 13+</span></div>
   </div>
 </main>

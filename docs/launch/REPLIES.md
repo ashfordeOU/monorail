@@ -3,14 +3,15 @@
 Ready answers for the questions that come up on Product Hunt, Hacker News, Reddit and X. Adjust the
 wording to the person, keep it short, and link to the docs rather than pasting walls of text.
 
-Facts to keep straight: macOS 13 or later, Apple silicon and Intel, free with no Pro tier, source on
-GitHub under FSL-1.1-ALv2 (becomes Apache 2.0 after two years), one permission (Accessibility), no
-account, anonymous daily counts that can be turned off.
+Facts to keep straight: macOS 13 or later, Apple silicon and Intel, free with every feature (no Pro
+tier, no licence key, no per-Mac limit, no paid upgrades), one permission (Accessibility), SIP stays on,
+no account, anonymous daily counts that can be turned off. Windows and Linux (GNOME) are in beta.
+Don't mention Keeper or the source code for now.
 
 ## "Is it safe? Is it signed?"
 
 > Yes. Every release is signed with our Apple Developer ID and notarised by Apple, so it opens without
-> warnings. The source is on GitHub, CI checks every change, and every download has a published SHA-256
+> warnings. Every change is tested on macOS, Windows and Linux, and every download has a published SHA-256
 > checksum. Check it yourself with `spctl -a -vvv -t open --context context:primary-signature Monorail-x.y.z.dmg`, which says
 > "Notarized Developer ID".
 
@@ -40,9 +41,16 @@ account, anonymous daily counts that can be turned off.
 > Spaces, and native full-screen apps are left alone. Stage Manager also arranges windows, so Monorail tells
 > you if it's on and asks you to turn it off in Control Centre.
 
+## "Why not just buy a paid window manager?"
+
+> You can, but you don't need to. Window managers are often sold per Mac and per major version, and
+> each one does one job. Monorail does the strip, docking and tabs, snapping, a window switcher, saved
+> layouts per display, Evening Mode and Stay Awake in one app, free, including every update.
+
 ## "What about battery and performance?"
 
-> It's native Swift, with no Electron. Background checks rest while the screen is asleep or locked and
+> It's native Swift, with no Electron. Measured on a MacBook Pro on battery, idle: 0.15% of one core,
+> no wake-ups, about 55 MB of memory. Background checks rest while the screen is asleep or locked and
 > run at half speed on battery or in Low Power Mode. Settings → About shows exactly how much CPU and
 > memory it has used, and **Check Energy** measures it for 30 seconds.
 
@@ -61,32 +69,33 @@ account, anonymous daily counts that can be turned off.
 
 ## "Is it open source?"
 
-> The source is on GitHub, and you can read, build and change it for free, at home or at work. It's
-> under the Functional Source License: the one thing it forbids is selling Monorail or a copy of it as
-> a competing product. Each version becomes Apache 2.0 two years after release.
+> Not at the moment. Monorail is free to use, with every feature, at home or at work, under the
+> Functional Source License. It's signed and notarised by Apple, and every download has a published
+> checksum, so you can check exactly what you install.
 
 ## "What's the catch? How do you make money?"
 
-> No catch: every feature is free, with no window limits and no Pro tier. If Monorail helps you,
-> starring the repo and telling a friend helps us most.
+> No catch: every feature is free, with no window limits, no Pro tier, no licence key and no paid
+> upgrade next year. If Monorail helps you, telling a friend (and an upvote today) helps us most.
 
 ## "Windows / Linux?"
 
-> Both are planned, with a Windows version first, then GNOME and KDE. They'll share the same strip,
-> docking and file formats, built to feel native on each. The groundwork is already running in CI.
-> There's a sign-up on the site under "Coming soon".
+> Both are in beta: Windows 11 and 10 (a portable app, no installer or admin rights) and a GNOME
+> extension for GNOME 45 or later, from monorail.ashforde.org. Same strip, same shortcuts, built
+> natively for each. KDE is next. Tell us what you find: contact@ashforde.org.
 
 ## "App Store?"
 
-> A lighter, sandboxed App Store edition is coming once Apple approves the developer account. The
-> download from the site stays the full version.
+> No. Apple's App Store sandbox doesn't let any new app move other apps' windows, so window managers
+> like Monorail are distributed directly, signed and notarised by Apple. Homebrew works too:
+> `brew tap ashfordeou/monorail && brew trust ashfordeou/monorail && brew install --cask monorail`.
 
 ## "A window ended up off screen / something looks wrong"
 
 > Choose **Rescue Windows** from the menu bar icon: every window comes back on screen. Monorail also
 > brings floating windows and dialogs back into view by itself when a display is unplugged. If it's
-> still wrong, **Send Feedback** in the menu opens a pre-filled issue with your Mac and Monorail
-> versions. Thank you!
+> still wrong, **Report a Problem…** in Settings starts an email with your Mac and Monorail versions
+> filled in. Thank you!
 
 ## "How do I uninstall it?"
 
@@ -100,9 +109,8 @@ account, anonymous daily counts that can be turned off.
 
 ## Feature requests
 
-> Love this, thanks! Could you add it to GitHub Issues
-> (https://github.com/ashfordeOU/monorail/issues/new/choose) so we can follow up? Upvotes there decide
-> what comes next.
+> Love this, thanks! Could you send it to contact@ashforde.org (or **Send Feedback…** in Monorail's
+> menu) so we can follow up? Requests from users decide what comes next.
 
 ## Criticism
 

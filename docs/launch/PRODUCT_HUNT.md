@@ -1,30 +1,36 @@
 # Product Hunt launch kit: Monorail by Ashforde®
 
-Everything needed to post Monorail 1.7 on Product Hunt. The images are in [`assets/launch`](../../assets/launch).
+Everything needed to post Monorail on Product Hunt, copied straight into the form in the order it
+asks. The images are in [`assets/launch/v17`](../../assets/launch/v17). Replies for the day are in
+[REPLIES.md](REPLIES.md). For now, don't mention Keeper or the source code anywhere.
 
 ## The listing
 
 **Name:** Monorail by Ashforde®
 
-**Tagline** (60 characters max):
-> The scrolling window manager for Mac that understands you
+**Tagline** (60 characters max). Pick one:
+> Windows side by side on one strip. Nothing ever shrinks. (56)
 
 Alternatives:
-- Every window rides one rail: a smarter way to use your Mac
-- Your Mac's windows, on an endless strip that thinks with you
+- The free scrolling window manager for Mac (41)
+- Every window rides one rail. Free, every feature. (49)
 
-**Link:** https://monorail.ashforde.org/ (source: https://github.com/ashfordeOU/monorail)
+**Link:** https://monorail.ashforde.org/
 
-**Topics:** Mac, Productivity, Developer Tools, Artificial Intelligence
+**Topics:** Mac, Productivity, Menu Bar Apps, Developer Tools
 
-**Pricing:** Free (source on GitHub, FSL-1.1-ALv2)
+**Pricing:** Free
 
-**Description** (260 characters max):
-> Every window rides one endless strip, so new windows never squeeze the rest. Drag windows onto each other to dock or tab them, any apps. Type “Slack and Mail side by side”. Alerts when an AI agent waits. Imports AeroSpace, yabai and Rectangle setups. Free.
+**Description** (260 characters max, 253 used):
+> A scrolling window manager for Mac. New windows slide in beside the one you're using, and nothing
+> else ever shrinks. Drag to dock or tab any apps, say "Slack and Mail side by side", Evening Mode,
+> Stay Awake. Free, every feature, Apple silicon and Intel.
+
+**Launch tags / first-day flags:** Free · Mac · No account
 
 ## Gallery
 
-The images are in [`assets/launch/v17`](../../assets/launch/v17), at 2540 × 1520 (Product Hunt's 1270 × 760 at double resolution). Upload them in this order:
+At 2540 × 1520 (Product Hunt's 1270 × 760 at double resolution). Upload in this order:
 
 | # | File | Shows |
 | --- | --- | --- |
@@ -39,38 +45,39 @@ The images are in [`assets/launch/v17`](../../assets/launch/v17), at 2540 × 152
 | 9 | `08-native-private.png` | Native, light, private |
 | 10 | `09-end.png` | End card with the download link |
 
-Thumbnail: `assets/launch/thumbnail-240.png` (the app icon).
+**Thumbnail:** `assets/launch/v17/thumbnail-240.png` (480 px version alongside).
 
-**Video.** [`monorail-demo.mp4`](../../assets/launch/v17/monorail-demo.mp4) (85 s, 1080p) walks through everything: opening windows,
-gliding along the strip, pairing, plain-language commands, focus mode, the docking playground (edge, nested split, tab
-group, gap resize), saved views, import, themes, privacy and the Windows and Linux plans. Product Hunt takes a YouTube
-link: upload it to YouTube (unlisted is fine) and paste the link under **Add video**.
+**Video:** `assets/launch/v17/monorail-demo.mp4` (85 s, 1080p). Product Hunt takes a YouTube link:
+upload it to YouTube (unlisted is fine) and paste the link under **Add video**. Its last section calls
+Windows and Linux "plans"; they're now in beta, which is fine to say in the comments.
 
-It's made from the website's interactive demos and the gallery cards, rebuilt with `scripts/launch/gallery.html`. Once
-the signed build is out, a 30-second screen recording of the real app is worth adding as a second video: record with
-**Show keystrokes and clicks** and **Demo zoom** on, and follow the same order.
-
-## First comment (from the maker)
+## Maker's first comment
 
 > Hi Product Hunt! 👋
 >
-> I built Monorail because every tiling window manager I tried did the same thing: open a new window and everything else shrinks. On a laptop that's maddening.
+> I built Monorail because every tiling window manager I tried did the same thing: open a new window
+> and everything else shrinks. On a laptop that's maddening.
 >
-> Monorail does the opposite. Every window is a slide on a horizontal strip that runs past the edges of your screen. Open a window and it slides in next to the one you're using. Nothing else changes size. Move focus and the strip glides along.
+> Monorail does the opposite. Every window sits on a horizontal strip that runs past the edges of your
+> screen. Open a window and it slides in next to the one you're using; nothing else changes size. Move
+> along with ⌃⌥← →, a swipe or the slider, and quit any time: every window goes back where it was.
 >
-> What's new lately:
-> - 🪟 **Dock anything, nest anywhere.** Drag a window onto another window's edge to dock it beside, or onto its middle to make a tab group, across any apps and as deep as you like. Drag the gap between two windows to resize both.
-> - 📍 **Saved views** (⌃⌥⌘1…9) and back/forward through where you've been, like a browser.
+> A few things I'm proud of:
+> - 🪟 **Dock anything.** Drag a window onto another's edge to split, or its middle to make a tab group,
+>   across any apps and as deep as you like.
+> - 🗣️ **Say it.** Type "Safari two thirds" or "Slack and Mail side by side". Understood on your Mac.
+> - 🌙 **Evening Mode** at a click from the menu bar, **Stay Awake**, and **Keep me Available** for Teams
+>   and Slack.
+> - 🤖 **AI agent alerts:** a chime when your coding assistant is waiting for approval.
+> - 🛡️ **Safe screen sharing:** private windows step aside when you share in Zoom, Teams or Meet.
 > - 📦 **Switch in a minute:** imports your AeroSpace, yabai/skhd or Rectangle setup.
-> - 🗣️ **Say it.** Type “Safari two thirds” or “write the Q3 report” in the palette and Monorail does it, all on your Mac.
-> - 🤖 **AI agent alerts.** Run an AI coding assistant in a terminal and hear a chime the moment it's waiting for your approval.
-> - 🛡️ **Safe screen sharing.** Private windows step aside as soon as you share in Zoom, Teams or Meet.
-> - 🎤 **Share one slide** instead of your whole screen, plus a demo zoom, drawing on screen and presenter notes only you can see.
-> - 🎨 **27 themes**, including Seasons, which changes through the year.
-> - ⌨️ Vim mode, MIDI pads, game controllers, a phone remote, and a live event stream for SketchyBar and scripts.
-> - 💸 **No paywall.** Every feature is free, with no window limits.
+> - 🪶 **Light:** 0.15% of one core and about 55 MB when idle on battery.
 >
-> It's native Swift and free, with the source on GitHub. There's no account, it only sends anonymous daily counts you can turn off, and the only permission it needs is Accessibility.
+> **Why free?** Window managers are often sold one job at a time, per Mac and per major version.
+> Monorail does all of it in one app: no licence key, no trial clock, no paid upgrade next year.
+>
+> It's native Swift, signed and notarised by Apple, needs only the Accessibility permission (SIP stays
+> on), and has no account. Monorail for Windows and for GNOME are in beta too.
 >
 > I'd love to hear how you arrange your windows, and what would make Monorail yours. 🙏
 
@@ -78,19 +85,26 @@ the signed build is out, a 30-second screen recording of the real app is worth a
 
 **X / Threads / Bluesky**
 > Monorail is live on Product Hunt 🚝
-> A Mac window manager where nothing ever shrinks. Every window rides one endless strip.
-> Drag to dock or tab any windows, saved views, “Slack and Mail side by side”, AI agent alerts, 27 themes. All free.
-> Free for Mac → [Product Hunt link]
+> A Mac window manager where nothing ever shrinks: every window rides one endless strip.
+> Dock or tab any apps, "Slack and Mail side by side", Evening Mode, Stay Awake. Free, every feature.
+> → [Product Hunt link]
 
 **LinkedIn**
-> Today we're launching Monorail by Ashforde® on Product Hunt. It's a free window manager for macOS built around one idea: new windows should never squeeze the ones you're using. Drag windows onto each other to dock or tab them, type what you want in plain language, get an alert when an AI coding agent needs you, and bring your setup over from AeroSpace, yabai or Rectangle. Every feature is free. We'd love your support and feedback: [link]
+> Today we're launching Monorail by Ashforde® on Product Hunt: a free window manager for macOS built
+> around one idea, that new windows should never squeeze the ones you're using. Dock or tab any windows,
+> type what you want in plain language, warm your screen in the evening, and bring your setup over from
+> AeroSpace, yabai or Rectangle. Every feature is free, on Apple silicon and Intel. We'd love your
+> support and feedback: [link]
 
 ## Launch checklist
 
-- [ ] Post at 00:01 Pacific time (Product Hunt's day starts then).
-- [ ] Tagline, description, topics, gallery (7 images), thumbnail and video uploaded.
-- [ ] Maker comment posted straight away.
-- [ ] The README links to the Product Hunt page (a badge from Product Hunt's embed page).
-- [ ] The latest release is published, with a DMG and checksums, and notarised.
-- [x] A Developer ID and notarisation, so first-time users don't see a Gatekeeper warning (from 1.7.16; earlier releases re-signed).
-- [ ] Reply to every comment on the day.
+- [ ] Schedule for 00:01 Pacific (Product Hunt's day starts then); a Tuesday to Thursday is busiest.
+- [ ] Name, tagline, link, topics, pricing (Free), description, 10 gallery images, thumbnail, video.
+- [ ] Maker comment posted the moment it goes live.
+- [x] Latest release out, signed and notarised by Apple: 1.7.26, with checksums on the site.
+- [x] Downloads, update checks and Homebrew all come from monorail.ashforde.org (repository private).
+- [x] The site greets visitors from Product Hunt (`?ref=producthunt` or a Product Hunt referrer) with a
+      one-line banner and a download button.
+- [x] No Keeper, source-code or App Store mentions on the site ([SITE-HIDDEN.md](../SITE-HIDDEN.md)).
+- [ ] Reply to every comment on the day ([REPLIES.md](REPLIES.md)).
+- [ ] After the launch: add the Product Hunt badge to the site if you like it.

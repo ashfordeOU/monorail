@@ -8,12 +8,15 @@ asks. The images are in [`assets/launch/v17`](../../assets/launch/v17). Replies 
 
 **Name:** Monorail by Ashforde®
 
+**The angle:** free vs paid. Every other window tool charges per Mac, per version or per job.
+Monorail does all of it, free. Lead with that everywhere: tagline, first image, first comment.
+
 **Tagline** (60 characters max). Pick one:
-> Your Mac's windows on one endless strip. Nothing shrinks. (57)
+> Stop paying for window managers. This one does it all, free (59)
 
 Alternatives:
-- Windows side by side on one strip. Nothing ever shrinks. (56)
-- The free scrolling window manager for Mac (41)
+- The window manager you'd pay for, free with every feature (57)
+- Your Mac's windows on one endless strip. Free, every feature (59)
 
 **Link:** https://monorail.ashforde.org/?ref=producthunt (the site then greets Product Hunt visitors)
 
@@ -37,15 +40,15 @@ upload in this order:
 | # | File | Says |
 | --- | --- | --- |
 | 1 | `01-hero.png` | Every window rides one rail · free, every Mac, Apple silicon and Intel, SIP stays on |
-| 2 | `../v17/docking.gif` | Docking, live: edge, nested split, tab group, gap resize |
-| 3 | `02-dock.png` | Drop a window where you want it |
-| 4 | `03-tabs-resize.png` | Tab groups across apps; drag the gap to resize both |
-| 5 | `04-overview.png` | Every workspace on one canvas, displays that remember |
-| 6 | `05-say-it.png` | Type what you want; AI agent alerts |
-| 7 | `06-evening-mode.png` | New: Evening Mode at a click from the menu bar |
-| 8 | `07-built-in.png` | Stay Awake, Keep me Available, safe sharing, focus, ⌘Tab previews, snapping, display controls |
-| 9 | `08-saved-views.png` | Saved views, back and forward |
-| 10 | `09-free.png` | Why pay for a window manager? Import, and no catch |
+| 2 | `09-free.png` | Why pay for a window manager? No licence key, no per-Mac limit, no paid upgrades |
+| 3 | `07-built-in.png` | The little apps you'd buy, already inside |
+| 4 | `../v17/docking.gif` | Docking, live: edge, nested split, tab group, gap resize |
+| 5 | `02-dock.png` | Drop a window where you want it |
+| 6 | `03-tabs-resize.png` | Tab groups across apps; drag the gap to resize both |
+| 7 | `04-overview.png` | Every workspace on one canvas, displays that remember |
+| 8 | `05-say-it.png` | Type what you want; AI agent alerts |
+| 9 | `06-evening-mode.png` | New: Evening Mode at a click from the menu bar |
+| 10 | `08-saved-views.png` | Saved views, back and forward |
 | 11 | `10-themes.png` | 27 themes |
 | 12 | `11-native-private.png` | 0.15% of a core, no account, SIP stays on, notarised, scripting |
 | 13 | `12-platforms.png` | Mac available; Windows and Linux in beta |
@@ -63,8 +66,12 @@ Windows and Linux "plans"; they're now in beta, which the gallery and comments s
 
 > Hi Product Hunt! 👋
 >
-> I built Monorail because every tiling window manager I tried did the same thing: open a new window
-> and everything else shrinks. On a laptop that's maddening.
+> Mac users pay again and again for window tools: a snapping app, a switcher, a layout app, a
+> keep-awake app, a night-shift app, often per Mac and per major version. Monorail does all of it in
+> one app, for free. No licence key, no trial clock, no paid upgrade next year.
+>
+> And it fixes the thing every tiling window manager gets wrong: open a new window and everything
+> else shrinks. On a laptop that's maddening.
 >
 > Monorail does the opposite. Every window sits on a horizontal strip that runs past the edges of your
 > screen. Open a window and it slides in next to the one you're using; nothing else changes size. Move
@@ -81,9 +88,6 @@ Windows and Linux "plans"; they're now in beta, which the gallery and comments s
 > - 📦 **Switch in a minute:** imports your AeroSpace, yabai/skhd or Rectangle setup.
 > - 🪶 **Light:** 0.15% of one core and about 55 MB when idle on battery.
 >
-> **Why free?** Window managers are often sold one job at a time, per Mac and per major version.
-> Monorail does all of it in one app: no licence key, no trial clock, no paid upgrade next year.
->
 > It's native Swift, signed and notarised by Apple, needs only the Accessibility permission (SIP stays
 > on), and has no account. Monorail for Windows and for GNOME are in beta too.
 >
@@ -92,8 +96,8 @@ Windows and Linux "plans"; they're now in beta, which the gallery and comments s
 ## Short posts
 
 **X / Threads / Bluesky**
-> Monorail is live on Product Hunt 🚝
-> A Mac window manager where nothing ever shrinks: every window rides one endless strip.
+> Stop paying for Mac window tools. Monorail is live on Product Hunt 🚝
+> One free app instead of five paid ones: a window manager where nothing ever shrinks.
 > Dock or tab any apps, "Slack and Mail side by side", Evening Mode, Stay Awake. Free, every feature.
 > → [Product Hunt link]
 

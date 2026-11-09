@@ -1,7 +1,7 @@
 #!/bin/bash
 # Measures Monorail on this Mac for one minute: CPU, idle wake-ups, memory and energy impact.
 # Leave the Mac alone while it runs (that's the "idle" the site quotes). No admin needed.
-#   curl -fsSL https://raw.githubusercontent.com/ashfordeOU/monorail/main/scripts/perf-check.sh | bash
+#   curl -fsSL https://monorail.ashforde.org/perf-check.sh | bash
 set -euo pipefail
 pid="$(pgrep -x Monorail | head -n1 || true)"
 [ -n "$pid" ] || { echo "Monorail isn't running. Open it, then run this again."; exit 1; }

@@ -24,9 +24,8 @@ A fork must have its own name and icon, and its own bundle identifier (not `com.
 
 ## Official builds
 
-The only official builds are the ones published at
-<https://github.com/ashfordeOU/monorail/releases>, the Homebrew cask `ashfordeOU/monorail/monorail`
-and <https://monorail.ashforde.org/>. They are signed by Ashforde OÜ.
+The only official builds are the ones published at <https://monorail.ashforde.org/> and the Homebrew
+cask `ashfordeou/monorail/monorail`. They are signed by Ashforde OÜ.
 
 To ask for permission, or to report a copy being sold or passed off as Monorail, open an issue or
 contact Ashforde OÜ through the repository.

@@ -93,7 +93,7 @@ Accessibility — ask IT or an admin"), and doesn't keep asking. These work stra
   be centred, or be placed side by side, from the menu or the command palette. macOS asks once for
   each app ("Monorail wants to control Safari"), and a person can answer that without an
   administrator. You can pre-approve these too, with `AppleEvents` entries in a PPPC payload, or
-  block them; Monorail works either way. Not in the Mac App Store edition.
+  block them; Monorail works either way.
 - Settings, the command palette, What's New and updates.
 
 ## Opening at login (optional)

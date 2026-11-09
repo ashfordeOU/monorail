@@ -12,7 +12,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [1.7.25] - 2026-11-09
 
 ### Changed
-- **Updates come from monorail.ashforde.org.** Monorail checks Ashforde's own site for new versions, and still checks the download's checksum and Apple signature before installing it. If the site can't be reached, it asks GitHub as before.
+- **Updates come from monorail.ashforde.org.** Monorail checks Ashforde's own site for new versions, and still checks the download's checksum and Apple signature before installing it. If the site can't be reached, it tries the previous address.
 - **Report a Problem, Send Feedback and the after-crash prompt start an email** to contact@ashforde.org, with the same details filled in as before (no window titles, files or names). You see everything before you send it.
 - **The changelog, the guide for IT and the About links open on monorail.ashforde.org.**
 
@@ -95,7 +95,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ### Added
 - **Start as Simple, Power user or Coming from another app**, in the welcome tour and Settings → Basics. Coming from another app opens the importer for AeroSpace, yabai and Rectangle.
 - **Show all settings**, at the bottom of the Settings sidebar. Off (the default for new installs), the sidebar shows the essentials: Basics, Shortcuts, Appearance, Evening Mode, Stay Awake and About. Search always finds every setting.
-- **After an unexpected quit, Monorail asks what happened** (once per version, and you can turn it off). **Tell Us…** opens a GitHub issue filled in with the Monorail and macOS versions and a short summary of where it crashed, from macOS's own crash report: no window titles, files, paths or names, and nothing is sent until you submit it.
+- **After an unexpected quit, Monorail asks what happened** (once per version, and you can turn it off). **Tell Us…** opens a problem report filled in with the Monorail and macOS versions and a short summary of where it crashed, from macOS's own crash report: no window titles, files, paths or names, and nothing is sent until you submit it.
 - **Also from Ashforde** in the menu bar menu: while Keeper runs, it shows what Keeper is doing (keeping your Mac awake or not) with **Open Keeper**; with Keeper installed but closed, **Open Keeper**. And a joint page on the website, **Monorail + Keeper**, on how the two work together.
 
 ### Changed
@@ -131,7 +131,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Groundwork for Windows and Linux: keeping windows on screen, focus history, back and forward, workspace tags, saved views and where returning windows go now come from the shared engine. Monorail behaves the same, and saved views keep their format.
-- Every commit in Monorail's history is signed and shows as Verified on GitHub.
+- Every change in Monorail's history is signed and verified.
 
 ## [1.7.11] - 2026-11-01
 
@@ -168,7 +168,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ### Added
 - **Every window and dialog stays reachable.** Floating windows and dialogs that end up off screen come back into view by themselves: after a display is unplugged or rearranged, after the Mac wakes, and whenever an app comes forward. Tiled windows waiting in other workspaces are left where the layout puts them. Turn it off with "Keep every window and dialog on screen" in Settings. Monorail's own windows refit too when displays change.
 - **Press kit** on the website (`/press`): fact sheet, a description to copy, screenshots, the icon, the demo video and one zip with everything.
-- **Download stats** on the website (`/stats`): live download counts per release and per file type, straight from GitHub. The anonymous usage counts stay private.
+- **Download stats** on the website (`/stats`): live download counts per release and per file type. The anonymous usage counts stay private.
 - Launch-day answers for common questions, in `docs/launch/REPLIES.md`.
 
 ## [1.7.6] - 2026-11-01
@@ -187,7 +187,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [1.7.4] - 2026-11-01
 
 ### Added
-- **More ways to install:** every release now includes a `.pkg` installer for MDM tools (Jamf, Kandji, Mosyle, Intune, Munki), and the repository has an Installomator label, AutoPkg recipes, a MacPorts Portfile and a Nix flake (`nix profile install github:ashfordeOU/monorail`). Their versions and checksums update with each release.
+- **More ways to install:** every release now includes a `.pkg` installer for MDM tools (Jamf, Kandji, Mosyle, Intune, Munki), and there are an Installomator label and AutoPkg recipes for IT. Their versions and checksums update with each release.
 - **The Mac App Store edition** can now be built (`scripts/build-appstore.sh`): sandboxed, with its own identifier, leaving out what the sandbox doesn't allow. See docs/APP-STORE.md.
 
 ## [1.7.3] - 2026-11-01
@@ -282,8 +282,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **Sidecar.** On a Sidecar iPad, every slide fits on screen.
 - **Script gallery** (Settings → Automation): install ready-made scripts with one click. It starts with an IDE layout, halves and thirds, calls getting their own workspace, focus hours and a morning setup.
 - **Tips** that show once, at the moment they're useful: slide mode, dragging in the overview, sentences in the palette, Stay Awake and agent alerts.
-- **Homebrew:** `brew tap ashfordeOU/monorail https://github.com/ashfordeOU/monorail && brew install --cask monorail`. The cask updates itself with every release.
-- **A website** in `site/`, published to GitHub Pages by its own workflow.
+- **Homebrew:** a cask that updates itself with every release.
+- **A website**, published by its own workflow.
 - **Self-test.** `Monorail --self-test` builds every Settings pane and checks every action, theme, language and default. CI runs it on every build.
 
 ### Changed
@@ -299,7 +299,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ### Added
 - **Usage in About.** Launches, running time, average CPU, memory, windows managed, slide and workspace switches, time kept awake, and your most used actions. It's all kept on your Mac, and Copy and Reset are there too.
 - **What's New tour:** feature cards with a **Try it** button each, for sentences, Stay Awake, safe screen sharing and AI agent alerts. **What's New…** is in the menu bar menu too.
-- **Report a Problem…** (Settings → Devices & Sharing) opens a GitHub issue filled in with your version, macOS and usage counts, and opens the folder of crash reports to attach.
+- **Report a Problem…** (Settings → Devices & Sharing) opens a problem report filled in with your version, macOS and usage counts, and opens the folder of crash reports to attach.
 - **Four more languages:** Chinese (Simplified), Portuguese, Korean and Italian, alongside German, French, Spanish and Japanese. The newer labels (Smart, Devices & Sharing, Stay Awake…) are translated into all of them.
 - **docs/TESTING.md:** a real-Mac checklist, including the first-hour energy check. **docs/NOTARISATION.md:** one-time steps to ship notarised builds.
 
@@ -687,7 +687,7 @@ Monorail by Ashforde® 1.0.
 - A new README with an animated banner, a how-it-works diagram, a guide to slide layouts, a comparison and an FAQ.
 
 ### Changed
-- Links point to the repository's new home, github.com/ashfordeOU/monorail.
+- Links point to Monorail's new home.
 
 ### Fixed
 - Clicking a slide on the slider bar always jumps to it, even if the pointer moves a little while clicking. Clicking one half of a pair (or one cell of a grid) jumps straight to that window.

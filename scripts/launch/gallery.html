@@ -4,20 +4,20 @@
 :root { --ink:#24112B; --muted:#7A5A70; --card:#fff; --soft:#FBEFEA; --line:rgba(36,17,43,.10);
   --pink:#E8437A; --plum:#8E3AB8; --w1:#5B8CFF; --w2:#B06BFF; --w3:#FF5F9E; --w4:#FF9445; --w5:#45D18C; --w6:#33CCDB; --w7:#FFCC40; --w8:#8E7CFF; }
 * { box-sizing:border-box; }
-html, body { margin:0; width:1270px; height:760px; overflow:hidden; font-family:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing:antialiased; }
+html, body { margin:0; width:1270px; height:760px; overflow:hidden; font-family:-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter Display", "Inter", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing:antialiased; }
 .slide { position:absolute; inset:0; padding:54px 64px; color:#fff; background:radial-gradient(1200px 700px at 85% -10%, rgba(255,120,160,.35), transparent 60%), linear-gradient(135deg,#2A1650,#5E2370 50%,#B23F6E); display:none; }
 .slide.on { display:block; }
-.kicker { font:700 15px/1 inherit; letter-spacing:.14em; text-transform:uppercase; color:#FFC3D6; }
+.kicker { font-weight:700;font-size:15px;line-height:1; letter-spacing:.14em; text-transform:uppercase; color:#FFC3D6; }
 h1 { font-size:54px; line-height:1.04; letter-spacing:-1.6px; margin:14px 0 12px; max-width:760px; }
 h1 em { font-style:normal; background:linear-gradient(100deg,#FFB27A,#FF7AA8); -webkit-background-clip:text; background-clip:text; color:transparent; }
 p.sub { font-size:21px; line-height:1.4; color:rgba(255,255,255,.82); margin:0; max-width:620px; }
-.brand { position:absolute; right:56px; top:50px; display:flex; align-items:center; gap:10px; font:700 16px/1 inherit; color:rgba(255,255,255,.85); }
+.brand { position:absolute; right:56px; top:50px; display:flex; align-items:center; gap:10px; font-weight:700;font-size:16px;line-height:1; color:rgba(255,255,255,.85); }
 .brand img { width:30px; height:30px; border-radius:8px; }
 .mac { position:absolute; border-radius:18px; overflow:hidden; background:linear-gradient(135deg,#3A2A6E,#7A2E78 55%,#C2456E); box-shadow:0 40px 90px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.12); }
-.menubar { position:absolute; inset:0 0 auto; height:26px; background:rgba(20,8,24,.35); display:flex; align-items:center; padding:0 14px; gap:16px; font:600 12px/1 inherit; }
+.menubar { position:absolute; inset:0 0 auto; height:26px; background:rgba(20,8,24,.35); display:flex; align-items:center; padding:0 14px; gap:16px; font-weight:600;font-size:12px;line-height:1; }
 .menubar .r { margin-left:auto; display:flex; gap:12px; align-items:center; }
 .win { position:absolute; border-radius:11px; background:var(--card); box-shadow:0 14px 30px rgba(0,0,0,.3); overflow:hidden; display:flex; flex-direction:column; color:var(--ink); }
-.win .bar { height:24px; flex:0 0 24px; display:flex; align-items:center; gap:5px; padding:0 10px; background:var(--soft); font:600 11.5px/1 inherit; color:var(--muted); }
+.win .bar { height:24px; flex:0 0 24px; display:flex; align-items:center; gap:5px; padding:0 10px; background:var(--soft); font-weight:600;font-size:11.5px;line-height:1; color:var(--muted); }
 .win .bar i { width:9px; height:9px; border-radius:50%; background:#FF5F57; } .win .bar i:nth-child(2){background:#FEBC2E} .win .bar i:nth-child(3){background:#28C840}
 .win .bar span { margin-left:6px; white-space:nowrap; }
 .win .body { flex:1; padding:12px; display:grid; gap:8px; align-content:start; background:linear-gradient(180deg, color-mix(in srgb, var(--a) 12%, transparent), transparent 60%); }
@@ -27,23 +27,23 @@ p.sub { font-size:21px; line-height:1.4; color:rgba(255,255,255,.82); margin:0; 
 .win.focus { outline:3px solid #fff; outline-offset:2px; }
 .pill { position:absolute; left:50%; transform:translateX(-50%); height:24px; border-radius:999px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); display:flex; align-items:center; gap:4px; padding:0 10px; }
 .pill span { height:10px; border-radius:3px; background:rgba(255,255,255,.55); }
-.preview { position:absolute; border-radius:12px; background:rgba(232,67,122,.55); border:3px solid #fff; display:grid; place-items:center; font:800 20px/1 inherit; text-shadow:0 2px 8px rgba(0,0,0,.4); }
+.preview { position:absolute; border-radius:12px; background:rgba(232,67,122,.55); border:3px solid #fff; display:grid; place-items:center; font-weight:800;font-size:20px;line-height:1; text-shadow:0 2px 8px rgba(0,0,0,.4); }
 .cursor { position:absolute; width:30px; height:30px; }
 .chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; }
-.chip { padding:9px 15px; border-radius:999px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); font:600 15px/1 inherit; }
-kbd { display:inline-block; padding:5px 9px; border-radius:8px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3); border-bottom-width:3px; font:700 17px/1 inherit; color:#fff; }
+.chip { padding:9px 15px; border-radius:999px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); font-weight:600;font-size:15px;line-height:1; }
+kbd { display:inline-block; padding:5px 9px; border-radius:8px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3); border-bottom-width:3px; font-weight:700;font-size:17px;line-height:1; color:#fff; }
 .card { position:absolute; border-radius:18px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); padding:22px 24px; backdrop-filter:blur(8px); }
 .card h3 { margin:0 0 8px; font-size:22px; } .card p { margin:0; color:rgba(255,255,255,.8); font-size:16px; line-height:1.4; }
 .tabs { position:absolute; display:flex; gap:4px; }
-.tabs b { flex:1; padding:6px 10px; border-radius:8px 8px 0 0; background:rgba(255,255,255,.35); font:700 11.5px/1.2 inherit; color:#fff; }
+.tabs b { flex:1; padding:6px 10px; border-radius:8px 8px 0 0; background:rgba(255,255,255,.35); font-weight:700;font-size:11.5px;line-height:1.2; color:#fff; }
 .tabs b.on { background:#fff; color:var(--ink); }
 .palette { position:absolute; border-radius:16px; background:rgba(255,255,255,.97); color:var(--ink); box-shadow:0 30px 80px rgba(0,0,0,.45); overflow:hidden; }
 .palette .q { padding:18px 20px; font-size:21px; border-bottom:1px solid var(--line); }
 .palette .q .c { display:inline-block; width:2px; height:22px; background:var(--pink); vertical-align:-4px; margin-left:2px; }
-.palette .r { margin:10px; padding:13px 15px; border-radius:11px; background:var(--pink); color:#fff; font:700 17px/1.2 inherit; }
-.palette .r2 { margin:0 10px 10px; padding:11px 15px; border-radius:11px; color:var(--muted); font:600 16px/1.2 inherit; }
-.toast { position:absolute; padding:12px 18px; border-radius:999px; background:rgba(36,17,43,.9); color:#fff; font:700 16px/1.2 inherit; box-shadow:0 14px 30px rgba(0,0,0,.35); white-space:nowrap; }
-.menu { position:absolute; width:300px; border-radius:12px; background:rgba(250,246,250,.97); color:var(--ink); box-shadow:0 26px 60px rgba(0,0,0,.45); padding:6px; font:500 15px/1 inherit; }
+.palette .r { margin:10px; padding:13px 15px; border-radius:11px; background:var(--pink); color:#fff; font-weight:700;font-size:17px;line-height:1.2; }
+.palette .r2 { margin:0 10px 10px; padding:11px 15px; border-radius:11px; color:var(--muted); font-weight:600;font-size:16px;line-height:1.2; }
+.toast { position:absolute; padding:12px 18px; border-radius:999px; background:rgba(36,17,43,.9); color:#fff; font-weight:700;font-size:16px;line-height:1.2; box-shadow:0 14px 30px rgba(0,0,0,.35); white-space:nowrap; }
+.menu { position:absolute; width:300px; border-radius:12px; background:rgba(250,246,250,.97); color:var(--ink); box-shadow:0 26px 60px rgba(0,0,0,.45); padding:6px; font-weight:500;font-size:15px;line-height:1; }
 .menu div { padding:9px 12px; border-radius:7px; display:flex; justify-content:space-between; }
 .menu div.h { background:var(--pink); color:#fff; } .menu div span { color:var(--muted); font-size:13px; } .menu div.h span { color:#fff; }
 .menu hr { border:0; border-top:1px solid var(--line); margin:5px 8px; }
@@ -52,16 +52,33 @@ kbd { display:inline-block; padding:5px 9px; border-radius:8px; background:rgba(
 .swatch { position:absolute; width:188px; height:118px; border-radius:14px; overflow:hidden; box-shadow:0 14px 30px rgba(0,0,0,.35); }
 .swatch .bg { position:absolute; inset:0; }
 .swatch i { position:absolute; top:22%; bottom:26%; border-radius:6px; background:rgba(255,255,255,.92); }
-.swatch b { position:absolute; left:10px; bottom:8px; font:700 13px/1 inherit; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.5); }
+.swatch b { position:absolute; left:10px; bottom:8px; font-weight:700;font-size:13px;line-height:1; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.5); }
+.ws { position:absolute; border-radius:14px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); padding:12px; }
+.ws h5 { margin:0 0 8px; font-weight:700;font-size:14px;line-height:1; color:#fff; display:flex; gap:8px; align-items:center; }
+.ws h5 i { width:9px; height:9px; border-radius:50%; background:var(--a); }
+.ws .row { display:flex; gap:8px; }
+.ws .row div { height:84px; border-radius:8px; background:#fff; box-shadow:0 8px 18px rgba(0,0,0,.25); position:relative; overflow:hidden; }
+.ws .row div::before { content:""; position:absolute; inset:0 0 auto; height:12px; background:var(--c); }
+.pop { position:absolute; border-radius:16px; background:rgba(250,246,250,.97); color:var(--ink); box-shadow:0 30px 80px rgba(0,0,0,.45); padding:16px 18px; font-weight:500;font-size:15px;line-height:1.3; }
+.pop .h { display:flex; align-items:center; gap:10px; font-weight:700;font-size:17px;line-height:1; }
+.pop .sw { margin-left:auto; width:44px; height:26px; border-radius:999px; background:#34C759; position:relative; }
+.pop .sw::after { content:""; position:absolute; right:3px; top:3px; width:20px; height:20px; border-radius:50%; background:#fff; }
+.pop .track { height:6px; border-radius:3px; background:linear-gradient(90deg,#9cc8ff,#ffb36b,#ff7a3d); position:relative; margin:10px 0 4px; }
+.pop .track::after { content:""; position:absolute; left:68%; top:-7px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.35); }
+.pop .muted { color:var(--muted); font-size:13.5px; }
+.pop .sel { margin-top:10px; padding:8px 10px; border-radius:8px; background:rgba(36,17,43,.06); display:flex; justify-content:space-between; }
+.plat { position:absolute; border-radius:20px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.22); padding:26px; text-align:left; }
+.plat .os { font-weight:800;font-size:30px;line-height:1; } .plat .tag { display:inline-block; margin-top:10px; padding:5px 11px; border-radius:999px; font-weight:700;font-size:13px;line-height:1; background:rgba(255,255,255,.2); }
+.plat .tag.ok { background:#34C759; } .plat p { margin:14px 0 0; color:rgba(255,255,255,.82); font-size:16px; line-height:1.45; }
 </style></head><body>
 
 <!-- 1 Hero -->
 <section class="slide" data-n="1">
-  <div class="kicker">Monorail by Ashforde®</div>
+  <div class="kicker">The scrolling window manager for Mac</div>
   <h1>Every window rides <em>one rail</em></h1>
-  <p class="sub">The scrolling window manager for Mac. New windows slide in beside you, so nothing you're using ever shrinks.</p>
-  <div class="chips"><span class="chip">✓ Free, every feature</span><span class="chip">✓ No account</span><span class="chip">✓ macOS 13+ · Apple silicon &amp; Intel</span></div>
-  <div class="mac" style="left:250px;top:318px;width:1060px;height:420px">
+  <p class="sub">New windows slide in beside the one you're using. Nothing else ever shrinks, and quitting puts every window back.</p>
+  <div class="chips"><span class="chip">✓ Free, every feature, every Mac</span><span class="chip">✓ No account</span><span class="chip">✓ Apple silicon &amp; Intel</span><span class="chip">✓ SIP stays on</span></div>
+  <div class="mac" style="left:250px;top:330px;width:1060px;height:420px">
     <div class="menubar"><span></span><span>Xcode</span><span style="opacity:.7">File</span><span style="opacity:.7">Edit</span><div class="r"><span>▮▮▯▯</span><span>9:41</span></div></div>
     <div class="win" style="--a:var(--w1);left:14px;top:44px;width:250px;height:310px"><div class="bar"><i></i><i></i><i></i><span>Safari</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s><s></s></div></div>
     <div class="win focus" style="--a:var(--w6);left:278px;top:44px;width:330px;height:310px"><div class="bar"><i></i><i></i><i></i><span>Xcode — Engine.swift</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s><s></s><s></s><s></s></div></div>
@@ -98,13 +115,24 @@ kbd { display:inline-block; padding:5px 9px; border-radius:8px; background:rgba(
     <div class="win" style="--a:var(--w2);left:16px;top:68px;width:560px;height:326px"><div class="bar"><i></i><i></i><i></i><span>Slack — #launch</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s><s></s><s></s></div></div>
     <div class="win" style="--a:var(--w4);left:594px;top:40px;width:440px;height:354px"><div class="bar"><i></i><i></i><i></i><span>Figma — Launch</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s></div></div>
     <div style="position:absolute;left:581px;top:170px;width:8px;height:96px;border-radius:4px;background:#fff;box-shadow:0 0 0 6px rgba(255,255,255,.25)"></div>
-    <div style="position:absolute;left:540px;top:196px;font:800 30px/1 inherit;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4)">⟵</div>
-    <div style="position:absolute;left:600px;top:196px;font:800 30px/1 inherit;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4)">⟶</div>
+    <div style="position:absolute;left:540px;top:196px;font-weight:800;font-size:30px;line-height:1;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4)">⟵</div>
+    <div style="position:absolute;left:600px;top:196px;font-weight:800;font-size:30px;line-height:1;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4)">⟶</div>
   </div>
 </section>
 
-<!-- 4 Say it + agents -->
+<!-- 4 Overview -->
 <section class="slide" data-n="4">
+  <div class="kicker">See everything · ⌃⌥O</div>
+  <h1>Every workspace, <em>one canvas</em></h1>
+  <p class="sub">Zoom out to every slide on every display. Drag windows between workspaces, pair them, reorder them, or drop one on the bin to close it.</p>
+  <div class="ws" style="--a:var(--w6);left:64px;top:330px"><h5><i></i>Code</h5><div class="row"><div style="--c:var(--w6);width:210px"></div><div style="--c:var(--w8);width:150px"></div><div style="--c:var(--w1);width:170px"></div><div style="--c:var(--w5);width:130px"></div></div></div>
+  <div class="ws" style="--a:var(--w2);left:64px;top:470px"><h5><i></i>Chat</h5><div class="row"><div style="--c:var(--w2);width:230px"></div><div style="--c:var(--w3);width:180px"></div><div style="--c:var(--w7);width:140px"></div></div></div>
+  <div class="ws" style="--a:var(--w4);left:64px;top:610px"><h5><i></i>Design</h5><div class="row"><div style="--c:var(--w4);width:260px"></div><div style="--c:var(--w1);width:150px"></div><div style="--c:var(--w8);width:170px"></div><div style="--c:var(--w6);width:120px"></div></div></div>
+  <div class="card" style="left:860px;top:330px;width:350px;height:380px"><h3>Workspaces that fit you</h3><p>✓ Nine per display, named your way<br>✓ App rules send apps where they belong<br>✓ Displays that remember: unplug and replug, every window goes back<br>✓ A slider bar with live previews</p></div>
+</section>
+
+<!-- 5 Say it + agents -->
+<section class="slide" data-n="5">
   <div class="kicker">Understands you</div>
   <h1>Type what you want. <em>It's done.</em></h1>
   <p class="sub">The palette understands sentences, on your Mac. And when an AI coding agent is waiting for your approval, you hear about it.</p>
@@ -118,12 +146,48 @@ kbd { display:inline-block; padding:5px 9px; border-radius:8px; background:rgba(
   </div>
 </section>
 
-<!-- 5 Saved views -->
-<section class="slide" data-n="5">
+<!-- 6 Evening Mode -->
+<section class="slide" data-n="6" style="background:radial-gradient(1200px 700px at 85% -10%, rgba(255,170,90,.45), transparent 60%), linear-gradient(135deg,#3A1A3A,#7A2E4E 50%,#D0663A)">
+  <div class="kicker">New · Evening Mode</div>
+  <h1>A warmer screen, <em>one click away</em></h1>
+  <p class="sub">Less blue light on every display, as warm as you like. On by hand, on a schedule or from sunset to sunrise, fading in over 20 minutes. Now right in the menu bar.</p>
+  <div class="mac" style="left:110px;top:330px;width:720px;height:390px;filter:sepia(.35) saturate(1.2) hue-rotate(-12deg)">
+    <div class="menubar"><span></span><span>Notes</span><div class="r"><span>🌙</span><span>21:40</span></div></div>
+    <div class="win" style="--a:var(--w4);left:16px;top:42px;width:330px;height:330px"><div class="bar"><i></i><i></i><i></i><span>Notes</span></div><div class="body"><b></b><s></s><s></s><s></s><s></s></div></div>
+    <div class="win" style="--a:var(--w3);left:360px;top:42px;width:344px;height:330px"><div class="bar"><i></i><i></i><i></i><span>Safari</span></div><div class="body"><b></b><s></s><s></s><s></s></div></div>
+  </div>
+  <div class="pop" style="left:870px;top:330px;width:340px">
+    <div class="h">🌙 Evening Mode<span class="sw"></span></div>
+    <div class="muted" style="margin-top:4px">On until sunrise</div>
+    <div style="margin-top:14px;display:flex;justify-content:space-between"><span>Warmth</span><span class="muted">68%</span></div>
+    <div class="track"></div>
+    <div class="sel"><span>Turn on</span><span>Sunset to sunrise ▾</span></div>
+    <div class="sel"><span>Red light only</span><span>Off</span></div>
+    <div style="margin-top:12px;color:#D63A80;font-weight:600">More Evening Mode settings…</div>
+  </div>
+</section>
+
+<!-- 7 Everyday tools -->
+<section class="slide" data-n="7">
+  <div class="kicker">Built in, not bolted on</div>
+  <h1>The little apps you'd buy, <em>already inside</em></h1>
+  <p class="sub">The tools that usually cost extra, included and switched on with a click.</p>
+  <div class="card" style="left:64px;top:300px;width:270px;height:200px"><h3>☕ Stay Awake</h3><p>For an hour, until a time, while something downloads, or with the lid closed while plugged in.</p></div>
+  <div class="card" style="left:354px;top:300px;width:270px;height:200px"><h3>🟢 Keep me Available</h3><p>Teams and Slack keep showing you as Available while you step away.</p></div>
+  <div class="card" style="left:644px;top:300px;width:270px;height:200px"><h3>🛡️ Safe sharing</h3><p>Private windows step aside the moment you share your screen in Zoom, Teams or Meet.</p></div>
+  <div class="card" style="left:934px;top:300px;width:270px;height:200px"><h3>🎯 Focus</h3><p>Dim everything but your slide, hide distractions, and work in pomodoro blocks.</p></div>
+  <div class="card" style="left:64px;top:520px;width:270px;height:180px"><h3>🪟 ⌘Tab with previews</h3><p>Every window, most recent first. Close, minimise or quit from it.</p></div>
+  <div class="card" style="left:354px;top:520px;width:270px;height:180px"><h3>🧲 Edge snapping</h3><p>Drag a window to an edge or a corner to snap it.</p></div>
+  <div class="card" style="left:644px;top:520px;width:270px;height:180px"><h3>🖥️ Display controls</h3><p>Dim below the lowest brightness, switch resolution and refresh rate.</p></div>
+  <div class="card" style="left:934px;top:520px;width:270px;height:180px"><h3>🤖 AI agent alerts</h3><p>A chime when your coding assistant waits for approval.</p></div>
+</section>
+
+<!-- 8 Saved views -->
+<section class="slide" data-n="8">
   <div class="kicker">Saved views</div>
   <h1>Nine places to jump back to. <em>Back and forward</em> too.</h1>
   <p class="sub">Save where you are on each display, then come back in one keystroke. Step back and forward through where you've been, like a browser.</p>
-  <div style="position:absolute;left:64px;top:360px;display:grid;gap:16px;font:600 19px/1.3 inherit">
+  <div style="position:absolute;left:64px;top:360px;display:grid;gap:16px;font-weight:600;font-size:19px;line-height:1.3">
     <div><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>1</kbd> &nbsp; save this view</div>
     <div><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>1</kbd> &nbsp; come back to it</div>
     <div><kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>[</kbd> <kbd>]</kbd> &nbsp; back · forward</div>
@@ -134,60 +198,70 @@ kbd { display:inline-block; padding:5px 9px; border-radius:8px; background:rgba(
   </div>
 </section>
 
-<!-- 6 Import + free -->
-<section class="slide" data-n="6">
-  <div class="kicker">Switch in a minute</div>
-  <h1>Bring your setup. <em>Everything's free.</em></h1>
-  <p class="sub">Import shortcuts, gaps, floating apps and workspace rules. Docking, tab groups, saved views and URL commands have no paywall and no window limits.</p>
+<!-- 9 Free -->
+<section class="slide" data-n="9">
+  <div class="kicker">Keep your money</div>
+  <h1>Why pay for a window manager? <em>Everything's free.</em></h1>
+  <p class="sub">Others sell one job at a time, per Mac and per major version. Monorail does it all in one app, and brings your old setup with it.</p>
   <div class="src" style="left:64px;top:380px"><h4>AeroSpace</h4><code>aerospace.toml</code></div>
   <div class="src" style="left:64px;top:480px"><h4>yabai + skhd</h4><code>.yabairc · .skhdrc</code></div>
   <div class="src" style="left:64px;top:580px"><h4>Rectangle</h4><code>shortcuts and gaps</code></div>
-  <div style="position:absolute;left:400px;top:520px;font:800 56px/1 inherit">→</div>
+  <div style="position:absolute;left:400px;top:520px;font-weight:800;font-size:56px;line-height:1">→</div>
   <div class="card" style="left:500px;top:380px;width:330px;height:300px">
     <img src="../../assets/icon.png" style="width:56px;height:56px;border-radius:14px">
     <h3 style="margin-top:14px">Imported from AeroSpace</h3>
     <p>24 shortcuts · 4 floating apps · 3 workspace rules · gaps of 8 points</p>
   </div>
   <div class="card" style="left:860px;top:380px;width:350px;height:300px">
-    <h3>No Pro tier</h3>
-    <p>✓ Unlimited docked windows<br>✓ Tab groups<br>✓ Saved views<br>✓ Commands by URL<br>✓ Every display</p>
+    <h3>No catch</h3>
+    <p>✓ No licence key<br>✓ No per-Mac limit<br>✓ No trial clock<br>✓ No paid upgrade next year<br>✓ No window limits</p>
   </div>
 </section>
 
-<!-- 7 Themes -->
-<section class="slide" data-n="7">
+<!-- 10 Themes -->
+<section class="slide" data-n="10">
   <div class="kicker">27 themes</div>
   <h1>Make it <em>yours</em></h1>
   <p class="sub">Classic, seasonal and unique themes for the focus border, slider and overview. Seasons changes with the year.</p>
   <div id="swatches"></div>
 </section>
 
-<!-- 8 Trust -->
-<section class="slide" data-n="8">
+<!-- 11 Trust -->
+<section class="slide" data-n="11">
   <div class="kicker">Native · light · private</div>
   <h1>Made for the Mac. <em>Barely there.</em></h1>
-  <p class="sub">Native Swift, no Electron. It stays out of the way until you need it.</p>
-  <div class="card" style="left:64px;top:330px;width:270px;height:200px"><h3>⚡ Under 0.1% CPU</h3><p>when idle, with no timers ticking. Measured on a MacBook.</p></div>
+  <p class="sub">Native Swift, no Electron. Signed and notarised by Apple. One permission, and nothing about your windows leaves your Mac.</p>
+  <div class="card" style="left:64px;top:330px;width:270px;height:200px"><h3>⚡ 0.15% of a core</h3><p>and about 55 MB, idle on battery. Measured on a MacBook Pro.</p></div>
   <div class="card" style="left:354px;top:330px;width:270px;height:200px"><h3>🔒 No account</h3><p>Window titles, apps and files never leave your Mac.</p></div>
-  <div class="card" style="left:644px;top:330px;width:270px;height:200px"><h3>☕ Stay Awake</h3><p>Keep the Mac awake for an hour, while downloading, or with the lid closed.</p></div>
-  <div class="card" style="left:934px;top:330px;width:270px;height:200px"><h3>🛡️ Safe sharing</h3><p>Private windows step aside when you share your screen.</p></div>
-  <div class="chips" style="position:absolute;left:64px;top:570px"><span class="chip">monorail:// links</span><span class="chip">CLI + live events</span><span class="chip">Local API</span><span class="chip">MCP for AI assistants</span><span class="chip">Raycast · Alfred · Stream Deck</span><span class="chip">9 languages</span></div>
+  <div class="card" style="left:644px;top:330px;width:270px;height:200px"><h3>✅ SIP stays on</h3><p>No kernel extension, nothing injected into the Dock. Only Accessibility.</p></div>
+  <div class="card" style="left:934px;top:330px;width:270px;height:200px"><h3>🍎 Notarised</h3><p>Signed with Ashforde's Developer ID and checked by Apple. Opens without warnings.</p></div>
+  <div class="chips" style="position:absolute;left:64px;top:570px"><span class="chip">monorail:// links</span><span class="chip">CLI + live events</span><span class="chip">Local API</span><span class="chip">MCP for AI assistants</span><span class="chip">Raycast · Alfred · Stream Deck</span><span class="chip">Vim keys · MIDI · game controllers</span><span class="chip">9 languages</span></div>
 </section>
 
-<!-- 9 End card -->
-<section class="slide" data-n="9" style="text-align:center;padding-top:150px">
+<!-- 12 Platforms -->
+<section class="slide" data-n="12">
+  <div class="kicker">Everywhere you work</div>
+  <h1>On the Mac. <em>Now in beta on Windows and Linux.</em></h1>
+  <p class="sub">The same strip, the same docking and the same shortcuts, made natively for each system.</p>
+  <div class="plat" style="left:64px;top:360px;width:360px;height:300px"><div class="os">macOS</div><span class="tag ok">Available</span><p>macOS 13 or later, Apple silicon and Intel. Free, with every feature. Download or Homebrew.</p></div>
+  <div class="plat" style="left:455px;top:360px;width:360px;height:300px"><div class="os">Windows</div><span class="tag">Beta</span><p>Windows 11 and 10. Unzip and run: no installer, no administrator rights. Virtual desktops, Stay Awake and Keep me Available.</p></div>
+  <div class="plat" style="left:846px;top:360px;width:360px;height:300px"><div class="os">Linux</div><span class="tag">Beta</span><p>A GNOME Shell extension for GNOME 45 or later, on Wayland and X11. One strip per workspace and per screen.</p></div>
+</section>
+
+<!-- 13 End card -->
+<section class="slide" data-n="13" style="text-align:center;padding-top:150px">
   <img src="../../assets/icon.png" style="width:120px;height:120px;border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.4)">
   <h1 style="margin:28px auto 12px;max-width:none">Monorail <span style="font-weight:500;opacity:.8">by Ashforde®</span></h1>
-  <p class="sub" style="margin:0 auto;max-width:none">Free for Mac · every feature · no account · Windows and Linux coming soon</p>
-  <div style="margin-top:34px;font:700 26px/1 inherit">monorail.ashforde.org</div>
-  <div style="margin-top:18px;font:600 18px/1 inherit;opacity:.8">Download the app, or install with Homebrew</div>
+  <p class="sub" style="margin:0 auto;max-width:none">Free for Mac · every feature · every Mac · no account · Windows and Linux in beta</p>
+  <div style="margin-top:34px;font-weight:700;font-size:26px;line-height:1">monorail.ashforde.org</div>
+  <div style="margin-top:18px;font-weight:600;font-size:18px;line-height:1;opacity:.8">Download the app, or install with Homebrew</div>
 </section>
 
 <div class="brand" id="brand"><img src="../../assets/icon.png" alt="">Monorail by Ashforde®</div>
 <script>
 const n = new URLSearchParams(location.search).get('shot') || '1';
 document.querySelector(`.slide[data-n="${n}"]`).classList.add('on');
-if (n === '9') document.getElementById('brand').style.display = 'none';
+if (n === '13') document.getElementById('brand').style.display = 'none';
 const themes = [['Vivid','#5B8CFF','#FF5F9E'],['Aurora','#2BD9A3','#7B5CFF'],['Nord','#5E81AC','#88C0D0'],['Dracula','#BD93F9','#FF79C6'],['Synthwave','#FF2E97','#7B2FFF'],['Ember','#FF6A3D','#B5172E'],['Glacier','#7FD6FF','#3D6BFF'],['Spring','#7BD66B','#FF9ACD'],['Autumn','#E07A2E','#8C3B1F'],['Winter','#B8D8FF','#6A88C2'],['Holographic','#7AF0FF','#FF8AF0'],['Ink & Paper','#2B2B2B','#9A9A9A']];
 const box = document.getElementById('swatches');
 themes.forEach(([name, a, b], i) => {

@@ -9,47 +9,55 @@ asks. The images are in [`assets/launch/v17`](../../assets/launch/v17). Replies 
 **Name:** Monorail by Ashforde®
 
 **Tagline** (60 characters max). Pick one:
-> Windows side by side on one strip. Nothing ever shrinks. (56)
+> Your Mac's windows on one endless strip. Nothing shrinks. (57)
 
 Alternatives:
+- Windows side by side on one strip. Nothing ever shrinks. (56)
 - The free scrolling window manager for Mac (41)
-- Every window rides one rail. Free, every feature. (49)
 
-**Link:** https://monorail.ashforde.org/
+**Link:** https://monorail.ashforde.org/?ref=producthunt (the site then greets Product Hunt visitors)
 
-**Topics:** Mac, Productivity, Menu Bar Apps, Developer Tools
+**Launch tags:** Menu Bar Apps · Productivity · Mac
 
 **Pricing:** Free
 
-**Description** (260 characters max, 253 used):
-> A scrolling window manager for Mac. New windows slide in beside the one you're using, and nothing
-> else ever shrinks. Drag to dock or tab any apps, say "Slack and Mail side by side", Evening Mode,
-> Stay Awake. Free, every feature, Apple silicon and Intel.
-
-**Launch tags / first-day flags:** Free · Mac · No account
+**Description** (Product Hunt allows 500 characters; this is 494):
+> Stop paying for window tools. Monorail puts every window on one endless strip: new windows slide in
+> beside you and nothing you're using ever shrinks. Drag a window onto another to dock or tab it,
+> across any apps. Type "Slack and Mail side by side". Zoom out to every workspace, jump back to saved
+> views, warm your screen with Evening Mode, keep your Mac awake and Teams Available. Brings your
+> AeroSpace, yabai or Rectangle setup. Native, notarised, SIP stays on. Free, every feature, every Mac.
 
 ## Gallery
 
-At 2540 × 1520 (Product Hunt's 1270 × 760 at double resolution). Upload in this order:
+In [`assets/launch/v18`](../../assets/launch/v18), at 2540 × 1520 (Product Hunt's 1270 × 760 at double
+resolution). **Delete the old images in the draft first** (one still says "Free and open source"), then
+upload in this order:
 
-| # | File | Shows |
+| # | File | Says |
 | --- | --- | --- |
-| 1 | `01-hero.png` | Every window rides one rail |
-| 2 | `docking.gif` | Docking, live: edge, nested split, tab group, gap resize |
+| 1 | `01-hero.png` | Every window rides one rail · free, every Mac, Apple silicon and Intel, SIP stays on |
+| 2 | `../v17/docking.gif` | Docking, live: edge, nested split, tab group, gap resize |
 | 3 | `02-dock.png` | Drop a window where you want it |
-| 4 | `03-tabs-resize.png` | Tab groups across apps, and resizing two windows at once |
-| 5 | `04-say-it.png` | Plain-language commands and AI agent alerts |
-| 6 | `05-saved-views.png` | Saved views, back and forward |
-| 7 | `06-import-free.png` | Import from AeroSpace, yabai or Rectangle; no Pro tier |
-| 8 | `07-themes.png` | 27 themes |
-| 9 | `08-native-private.png` | Native, light, private |
-| 10 | `09-end.png` | End card with the download link |
+| 4 | `03-tabs-resize.png` | Tab groups across apps; drag the gap to resize both |
+| 5 | `04-overview.png` | Every workspace on one canvas, displays that remember |
+| 6 | `05-say-it.png` | Type what you want; AI agent alerts |
+| 7 | `06-evening-mode.png` | New: Evening Mode at a click from the menu bar |
+| 8 | `07-built-in.png` | Stay Awake, Keep me Available, safe sharing, focus, ⌘Tab previews, snapping, display controls |
+| 9 | `08-saved-views.png` | Saved views, back and forward |
+| 10 | `09-free.png` | Why pay for a window manager? Import, and no catch |
+| 11 | `10-themes.png` | 27 themes |
+| 12 | `11-native-private.png` | 0.15% of a core, no account, SIP stays on, notarised, scripting |
+| 13 | `12-platforms.png` | Mac available; Windows and Linux in beta |
+| 14 | `13-end.png` | monorail.ashforde.org, Homebrew |
 
-**Thumbnail:** `assets/launch/v17/thumbnail-240.png` (480 px version alongside).
+The images are drawn by `scripts/launch/gallery.html` (open it with `?shot=1` … `?shot=13`).
+
+**Thumbnail:** `assets/launch/v18/thumbnail-240.png` (480 px version alongside).
 
 **Video:** `assets/launch/v17/monorail-demo.mp4` (85 s, 1080p). Product Hunt takes a YouTube link:
 upload it to YouTube (unlisted is fine) and paste the link under **Add video**. Its last section calls
-Windows and Linux "plans"; they're now in beta, which is fine to say in the comments.
+Windows and Linux "plans"; they're now in beta, which the gallery and comments say.
 
 ## Maker's first comment
 

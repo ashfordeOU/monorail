@@ -22,11 +22,33 @@ is the same.
 The code for this is `Edition.isAppStore` (`Sources/Monorail/Edition.swift`), set by building with
 `-DAPPSTORE`. CI checks that the edition compiles on every change.
 
-**Before submitting, test on a real Mac** that moving and resizing other apps' windows works with the
-sandbox on: it relies on Accessibility access, which App Store window managers such as Magnet and
-Moom also use. Global shortcuts and the mouse and trackpad gestures need Input Monitoring; check
-they work, and if App Review objects to the event tap, the edition can fall back to standard
-system-wide hot keys.
+## Status: parked (November 2026)
+
+**The sandboxed edition can't arrange windows, so it isn't submitted.** Tested on 9 November 2026
+with TestFlight build 1.7.24 (340) on a real Mac. Accessibility was granted (Monorail's own check
+showed the green tick), but the overview stayed empty. The system log showed the sandbox refusing
+every request to another app:
+
+    Sandbox: Monorail(62622) deny(1) mach-lookup com.apple.axserver (per-pid)
+
+GitHub's Mac showed the same thing in `appstore.yml`.
+
+This is Apple's rule, not a Monorail bug. [Protecting user data with App Sandbox](https://developer.apple.com/documentation/security/protecting-user-data-with-app-sandbox)
+lists "use of accessibility APIs in assistive apps" as forbidden in the sandbox. Apple's developer
+support confirmed in [thread 805556](https://developer.apple.com/forums/thread/805556) that a
+window manager's only route is Developer ID distribution, which is the notarised download Monorail
+already uses. Older store tilers such as Magnet date from before sandboxing was required and aren't
+sandboxed. A new app can't do the same.
+
+The one known workaround is Apple's Shortcuts app. A sandboxed app sends window frames to a
+companion Shortcut, whose Move Window and Resize Window actions do the moving. That only gives
+occasional, slow re-arrangement. It has no live strip, gestures, animation, or reaction to new
+windows, so it wouldn't be Monorail.
+
+What's ready, if Apple's rules change:
+- The app record "Monorail by Ashforde" in App Store Connect.
+- The distribution certificates, the profile and the GitHub secrets.
+- `appstore.yml`, which builds, signs and uploads to TestFlight with one click.
 
 ## Steps (once the Apple Developer account is approved)
 

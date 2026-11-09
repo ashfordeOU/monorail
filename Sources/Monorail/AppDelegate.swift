@@ -297,8 +297,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             isPaused: { [weak self] in self?.engine.isPaused ?? false },
             resetPairs: { [weak self] in self?.engine.perform(.regroup) },
             togglePause: { [weak self] in self?.engine.togglePause() },
-            openSettings: { [weak self] in self?.showSettings() }
+            openSettings: { [weak self] in self?.showSettings() },
+            isEveningOn: { [weak self] in self?.evening.isOn ?? false },
+            openEveningSettings: { [weak self] in self?.showEveningSettingsFromMenu() }
         )
+        popover.store = store
         sliderBar.stepAside = { [weak self] frame in
             guard let self, self.store.settings.sliderBarStepsAside else { return false }
             return BarAside.shouldHide(frame)

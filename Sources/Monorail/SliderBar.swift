@@ -888,6 +888,9 @@ final class SliderPopover {
         var resetPairs: () -> Void
         var togglePause: () -> Void
         var openSettings: () -> Void
+        /// Whether Evening Mode is warming the screen now (by hand or on its schedule).
+        var isEveningOn: () -> Bool = { false }
+        var openEveningSettings: () -> Void = {}
     }
 
     var mapProvider: () -> Engine.MiniMap? = { nil }
@@ -895,6 +898,8 @@ final class SliderPopover {
         slide: { _, _ in }, endSlide: {}, focus: { _ in }, switchWorkspace: { _ in }, showOverview: {})
     var controls = Controls(isPaused: { false }, resetPairs: {}, togglePause: {}, openSettings: {})
     var updater: Updater?
+    /// Settings, for the quick Evening Mode controls.
+    var store: SettingsStore?
 
     private var panel: NSPanel?
     private var host: NSView?
@@ -988,7 +993,12 @@ final class SliderPopover {
         }
         let controls = self.controls
         let view = SliderPopoverView(
-            model: model, paused: paused, updater: updater ?? Updater(), actions: wrapped,
+            model: model, paused: paused, updater: updater ?? Updater(), store: store ?? SettingsStore(), actions: wrapped,
+            isEveningOn: controls.isEveningOn,
+            openEveningSettings: {
+                close()
+                controls.openEveningSettings()
+            },
             resetPairs: { [weak self] in
                 controls.resetPairs()
                 self?.refresh()
@@ -1047,10 +1057,14 @@ private struct SliderPopoverView: View {
     @ObservedObject var model: SliderBarModel
     @ObservedObject var paused: PausedState
     @ObservedObject var updater: Updater
+    @ObservedObject var store: SettingsStore
     let actions: SliderBarController.Actions
+    let isEveningOn: () -> Bool
+    let openEveningSettings: () -> Void
     let resetPairs: () -> Void
     let togglePause: () -> Void
     let openSettings: () -> Void
+    @State private var showsEvening = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -1075,6 +1089,16 @@ private struct SliderPopoverView: View {
                     .controlSize(.small)
                     .disabled(updater.isInstalling)
                     .help("Download, install and relaunch — your windows stay where they are")
+                }
+                Button { showsEvening.toggle() } label: {
+                    let on = store.settings.eveningOn || isEveningOn()
+                    Image(systemName: on ? "moon.fill" : "moon")
+                        .foregroundStyle(on ? Color.orange : Color.primary)
+                        .accessibilityLabel(Text(on ? "Evening Mode, on" : "Evening Mode, off"))
+                }
+                .help("Evening Mode: a warmer screen in the evening")
+                .popover(isPresented: $showsEvening, arrowEdge: .bottom) {
+                    EveningQuickControls(store: store, isOn: isEveningOn, openSettings: openEveningSettings)
                 }
                 Button(action: resetPairs) { Image(systemName: "wand.and.stars").accessibilityLabel(Text("Reset to smart pairs: windows of the same app together")) }
                     .help("Reset to smart pairs: windows of the same app together")
@@ -1120,6 +1144,77 @@ private struct SliderPopoverView: View {
         }
         .padding(14)
         .frame(width: 560)
+    }
+}
+
+/// Evening Mode from the slider popover: on or off, how warm, when, and red light, without opening Settings.
+private struct EveningQuickControls: View {
+    @ObservedObject var store: SettingsStore
+    let isOn: () -> Bool
+    let openSettings: () -> Void
+
+    private var onNow: Bool { store.settings.eveningOn || isOn() }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Toggle(isOn: Binding(get: { store.settings.eveningOn }, set: { store.settings.eveningOn = $0 })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Evening Mode").font(.headline)
+                    Text(status).font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            .toggleStyle(.switch)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("Warmth")
+                    Spacer()
+                    Text("\(Int((store.settings.eveningStrength * 100).rounded()))%").monospacedDigit().foregroundStyle(.secondary)
+                }
+                HStack(spacing: 8) {
+                    Image(systemName: "sun.max").foregroundStyle(.secondary).accessibilityHidden(true)
+                    Slider(value: Binding(get: { store.settings.eveningStrength }, set: { value in
+                        var settings = store.settings
+                        settings.eveningStrength = value
+                        // Moving the slider shows the warmth straight away.
+                        if settings.eveningSchedule == .manual { settings.eveningOn = true }
+                        store.settings = settings
+                    }), in: 0.1...1)
+                    .accessibilityLabel("Warmth")
+                    Image(systemName: "flame").foregroundStyle(.orange).accessibilityHidden(true)
+                }
+            }
+
+            Picker("Turn on", selection: Binding(get: { store.settings.eveningSchedule }, set: { store.settings.eveningSchedule = $0 })) {
+                Text("By hand").tag(EveningSchedule.manual)
+                Text(scheduleLabel).tag(EveningSchedule.scheduled)
+                Text("Sunset to sunrise").tag(EveningSchedule.sun)
+            }
+            .pickerStyle(.menu)
+
+            Toggle("Red light only", isOn: Binding(get: { store.settings.eveningRed }, set: { store.settings.eveningRed = $0 }))
+                .help("Green and blue fade out too, down to red light only at full warmth")
+
+            Divider()
+            Button("More Evening Mode settings…", action: openSettings)
+                .buttonStyle(.link)
+        }
+        .padding(14)
+        .frame(width: 280)
+    }
+
+    private var scheduleLabel: String {
+        let s = store.settings
+        return String(format: "Every day %02d:%02d–%02d:%02d", s.eveningStart / 60, s.eveningStart % 60, s.eveningEnd / 60, s.eveningEnd % 60)
+    }
+
+    private var status: String {
+        if store.settings.eveningOn { return "On now, until you turn it off" }
+        switch store.settings.eveningSchedule {
+        case .manual: return "Off"
+        case .scheduled: return onNow ? "On, for the schedule" : "Comes on with the schedule"
+        case .sun: return onNow ? "On until sunrise" : "Comes on at sunset"
+        }
     }
 }
 

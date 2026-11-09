@@ -54,7 +54,7 @@ jobs:
           base=https://monorail.ashforde.org
           {
             printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-            for page in "" download/ changelog/ press/ keeper/ support/ privacy/ docs/it/ docs/actions/ docs/settings/ docs/compatibility/ docs/security/ docs/licence/ docs/trademarks/; do printf '<url><loc>%s/%s</loc></url>' "$base" "$page"; done
+            for page in "" download/ changelog/ press/ support/ privacy/ docs/it/ docs/actions/ docs/settings/ docs/compatibility/ docs/security/ docs/licence/ docs/trademarks/; do printf '<url><loc>%s/%s</loc></url>' "$base" "$page"; done
             printf '</urlset>\n'
           } > public/sitemap.xml
           # The press kit: screenshots, icon, the docking GIF and the fact sheet, in one zip.
@@ -76,6 +76,8 @@ jobs:
 
           src, dest = sys.argv[1], sys.argv[2]
           lines = open(src, encoding="utf-8").read().splitlines()
+          # Keeper isn't shown on Monorail's site for now: leave out the entries that mention it.
+          lines = [l for l in lines if not (l.lstrip().startswith("- ") and "Keeper" in l)]
           REPO = "https://github.com/ashfordeOU/monorail"
 
           def inline(text):
@@ -283,6 +285,8 @@ jobs:
           for key, value in (("@@REPO@@", REPO), ("@@INTRO@@", "\n".join(intro)), ("@@LATEST@@", latestline),
                              ("@@COUNT@@", str(len(chips))), ("@@CHIPS@@", "".join(chips)), ("@@ARTICLES@@", "\n".join(articles))):
               page = page.replace(key, value)
+          # A heading left with nothing under it (its entries were left out above) goes too.
+          page = re.sub(r"<h3>[^<]*</h3>\s*(?=<h3|</div>)", "", page)
           open(dest, "w", encoding="utf-8").write(page)
           print("changelog: %d releases" % len(releases))
           PY

@@ -233,49 +233,6 @@ footer ul { list-style:none; padding:0; margin:0; display:grid; gap:6px; }
 footer a { color:var(--muted); text-decoration:none; }
 footer a:hover { color:var(--ink); }
 
-/* Monorail + Keeper */
-.kband { position:relative; overflow:hidden; padding:clamp(34px, 5vw, 56px) clamp(16px, 3vw, 40px); border-radius:28px; border:1px solid var(--line); background:radial-gradient(60% 80% at 15% 0%, color-mix(in srgb, var(--pink) 12%, transparent), transparent 70%), radial-gradient(60% 80% at 85% 0%, color-mix(in srgb, var(--w2) 12%, transparent), transparent 70%), var(--soft); }
-.kpair { display:flex; align-items:center; justify-content:center; margin:0 0 22px; }
-.kicon { position:relative; display:inline-block; flex:0 0 auto; width:var(--s); height:var(--s); --s:clamp(64px, 9vw, 88px); border-radius:22.5%; filter:drop-shadow(0 14px 24px rgba(42,20,48,.22)); }
-.kicon img { display:block; width:var(--s); height:var(--s); max-width:none; border-radius:inherit; }
-.kicon.noimg { display:inline-grid; place-items:center; color:#fff; font:800 calc(var(--s) * .5)/1 -apple-system, BlinkMacSystemFont, sans-serif; background:linear-gradient(145deg, #FF8BA0, #9B4DE0); }
-.kicon.noimg.m { background:linear-gradient(145deg, var(--coral), var(--plum)); }
-.kicon.noimg::after { content:attr(data-letter); }
-.klink { position:relative; width:clamp(56px, 10vw, 120px); height:2px; margin:0 clamp(8px, 1.6vw, 16px); background:repeating-linear-gradient(90deg, var(--plum) 0 6px, transparent 6px 12px); opacity:.75; }
-.klink i { position:absolute; top:50%; left:0; width:8px; height:8px; margin-top:-4px; border-radius:50%; background:var(--plum); box-shadow:0 0 0 4px color-mix(in srgb, var(--plum) 22%, transparent); animation:kping 3s ease-in-out infinite; }
-@keyframes kping { 0%, 100% { left:0; } 50% { left:calc(100% - 8px); } }
-.kgrid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-top:36px; text-align:left; }
-@media (max-width:1100px) { .kgrid { grid-template-columns:repeat(2, minmax(0,1fr)); } }
-@media (max-width:560px) { .kgrid { grid-template-columns:minmax(0,1fr); } }
-.kcard { min-width:0; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 18px 20px; display:flex; flex-direction:column; }
-.kcard h3 { margin:14px 0 6px; font-size:18px; line-height:1.25; text-wrap:balance; }
-.kcard p { margin:0; color:var(--muted); font-size:15px; }
-.kart { position:relative; height:96px; border-radius:14px; overflow:hidden; background:linear-gradient(135deg, #3A2A6E, #7A2E78 60%, #C2456E); }
-.kart.strip .rail { position:absolute; left:6%; right:6%; top:34%; bottom:14%; animation:kslide 8s var(--ease) infinite; }
-.kart.strip .rail i { position:absolute; top:0; bottom:0; border-radius:6px; background:rgba(255,255,255,.9); box-shadow:0 4px 10px rgba(0,0,0,.2); }
-.kart.strip .rail i::before { content:""; position:absolute; left:0; right:0; top:0; height:7px; border-radius:6px 6px 0 0; background:var(--c); }
-@keyframes kslide { 0%, 18% { transform:translateX(0); } 42%, 62% { transform:translateX(-38%); } 86%, 100% { transform:translateX(0); } }
-.kart.strip .isl { position:absolute; left:50%; top:0; transform:translateX(-50%); display:flex; align-items:center; gap:6px; padding:5px 14px 6px; border-radius:0 0 14px 14px; background:#000; color:#fff; font:600 11px/1 -apple-system, BlinkMacSystemFont, sans-serif; white-space:nowrap; z-index:2; box-shadow:0 4px 10px rgba(0,0,0,.35); }
-.kart.strip .isl em { width:7px; height:7px; border-radius:50%; background:#45D18C; }
-.kart.awake { display:grid; place-items:center; }
-.kpill { grid-area:1/1; display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:12px; background:#1b1220; color:#fff; font:600 13px/1.2 -apple-system, BlinkMacSystemFont, sans-serif; white-space:nowrap; box-shadow:0 8px 20px rgba(0,0,0,.3); }
-.kpill small { padding:3px 8px; border-radius:999px; background:rgba(69,209,140,.22); color:#7BE7B0; font-size:11.5px; font-weight:700; }
-.kpill.ghost { width:150px; height:34px; opacity:0; background:rgba(27,18,32,.55); animation:kmerge 5s var(--ease) infinite; }
-@keyframes kmerge { 0% { opacity:.55; transform:translate(-26px, -16px); } 45% { opacity:.4; transform:translate(-10px, -6px); } 70%, 100% { opacity:0; transform:none; } }
-.kart.lid { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
-.kart.lid svg { width:176px; height:40px; display:block; }
-.kart.lid .cab { fill:none; stroke:rgba(255,255,255,.55); stroke-width:2; stroke-linecap:round; }
-.kart.lid .dot { fill:#45D18C; animation:kblink 2s ease-in-out infinite; }
-@keyframes kblink { 50% { opacity:.35; } }
-.kart.lid .run { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; background:rgba(0,0,0,.35); color:#fff; font:600 11.5px/1.3 -apple-system, BlinkMacSystemFont, sans-serif; white-space:nowrap; }
-.kart.lid .run i { width:7px; height:7px; border-radius:50%; background:#45D18C; }
-.kart.local { display:flex; align-items:center; justify-content:center; gap:12px; padding:0 12px; }
-.kart.local .box { display:flex; align-items:center; gap:8px; padding:14px 14px; border:2px dashed rgba(255,255,255,.55); border-radius:14px; }
-.kart.local .box > i { width:24px; height:24px; border-radius:7px; background:linear-gradient(145deg, var(--coral), var(--plum)); box-shadow:0 4px 10px rgba(0,0,0,.25); }
-.kart.local .box > i.b { background:linear-gradient(145deg, #FF8BA0, #9B4DE0); }
-.kart.local .wire { position:relative; width:34px; height:2px; background:repeating-linear-gradient(90deg, #fff 0 4px, transparent 4px 8px); opacity:.85; }
-.kart.local .wire u { position:absolute; top:-3px; left:0; width:8px; height:8px; border-radius:50%; background:#fff; animation:kping 2.4s ease-in-out infinite; }
-.kart.local .cloud { width:40px; height:40px; color:#fff; flex:0 0 auto; }
 
 /* Docking playground */
 .dockwrap { max-width:980px; margin:28px auto 0; }
@@ -447,7 +404,6 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
   .reveal { opacity:1; transform:none; }
-  .kpill.ghost { opacity:0; }
 }
 </style>
 </head>
@@ -458,7 +414,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
   <div class="wrap">
     <a class="brand" href="#"><img src="assets/icon.png" alt="">Monorail <small>by Ashforde®</small></a>
     <div class="links">
-      <a class="m" href="#demo">Demo</a><a href="#how">How it works</a><a class="x" href="#docking">Docking</a><a href="#features">Features</a><a href="#keeper">Keeper</a><a href="#trust">Safety</a><a class="x" href="#compare">Compare</a><a class="x" href="#shortcuts">Shortcuts</a><a class="x" href="#themes">Themes</a><a href="#faq">FAQ</a><a href="changelog/">Changelog</a>
+      <a class="m" href="#demo">Demo</a><a href="#how">How it works</a><a class="x" href="#docking">Docking</a><a href="#features">Features</a><a href="#trust">Safety</a><a class="x" href="#compare">Compare</a><a class="x" href="#shortcuts">Shortcuts</a><a class="x" href="#themes">Themes</a><a href="#faq">FAQ</a><a href="changelog/">Changelog</a>
     </div>
     <div class="prefs" role="group" aria-label="Display">
       <button type="button" id="themebtn" title="Theme: follows your system" aria-label="Theme"></button>
@@ -568,41 +524,6 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
       <div class="feature"><div class="ic">📦</div><h3>Switch in a minute</h3><p>Imports your shortcuts, gaps and app rules from AeroSpace, yabai and skhd, or Rectangle.</p></div>
       <div class="feature"><div class="ic">🏷️</div><h3>Tags</h3><p>Keep a window on the workspaces you choose, or show another workspace alongside this one.</p></div>
       <div class="feature"><div class="ic">🔌</div><h3>Built to be scripted</h3><p>monorail:// links, a CLI with a live event stream, a local API, MCP for AI assistants, and shareable layout links.</p></div>
-    </div>
-  </section>
-
-  <section id="keeper" class="center reveal">
-    <div class="kband">
-      <div class="kpair">
-        <span class="kicon m" data-letter="M"><img src="assets/icon.png" alt="Monorail app icon" width="88" height="88" onerror="iconFallback(this)"></span>
-        <span class="klink" aria-hidden="true"><i></i></span>
-        <span class="kicon k" data-letter="K"><img src="https://raw.githubusercontent.com/ashfordeOU/keeper/main/build/icon.png" alt="Keeper app icon" width="88" height="88" onerror="iconFallback(this)"></span>
-      </div>
-      <div class="kicker">Monorail + Keeper</div>
-      <h2>Better <span class="grad">with Keeper</span></h2>
-      <p class="sub">Two Mac apps from Ashforde. Each works on its own; together they keep out of each other's way and share one Stay Awake.</p>
-      <div class="kgrid">
-        <div class="kcard">
-          <div class="kart strip" aria-hidden="true"><span class="rail"><i style="--c:var(--w1);left:0;width:30%"></i><i style="--c:var(--w2);left:32%;width:22%"></i><i style="--c:var(--w5);left:56%;width:28%"></i><i style="--c:var(--w4);left:86%;width:24%"></i><i style="--c:var(--w6);left:112%;width:26%"></i></span><b class="isl"><em></em>Island</b></div>
-          <h3>Keeper stays put</h3><p>Keeper's Island and widgets stay where they are while your windows slide.</p>
-        </div>
-        <div class="kcard">
-          <div class="kart awake" aria-hidden="true"><span class="kpill ghost" data-nocheck></span><span class="kpill">☕ Stay Awake <small>1 app</small></span></div>
-          <h3>One Stay Awake, not two</h3><p>Start it in either app and only one of them holds your Mac awake.</p>
-        </div>
-        <div class="kcard">
-          <div class="kart lid" aria-hidden="true"><svg viewBox="8 22 132 30"><path class="cab" d="M8 50 C 26 50, 26 44, 40 44"/><path d="M44 40 L56 26 H116 L128 40 Z" fill="#3b3a42"/><rect x="40" y="40" width="92" height="8" rx="3" fill="#232228"/><rect x="76" y="40" width="20" height="2.5" rx="1.2" fill="#121115"/><circle class="dot" cx="45" cy="44" r="2.6"/></svg><span class="run"><i></i>Still running</span></div>
-          <h3>Lid closed, safely</h3><p>Both keep a MacBook running with the lid closed, under the same rules.</p>
-        </div>
-        <div class="kcard">
-          <div class="kart local" aria-hidden="true"><span class="box"><i class="a"></i><span class="wire"><u></u></span><i class="b"></i></span><svg class="cloud" viewBox="0 0 80 80"><path d="M22 56h36a12 12 0 0 0 1-24 18 18 0 0 0-34-4 14 14 0 0 0-3 28z" fill="none" stroke="currentColor" stroke-width="4" opacity=".5"/><path d="M14 66L66 14" stroke="#E5484D" stroke-width="5" stroke-linecap="round"/></svg></div>
-          <h3>Only on your Mac</h3><p>They talk only on your Mac. No server in between.</p>
-        </div>
-      </div>
-      <div class="cta" style="margin-bottom:0">
-        <a class="btn primary" href="keeper/">See how they work together</a>
-        <a class="btn ghost" href="https://github.com/ashfordeOU/keeper/releases">Get Keeper</a>
-      </div>
     </div>
   </section>
 
@@ -778,7 +699,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
     </div>
     <div><h2>Monorail</h2><ul><li><a href="#features">Features</a></li><li><a class="dl" href="download/">Download</a></li><li><a href="changelog/">Changelog</a></li><li><a href="privacy/">Privacy</a></li></ul></div>
     <div><h2>Help</h2><ul><li><a href="support/">Support</a></li><li><a href="docs/actions/">All actions</a></li><li><a href="docs/settings/">All settings</a></li><li><a href="docs/it/">For IT</a></li><li><a href="docs/compatibility/">Compatibility</a></li><li><a href="docs/security/">Security</a></li><li><a href="mailto:contact@ashforde.org?subject=Monorail%20problem">Report a problem</a></li></ul></div>
-    <div><h2>Ashforde</h2><ul><li><a href="https://keeper.ashforde.org">Keeper</a></li><li><a href="keeper/">Monorail + Keeper</a></li><li><a href="docs/licence/">Licence</a></li><li><a href="docs/trademarks/">Trademarks</a></li><li><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></li></ul></div>
+    <div><h2>Ashforde</h2><ul><li><a href="docs/licence/">Licence</a></li><li><a href="docs/trademarks/">Trademarks</a></li><li><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></li></ul></div>
   </div>
   <p class="wrap legal">© Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ. Licensed under the Functional Source License (FSL-1.1-ALv2). The Monorail name and icon are trademarks of Ashforde OÜ. This site has no tracking and no cookies.</p>
 </footer>

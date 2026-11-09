@@ -1296,7 +1296,7 @@
       "key": "checkForUpdates",
       "type": "Bool",
       "default": "true",
-      "about": "Look for new versions on GitHub once a day."
+      "about": "Look for new versions on monorail.ashforde.org once a day."
     },
     {
       "key": "installUpdatesAutomatically",

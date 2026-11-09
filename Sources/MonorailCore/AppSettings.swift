@@ -922,7 +922,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var workspaceCount = 4
     /// Names for workspaces, by index; empty or missing means "Workspace N".
     public var workspaceNames: [String] = []
-    /// Look for new versions on GitHub once a day.
+    /// Look for new versions on monorail.ashforde.org once a day.
     public var checkForUpdates = true
     /// Install new versions without asking (Monorail relaunches itself).
     public var installUpdatesAutomatically = false

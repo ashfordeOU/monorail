@@ -189,11 +189,13 @@ jobs:
           security unlock-keychain -p "$pass" "$keychain"
           printf '%s' "$APP_CERT" | base64 --decode > "$RUNNER_TEMP/app.p12"
           printf '%s' "$INSTALLER_CERT" | base64 --decode > "$RUNNER_TEMP/installer.p12"
-          security import "$RUNNER_TEMP/app.p12" -k "$keychain" -P "$APP_CERT_PASSWORD" -T /usr/bin/codesign
-          security import "$RUNNER_TEMP/installer.p12" -k "$keychain" -P "$INSTALLER_CERT_PASSWORD" -T /usr/bin/productbuild
+          security import "$RUNNER_TEMP/app.p12" -k "$keychain" -P "$APP_CERT_PASSWORD" -A
+          security import "$RUNNER_TEMP/installer.p12" -k "$keychain" -P "$INSTALLER_CERT_PASSWORD" -A
           rm -f "$RUNNER_TEMP/app.p12" "$RUNNER_TEMP/installer.p12"
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$pass" "$keychain" > /dev/null
           security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          security default-keychain -s "$keychain"
+          echo "APPSTORE_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
           app_id="$(security find-identity -v -p codesigning "$keychain" | awk -F'"' '/Apple Distribution|3rd Party Mac Developer Application/ {print $2; exit}')"
           installer_id="$(security find-identity -v "$keychain" | awk -F'"' '/Mac Installer Distribution|3rd Party Mac Developer Installer/ {print $2; exit}')"
           [ -n "$app_id" ] || { echo "::error::No Apple Distribution certificate in APPSTORE_APP_CERT"; exit 1; }
@@ -205,6 +207,7 @@ jobs:
           echo "Signing with: $app_id / $installer_id"
       - name: Build and sign for the App Store
         if: steps.secrets.outputs.ready == 'true'
+        timeout-minutes: 20
         run: scripts/build-appstore.sh
       - name: Upload to App Store Connect (TestFlight)
         if: steps.secrets.outputs.ready == 'true'

@@ -9,7 +9,8 @@ name: App Store
 #   APPSTORE_APP_CERT, APPSTORE_APP_CERT_PASSWORD             Apple Distribution .p12 (base64)
 #   APPSTORE_INSTALLER_CERT, APPSTORE_INSTALLER_CERT_PASSWORD Mac Installer Distribution .p12 (base64)
 #   APPSTORE_PROFILE                                          Mac App Store provisioning profile (base64)
-#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY                        App Store Connect API key (the .p8 text)
+#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY                        App Store Connect API key (the .p8 text);
+#                                                             without it, APPLE_ID + APPLE_APP_PASSWORD
 
 on:
   workflow_dispatch:
@@ -131,6 +132,9 @@ jobs:
   upload:
     name: Sign for the App Store and upload to TestFlight
     needs: sandbox-check
+    # GitHub's Mac can't give a sandboxed app Accessibility, so the check above fails there; the
+    # upload still goes ahead and TestFlight on a real Mac decides.
+    if: ${{ !cancelled() }}
     runs-on: macos-15
     env:
       APP_CERT: ${{ secrets.APPSTORE_APP_CERT }}
@@ -141,14 +145,24 @@ jobs:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       ASC_KEY: ${{ secrets.ASC_KEY }}
+      # Used for the upload when there's no API key: the Apple ID and app-specific password the
+      # notarised release already uses.
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - name: Check the App Store secrets
         id: secrets
         run: |
           missing=""
-          for name in APP_CERT APP_CERT_PASSWORD INSTALLER_CERT INSTALLER_CERT_PASSWORD PROFILE ASC_KEY_ID ASC_ISSUER_ID ASC_KEY; do
+          for name in APP_CERT APP_CERT_PASSWORD INSTALLER_CERT INSTALLER_CERT_PASSWORD PROFILE; do
             [ -n "${!name}" ] || missing="$missing $name"
           done
+          if [ -z "$ASC_KEY_ID$ASC_ISSUER_ID$ASC_KEY" ]; then
+            [ -n "$APPLE_ID" ] && [ -n "$APPLE_APP_PASSWORD" ] || missing="$missing ASC_KEY_ID/ASC_ISSUER_ID/ASC_KEY (or APPLE_ID and APPLE_APP_PASSWORD)"
+          else
+            for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY; do [ -n "${!name}" ] || missing="$missing $name"; done
+          fi
           if [ -n "$missing" ]; then
             echo "### Upload skipped" >> "$GITHUB_STEP_SUMMARY"
             echo "Add the App Store secrets first (docs/APP-STORE.md). Missing:$missing" >> "$GITHUB_STEP_SUMMARY"
@@ -196,10 +210,16 @@ jobs:
         if: steps.secrets.outputs.ready == 'true'
         run: |
           set -euo pipefail
-          mkdir -p ~/.appstoreconnect/private_keys
-          printf '%s\n' "$ASC_KEY" > ~/.appstoreconnect/private_keys/AuthKey_"$ASC_KEY_ID".p8
           pkg="$(ls dist/AppStore/Monorail-*.pkg | head -n1)"
-          xcrun altool --validate-app -f "$pkg" -t macos --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
-          xcrun altool --upload-app -f "$pkg" -t macos --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
-          rm -f ~/.appstoreconnect/private_keys/AuthKey_"$ASC_KEY_ID".p8
+          if [ -n "$ASC_KEY_ID" ]; then
+            mkdir -p ~/.appstoreconnect/private_keys
+            printf '%s\n' "$ASC_KEY" > ~/.appstoreconnect/private_keys/AuthKey_"$ASC_KEY_ID".p8
+            auth=(--apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID")
+          else
+            auth=(-u "$APPLE_ID" -p "$APPLE_APP_PASSWORD")
+            [ -n "$APPLE_TEAM_ID" ] && auth+=(--team-id "$APPLE_TEAM_ID")
+          fi
+          xcrun altool --validate-app -f "$pkg" -t macos "${auth[@]}"
+          xcrun altool --upload-app -f "$pkg" -t macos "${auth[@]}"
+          rm -f ~/.appstoreconnect/private_keys/AuthKey_*.p8
           echo "### Uploaded $(basename "$pkg") to App Store Connect; it shows in TestFlight once Apple has processed it" >> "$GITHUB_STEP_SUMMARY"

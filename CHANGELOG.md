@@ -6,6 +6,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.26] - 2026-11-09
+
 ### Added
 - **Evening Mode in the slider popover.** The moon button next to the wand turns it on or off and sets the warmth, when it comes on and red light, without opening Settings. It glows orange while the screen is warmer.
 

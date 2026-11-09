@@ -162,7 +162,7 @@ footer { margin-top:64px; font-size:14px; color:var(--muted); }
       try { navigator.clipboard.writeText(text).then(function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); }); } catch (e) {}
     });
   });
-  fetch('https://api.github.com/repos/ashfordeOU/monorail/releases/latest').then(function (r) { return r.ok ? r.json() : null; }).then(function (r) {
+  fetch('/releases/latest.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (r) {
     if (r && r.tag_name) document.getElementById('ver').textContent = r.tag_name.replace(/^v/, '') + ' (' + new Date(r.published_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) + ')';
   }).catch(function () {});
 })();

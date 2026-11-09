@@ -299,3 +299,6 @@ jobs:
       - name: Start the release smoke test
         if: success()
         run: gh workflow run release-smoke.yml -R "$GITHUB_REPOSITORY" --ref main -f tag="$TAG"
+      - name: Put the new files on the website (downloads and update checks come from there)
+        if: success()
+        run: gh workflow run pages.yml -R "$GITHUB_REPOSITORY" --ref main

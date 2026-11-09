@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # refreshes the website's copy of the downloads
 
 jobs:
   checks:
@@ -81,6 +82,7 @@ jobs:
           gh release create "$tag" out/* --target "$GITHUB_SHA" --prerelease --latest=false \
             --title "Monorail $VERSION for Windows and Linux (beta)" --notes-file notes.md
           echo "### Published [$tag](https://github.com/$GITHUB_REPOSITORY/releases/tag/$tag)" >> "$GITHUB_STEP_SUMMARY"
+          gh workflow run pages.yml -R "$GITHUB_REPOSITORY" --ref main   # the website serves the downloads
       - name: Remove the older beta it replaces
         if: github.event.inputs.remove_beta != ''
         env:

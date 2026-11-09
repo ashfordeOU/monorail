@@ -5,8 +5,11 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "assets/**", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
+    paths: ["site/**", "assets/**", "scripts/mirror-releases.py", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
+  # Once a day as well, so the downloads on the site always match the newest release.
+  schedule:
+    - cron: "17 4 * * *"
 
 permissions:
   contents: read
@@ -260,6 +263,12 @@ jobs:
           open(dest, "w", encoding="utf-8").write(page)
           print("changelog: %d releases" % len(releases))
           PY
+      - name: Copy the newest releases onto the site
+        # Downloads and the app's update checks come from monorail.ashforde.org/releases/, so they
+        # keep working when the repository is private.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/mirror-releases.py public/releases
       - uses: actions/configure-pages@v5
         with:
           # Turns Pages on (source: GitHub Actions) the first time, if the token is allowed to.

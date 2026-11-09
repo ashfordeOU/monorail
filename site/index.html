@@ -1253,9 +1253,9 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
 </div>
 <script>
 (() => {
-  // Every download button gets the latest DMG straight from GitHub (falling back to the releases page),
+  // Every download button gets the latest DMG from this site's copy of the newest release,
   // with its version, size and date; the IT link gets the pkg.
-  fetch('https://api.github.com/repos/ashfordeOU/monorail/releases/latest').then(r => r.ok ? r.json() : null).then(release => {
+  fetch('/releases/latest.json').then(r => r.ok ? r.json() : null).then(release => {
     if (!release) return;
     const assets = release.assets || [];
     const dmg = assets.find(a => /^Monorail.*\.dmg$/i.test(a.name)) || assets.find(a => /\.dmg$/i.test(a.name));
@@ -1270,11 +1270,11 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
   const panel = document.getElementById('afterdl');
   document.addEventListener('click', e => {
     const a = e.target.closest && e.target.closest('a.dl'); if (!a || !/(\.dmg|\/download\/?)$/i.test(a.href)) return;
-    // The link reads monorail.ashforde.org/download; the file itself comes straight from the release,
+    // The link reads monorail.ashforde.org/download; the file itself comes from /releases/latest/,
     // so this page stays put and shows the next steps.
     if (/\/download\/?$/i.test(a.href) && !(e.metaKey || e.ctrlKey || e.shiftKey)) {
       e.preventDefault();
-      window.location.href = 'https://github.com/ashfordeOU/monorail/releases/latest/download/Monorail.dmg';
+      window.location.href = '/releases/latest/Monorail.dmg';
     }
     document.getElementById('afterdlname').textContent = a.dataset.name || 'the Monorail DMG';
     panel.hidden = false;
@@ -1354,7 +1354,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
 })();
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Monorail by Ashforde","applicationCategory":"UtilitiesApplication","operatingSystem":"macOS 13 or later","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"url":"https://monorail.ashforde.org/","downloadUrl":"https://github.com/ashfordeOU/monorail/releases/latest","image":"https://monorail.ashforde.org/assets/icon.png","description":"A scrolling window manager for Mac: new windows slide in beside the one you're using, and nothing else ever shrinks.","publisher":{"@type":"Organization","name":"Ashforde OÜ","url":"https://ashforde.org"}}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Monorail by Ashforde","applicationCategory":"UtilitiesApplication","operatingSystem":"macOS 13 or later","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"url":"https://monorail.ashforde.org/","downloadUrl":"https://monorail.ashforde.org/download/","image":"https://monorail.ashforde.org/assets/icon.png","description":"A scrolling window manager for Mac: new windows slide in beside the one you're using, and nothing else ever shrinks.","publisher":{"@type":"Organization","name":"Ashforde OÜ","url":"https://ashforde.org"}}
 </script>
 </body>
 </html>

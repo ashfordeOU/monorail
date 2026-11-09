@@ -29,23 +29,23 @@ main { max-width:640px; }
     <li>Log out and back in (on Wayland GNOME only loads new extensions at login).</li>
     <li>Turn it on: <code>gnome-extensions enable monorail@ashforde.org</code>, or in the Extensions app.</li>
   </ol>
-  <p>If it doesn't start, <a id="manual" href="https://github.com/ashfordeOU/monorail/releases?q=beta">pick it from the beta releases</a>. Found something odd? <a href="https://github.com/ashfordeOU/monorail/issues">Tell us</a>.</p>
+  <p>If it doesn't start, <a id="manual" href="/releases/beta/">try again</a> or write to <a href="mailto:contact@ashforde.org">contact@ashforde.org</a>. Found something odd? <a href="mailto:contact@ashforde.org?subject=Monorail%20beta">Tell us</a>.</p>
   <p><a href="../../">Back to Monorail</a></p>
 </main>
 <script>
-// The newest Windows and Linux beta (pre-releases tagged beta-…), straight from GitHub.
-fetch('https://api.github.com/repos/ashfordeOU/monorail/releases?per_page=30')
+// The newest Windows and Linux beta (tagged beta-…), from the copies on this site.
+fetch('/releases/index.json')
   .then(r => r.ok ? r.json() : [])
   .then(list => {
     const release = list.find(r => !r.draft && /^beta-/.test(r.tag_name));
     const asset = release && release.assets.find(a => a.name === 'monorail@ashforde.org.shell-extension.zip');
     const state = document.getElementById('state');
-    if (!asset) { state.textContent = 'Pick the beta from the list'; return; }
+    if (!asset) { state.textContent = 'The beta isn\'t available right now'; return; }
     document.getElementById('manual').href = asset.browser_download_url;
     state.textContent = 'Your download is starting (' + release.tag_name.replace(/^beta-/, '') + ' beta)';
     window.location.href = asset.browser_download_url;
   })
-  .catch(() => { document.getElementById('state').textContent = 'Pick the beta from the list'; });
+  .catch(() => { document.getElementById('state').textContent = 'The beta isn\'t available right now'; });
 </script>
 </body>
 </html>

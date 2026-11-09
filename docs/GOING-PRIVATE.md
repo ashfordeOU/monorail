@@ -26,6 +26,12 @@ private.
 4. **Make it private:** Settings → General → Danger Zone → Change visibility. GitHub Pages keeps
    serving the site, because the account has GitHub Pro.
 
+## Signing
+
+Both repositories sign as ashfordeOU with the same SSH key, held in each one's `COMMIT_SIGNING_KEY`
+secret and registered on the account as a signing key. Monorail's commits are signed by
+`sign-and-land.yml`; the tap's daily update signs its own commit.
+
 ## What goes with it
 
 - **Nix and MacPorts:** both fetch from the public repository, so they stop working.

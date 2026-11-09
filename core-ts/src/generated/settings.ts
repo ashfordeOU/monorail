@@ -414,7 +414,7 @@ export interface Settings {
   workspaceCount: number;
   /** Names for workspaces, by index; empty or missing means "Workspace N". */
   workspaceNames: string[];
-  /** Look for new versions on GitHub once a day. */
+  /** Look for new versions on monorail.ashforde.org once a day. */
   checkForUpdates: boolean;
   /** Install new versions without asking (Monorail relaunches itself). */
   installUpdatesAutomatically: boolean;

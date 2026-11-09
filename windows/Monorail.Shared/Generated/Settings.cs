@@ -560,7 +560,7 @@ public static class SettingDefaults
     public const bool GroupTerminals = true;
     /// <summary>Workspaces per display (1...9). Each has its own strip.</summary>
     public const int WorkspaceCount = 4;
-    /// <summary>Look for new versions on GitHub once a day.</summary>
+    /// <summary>Look for new versions on monorail.ashforde.org once a day.</summary>
     public const bool CheckForUpdates = true;
     /// <summary>Install new versions without asking (Monorail relaunches itself).</summary>
     public const bool InstallUpdatesAutomatically = false;

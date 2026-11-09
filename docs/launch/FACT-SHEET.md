@@ -6,12 +6,11 @@ windows never squeeze the rest.
 | | |
 |---|---|
 | Developer | Ashforde OÜ |
-| Platforms | macOS 13 Ventura or later, Apple silicon and Intel. Windows and Linux planned. |
+| Platforms | macOS 13 Ventura or later, Apple silicon and Intel. Windows 11 and 10, and Linux (GNOME), in beta. |
 | Price | Free, every feature, no window limits or Pro tier |
-| Licence | Source available on GitHub, FSL-1.1-ALv2 (each version becomes Apache 2.0 after two years) |
+| Licence | Free, under the Functional Source License (FSL-1.1-ALv2) |
 | Privacy | No account, one permission (Accessibility), anonymous daily counts that can be turned off |
-| Install | https://monorail.ashforde.org/ · Homebrew · Nix · .pkg for IT teams |
-| Source | https://github.com/ashfordeOU/monorail |
+| Install | https://monorail.ashforde.org/ · Homebrew · .pkg for IT teams |
 | Press page | https://monorail.ashforde.org/press/ |
 
 ## About
@@ -27,7 +26,7 @@ forward work like a browser. Plain-language commands such as “Slack and Mail s
 understood on the Mac, and Monorail chimes when an AI coding agent in a terminal is waiting for
 approval. It imports AeroSpace, yabai and Rectangle setups.
 
-Monorail is native Swift, free with no paid tier, and its source is on GitHub.
+Monorail is native Swift, free with no paid tier.
 
 ## Highlights
 

@@ -6,6 +6,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.25] - 2026-11-09
+
 ### Changed
 - **Updates come from monorail.ashforde.org.** Monorail checks Ashforde's own site for new versions, and still checks the download's checksum and Apple signature before installing it. If the site can't be reached, it asks GitHub as before.
 - **Report a Problem, Send Feedback and the after-crash prompt start an email** to contact@ashforde.org, with the same details filled in as before (no window titles, files or names). You see everything before you send it.

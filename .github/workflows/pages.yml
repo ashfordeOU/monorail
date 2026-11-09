@@ -78,6 +78,9 @@ jobs:
           lines = open(src, encoding="utf-8").read().splitlines()
           # Keeper isn't shown on Monorail's site for now: leave out the entries that mention it.
           lines = [l for l in lines if not (l.lstrip().startswith("- ") and "Keeper" in l)]
+          # The App Store edition is parked (docs/APP-STORE.md): no mention of it on the site either.
+          lines = [l.replace(" Not in the App Store edition.", "") for l in lines]
+          lines = [l for l in lines if not (l.lstrip().startswith("- ") and "App Store edition" in l)]
           REPO = "https://github.com/ashfordeOU/monorail"
 
           def inline(text):

@@ -6,6 +6,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.29] - 2026-11-11
+
 ### Added
 - **AI agents can drive Monorail.** Settings → Automation now has **Copy Agent Instructions** and **Save Agent Skill…** next to the MCP config: Claude Desktop, Cursor, Hermes Agent, OpenClaw and other MCP clients connect through MCP, agents that load skills get a ready-made `SKILL.md`, and any bot or computer-use agent that can run commands uses the `monorail` command. The skill is also on the website, with a guide at monorail.ashforde.org/docs/agents.
 - **`monorail say "…"`** does what a sentence asks from the command line: “Slack and Mail side by side on 2”.

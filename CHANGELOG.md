@@ -7,6 +7,10 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **See what's draining your battery, right on the window.** On battery, the windows of apps using the most power get a small ⚡ in the overview and the window switcher; hover it for an estimate like “about 6% of the battery an hour”, and right-click to hide or quit the app. Measured once a minute and only on battery, counting each app's helper processes too. Estimates in battery per hour need an Apple silicon Mac; Intel Macs show how busy the app is.
+- **⚡ in the slider popover** lists the apps using the most battery, with Hide and Quit (Quit asks the app to quit, as ⌘Q does, so it can still ask to save). It turns orange when an app is using a lot.
+- **Park power-hungry apps on battery** (off unless you turn it on): apps using a lot of power that you haven't touched for an hour are hidden, never quit, and come back when you plug in.
+- **More in the slider popover.** A row under the slides shows your battery level and its biggest user, applies a saved layout or restores a snapshot, turns focus mode on or off, and tells you about shortcut clashes or a pause for Stage Manager, each one click away.
 - **Shortcut clash check.** Settings → Shortcuts lists any Monorail shortcut that macOS also uses (Mission Control, Spotlight, screenshots, input sources, switching desktops and more), says what uses it, and swaps it for a free combination in one click. **Change in macOS…** opens the Mac's own shortcut settings instead.
 - **Portrait displays.** On a display taller than it is wide, new slides stack their windows top to bottom and the main window goes on top. Turn it off in Settings → Layout → Spacing.
 - **Keep screen edges clear.** Settings → Layout keeps any edge free for another app's bar or dock, like SketchyBar. Windows, and floating windows you snap, stay out of it.

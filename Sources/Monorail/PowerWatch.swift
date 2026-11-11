@@ -1,3 +1,4 @@
+#if os(macOS)
 import AppKit
 import Darwin
 import IOKit
@@ -240,3 +241,4 @@ final class PowerWatch: ObservableObject {
         return nil
     }
 }
+#endif

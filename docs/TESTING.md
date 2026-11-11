@@ -64,6 +64,15 @@ the Product Hunt launch). It takes about 30 minutes. Note anything that's off an
 - [ ] Settings → About → **Usage** shows launches, running time, CPU and your most used actions.
 - [ ] Switch the language (Settings → General) to each of the 9 languages: the menu bar menu and Settings tabs change.
 
+## 6b. New in 1.7.29
+
+- [ ] Unplug, open Chrome with a few busy tabs, wait two minutes: ⚡ in the slider popover turns orange and lists Chrome; its windows show ⚡ in the overview (⌃⌥O). Right-click a window there → Hide This App works.
+- [ ] Settings → Apps → turn on hiding power-hungry apps; leave a busy app untouched for an hour on battery: it's hidden with a notice; plug in and it comes back.
+- [ ] The popover's row under the slides: Layouts applies a saved layout, Focus toggles focus mode, and the battery chip opens ⚡.
+- [ ] Turn on Stage Manager: Monorail pauses with a notice and the popover shows “Paused for Stage Manager”; turn it off and tiling carries on.
+- [ ] Settings → Shortcuts → Clashes: set a Monorail shortcut to ⌃← (Move left a space) and it's listed; **Use …** swaps it for a free one.
+- [ ] A portrait display: new slides stack top to bottom. Settings → Layout → Keep screen edges clear: a 40 pt top edge keeps windows below it.
+
 ## 7. Crash check (a week)
 
 Turn on **Settings → Devices & Sharing → Keep crash and hang reports on this Mac** for a week of normal use.

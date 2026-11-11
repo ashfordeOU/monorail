@@ -281,6 +281,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         engine.onStateChange = { [weak self] in
             guard let self else { return }
+            if let status = self.engine.status() { self.usage.noteFocus(workspace: status.workspace, column: status.focusedColumn) }
             self.integrations.update({ [weak self] in self?.currentState() }, settings: self.store.settings)
             self.updateStatusItem()
             self.sliderBar.update()

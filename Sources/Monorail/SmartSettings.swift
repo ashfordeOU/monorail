@@ -44,14 +44,19 @@ struct UsageSection: View {
             }
             Text("This session: \(EnergyReport.summary)").font(.caption).foregroundStyle(.secondary)
             HStack {
-                Button(checking ? "Measuring for 30 seconds… keep using your Mac as usual" : "Check Energy") {
+                Button(checking ? "Measuring for 30 seconds…" : "Check Energy") {
                     checking = true
                     energy = nil
+                    // Settings itself costs energy while it's on screen, so it steps aside while measuring.
+                    let window = NSApp.keyWindow
+                    window?.orderOut(nil)
                     EnergyCheck.run { result in
                         energy = result
                         checking = false
+                        window?.makeKeyAndOrderFront(nil)
                     }
                 }
+                .help("Settings closes for 30 seconds while Monorail measures itself, then comes back with the result")
                 .disabled(checking)
                 if let energy { Text(energy).font(.caption).textSelection(.enabled) }
             }
@@ -59,7 +64,7 @@ struct UsageSection: View {
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(0.05)))
         .id(refresh)
-        .onReceive(Timer.publish(every: 5, on: .main, in: .common).autoconnect()) { refresh = $0 }
+        .onReceive(Timer.publish(every: 5, on: .main, in: .common).autoconnect()) { if !checking { refresh = $0 } }
     }
 
     private func stat(_ value: String, _ label: String) -> some View {

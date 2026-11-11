@@ -78,7 +78,16 @@ struct RestingPoller {
 
 /// How much Monorail has cost since launch, for Settings → About.
 enum EnergyReport {
-    static let launched = Date()
+    /// When this Monorail process started (from the system, not when this was first read).
+    static let launched: Date = {
+        var info = kinfo_proc()
+        var size = MemoryLayout<kinfo_proc>.stride
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+        guard sysctl(&mib, u_int(mib.count), &info, &size, nil, 0) == 0 else { return Date() }
+        let start = info.kp_proc.p_un.__p_starttime
+        let date = Date(timeIntervalSince1970: Double(start.tv_sec) + Double(start.tv_usec) / 1_000_000)
+        return date.timeIntervalSince1970 > 0 ? date : Date()
+    }()
 
     static var cpuSeconds: Double {
         var usage = rusage()
@@ -188,8 +197,16 @@ final class UsageLog: ObservableObject {
 
     func action(_ action: Action) {
         stored.actions[action.rawValue, default: 0] += 1
-        if action.workspaceNumber != nil || action == .nextWorkspace || action == .previousWorkspace { stored.workspaceSwitches += 1 }
-        if [.focusLeft, .focusRight].contains(action) || action.columnNumber != nil { stored.slideSwitches += 1 }
+    }
+
+    private var lastPlace: (workspace: Int, column: Int)?
+
+    /// Counts moves however they happen (keys, slider, swipes, clicks, the overview).
+    func noteFocus(workspace: Int, column: Int) {
+        defer { lastPlace = (workspace, column) }
+        guard let last = lastPlace else { return }
+        if last.workspace != workspace { stored.workspaceSwitches += 1 }
+        else if last.column != column { stored.slideSwitches += 1 }
     }
 
     func windowManaged() { stored.windowsManaged += 1 }

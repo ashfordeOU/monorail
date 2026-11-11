@@ -18,6 +18,10 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **Light or dark for Monorail's own windows.** Settings → Appearance → Monorail's windows: match the Mac, always light or always dark.
 - **On the website:** a [performance page](https://monorail.ashforde.org/performance/) with how Monorail is measured and checked on every build, the 85-second film in the hero, and an automatic tiling window manager in the list of paid apps Monorail replaces.
 
+### Fixed
+- **Settings → About → Usage shows the right numbers.** “This session” counts from when Monorail started, not from when you first opened Settings (it could show 0.0 h and over 100% CPU). Slide and workspace switches count however you move: the slider, swipes, clicks and the overview, not only the keyboard.
+- **Check Energy measures Monorail, not Settings.** Settings steps aside for the 30 seconds and comes back with the result, so the figure is what Monorail costs while you work.
+
 ### Changed
 - **Stage Manager no longer gets in the way.** Monorail pauses while Stage Manager is on (windows stay where they are) and carries on by itself when you turn it off, instead of asking you to turn it off. Switch this off in Settings → Apps.
 

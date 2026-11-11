@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 226,
+  "count": 229,
   "settings": [
     {
       "key": "layout",
@@ -1261,6 +1261,24 @@
       "type": "String",
       "default": "\"claude-opus-5-5\"",
       "about": "The Claude model the optional assistant uses, with your own API key."
+    },
+    {
+      "key": "assistantProvider",
+      "type": "AssistantProvider",
+      "default": ".anthropic",
+      "about": "Who the assistant asks: Anthropic, OpenAI, Gemini, xAI, OpenRouter, Ollama on this Mac, or any OpenAI-compatible server."
+    },
+    {
+      "key": "assistantModels",
+      "type": "[String: String]",
+      "default": "[:]",
+      "about": "The model for each provider other than Anthropic, as the provider names it."
+    },
+    {
+      "key": "assistantBaseURL",
+      "type": "String",
+      "default": "\"\"",
+      "about": "The address of an OpenAI-compatible server (Other), or a different address for Ollama."
     },
     {
       "key": "dragToDock",

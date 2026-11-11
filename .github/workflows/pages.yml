@@ -5,7 +5,7 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "assets/**", "scripts/mirror-releases.py", "scripts/render-docs.py", "scripts/install.sh", "server/endpoint.txt", "quirks.json", "extensions/scripts/**", "docs/IT.md", "docs/ACTIONS.md", "docs/SETTINGS.md", "docs/COMPATIBILITY.md", "SECURITY.md", "LICENSE", "TRADEMARKS.md", "scripts/perf-check.sh", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
+    paths: ["site/**", "assets/**", "scripts/mirror-releases.py", "scripts/render-docs.py", "scripts/install.sh", "server/endpoint.txt", "quirks.json", "extensions/scripts/**", "docs/IT.md", "docs/ACTIONS.md", "docs/SETTINGS.md", "docs/COMPATIBILITY.md", "docs/AGENTS.md", "extensions/agent-skill/**", "SECURITY.md", "LICENSE", "TRADEMARKS.md", "scripts/perf-check.sh", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
   # Once a day as well, so the downloads on the site always match the newest release.
   schedule:
@@ -35,6 +35,8 @@ jobs:
           cp -R assets/readme assets/launch public/assets/
           cp assets/icon.png public/assets/icon.png
           cp site/index.html public/404.html
+          # The Agent Skill, for agents told to read it from the site.
+          mkdir -p public/agents && cp extensions/agent-skill/monorail/SKILL.md public/agents/SKILL.md
           # The FAQ as structured data, so search results can show the answers (built from the page itself).
           python3 - public/index.html <<'PY'
           import html, json, re, sys
@@ -54,7 +56,7 @@ jobs:
           base=https://monorail.ashforde.org
           {
             printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-            for page in "" download/ changelog/ performance/ press/ support/ privacy/ docs/it/ docs/actions/ docs/settings/ docs/compatibility/ docs/security/ docs/licence/ docs/trademarks/; do printf '<url><loc>%s/%s</loc></url>' "$base" "$page"; done
+            for page in "" download/ changelog/ performance/ press/ support/ privacy/ docs/it/ docs/actions/ docs/settings/ docs/compatibility/ docs/agents/ docs/security/ docs/licence/ docs/trademarks/; do printf '<url><loc>%s/%s</loc></url>' "$base" "$page"; done
             printf '</urlset>\n'
           } > public/sitemap.xml
           # The press kit: screenshots, icon, the docking GIF and the fact sheet, in one zip.
@@ -91,7 +93,7 @@ jobs:
               text = re.sub(r"`([^`]+)`", keep, text)
               text = html.escape(text, quote=True)
               # Guides published on the site; links to other files in the repository keep only their words.
-              GUIDES = {"IT.md": "it", "ACTIONS.md": "actions", "SETTINGS.md": "settings", "COMPATIBILITY.md": "compatibility",
+              GUIDES = {"IT.md": "it", "ACTIONS.md": "actions", "SETTINGS.md": "settings", "COMPATIBILITY.md": "compatibility", "AGENTS.md": "agents",
                         "SECURITY.md": "security", "LICENSE": "licence", "TRADEMARKS.md": "trademarks"}
               def link(m):
                   href = m.group(2)

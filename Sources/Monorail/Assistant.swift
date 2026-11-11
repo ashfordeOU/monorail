@@ -4,9 +4,10 @@ import MonorailCore
 import Security
 
 /// The optional assistant (Settings → Smart → Assistant): when a sentence isn't understood on
-/// this Mac, and you've added your own Anthropic API key, Claude rewrites it as commands Monorail
-/// already understands. Monorail shows them and runs them only after you confirm. Only the
-/// sentence, the names of open apps and the list of commands are sent, straight to Anthropic.
+/// this Mac, a model of your choice rewrites it as commands Monorail already understands: Claude,
+/// OpenAI, Gemini, Grok, OpenRouter, a model in Ollama on this Mac, or any OpenAI-compatible server.
+/// Monorail shows the commands and runs them only after you confirm. Only the sentence, the names
+/// of open apps and the list of commands are sent, straight to the provider you chose.
 enum Assistant {
     struct Plan: Decodable {
         var commands: [String]
@@ -15,13 +16,34 @@ enum Assistant {
 
     // MARK: Key (Keychain)
 
-    private static let service = "org.ashforde.monorail.anthropic"
+    private static func service(_ provider: AssistantProvider) -> String {
+        provider == .anthropic ? "org.ashforde.monorail.anthropic" : "org.ashforde.monorail.assistant.\(provider.rawValue)"
+    }
 
     static var hasKey: Bool { key != nil }
+    static var key: String? { key(for: .anthropic) }
+    static func setKey(_ value: String?) { setKey(value, for: .anthropic) }
 
-    static var key: String? {
+    static func hasKey(for provider: AssistantProvider) -> Bool { key(for: provider) != nil }
+
+    /// Whether the assistant can be asked with these settings.
+    static func isReady(_ settings: AppSettings) -> Bool {
+        let provider = settings.assistantProvider
+        if provider == .custom && settings.assistantBaseURL.trimmingCharacters(in: .whitespaces).isEmpty { return false }
+        if provider != .anthropic && model(for: settings).isEmpty { return false }
+        return provider.needsKey ? hasKey(for: provider) : true
+    }
+
+    /// The model to ask for the chosen provider.
+    static func model(for settings: AppSettings) -> String {
+        settings.assistantProvider == .anthropic
+            ? settings.assistantModel
+            : (settings.assistantModels[settings.assistantProvider.rawValue] ?? "").trimmingCharacters(in: .whitespaces)
+    }
+
+    static func key(for provider: AssistantProvider) -> String? {
         let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
+            kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service(provider),
             kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne,
         ]
         var item: CFTypeRef?
@@ -30,8 +52,8 @@ enum Assistant {
         return text.isEmpty ? nil : text
     }
 
-    static func setKey(_ value: String?) {
-        let base: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service]
+    static func setKey(_ value: String?, for provider: AssistantProvider) {
+        let base: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service(provider)]
         SecItemDelete(base as CFDictionary)
         guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else { return }
         var add = base
@@ -64,9 +86,85 @@ enum Assistant {
         written for the person. Never invent apps that aren't listed unless the person asked to open them.
         """
 
-    /// Calls the Messages API. Hands back the plan or a message to show.
-    static func plan(for request: String, apps: [String], actions: [String], model: String,
+    /// Asks the chosen provider. Hands back the plan or a message to show.
+    static func plan(for request: String, apps: [String], actions: [String], settings: AppSettings,
                      completion: @escaping (Result<Plan, Error>) -> Void) {
+        let provider = settings.assistantProvider
+        if provider == .anthropic {
+            return plan(for: request, apps: apps, actions: actions, model: settings.assistantModel, completion: completion)
+        }
+        let base = settings.assistantBaseURL.trimmingCharacters(in: .whitespaces).isEmpty
+            ? provider.defaultBaseURL ?? "" : settings.assistantBaseURL
+        guard let url = AssistantProvider.chatURL(base: base) else {
+            return completion(.failure(Failure("Add the server's address in Settings → Smart → Assistant")))
+        }
+        let key = key(for: provider)
+        if provider.needsKey && key == nil {
+            return completion(.failure(Failure("Add your \(provider.title) API key in Settings → Smart → Assistant")))
+        }
+        let model = model(for: settings)
+        guard !model.isEmpty else { return completion(.failure(Failure("Choose a model in Settings → Smart → Assistant"))) }
+        let context = "Open apps: \(apps.prefix(60).joined(separator: ", "))\nActions: \(actions.joined(separator: "; "))"
+        var body: [String: Any] = [
+            "model": model,
+            "messages": [
+                ["role": "system", "content": system + "\n\nReply with only a JSON object: {\"commands\": [strings], \"explanation\": string}."],
+                ["role": "user", "content": context + "\n\nRequest: " + request],
+            ],
+        ]
+        if provider != .custom { body["response_format"] = ["type": "json_object"] }
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.timeoutInterval = provider.isLocal ? 120 : 60
+        urlRequest.setValue("application/json", forHTTPHeaderField: "content-type")
+        if let key { urlRequest.setValue("Bearer \(key)", forHTTPHeaderField: "authorization") }
+        if provider == .openrouter {
+            urlRequest.setValue("https://monorail.ashforde.org", forHTTPHeaderField: "HTTP-Referer")
+            urlRequest.setValue("Monorail", forHTTPHeaderField: "X-Title")
+        }
+        urlRequest.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        URLSession.shared.dataTask(with: urlRequest) { data, response, error in
+            let result = interpretChat(data: data, response: response, error: error, provider: provider)
+            DispatchQueue.main.async { completion(result) }
+        }.resume()
+    }
+
+    private static func interpretChat(data: Data?, response: URLResponse?, error: Error?, provider: AssistantProvider) -> Result<Plan, Error> {
+        let name = provider.shortName
+        if let error {
+            return .failure(Failure(provider.isLocal ? "Couldn’t reach Ollama · is it running?" : "Couldn’t reach \(name): \(error.localizedDescription)"))
+        }
+        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        let object = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
+        guard status == 200 else {
+            let message = (object["error"] as? [String: Any])?["message"] as? String ?? object["error"] as? String ?? "HTTP \(status)"
+            return .failure(Failure(status == 401 || status == 403 ? "Your \(provider.title) API key was refused" : "\(name): \(message)"))
+        }
+        let choice = (object["choices"] as? [[String: Any]])?.first
+        let text = (choice?["message"] as? [String: Any])?["content"] as? String ?? ""
+        guard let json = AssistantProvider.jsonObject(in: text), let plan = try? JSONDecoder().decode(Plan.self, from: json) else {
+            return .failure(Failure("\(name)’s answer couldn’t be read"))
+        }
+        return .success(plan)
+    }
+
+    /// Models installed in Ollama on this Mac.
+    static func ollamaModels(base: String, completion: @escaping ([String]) -> Void) {
+        var root = base.trimmingCharacters(in: .whitespaces)
+        if root.isEmpty { root = "http://localhost:11434" }
+        root = root.replacingOccurrences(of: "/v1", with: "")
+        while root.hasSuffix("/") { root.removeLast() }
+        guard let url = URL(string: root + "/api/tags") else { return completion([]) }
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            let object = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+            let names = (object?["models"] as? [[String: Any]] ?? []).compactMap { $0["name"] as? String }.sorted()
+            DispatchQueue.main.async { completion(names) }
+        }.resume()
+    }
+
+    /// Calls Anthropic's Messages API.
+    private static func plan(for request: String, apps: [String], actions: [String], model: String,
+                             completion: @escaping (Result<Plan, Error>) -> Void) {
         guard let key else { return completion(.failure(Failure("Add your Anthropic API key in Settings → Smart → Assistant"))) }
         let schema: [String: Any] = [
             "type": "object",

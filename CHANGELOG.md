@@ -7,6 +7,9 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **AI agents can drive Monorail.** Settings → Automation now has **Copy Agent Instructions** and **Save Agent Skill…** next to the MCP config: Claude Desktop, Cursor, Hermes Agent, OpenClaw and other MCP clients connect through MCP, agents that load skills get a ready-made `SKILL.md`, and any bot or computer-use agent that can run commands uses the `monorail` command. The skill is also on the website, with a guide at monorail.ashforde.org/docs/agents.
+- **`monorail say "…"`** does what a sentence asks from the command line: “Slack and Mail side by side on 2”.
+- **Choose the assistant's provider.** Besides Anthropic (Claude): OpenAI, Google Gemini, xAI (Grok), OpenRouter, a model in Ollama on this Mac (nothing leaves the Mac, and Settings lists the installed models), or any OpenAI-compatible server such as LM Studio. Each key is kept in your Keychain.
 - **See what's draining your battery, right on the window.** On battery, the windows of apps using the most power get a small ⚡ in the overview and the window switcher; hover it for an estimate like “about 6% of the battery an hour”, and right-click to hide or quit the app. Measured once a minute and only on battery, counting each app's helper processes too. Estimates in battery per hour need an Apple silicon Mac; Intel Macs show how busy the app is.
 - **⚡ in the slider popover** lists the apps using the most battery, with Hide and Quit (Quit asks the app to quit, as ⌘Q does, so it can still ask to save). It turns orange when an app is using a lot.
 - **Park power-hungry apps on battery** (off unless you turn it on): apps using a lot of power that you haven't touched for an hour are hidden, never quit, and come back when you plug in.

@@ -1202,13 +1202,39 @@ private struct APISection: View {
                     Button("Copy MCP Server Config") { copy(mcpConfig, "Config copied") }
                     if !copied.isEmpty { Text(copied).font(.callout).foregroundStyle(.green) }
                 }
+                HStack {
+                    Button("Copy Agent Instructions") { copy(AgentSkill.markdown, "Instructions copied") }
+                        .help("Paste into any AI agent or bot so it knows how to drive Monorail")
+                    Button("Save Agent Skill…") { saveSkill() }
+                        .help("Saves a monorail/SKILL.md folder for agents that load skills (OpenClaw, Hermes Agent, Claude and others)")
+                }
             }
         } header: {
-            Text("API and AI assistants")
+            Text("API and AI agents")
         } footer: {
-            Text("Add the MCP config to Claude Desktop (or any MCP client) and ask: “put my editor and browser side by side”. Requests need the token, which only you can read; the API only listens on this Mac.")
+            Text("Let AI agents arrange your windows: add the MCP config to Claude Desktop, Cursor, Hermes Agent, OpenClaw or any MCP client; give agents that run commands (computer-use agents, Grok or ChatGPT-based bots, coding agents) the agent instructions or skill; then ask “put my editor and browser side by side”. Requests need the token, which only you can read; the API only listens on this Mac, and Monorail asks you before an agent closes a window.")
                 .font(.callout).foregroundStyle(.secondary)
         }
+    }
+
+    /// Writes monorail/SKILL.md into a folder the person picks (an agent's skills folder).
+    private func saveSkill() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = true
+        panel.prompt = "Save Here"
+        panel.message = "Choose your agent's skills folder. Monorail adds a “monorail” folder with SKILL.md inside."
+        guard panel.runModal() == .OK, let folder = panel.url else { return }
+        let target = folder.appendingPathComponent("monorail", isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
+            try AgentSkill.markdown.write(to: target.appendingPathComponent("SKILL.md"), atomically: true, encoding: .utf8)
+            copied = "Skill saved"
+        } catch {
+            copied = "Couldn’t save: \(error.localizedDescription)"
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { copied = "" }
     }
 
     private func copy(_ text: String, _ message: String) {

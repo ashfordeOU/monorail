@@ -292,6 +292,7 @@ Use them from Shortcuts (**Open URLs**), Raycast, Alfred, Keyboard Maestro or St
 sudo ln -sf /Applications/Monorail.app/Contents/Resources/monorail /usr/local/bin/monorail
 monorail focus-left
 monorail layout Coding
+monorail say "Slack and Mail side by side on 2"
 monorail subscribe    # live events, one JSON object per line
 ```
 
@@ -307,6 +308,15 @@ by side”. Monorail asks you before an assistant closes a window.
 ```bash
 curl -H "Authorization: Bearer $(cat ~/Library/Application\ Support/Monorail/api-token)" http://127.0.0.1:4767/windows
 ```
+
+**AI agents.** Claude Desktop, Cursor, Hermes Agent, OpenClaw and other MCP clients use the MCP config above.
+Agents that load skills, and any bot or computer-use agent that can run commands, use the Agent Skill
+(**Settings → Automation → Save Agent Skill…**, or [extensions/agent-skill](extensions/agent-skill/monorail/SKILL.md))
+or simply `monorail say "Slack and Mail side by side on 2"`. See [AI agents and Monorail](docs/AGENTS.md).
+
+**The assistant.** When Monorail doesn't understand a sentence, it can ask a model of your choice:
+Anthropic (Claude), OpenAI, Google Gemini, xAI (Grok), OpenRouter, Ollama on your Mac (nothing leaves
+the Mac) or any OpenAI-compatible server. Set it up in **Settings → Smart → Assistant**.
 
 **AppleScript and JavaScript.** `tell application "Monorail" to perform "focus-left"` works, and
 with **Scripts** on in Settings → Automation, `.js` files in the Scripts folder can react to

@@ -1310,7 +1310,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             start(candidate)
             return true
         }
-        if Assistant.hasKey {
+        if Assistant.isReady(store.settings) {
             askAssistant(text)
             return true
         }
@@ -1320,9 +1320,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Asks Claude (with the person's own key) to turn the sentence into known commands, then confirms.
     private func askAssistant(_ text: String) {
-        toast.show("Asking Claude…")
+        let name = store.settings.assistantProvider.shortName
+        toast.show("Asking \(name)…")
         let apps = runningAppNames()
-        Assistant.plan(for: text, apps: apps, actions: Action.allCases.map(\.title), model: store.settings.assistantModel) { [weak self] result in
+        Assistant.plan(for: text, apps: apps, actions: Action.allCases.map(\.title), settings: store.settings) { [weak self] result in
             guard let self else { return }
             switch result {
             case .failure(let error):
@@ -1332,7 +1333,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     CommandParser.parse(sentence, apps: apps).map { (sentence, $0) }
                 }
                 guard !commands.isEmpty else {
-                    self.toast.show(plan.explanation.isEmpty ? "Claude couldn’t turn that into window commands" : plan.explanation)
+                    self.toast.show(plan.explanation.isEmpty ? "\(name) couldn’t turn that into window commands" : plan.explanation)
                     return
                 }
                 let alert = NSAlert()

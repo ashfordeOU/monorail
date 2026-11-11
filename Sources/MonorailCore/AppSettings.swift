@@ -941,6 +941,12 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var floatSuggestions = true
     /// The Claude model the optional assistant uses, with your own API key.
     public var assistantModel = "claude-opus-5-5"
+    /// Who the assistant asks: Anthropic, OpenAI, Gemini, xAI, OpenRouter, Ollama on this Mac, or any OpenAI-compatible server.
+    public var assistantProvider: AssistantProvider = .anthropic
+    /// The model for each provider other than Anthropic, as the provider names it.
+    public var assistantModels: [String: String] = [:]
+    /// The address of an OpenAI-compatible server (Other), or a different address for Ollama.
+    public var assistantBaseURL = ""
     /// Drag a window onto another window: near an edge docks it beside, the middle makes a tab group (any apps).
     public var dragToDock = true
     /// Drag the gap between two windows to resize both at once.
@@ -1134,6 +1140,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
+        case assistantProvider, assistantModels, assistantBaseURL
     }
 
     public init(from decoder: Decoder) throws {
@@ -1372,6 +1379,9 @@ public struct AppSettings: Equatable, Codable, Sendable {
         appAppearance = value(.appAppearance, d.appAppearance)
         powerMarkers = value(.powerMarkers, d.powerMarkers)
         parkPowerHogs = value(.parkPowerHogs, d.parkPowerHogs)
+        assistantProvider = value(.assistantProvider, d.assistantProvider)
+        assistantModels = value(.assistantModels, d.assistantModels)
+        assistantBaseURL = value(.assistantBaseURL, d.assistantBaseURL)
         // Settings from before 1.1 get the narrow menu bar once.
         compactMenuBarApplied = (try? c.decodeIfPresent(Bool.self, forKey: .compactMenuBarApplied)) ?? false
         if !compactMenuBarApplied {

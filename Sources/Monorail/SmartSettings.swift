@@ -281,14 +281,32 @@ struct SmartPane: View {
                 }
             }
             Section {
-                AssistantKeyRow()
-                Picker("Model", selection: $store.settings.assistantModel) {
-                    ForEach(Assistant.models, id: \.self) { Text($0).tag($0) }
+                Picker("Provider", selection: $store.settings.assistantProvider) {
+                    ForEach(AssistantProvider.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                let provider = store.settings.assistantProvider
+                if provider == .custom || provider == .ollama {
+                    LabeledContent("Address") {
+                        TextField(provider == .ollama ? "http://localhost:11434/v1" : "http://localhost:1234/v1", text: $store.settings.assistantBaseURL)
+                            .textFieldStyle(.roundedBorder).frame(width: 280)
+                    }
+                }
+                if provider.needsKey || provider == .custom {
+                    AssistantKeyRow(provider: provider).id(provider)
+                }
+                if provider == .anthropic {
+                    Picker("Model", selection: $store.settings.assistantModel) {
+                        ForEach(Assistant.models, id: \.self) { Text($0).tag($0) }
+                    }
+                } else {
+                    AssistantModelField(store: store, provider: provider).id(provider)
                 }
             } header: {
                 Text("Assistant (optional)")
             } footer: {
-                Text("When Monorail doesn’t understand a sentence, Claude rewrites it as Monorail commands and you confirm before anything happens. Uses your own Anthropic API key, kept in your Keychain; only the sentence, the names of open apps and Monorail’s command list are sent, straight to Anthropic. Everything else stays on your Mac.")
+                Text(store.settings.assistantProvider.isLocal
+                     ? "When Monorail doesn’t understand a sentence, a model in Ollama on this Mac rewrites it as Monorail commands and you confirm before anything happens. Nothing leaves your Mac."
+                     : "When Monorail doesn’t understand a sentence, the model you choose rewrites it as Monorail commands and you confirm before anything happens. Uses your own API key, kept in your Keychain; only the sentence, the names of open apps and Monorail’s command list are sent, straight to \(store.settings.assistantProvider.title). Everything else stays on your Mac.")
                     .font(.callout).foregroundStyle(.secondary)
             }
             Section {
@@ -571,27 +589,65 @@ struct DevicesPane: View {
 
 /// Adds or removes the assistant's API key (stored in the Keychain, never in settings).
 struct AssistantKeyRow: View {
+    let provider: AssistantProvider
     @State private var draft = ""
-    @State private var saved = Assistant.hasKey
+    @State private var saved = false
 
     var body: some View {
         HStack {
             if saved {
-                Label("API key saved in your Keychain", systemImage: "checkmark.seal")
+                Label("\(provider.shortName) API key saved in your Keychain", systemImage: "checkmark.seal")
                 Spacer()
                 Button("Remove") {
-                    Assistant.setKey(nil)
+                    Assistant.setKey(nil, for: provider)
                     saved = false
                 }
             } else {
-                SecureField("Anthropic API key", text: $draft)
+                SecureField(provider == .custom ? "API key (if the server needs one)" : "\(provider.title) API key", text: $draft)
                 Button("Save") {
-                    Assistant.setKey(draft)
+                    Assistant.setKey(draft, for: provider)
                     draft = ""
-                    saved = Assistant.hasKey
+                    saved = Assistant.hasKey(for: provider)
                 }
                 .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty)
-                Link("Get a key", destination: URL(string: "https://platform.claude.com/settings/keys")!)
+                if let page = provider.keyPage, let url = URL(string: page) { Link("Get a key", destination: url) }
+            }
+        }
+        .onAppear { saved = Assistant.hasKey(for: provider) }
+    }
+}
+
+/// The model for providers other than Anthropic: typed as the provider names it, or picked from Ollama.
+struct AssistantModelField: View {
+    @ObservedObject var store: SettingsStore
+    let provider: AssistantProvider
+    @State private var installed: [String] = []
+    @State private var looked = false
+
+    private var model: Binding<String> {
+        Binding(get: { store.settings.assistantModels[provider.rawValue] ?? "" },
+                set: { store.settings.assistantModels[provider.rawValue] = $0 })
+    }
+
+    var body: some View {
+        LabeledContent("Model") {
+            HStack {
+                TextField("As \(provider.shortName) names it", text: model)
+                    .textFieldStyle(.roundedBorder).frame(width: 220)
+                if provider == .ollama {
+                    Menu("Installed") {
+                        if installed.isEmpty { Text(looked ? "None found · is Ollama running?" : "Looking…") }
+                        ForEach(installed, id: \.self) { name in Button(name) { model.wrappedValue = name } }
+                    }
+                    .fixedSize()
+                    .onAppear {
+                        Assistant.ollamaModels(base: store.settings.assistantBaseURL) { names in
+                            installed = names
+                            looked = true
+                            if model.wrappedValue.isEmpty, let first = names.first { model.wrappedValue = first }
+                        }
+                    }
+                }
             }
         }
     }

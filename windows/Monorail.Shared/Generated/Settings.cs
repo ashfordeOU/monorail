@@ -215,6 +215,9 @@ public static class SettingKeys
     public const string RestoreBrowserTabs = "restoreBrowserTabs";
     public const string FloatSuggestions = "floatSuggestions";
     public const string AssistantModel = "assistantModel";
+    public const string AssistantProvider = "assistantProvider";
+    public const string AssistantModels = "assistantModels";
+    public const string AssistantBaseURL = "assistantBaseURL";
     public const string DragToDock = "dragToDock";
     public const string GapHandles = "gapHandles";
     public const string SliderBarStepsAside = "sliderBarStepsAside";
@@ -557,6 +560,8 @@ public static class SettingDefaults
     public const bool FloatSuggestions = true;
     /// <summary>The Claude model the optional assistant uses, with your own API key.</summary>
     public const string AssistantModel = "claude-opus-5-5";
+    /// <summary>The address of an OpenAI-compatible server (Other), or a different address for Ollama.</summary>
+    public const string AssistantBaseURL = "";
     /// <summary>Drag a window onto another window: near an edge docks it beside, the middle makes a tab group (any apps).</summary>
     public const bool DragToDock = true;
     /// <summary>Drag the gap between two windows to resize both at once.</summary>

@@ -3,6 +3,7 @@
 #   monorail <action>                 run any action (focus-left, overview, …)
 #   monorail layout|pair|template|snapshot|focus-app|notify|awake <name>
 #   monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
+#   monorail say "<sentence>"           do what a sentence asks ("Slack and Mail side by side")
 #   monorail subscribe                 follow live events (one JSON object per line)
 # Queries need the local API (Settings → Automation → Local API) and print JSON.
 set -eu
@@ -12,6 +13,7 @@ usage() {
 Usage: monorail <action>
        monorail layout|pair|template|snapshot|focus-app|notify|awake <name>
        monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
+       monorail say "Slack and Mail side by side on 2"
        monorail subscribe    live events: state, action, agent_waiting, window_closed (JSON lines)
 
 Actions include:
@@ -33,6 +35,19 @@ api() {
     echo
 }
 
+post() {
+    dir="$HOME/Library/Application Support/Monorail"
+    if [ ! -f "$dir/api-port" ]; then
+        echo "monorail: turn on the local API in Monorail ▸ Settings ▸ Automation" >&2
+        exit 69
+    fi
+    curl -fsS -X POST -H "Authorization: Bearer $(cat "$dir/api-token")" -H "Content-Type: application/json" \
+        --data "$2" "http://127.0.0.1:$(cat "$dir/api-port")/$1"
+    echo
+}
+
+json_string() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr '\n' ' '; }
+
 encode() { printf '%s' "$1" | sed -e 's/%/%25/g' -e 's/ /%20/g' -e 's/+/%2B/g' -e 's/&/%26/g' -e 's/#/%23/g' -e 's/?/%3F/g'; }
 
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
@@ -48,6 +63,10 @@ case "$1" in
         exec nc -U "$sock" ;;
     windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights)
         api "$1" ;;
+    say)
+        [ $# -ge 2 ] || { usage; exit 64; }
+        shift
+        post say "{\"text\":\"$(json_string "$*")\"}" ;;
     awake)
         exec open -g "monorail://awake/${2:-toggle}" ;;
     layout|pair|template|snapshot|focus-app|notify)

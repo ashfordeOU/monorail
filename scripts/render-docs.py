@@ -16,6 +16,7 @@ GUIDES = {  # source → (slug, title)
     "docs/ACTIONS.md": ("actions", "Every action"),
     "docs/SETTINGS.md": ("settings", "Every setting"),
     "docs/COMPATIBILITY.md": ("compatibility", "Compatibility"),
+    "docs/AGENTS.md": ("agents", "AI agents and Monorail"),
     "SECURITY.md": ("security", "Security"),
     "LICENSE": ("licence", "Licence"),
     "TRADEMARKS.md": ("trademarks", "Trademarks"),

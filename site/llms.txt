@@ -1,0 +1,18 @@
+# Monorail by Ashforde®
+
+> A free scrolling window manager for macOS. Every window sits on one horizontal strip of slides; new windows slide in beside you and nothing you're using shrinks. Free, every feature, notarised by Apple. Windows and Linux (GNOME) versions are in beta.
+
+## For AI agents
+
+- [Agent Skill (SKILL.md)](https://monorail.ashforde.org/agents/SKILL.md): how an agent drives Monorail with the `monorail` command, the local HTTP API or MCP
+- [AI agents and Monorail](https://monorail.ashforde.org/docs/agents/): connecting MCP clients, skill-loading agents and bots
+
+## Docs
+
+- [Every action](https://monorail.ashforde.org/docs/actions/)
+- [Every setting](https://monorail.ashforde.org/docs/settings/)
+- [Compatibility](https://monorail.ashforde.org/docs/compatibility/)
+- [Monorail for IT](https://monorail.ashforde.org/docs/it/)
+- [Changelog](https://monorail.ashforde.org/changelog/)
+- [Download](https://monorail.ashforde.org/download/)
+- [Privacy](https://monorail.ashforde.org/privacy/)

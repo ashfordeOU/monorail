@@ -111,3 +111,33 @@ final class PowerUseTests: XCTestCase {
         XCTAssertNil(PowerEstimate.wattHours(capacityMilliampHours: 100, voltageMillivolts: 12000))
     }
 }
+
+final class AssistantProviderTests: XCTestCase {
+    func testChatURL() {
+        XCTAssertEqual(AssistantProvider.chatURL(base: "http://localhost:1234/v1/")?.absoluteString, "http://localhost:1234/v1/chat/completions")
+        XCTAssertEqual(AssistantProvider.chatURL(base: "https://x.example/v1/chat/completions")?.absoluteString, "https://x.example/v1/chat/completions")
+        XCTAssertNil(AssistantProvider.chatURL(base: "  "))
+    }
+
+    func testFindsJSONInsideFencesAndSentences() throws {
+        let reply = "Sure!\n```json\n{\"commands\":[\"go to 2\"],\"explanation\":\"Done\"}\n```"
+        let data = try XCTUnwrap(AssistantProvider.jsonObject(in: reply))
+        let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        XCTAssertEqual(object?["explanation"] as? String, "Done")
+        XCTAssertNil(AssistantProvider.jsonObject(in: "no json here"))
+    }
+
+    func testOnlyLocalAndCustomWorkWithoutAKey() {
+        XCTAssertEqual(AssistantProvider.allCases.filter { !$0.needsKey }, [.ollama, .custom])
+        XCTAssertNil(AssistantProvider.anthropic.defaultBaseURL)
+    }
+}
+
+final class AgentSkillTests: XCTestCase {
+    func testBundledSkillMatchesTheFileInTheRepository() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let file = try String(contentsOf: root.appendingPathComponent("extensions/agent-skill/monorail/SKILL.md"), encoding: .utf8)
+        XCTAssertEqual(AgentSkill.markdown.trimmingCharacters(in: .newlines), file.trimmingCharacters(in: .newlines))
+        XCTAssertTrue(AgentSkill.markdown.hasPrefix("---\nname: monorail\n"))
+    }
+}

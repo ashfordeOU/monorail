@@ -59,7 +59,7 @@ struct BatteryPanel: View {
                     .background(Capsule().fill(Color.yellow.opacity(0.25)))
             }
             Spacer()
-            Button(action: openSettings) { Image(systemName: "gearshape") }
+            Button(action: openSettings) { Image(systemName: "gearshape").accessibilityLabel("Battery settings") }
                 .buttonStyle(.borderless).help("Battery settings")
         }
         .padding(.horizontal, 14).padding(.vertical, 10)

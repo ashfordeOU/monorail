@@ -6,6 +6,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.7.27] - 2026-11-11
+
 ### Changed
 - **Usage counts keep arriving.** Monorail reads where to send its anonymous daily counts, the list of app quirks and the script gallery from monorail.ashforde.org, and falls back to a built-in address, so they keep working wherever the project lives.
 - **No pop-up about usage counts.** They're anonymous and on from the start, as the privacy policy says; switch them off any time in Settings → Devices & Sharing → Trust, where **What's Sent…** shows them in full.

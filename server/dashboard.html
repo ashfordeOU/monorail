@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Monorail Stats</title>
+<link rel="icon" href="https://monorail.ashforde.org/favicon.ico">
+<script>try { const t = localStorage.getItem('mr-stats-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #FBF6F3; --surface: #FFFFFF; --surface-2: #F7EEF2; --line: rgba(36,17,43,.09); --line-2: rgba(36,17,43,.16);
+  --ink: #24112B; --ink-2: #5E4659; --ink-3: #8C7487;
+  --brand-1: #FF8A5B; --brand-2: #E8437A; --brand-3: #8E3AB8;
+  --s1: #D63A80; --s1-soft: rgba(214,58,128,.12); --s2: #7C5CFF; --ghost: #B9A9B6;
+  --seq-0: #FCE7F0; --seq-1: #F294BE; --seq-2: #E25E9A; --seq-3: #C73577; --seq-4: #93235A; --seq-5: #62173D;
+  --seq-ink-0: #24112B; --seq-ink-1: #24112B; --seq-ink-2: #24112B; --seq-ink-3: #FFFFFF; --seq-ink-4: #FFFFFF; --seq-ink-5: #FFFFFF;
+  --good: #0E8A3E; --good-bg: rgba(14,138,62,.10); --bad: #C93434; --bad-bg: rgba(201,52,52,.10);
+  --shadow: 0 1px 2px rgba(36,17,43,.04), 0 8px 24px rgba(36,17,43,.06);
+  --radius: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg: #120A16; --surface: #1C1220; --surface-2: #26182B; --line: rgba(255,255,255,.08); --line-2: rgba(255,255,255,.16);
+    --ink: #F6ECF3; --ink-2: #CDB6C6; --ink-3: #9C8597;
+    --s1: #E8559A; --s1-soft: rgba(232,85,154,.16); --s2: #8D72F5; --ghost: #5E4A5B;
+    --seq-0: #2A1A2E; --seq-1: #62173D; --seq-2: #93235A; --seq-3: #C73577; --seq-4: #E25E9A; --seq-5: #F294BE;
+    --seq-ink-0: #F6ECF3; --seq-ink-1: #FFFFFF; --seq-ink-2: #FFFFFF; --seq-ink-3: #FFFFFF; --seq-ink-4: #24112B; --seq-ink-5: #24112B;
+    --good: #4CC77A; --good-bg: rgba(76,199,122,.14); --bad: #F07070; --bad-bg: rgba(240,112,112,.14);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #120A16; --surface: #1C1220; --surface-2: #26182B; --line: rgba(255,255,255,.08); --line-2: rgba(255,255,255,.16);
+  --ink: #F6ECF3; --ink-2: #CDB6C6; --ink-3: #9C8597;
+  --s1: #E8559A; --s1-soft: rgba(232,85,154,.16); --s2: #8D72F5; --ghost: #5E4A5B;
+  --seq-0: #2A1A2E; --seq-1: #62173D; --seq-2: #93235A; --seq-3: #C73577; --seq-4: #E25E9A; --seq-5: #F294BE;
+    --seq-ink-0: #F6ECF3; --seq-ink-1: #FFFFFF; --seq-ink-2: #FFFFFF; --seq-ink-3: #FFFFFF; --seq-ink-4: #24112B; --seq-ink-5: #24112B;
+  --good: #4CC77A; --good-bg: rgba(76,199,122,.14); --bad: #F07070; --bad-bg: rgba(240,112,112,.14);
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Header */
+.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 1320px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); margin-right: auto; }
+.brand svg { width: 34px; height: 34px; border-radius: 9px; box-shadow: 0 4px 12px rgba(232,67,122,.35); }
+.brand b { font-size: 17px; letter-spacing: -.2px; }
+.brand span { color: var(--ink-3); font-weight: 500; }
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 2px; box-shadow: var(--shadow); }
+.seg button { border: 0; background: none; padding: 6px 12px; border-radius: 9px; cursor: pointer; color: var(--ink-2); font-weight: 600; font-size: 13px; }
+.seg button:hover { background: var(--surface-2); }
+.seg button[aria-pressed="true"] { background: linear-gradient(135deg, var(--brand-1), var(--brand-2) 55%, var(--brand-3)); color: #fff; }
+.tools { display: flex; align-items: center; gap: 8px; }
+.icon-btn { width: 36px; height: 36px; border-radius: 11px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; cursor: pointer; box-shadow: var(--shadow); }
+.icon-btn:hover { border-color: var(--line-2); }
+.icon-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.live { display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; height: 36px; border-radius: 11px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 600; font-size: 13px; color: var(--ink-2); box-shadow: var(--shadow); }
+.live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.live[aria-pressed="true"] { color: var(--ink); }
+.live[aria-pressed="true"] i { background: var(--good); box-shadow: 0 0 0 0 var(--good); animation: pulse 1.6s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 60%, transparent); } 100% { box-shadow: 0 0 0 8px transparent; } }
+.updated { color: var(--ink-3); font-size: 12px; white-space: nowrap; }
+
+main { max-width: 1320px; margin: 0 auto; padding: 22px 20px 60px; transition: opacity .2s; }
+main.loading { opacity: .55; }
+.hero { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 6px 0 18px; }
+.hero h1 { margin: 0; font-size: 28px; letter-spacing: -.6px; }
+.hero h1 em { font-style: normal; background: linear-gradient(100deg, var(--brand-1), var(--brand-2) 50%, var(--brand-3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p { margin: 4px 0 0; color: var(--ink-2); }
+.pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); font-size: 12.5px; font-weight: 600; }
+.pill b { color: var(--ink); }
+
+/* Cards */
+.grid { display: grid; gap: 16px; }
+.kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+@media (max-width: 1180px) { .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; min-width: 0; }
+.kpi { cursor: pointer; text-align: left; position: relative; overflow: hidden; transition: transform .15s, border-color .15s; }
+.kpi:hover { transform: translateY(-1px); border-color: var(--line-2); }
+.kpi[aria-pressed="true"] { border-color: var(--s1); box-shadow: 0 0 0 3px var(--s1-soft), var(--shadow); }
+.kpi[aria-pressed="true"]::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, var(--brand-1), var(--brand-2), var(--brand-3)); }
+.kpi .label { color: var(--ink-2); font-weight: 600; font-size: 12.5px; display: flex; align-items: center; gap: 6px; }
+.kpi .value { font-size: 30px; font-weight: 750; letter-spacing: -1px; margin: 6px 0 4px; }
+.kpi .foot { display: flex; align-items: center; gap: 8px; justify-content: space-between; min-height: 26px; }
+.kpi .sub { color: var(--ink-3); font-size: 12px; }
+.kpi .not-click { cursor: default; }
+.delta { white-space: nowrap; flex: none; display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.delta.up { color: var(--good); background: var(--good-bg); }
+.delta.down { color: var(--bad); background: var(--bad-bg); }
+.delta.flat { color: var(--ink-3); background: var(--surface-2); }
+.spark { width: 84px; height: 26px; flex: 0 1 84px; min-width: 40px; }
+
+.row2 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); margin-top: 16px; }
+.row3 { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 16px; }
+.row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
+@media (max-width: 1000px) { .row2, .row3, .row-2 { grid-template-columns: minmax(0, 1fr); } }
+.card-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.card-h h2 { margin: 0; font-size: 15px; letter-spacing: -.1px; }
+.card-h .hint { color: var(--ink-3); font-size: 12px; }
+.card-h .right { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tabs { display: inline-flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; flex-wrap: wrap; }
+.tabs button { border: 0; background: none; padding: 4px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+.tabs button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); cursor: pointer; user-select: none; }
+.chk input { accent-color: var(--s1); }
+
+/* Main chart */
+.chart-wrap { position: relative; }
+.chart { width: 100%; height: 300px; display: block; }
+.chart .grid-l { stroke: var(--line); stroke-width: 1; }
+.chart .axis-t { fill: var(--ink-3); font-size: 11px; }
+.chart .area { fill: url(#areaFill); }
+.chart .line { fill: none; stroke: var(--s1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .prev { fill: none; stroke: var(--ghost); stroke-width: 2; stroke-linejoin: round; }
+.chart .cross { stroke: var(--ink-3); stroke-width: 1; }
+.chart .dot { fill: var(--s1); stroke: var(--surface); stroke-width: 2; }
+.legend { display: flex; gap: 14px; color: var(--ink-2); font-size: 12.5px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 2px; border-radius: 2px; display: inline-block; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line-2); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.18); padding: 9px 11px; font-size: 12.5px; min-width: 150px; opacity: 0; transition: opacity .08s; z-index: 5; }
+.tip.on { opacity: 1; }
+.tip .d { color: var(--ink-3); margin-bottom: 4px; }
+.tip .r { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.tip .r span { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.tip .r i { width: 12px; height: 2px; border-radius: 2px; }
+.tip .r b { font-size: 14px; }
+.table-view { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.table-view th, .table-view td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.table-view th { color: var(--ink-3); font-weight: 600; }
+.table-view td.n, .table-view th.n { text-align: right; }
+.scroll { max-height: 300px; overflow: auto; }
+
+/* Funnel */
+.funnel { display: grid; gap: 14px; }
+.fstep .top-l { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.fstep .top-l span { color: var(--ink-2); font-weight: 600; }
+.fstep .top-l b { font-size: 20px; letter-spacing: -.5px; }
+.fbar { height: 12px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+.fbar i { display: block; height: 100%; border-radius: 6px; }
+.fconv { display: flex; align-items: center; gap: 8px; color: var(--ink-3); font-size: 12px; padding-left: 4px; }
+.fconv b { color: var(--ink); }
+
+/* Ranked bars */
+.ranked { display: grid; gap: 8px; }
+.rk { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr) auto; gap: 10px; align-items: center; font-size: 13px; }
+.rk .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+.rk .br { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.rk .br i { display: block; height: 100%; border-radius: 4px; background: var(--s1); }
+.rk .vl { color: var(--ink-2); text-align: right; min-width: 74px; }
+.rk .vl b { color: var(--ink); }
+.empty { color: var(--ink-3); padding: 18px 0; text-align: center; }
+
+/* Retention */
+.ret-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.ret-tile { background: var(--surface-2); border-radius: 14px; padding: 12px; }
+.ret-tile b { display: block; font-size: 24px; letter-spacing: -.6px; }
+.ret-tile span { color: var(--ink-2); font-size: 12px; }
+.ret-tile small { color: var(--ink-3); font-size: 11px; }
+.heat { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 12px; }
+.heat th { color: var(--ink-3); font-weight: 600; text-align: center; padding: 2px; }
+.heat th:first-child { text-align: left; }
+.heat td { text-align: center; border-radius: 6px; padding: 7px 4px; font-weight: 650; }
+.heat td.w { text-align: left; background: none; color: var(--ink-2); font-weight: 500; white-space: nowrap; }
+.heat td.na { color: var(--ink-3); background: transparent; font-weight: 400; }
+
+/* Sources */
+.src { width: 100%; border-collapse: collapse; font-size: 13px; }
+.src th { color: var(--ink-3); font-weight: 600; text-align: left; padding: 6px 6px; border-bottom: 1px solid var(--line); }
+.src td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.src .n { text-align: right; }
+.src .who { display: flex; align-items: center; gap: 8px; }
+.src .who i { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 800; color: #fff; }
+.mini { display: inline-block; width: 70px; height: 6px; border-radius: 3px; background: var(--surface-2); vertical-align: middle; margin-left: 6px; overflow: hidden; }
+.mini i { display: block; height: 100%; background: var(--s2); }
+
+/* Features */
+.feat { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.3fr) auto auto; gap: 10px; align-items: center; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.feat:last-child { border-bottom: 0; }
+.lift { font-size: 11.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; }
+.lift.up { color: var(--good); background: var(--good-bg); }
+.lift.down { color: var(--bad); background: var(--bad-bg); }
+.lift.na { color: var(--ink-3); background: var(--surface-2); }
+
+footer { max-width: 1320px; margin: 0 auto; padding: 0 20px 40px; color: var(--ink-3); font-size: 12px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: space-between; }
+.err { background: var(--bad-bg); color: var(--bad); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; display: none; }
+.err.on { display: block; }
+.kbd { font: 600 11px/1 ui-monospace, Menlo, monospace; padding: 2px 5px; border-radius: 5px; border: 1px solid var(--line-2); color: var(--ink-2); }
+@media (max-width: 640px) {
+  .top-in { padding: 10px 16px; } main { padding: 16px 16px 50px; } .updated { display: none; }
+  .rk { grid-template-columns: minmax(0, 1fr) auto; } .rk .br { grid-column: 1 / -1; grid-row: 2; }
+  .feat { grid-template-columns: minmax(0, 1fr) auto; } .feat .br { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="https://monorail.ashforde.org/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".55" stop-color="#E8437A"/><stop offset="1" stop-color="#C2456E"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#lg)"/><rect x="13" y="15" width="10" height="34" rx="4" fill="#FFF6F2"/><rect x="41" y="15" width="10" height="34" rx="4" fill="#FFF6F2"/><rect x="27" y="23" width="10" height="20" rx="3.5" fill="#2A1430"/><rect x="29" y="39" width="6" height="1.8" rx=".9" fill="#FF9E62"/></svg>
+      <div><b>Monorail</b> <span>Stats</span></div>
+    </a>
+    <div class="seg" role="group" aria-label="Date range" id="range">
+      <button data-days="1">Today</button><button data-days="7">7D</button><button data-days="30">30D</button><button data-days="90">90D</button><button data-days="365">12M</button>
+    </div>
+    <div class="tools">
+      <button class="live" id="live" aria-pressed="false" title="Refresh every minute (L)"><i></i>Live</button>
+      <button class="icon-btn" id="refresh" title="Refresh (R)" aria-label="Refresh"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
+      <button class="icon-btn" id="export" title="Download the data (JSON)" aria-label="Download the data"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg></button>
+      <button class="icon-btn" id="theme" title="Light or dark" aria-label="Switch light or dark"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg></button>
+      <span class="updated" id="updated"></span>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="loading">
+  <div class="err" id="err"></div>
+  <section class="hero">
+    <div>
+      <h1>How <em>Monorail</em> is doing</h1>
+      <p id="period">Loading…</p>
+    </div>
+    <div class="pills" id="pills"></div>
+  </section>
+
+  <section class="grid kpis" id="kpis" aria-label="Key numbers"></section>
+
+  <section class="grid row2">
+    <div class="card">
+      <div class="card-h">
+        <h2 id="chart-title">Active Macs</h2>
+        <div class="legend" id="legend"></div>
+        <div class="right">
+          <label class="chk"><input type="checkbox" id="compare" checked> Compare</label>
+          <div class="tabs" id="view"><button data-v="chart" aria-pressed="true">Chart</button><button data-v="table">Table</button></div>
+        </div>
+      </div>
+      <div class="chart-wrap" id="chart-wrap"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Funnel</h2><span class="hint">site → download → first launch</span></div>
+      <div class="funnel" id="funnel"></div>
+    </div>
+  </section>
+
+  <section class="grid row-2">
+    <div class="card">
+      <div class="card-h"><h2>Where people come from</h2><span class="hint">visits and downloads by source</span></div>
+      <div class="scroll" id="sources"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Still using Monorail</h2><span class="hint">share of installs that came back</span></div>
+      <div id="retention"></div>
+    </div>
+  </section>
+
+  <section class="grid row-2">
+    <div class="card">
+      <div class="card-h"><h2>Who uses it</h2>
+        <div class="right"><div class="tabs" id="bd-tabs"></div></div>
+      </div>
+      <div class="ranked" id="breakdown"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Features</h2><span class="hint">turned on · stayed a week when used in week one</span></div>
+      <div class="scroll" id="features"></div>
+    </div>
+  </section>
+
+  <section class="grid row3">
+    <div class="card">
+      <div class="card-h"><h2>Downloads</h2><div class="right"><div class="tabs" id="dl-tabs"></div></div></div>
+      <div class="ranked" id="downloads"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Website</h2><div class="right"><div class="tabs" id="web-tabs"></div></div></div>
+      <div class="ranked" id="website"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Most used actions</h2></div>
+      <div class="ranked scroll" id="actions"></div>
+    </div>
+  </section>
+</main>
+<footer>
+  <span>Anonymous counts only: no cookies, no IP addresses, no window titles or files. Breakdowns count each Mac once, using its latest report in the range.</span>
+  <span>Keys: <span class="kbd">1</span>–<span class="kbd">5</span> range · <span class="kbd">R</span> refresh · <span class="kbd">L</span> live · <span class="kbd">C</span> compare</span>
+</footer>
+
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const key = params.get('key') || '';
+  const $ = (id) => document.getElementById(id);
+  const state = { days: [1, 7, 30, 90, 365].includes(+params.get('days')) ? +params.get('days') : 30,
+    metric: params.get('metric') || 'active', compare: true, view: 'chart', bd: 'version', dl: 'file', web: 'page', live: false, data: null };
+  const fmt = new Intl.NumberFormat();
+  const fmtC = new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 });
+  const nf = (n) => (n == null ? '—' : Math.abs(n) >= 10000 ? fmtC.format(n) : fmt.format(n));
+  const pct = (n) => (n == null ? '—' : (n >= 10 || n === 0 ? Math.round(n) : n.toFixed(1)) + '%');
+  const el = (tag, attrs = {}, ...kids) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'class') e.className = v; else if (k === 'style') e.setAttribute('style', v);
+      else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else if (v != null) e.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) if (kid != null) e.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    return e;
+  };
+  const svgEl = (tag, attrs = {}) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
+  const METRICS = {
+    active: { label: 'Active Macs', unit: 'Macs used Monorail', series: 'active' },
+    installs: { label: 'New installs', unit: 'first launches', series: 'installs' },
+    downloads: { label: 'Downloads', unit: 'downloads', series: 'downloads' },
+    visits: { label: 'Site visits', unit: 'page views', series: 'visits' },
+  };
+  const SOURCES = { producthunt: ['Product Hunt', '#DA552F'], x: ['X', '#111111'], google: ['Google', '#4285F4'], direct: ['Direct', '#8C7487'],
+    reddit: ['Reddit', '#FF4500'], hackernews: ['Hacker News', '#FF6600'], linkedin: ['LinkedIn', '#0A66C2'], github: ['GitHub', '#24292F'],
+    chatgpt: ['ChatGPT', '#10A37F'], claude: ['Claude', '#D97757'], perplexity: ['Perplexity', '#20808D'], bluesky: ['Bluesky', '#1185FE'],
+    threads: ['Threads', '#000000'], bing: ['Bing', '#008373'], duckduckgo: ['DuckDuckGo', '#DE5833'], terminal: ['Install script', '#5E4659'] };
+  const FILES = { 'mac-dmg': 'Mac · DMG', 'mac-pkg': 'Mac · installer (pkg)', 'mac-zip': 'Mac · zip', 'windows-beta': 'Windows beta', 'gnome-beta': 'Linux (GNOME) beta', 'install-script': 'Install script' };
+  const flag = (cc) => (cc && /^[A-Z]{2}$/.test(cc) ? String.fromCodePoint(...[...cc].map((c) => 127397 + c.charCodeAt(0))) + ' ' : '');
+  const countryName = (() => { let d; try { d = new Intl.DisplayNames(undefined, { type: 'region' }); } catch (e) {} return (cc) => { if (!cc) return 'Unknown'; try { return d ? d.of(cc) : cc; } catch (e) { return cc; } }; })();
+  const langName = (() => { let d; try { d = new Intl.DisplayNames(undefined, { type: 'language' }); } catch (e) {} return (l) => { if (!l) return 'Unknown'; try { return d ? d.of(l) : l; } catch (e) { return l; } }; })();
+  const prettyFeature = (f) => f.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+  const prettyAction = (a) => a.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[-_]/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase());
+
+  // Days in the range (oldest first) and the matching days of the period before.
+  const daysList = (n, offset = 0) => { const out = []; const t = new Date(); t.setUTCHours(0, 0, 0, 0); for (let i = n - 1 + offset; i >= offset; i--) { const d = new Date(t); d.setUTCDate(t.getUTCDate() - i); out.push(d.toISOString().slice(0, 10)); } return out; };
+  const niceDay = (d) => new Date(d + 'T00:00:00Z').toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' });
+
+  function delta(now, before) {
+    if (!before && !now) return el('span', { class: 'delta flat' }, '—');
+    if (!before) return el('span', { class: 'delta up', title: 'Nothing in the period before' }, '▲ new');
+    const ch = ((now - before) / before) * 100;
+    if (Math.abs(ch) < 0.5) return el('span', { class: 'delta flat', title: 'Same as the period before' }, '● 0%');
+    return el('span', { class: 'delta ' + (ch > 0 ? 'up' : 'down'), title: `Before: ${fmt.format(before)}` }, (ch > 0 ? '▲ +' : '▼ ') + pct(Math.abs(ch)).replace('%', '') + '%');
+  }
+  function spark(values) {
+    const w = 84, h = 26, max = Math.max(1, ...values), step = values.length > 1 ? w / (values.length - 1) : w;
+    const s = svgEl('svg', { viewBox: `0 0 ${w} ${h}`, class: 'spark', 'aria-hidden': 'true' });
+    if (values.length < 2) return s;
+    const pts = values.map((v, i) => `${(i * step).toFixed(1)},${(h - 3 - (v / max) * (h - 6)).toFixed(1)}`).join(' ');
+    s.append(svgEl('polyline', { points: pts, fill: 'none', stroke: 'var(--s1)', 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    return s;
+  }
+
+  function renderKpis(d) {
+    const k = d.kpi, box = $('kpis'); box.replaceChildren();
+    const days = daysList(d.days);
+    const sp = (name) => days.map((day) => d.series[name][day] || 0);
+    const r7 = d.retention.d7;
+    const conv = k.visits ? (k.downloads / k.visits) * 100 : null;
+    const convPrev = k.visitsPrev ? (k.downloadsPrev / k.visitsPrev) * 100 : null;
+    const cards = [
+      ['active', 'Active Macs', k.active, k.activePrev, `${nf(k.activeToday)} today · ${nf(k.ever)} ever`, sp('active')],
+      ['installs', 'New installs', k.newInstalls, k.newPrev, 'first launches', sp('installs')],
+      ['downloads', 'Downloads', k.downloads, k.downloadsPrev, `${nf(k.downloadsEver)} ever`, sp('downloads')],
+      ['visits', 'Site visits', k.visits, k.visitsPrev, 'page views', sp('visits')],
+    ];
+    for (const [id, label, now, before, sub, values] of cards) {
+      box.append(el('button', { class: 'card kpi', 'aria-pressed': String(state.metric === id), onclick: () => { state.metric = id; syncUrl(); render(); } },
+        el('div', { class: 'label' }, label),
+        el('div', { class: 'value num' }, nf(now)),
+        el('div', { class: 'foot' }, delta(now, before), spark(values)),
+        el('div', { class: 'sub' }, sub)));
+    }
+    box.append(el('div', { class: 'card kpi not-click' },
+      el('div', { class: 'label' }, 'Still using after a week'),
+      el('div', { class: 'value num' }, pct(r7.pct)),
+      el('div', { class: 'foot' }, el('span', { class: 'sub' }, r7.eligible ? `${nf(r7.kept)} of ${nf(r7.eligible)} installs` : 'needs installs a week old')),
+      el('div', { class: 'sub' }, `a day: ${pct(d.retention.d1.pct)} · a month: ${pct(d.retention.d30.pct)}`)));
+    box.append(el('div', { class: 'card kpi not-click' },
+      el('div', { class: 'label' }, 'Visit → download'),
+      el('div', { class: 'value num' }, pct(conv)),
+      el('div', { class: 'foot' }, conv != null && convPrev != null ? delta(conv, convPrev) : el('span', { class: 'sub' }, '')),
+      el('div', { class: 'sub' }, 'of site visits end in a download')));
+  }
+
+  function renderChart(d) {
+    const m = METRICS[state.metric] || METRICS.active;
+    $('chart-title').textContent = m.label;
+    const days = daysList(d.days), prevDays = daysList(d.days, d.days);
+    const cur = days.map((day) => d.series[m.series][day] || 0), prev = prevDays.map((day) => d.series[m.series][day] || 0);
+    const legend = $('legend'); legend.replaceChildren(el('span', {}, el('i', { style: 'background:var(--s1)' }), 'This period'));
+    if (state.compare) legend.append(el('span', {}, el('i', { style: 'background:var(--ghost)' }), 'Period before'));
+    const wrap = $('chart-wrap'); wrap.replaceChildren();
+    if (state.view === 'table') {
+      const t = el('table', { class: 'table-view' }, el('thead', {}, el('tr', {}, el('th', {}, 'Day'), el('th', { class: 'n' }, m.label), el('th', { class: 'n' }, 'Period before'))));
+      const tb = el('tbody'); days.slice().reverse().forEach((day, i) => { const j = days.length - 1 - i; tb.append(el('tr', {}, el('td', {}, niceDay(day)), el('td', { class: 'n num' }, fmt.format(cur[j])), el('td', { class: 'n num' }, fmt.format(prev[j])))); });
+      t.append(tb); wrap.append(el('div', { class: 'scroll' }, t)); return;
+    }
+    if (d.days === 1) {
+      wrap.append(el('div', { class: 'empty', style: 'padding:60px 0' }, el('div', { style: 'font-size:44px;font-weight:750;color:var(--ink);letter-spacing:-1px' }, nf(cur[0])), `${m.unit} today · yesterday ${nf(prev[0])}`));
+      return;
+    }
+    const W = Math.max(320, wrap.clientWidth || 800), H = 300, P = { l: 44, r: 12, t: 12, b: 26 };
+    const max = Math.max(1, ...cur, ...(state.compare ? prev : [])), nice = niceMax(max);
+    const x = (i) => P.l + (days.length === 1 ? 0 : (i / (days.length - 1)) * (W - P.l - P.r));
+    const y = (v) => P.t + (1 - v / nice) * (H - P.t - P.b);
+    const s = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img', 'aria-label': `${m.label} per day` });
+    const defs = svgEl('defs'); const g = svgEl('linearGradient', { id: 'areaFill', x1: 0, y1: 0, x2: 0, y2: 1 });
+    g.append(svgEl('stop', { offset: '0', 'stop-color': 'var(--s1)', 'stop-opacity': '.22' }), svgEl('stop', { offset: '1', 'stop-color': 'var(--s1)', 'stop-opacity': '0' }));
+    defs.append(g); s.append(defs);
+    for (let i = 0; i <= 4; i++) { const v = (nice / 4) * i, yy = y(v); s.append(svgEl('line', { x1: P.l, x2: W - P.r, y1: yy, y2: yy, class: 'grid-l' })); const t = svgEl('text', { x: P.l - 8, y: yy + 4, 'text-anchor': 'end', class: 'axis-t' }); t.textContent = nf(v); s.append(t); }
+    const ticks = Math.max(2, Math.min(7, days.length, Math.floor(W / 90))); for (let k = 0; k < ticks; k++) { const i = Math.round((k / Math.max(1, ticks - 1)) * (days.length - 1)); const t = svgEl('text', { x: x(i), y: H - 6, 'text-anchor': k === 0 ? 'start' : k === ticks - 1 ? 'end' : 'middle', class: 'axis-t' }); t.textContent = niceDay(days[i]); s.append(t); }
+    const path = (vals) => vals.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+    if (state.compare) s.append(svgEl('path', { d: path(prev), class: 'prev' }));
+    s.append(svgEl('path', { d: `${path(cur)}L${x(cur.length - 1)},${y(0)}L${x(0)},${y(0)}Z`, class: 'area' }));
+    s.append(svgEl('path', { d: path(cur), class: 'line' }));
+    const last = cur.length - 1; s.append(svgEl('circle', { cx: x(last), cy: y(cur[last]), r: 4, class: 'dot' }));
+    const cross = svgEl('line', { y1: P.t, y2: H - P.b, class: 'cross', visibility: 'hidden' }); const hov = svgEl('circle', { r: 5, class: 'dot', visibility: 'hidden' });
+    s.append(cross, hov);
+    const tip = el('div', { class: 'tip', role: 'status' });
+    const hit = svgEl('rect', { x: P.l, y: 0, width: W - P.l - P.r, height: H, fill: 'transparent', tabindex: 0, 'aria-label': 'Move along the chart with the arrow keys' });
+    let at = last;
+    const show = (i) => {
+      at = Math.max(0, Math.min(days.length - 1, i));
+      cross.setAttribute('x1', x(at)); cross.setAttribute('x2', x(at)); cross.setAttribute('visibility', 'visible');
+      hov.setAttribute('cx', x(at)); hov.setAttribute('cy', y(cur[at])); hov.setAttribute('visibility', 'visible');
+      tip.replaceChildren(el('div', { class: 'd' }, new Date(days[at] + 'T00:00:00Z').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })),
+        el('div', { class: 'r' }, el('span', {}, el('i', { style: 'background:var(--s1)' }), m.label), el('b', { class: 'num' }, fmt.format(cur[at]))),
+        state.compare ? el('div', { class: 'r' }, el('span', {}, el('i', { style: 'background:var(--ghost)' }), niceDay(prevDays[at])), el('b', { class: 'num', style: 'font-size:12.5px;color:var(--ink-2)' }, fmt.format(prev[at]))) : null);
+      const left = (x(at) / W) * wrap.clientWidth; tip.style.left = Math.min(wrap.clientWidth - 170, Math.max(0, left + 12)) + 'px'; tip.style.top = '8px'; tip.classList.add('on');
+    };
+    const hide = () => { cross.setAttribute('visibility', 'hidden'); hov.setAttribute('visibility', 'hidden'); tip.classList.remove('on'); };
+    hit.addEventListener('pointermove', (e) => { const r = s.getBoundingClientRect(); const px = ((e.clientX - r.left) / r.width) * W; show(Math.round(((px - P.l) / (W - P.l - P.r)) * (days.length - 1))); });
+    hit.addEventListener('pointerleave', hide); hit.addEventListener('focus', () => show(at)); hit.addEventListener('blur', hide);
+    hit.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') { show(at - 1); e.preventDefault(); } if (e.key === 'ArrowRight') { show(at + 1); e.preventDefault(); } });
+    s.append(hit); wrap.append(s, tip);
+  }
+  function niceMax(v) { const p = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return Math.max(4, m * p); return v; }
+
+  function renderFunnel(d) {
+    const k = d.kpi, box = $('funnel'); box.replaceChildren();
+    const steps = [['Site visits', k.visits, 'var(--seq-2)'], ['Downloads', k.downloads, 'var(--seq-3)'], ['New installs', k.newInstalls, 'var(--seq-4)']];
+    const max = Math.max(1, ...steps.map((s) => s[1]));
+    steps.forEach(([label, n, color], i) => {
+      box.append(el('div', { class: 'fstep' }, el('div', { class: 'top-l' }, el('span', {}, label), el('b', { class: 'num' }, nf(n))),
+        el('div', { class: 'fbar' }, el('i', { style: `width:${Math.max(n ? 2 : 0, (n / max) * 100)}%;background:${color}` }))));
+      if (i < steps.length - 1) { const next = steps[i + 1][1]; box.append(el('div', { class: 'fconv' }, '↓', el('b', {}, n ? pct((next / n) * 100) : '—'), i === 0 ? 'download' : 'open Monorail')); }
+    });
+    box.append(el('div', { class: 'fconv', style: 'margin-top:4px' }, 'Homebrew installs skip the website, so installs can be higher than downloads.'));
+  }
+
+  function renderSources(d) {
+    const box = $('sources'); box.replaceChildren();
+    if (!d.sources.length) { box.append(el('div', { class: 'empty' }, 'No visits yet in this range')); return; }
+    const max = Math.max(1, ...d.sources.map((s) => s.visits));
+    const t = el('table', { class: 'src' }, el('thead', {}, el('tr', {}, el('th', {}, 'Source'), el('th', { class: 'n' }, 'Visits'), el('th', { class: 'n' }, 'Downloads'), el('th', { class: 'n' }, 'Rate'))));
+    const tb = el('tbody');
+    for (const s of d.sources) {
+      const [name, color] = SOURCES[s.name] || [s.name, '#8C7487'];
+      tb.append(el('tr', {}, el('td', {}, el('div', { class: 'who' }, el('i', { style: `background:${color}` }, name[0].toUpperCase()), name)),
+        el('td', { class: 'n num' }, nf(s.visits), el('span', { class: 'mini' }, el('i', { style: `width:${(s.visits / max) * 100}%` }))),
+        el('td', { class: 'n num' }, nf(s.downloads)), el('td', { class: 'n num' }, s.visits ? pct((s.downloads / s.visits) * 100) : '—')));
+    }
+    t.append(tb); box.append(t);
+  }
+
+  const heatStep = (p) => Math.min(5, Math.floor((p / 100) * 5.999));
+  function renderRetention(d) {
+    const r = d.retention, box = $('retention'); box.replaceChildren();
+    const tile = (label, x) => el('div', { class: 'ret-tile' }, el('b', { class: 'num' }, pct(x.pct)), el('span', {}, label), el('br'), el('small', {}, x.eligible ? `${nf(x.kept)} of ${nf(x.eligible)}` : 'not enough time yet'));
+    box.append(el('div', { class: 'ret-tiles' }, tile('after a day', r.d1), tile('after a week', r.d7), tile('after a month', r.d30)));
+    if (!r.cohorts.length) { box.append(el('div', { class: 'empty' }, 'Groups by start week appear once installs come in')); return; }
+    const t = el('table', { class: 'heat' }, el('thead', {}, el('tr', {}, el('th', {}, 'Started'), el('th', {}, 'New'), el('th', {}, 'Day 1'), el('th', {}, 'Day 7'), el('th', {}, 'Day 14'), el('th', {}, 'Day 30'))));
+    const tb = el('tbody');
+    for (const c of r.cohorts) {
+      const cell = (n, need) => {
+        if (c.age < need) return el('td', { class: 'na', title: 'Too recent' }, '·');
+        const p = c.size ? (n / c.size) * 100 : 0; const k = heatStep(p);
+        return el('td', { style: `background:var(--seq-${k});color:var(--seq-ink-${k})`, title: `${n} of ${c.size} still using` }, pct(p));
+      };
+      tb.append(el('tr', {}, el('td', { class: 'w' }, 'Week of ' + niceDay(c.start)), el('td', { class: 'w num' }, nf(c.size)), cell(c.d1, 1), cell(c.d7, 7), cell(c.d14, 14), cell(c.d30, 30)));
+    }
+    t.append(tb); box.append(t);
+  }
+
+  function ranked(box, rows, { name = (r) => r.name, total, empty = 'No data yet in this range', unit = '' } = {}) {
+    box.replaceChildren();
+    if (!rows || !rows.length) { box.append(el('div', { class: 'empty' }, empty)); return; }
+    const max = Math.max(1, ...rows.map((r) => r.n)), sum = total || rows.reduce((a, r) => a + r.n, 0);
+    for (const r of rows) box.append(el('div', { class: 'rk', title: `${name(r)}: ${fmt.format(r.n)}` },
+      el('span', { class: 'nm' }, name(r)), el('span', { class: 'br' }, el('i', { style: `width:${(r.n / max) * 100}%` })),
+      el('span', { class: 'vl num' }, el('b', {}, nf(r.n)), unit, sum ? '  ' + pct((r.n / sum) * 100) : '')));
+  }
+  function tabs(box, items, current, onPick) {
+    box.replaceChildren(...items.map(([id, label]) => el('button', { 'aria-pressed': String(id === current), onclick: () => onPick(id) }, label)));
+  }
+  const BD = [['version', 'Version'], ['macos', 'macOS'], ['model', 'Mac'], ['chip', 'Chip'], ['memory', 'Memory'], ['displays', 'Displays'], ['country', 'Country'], ['language', 'Language'], ['source', 'Installed from'], ['channel', 'Channel']];
+  function renderBreakdown(d) {
+    tabs($('bd-tabs'), BD, state.bd, (id) => { state.bd = id; renderBreakdown(state.data); });
+    const nameFn = state.bd === 'country' ? (r) => flag(r.name) + countryName(r.name) : state.bd === 'language' ? (r) => langName(r.name)
+      : state.bd === 'displays' ? (r) => (r.name == null ? 'Unknown' : r.name + (r.name == 1 ? ' display' : ' displays')) : state.bd === 'memory' ? (r) => (r.name ? r.name + ' GB' : 'Unknown')
+      : (r) => (r.name == null || r.name === '' ? 'Unknown' : String(r.name));
+    ranked($('breakdown'), d.breakdown[state.bd], { name: nameFn });
+  }
+  function renderFeatures(d) {
+    const box = $('features'); box.replaceChildren();
+    if (!d.features.length) { box.append(el('div', { class: 'empty' }, 'No feature data yet in this range')); return; }
+    const base = d.retention.base;
+    for (const f of d.features) {
+      let lift = el('span', { class: 'lift na', title: 'Needs at least 3 installs a week old that used it' }, '—');
+      if (f.stayed != null && base != null) { const diff = f.stayed - base; lift = el('span', { class: 'lift ' + (diff >= 0 ? 'up' : 'down'), title: `Stayed a week: ${pct(f.stayed)} vs ${pct(base)} overall` }, (diff >= 0 ? '▲ ' : '▼ ') + pct(f.stayed)); }
+      box.append(el('div', { class: 'feat' }, el('span', { class: 'nm' }, prettyFeature(f.name)),
+        el('span', { class: 'br rk' , style: 'display:block' }, el('span', { class: 'br', style: 'display:block' }, el('i', { style: `width:${f.share}%;display:block;height:8px;border-radius:4px;background:var(--s1)` }))),
+        el('span', { class: 'num', style: 'color:var(--ink-2);min-width:46px;text-align:right' }, pct(f.share)), lift));
+    }
+  }
+  function renderDownloads(d) {
+    tabs($('dl-tabs'), [['file', 'File'], ['version', 'Version'], ['country', 'Country']], state.dl, (id) => { state.dl = id; renderDownloads(state.data); });
+    const nm = state.dl === 'file' ? (r) => FILES[r.name] || r.name : state.dl === 'country' ? (r) => flag(r.name) + countryName(r.name) : (r) => (r.name ? 'v' + r.name : 'Unknown');
+    ranked($('downloads'), d.downloads[state.dl], { name: nm, empty: 'No downloads yet in this range' });
+  }
+  function renderWebsite(d) {
+    tabs($('web-tabs'), [['page', 'Pages'], ['country', 'Country']], state.web, (id) => { state.web = id; renderWebsite(state.data); });
+    const nm = state.web === 'country' ? (r) => flag(r.name) + countryName(r.name) : (r) => (r.name === '/' ? 'Home' : r.name);
+    ranked($('website'), d.visits[state.web], { name: nm, empty: 'No visits yet in this range' });
+  }
+
+  function render() {
+    const d = state.data; if (!d) return;
+    for (const b of $('range').querySelectorAll('button')) b.setAttribute('aria-pressed', String(+b.dataset.days === state.days));
+    $('compare').checked = state.compare; $('live').setAttribute('aria-pressed', String(state.live));
+    for (const b of $('view').querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.v === state.view));
+    const label = { 1: 'today', 7: 'the last 7 days', 30: 'the last 30 days', 90: 'the last 90 days', 365: 'the last 12 months' }[d.days];
+    $('period').textContent = `Showing ${label}, compared with the ${d.days === 1 ? 'day' : d.days + ' days'} before.`;
+    $('pills').replaceChildren(el('span', { class: 'pill' }, el('b', {}, nf(d.kpi.ever)), ' Macs ever'), el('span', { class: 'pill' }, el('b', {}, nf(d.kpi.downloadsEver)), ' downloads ever'), el('span', { class: 'pill' }, el('b', {}, nf(d.kpi.activeToday)), ' active today'));
+    renderKpis(d); renderChart(d); renderFunnel(d); renderSources(d); renderRetention(d); renderBreakdown(d); renderFeatures(d); renderDownloads(d); renderWebsite(d);
+    ranked($('actions'), d.actions, { name: (r) => prettyAction(r.name), empty: 'No actions recorded yet' });
+    $('updated').textContent = 'Updated ' + new Date(d.generated).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+  function syncUrl() { const u = new URL(location.href); u.searchParams.set('days', state.days); u.searchParams.set('metric', state.metric); history.replaceState(null, '', u); }
+
+  async function load() {
+    $('main').classList.add('loading');
+    try {
+      const r = await fetch(`/v1/stats?key=${encodeURIComponent(key)}&days=${state.days}`, { cache: 'no-store' });
+      if (!r.ok) throw new Error(r.status === 404 ? 'The key in the address is wrong.' : 'The server answered ' + r.status);
+      state.data = await r.json(); $('err').classList.remove('on'); render();
+    } catch (e) { $('err').textContent = 'Couldn’t load the numbers: ' + e.message; $('err').classList.add('on'); }
+    $('main').classList.remove('loading');
+  }
+
+  $('range').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; state.days = +b.dataset.days; syncUrl(); load(); });
+  $('refresh').addEventListener('click', load);
+  $('compare').addEventListener('change', (e) => { state.compare = e.target.checked; renderChart(state.data); });
+  $('view').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; state.view = b.dataset.v; render(); });
+  let timer = null;
+  const setLive = (on) => { state.live = on; clearInterval(timer); if (on) timer = setInterval(load, 60000); render(); };
+  $('live').addEventListener('click', () => setLive(!state.live));
+  $('export').addEventListener('click', () => { if (!state.data) return; const a = el('a', { href: URL.createObjectURL(new Blob([JSON.stringify(state.data, null, 2)], { type: 'application/json' })), download: `monorail-stats-${state.days}d-${new Date().toISOString().slice(0, 10)}.json` }); document.body.append(a); a.click(); a.remove(); });
+  $('theme').addEventListener('click', () => {
+    const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('mr-stats-theme', document.documentElement.dataset.theme); } catch (e) {}
+    renderChart(state.data);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest && e.target.closest('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+    const r = { 1: 1, 2: 7, 3: 30, 4: 90, 5: 365 }[e.key];
+    if (r) { state.days = r; syncUrl(); load(); }
+    else if (e.key === 'r' || e.key === 'R') load();
+    else if (e.key === 'l' || e.key === 'L') setLive(!state.live);
+    else if (e.key === 'c' || e.key === 'C') { state.compare = !state.compare; render(); }
+  });
+  let rs; addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(() => state.data && renderChart(state.data), 120); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && state.live) load(); });
+  load();
+})();
+</script>
+</body>
+</html>

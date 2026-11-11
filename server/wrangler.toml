@@ -12,3 +12,9 @@ database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
 crons = ["41 7 * * 1"]
 
 # Set the dashboard key with: npx wrangler secret put STATS_KEY
+
+# The dashboard page is bundled into the worker as text.
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true

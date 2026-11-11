@@ -164,7 +164,7 @@ instead of your whole screen. Deep work hides distracting apps until you're done
 
 - **Coming from another window manager?** Settings → Basics → **Import Settings…** reads your AeroSpace, yabai and skhd, or Rectangle settings.
 - **AI coding agents.** Monorail hears when an AI coding assistant is waiting for your approval in a terminal, plays a chime and takes you there.
-- **Keeper.** Monorail and [Keeper](https://github.com/ashfordeOU/keeper) by Ashforde work together with nothing to set up. Monorail leaves Keeper's Island, widgets and panels where Keeper puts them, they share focus, presentation and Stay Awake, and only one of them keeps your Mac awake at a time. [How they work together](https://monorail.ashforde.org/keeper/).
+- **Keeper.** Monorail and [Keeper](https://github.com/ashfordeOU/keeper) by Ashforde work together with nothing to set up. Monorail leaves Keeper's Island, widgets and panels where Keeper puts them, they share focus, presentation and Stay Awake, and only one of them keeps your Mac awake at a time.
 - **Scripts and automation.** Every action has a `monorail://` link and a `monorail` command, and there's a local API, an MCP server for AI assistants, AppleScript and JavaScript scripts. See [Automation](#automation).
 
 Plus 27 themes, nine languages, Insights into how you work (kept on your Mac), and undo for every layout change with <kbd>⌃⌥Z</kbd>.
@@ -252,7 +252,7 @@ layouts. Hold <kbd>⌃⌥</kbd> for a moment to see them all.
 | Retile everything | <kbd>⌃⌥Esc</kbd> |
 | Pause or resume | <kbd>⌃⌥Q</kbd> |
 
-That's a selection. All 270 actions, and which have a key out of the box, are in
+That's a selection. All 300+ actions, and which have a key out of the box, are in
 [docs/ACTIONS.md](docs/ACTIONS.md), generated from the source. **Keyboard Shortcuts** in the menu
 bar lists every shortcut, and choosing one runs it.
 

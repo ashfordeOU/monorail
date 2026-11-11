@@ -5867,11 +5867,14 @@ final class Engine {
     /// The window under a point (accessibility coordinates).
     func window(at point: CGPoint) -> WindowID? { topWindow(at: point) }
 
-    /// Picks up newly known app quirks from the repository, once a launch.
-    private static func fetchQuirks() {
-        guard let url = URL(string: "https://raw.githubusercontent.com/ashfordeOU/monorail/main/quirks.json") else { return }
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            guard let data else { return }
+    /// Picks up newly known app quirks from the website (or the repository), once a launch.
+    private static func fetchQuirks(_ sources: [String] = ["https://monorail.ashforde.org/app/quirks.json",
+                                                           "https://raw.githubusercontent.com/ashfordeOU/monorail/main/quirks.json"]) {
+        guard let first = sources.first, let url = URL(string: first) else { return }
+        URLSession.shared.dataTask(with: url) { data, response, _ in
+            guard (response as? HTTPURLResponse)?.statusCode == 200, let data else {
+                return fetchQuirks(Array(sources.dropFirst()))
+            }
             DispatchQueue.main.async { Quirks.merge(data) }
         }.resume()
     }

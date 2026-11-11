@@ -149,7 +149,7 @@ extension ProblemReport {
     }
 }
 
-/// Ready-made scripts from the repository, installed with one click (Settings → Automation).
+/// Ready-made scripts from the website, installed with one click (Settings → Automation).
 final class ScriptGallery: ObservableObject {
     struct Entry: Codable, Identifiable, Hashable {
         var file: String
@@ -158,7 +158,7 @@ final class ScriptGallery: ObservableObject {
         var id: String { file }
     }
 
-    static let base = "https://raw.githubusercontent.com/ashfordeOU/monorail/main/extensions/scripts/"
+    static let base = "https://monorail.ashforde.org/app/scripts/"
     @Published var entries: [Entry] = []
     @Published var message = ""
 

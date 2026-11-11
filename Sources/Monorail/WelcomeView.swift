@@ -69,8 +69,9 @@ struct WelcomeView: View {
     }
 
     /// The extras offered: the ⌘Tab switcher needs the event tap, so not in the App Store edition.
+    /// The usage counts aren't asked about here; they're switched off in Settings.
     private var extras: [StarterExtra] {
-        StarterExtra.allCases.filter { !(Edition.isAppStore && $0 == .windowSwitcher) }
+        StarterExtra.allCases.filter { !(Edition.isAppStore && $0 == .windowSwitcher) && $0 != .usageCounts }
     }
 
     /// "Pick your extras": one line each, ticked to suit the starter setup chosen above.
@@ -91,8 +92,6 @@ struct WelcomeView: View {
                         }
                     }
                     .help("Set “Swipe between full-screen apps” to four fingers, so three belong to Monorail.")
-                    Button("What’s sent…") { SmartBridge.showUsagePayload() }
-                        .help("Exactly what the anonymous usage counts contain.")
                 }
                 .buttonStyle(.link).controlSize(.small)
                 if extra(.swipe).wrappedValue {
@@ -104,7 +103,7 @@ struct WelcomeView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(6)
         }
-        // The usage counts are explained here, so the separate notice isn't shown as well.
+        // Usage counts aren't asked about (they're in Settings and the privacy policy); mark the old notice as done.
         .onAppear { if !store.settings.usageNoticeShown { store.settings.usageNoticeShown = true } }
     }
 

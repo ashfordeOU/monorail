@@ -1479,16 +1479,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func startTelemetry() {
         telemetry.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         telemetry.usage = { [weak self] in self?.usage.stored }
+        // No prompt: the counts are anonymous and on by default, explained in the privacy policy, and
+        // switched off in Settings → Devices & Sharing → Trust (where "What's Sent…" shows them in full).
         telemetry.start()
-        guard !store.settings.usageNoticeShown, !safeMode, !UITest.isRequested else { return }
-        // A quiet moment after launch, and never on top of the welcome window.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 45) { [weak self] in
-            guard let self, self.store.settings.hasCompletedOnboarding, !self.store.settings.usageNoticeShown,
-                self.welcomeWindow?.isVisible != true
-            else { return }
-            Telemetry.showNotice(store: self.store) { [weak self] in self?.showUsagePayload() }
-            self.telemetry.sendIfDue()
-        }
     }
 
     /// Shows exactly what the daily usage counts contain.

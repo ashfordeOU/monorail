@@ -9,8 +9,12 @@ import MonorailCore
 /// Never sent: window titles, app names, file names, typed or spoken text, screen contents, the
 /// serial number or the Apple ID. The install ID is random and stays on this Mac (it isn't synced).
 final class Telemetry {
-    /// Where the endpoint is published, so the server can move without a new release.
-    static let endpointFile = "https://raw.githubusercontent.com/ashfordeOU/monorail/main/server/endpoint.txt"
+    /// Where the endpoint is published, so the server can move without a new release: the website
+    /// first, then the repository.
+    static let endpointFiles = ["https://monorail.ashforde.org/app/endpoint.txt",
+                                "https://raw.githubusercontent.com/ashfordeOU/monorail/main/server/endpoint.txt"]
+    /// Used when neither can be reached, so the counts never stop for a missing file.
+    static let defaultEndpoint = "https://monorail-stats.talkmeout.workers.dev/v1/heartbeat"
     private static let lastSentKey = "MonorailUsageCountsLastSent"
     private static let optOutKey = "MonorailNoUsageCounts"
 
@@ -35,7 +39,7 @@ final class Telemetry {
 
     var isAllowed: Bool {
         let s = settings()
-        return s.shareUsageStats && s.usageNoticeShown && !BundleIDs.bool(Self.optOutKey)
+        return s.shareUsageStats && !BundleIDs.bool(Self.optOutKey)
     }
 
     func start() {
@@ -73,16 +77,26 @@ final class Telemetry {
         {
             return done(URL(string: cached).flatMap { $0.scheme == "https" ? $0 : nil })
         }
-        guard let file = URL(string: endpointFile) else { return done(nil) }
-        URLSession.shared.dataTask(with: file) { data, response, _ in
-            var text = ""
-            if (response as? HTTPURLResponse)?.statusCode == 200, let data {
-                text = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-            DispatchQueue.main.async {
-                defaults.set(text, forKey: "MonorailUsageEndpoint")
-                defaults.set(Date().timeIntervalSince1970, forKey: "MonorailUsageEndpointAt")
-                done(URL(string: text).flatMap { $0.scheme == "https" ? $0 : nil })
+        lookUp(endpointFiles) { text in
+            // Keep the last good address (or the built-in one) if the file can't be read.
+            let found = text.flatMap { URL(string: $0) }.flatMap { $0.scheme == "https" ? $0 : nil }
+            let previous = defaults.string(forKey: "MonorailUsageEndpoint").flatMap { $0.isEmpty ? nil : $0 }
+            let chosen = found?.absoluteString ?? previous ?? defaultEndpoint
+            defaults.set(chosen, forKey: "MonorailUsageEndpoint")
+            defaults.set(Date().timeIntervalSince1970, forKey: "MonorailUsageEndpointAt")
+            done(URL(string: chosen).flatMap { $0.scheme == "https" ? $0 : nil })
+        }
+    }
+
+    /// Reads the first of these text files that answers, on the main queue.
+    private static func lookUp(_ files: [String], _ done: @escaping (String?) -> Void) {
+        guard let first = files.first, let url = URL(string: first) else { return DispatchQueue.main.async { done(nil) } }
+        URLSession.shared.dataTask(with: url) { data, response, _ in
+            let text = data.map { String(decoding: $0, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines) } ?? ""
+            if (response as? HTTPURLResponse)?.statusCode == 200, !text.isEmpty {
+                DispatchQueue.main.async { done(text) }
+            } else {
+                lookUp(Array(files.dropFirst()), done)
             }
         }.resume()
     }

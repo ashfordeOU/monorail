@@ -5,7 +5,7 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "assets/**", "scripts/mirror-releases.py", "scripts/render-docs.py", "scripts/install.sh", "docs/IT.md", "docs/ACTIONS.md", "docs/SETTINGS.md", "docs/COMPATIBILITY.md", "SECURITY.md", "LICENSE", "TRADEMARKS.md", "scripts/perf-check.sh", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
+    paths: ["site/**", "assets/**", "scripts/mirror-releases.py", "scripts/render-docs.py", "scripts/install.sh", "server/endpoint.txt", "quirks.json", "extensions/scripts/**", "docs/IT.md", "docs/ACTIONS.md", "docs/SETTINGS.md", "docs/COMPATIBILITY.md", "SECURITY.md", "LICENSE", "TRADEMARKS.md", "scripts/perf-check.sh", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
   # Once a day as well, so the downloads on the site always match the newest release.
   schedule:
@@ -298,6 +298,11 @@ jobs:
           pip install --quiet markdown
           python3 scripts/render-docs.py public
           cp scripts/install.sh public/install.sh
+          # What the app reads from the site: where usage counts go, known app quirks and the script gallery.
+          mkdir -p public/app
+          cp server/endpoint.txt public/app/endpoint.txt
+          cp quirks.json public/app/quirks.json
+          cp -R extensions/scripts public/app/scripts
           cp scripts/perf-check.sh public/perf-check.sh
       - name: Copy the newest releases onto the site
         # Downloads and the app's update checks come from monorail.ashforde.org/releases/, so they
@@ -305,6 +310,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/mirror-releases.py public/releases
+      - name: Count visits and downloads on every page (count.js, no cookies)
+        run: |
+          find public -name '*.html' -print0 | while IFS= read -r -d '' f; do
+            grep -q 'count.js' "$f" || sed -i 's#</body>#<script src="/count.js" defer></script>\n</body>#' "$f"
+          done
       - uses: actions/configure-pages@v5
         with:
           # Turns Pages on (source: GitHub Actions) the first time, if the token is allowed to.

@@ -24,6 +24,14 @@ URL="$(curl -fsSL "https://monorail.ashforde.org/releases/latest.json" \
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 echo "==> Downloading ${URL##*/}"
+# One anonymous "+1 install-script download" for Monorail's download counts (no IP address is kept).
+# Skip it with MONORAIL_NO_COUNT=1.
+if [ -z "${MONORAIL_NO_COUNT:-}" ]; then
+    VERSION="$(printf '%s' "${URL##*/}" | sed -E 's/^Monorail-(.*)\.zip$/\1/')"
+    curl -fsS -m 5 -X POST -H 'Content-Type: text/plain' \
+        -d "{\"kind\":\"download\",\"name\":\"install-script\",\"detail\":\"${VERSION}\",\"ref\":\"terminal\"}" \
+        https://monorail-stats.talkmeout.workers.dev/v1/count >/dev/null 2>&1 || true
+fi
 curl -fsSL "$URL" -o "$TMP/Monorail.zip"
 ditto -x -k "$TMP/Monorail.zip" "$TMP"
 

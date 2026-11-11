@@ -1,4 +1,5 @@
 // Monorail usage counts: POST /v1/heartbeat stores one row per install per day,
+// POST /v1/count adds one to a day's download or site-visit count,
 // GET /v1/stats?key=… returns totals, GET /dashboard?key=… shows them.
 // The client's IP address is never stored; only Cloudflare's country code is kept.
 
@@ -9,6 +10,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (request.method === "POST" && url.pathname === "/v1/heartbeat") return heartbeat(request, env);
+    if (url.pathname === "/v1/count") {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+      if (request.method === "POST") return count(request, env);
+    }
     if (request.method === "GET" && (url.pathname === "/v1/stats" || url.pathname === "/dashboard")) {
       if (!env.STATS_KEY || url.searchParams.get("key") !== env.STATS_KEY) return new Response("Not found", { status: 404 });
       const stats = await summary(env);
@@ -18,6 +23,34 @@ export default {
     return new Response("Monorail stats", { status: 200 });
   },
 };
+
+const CORS = { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, OPTIONS", "access-control-allow-headers": "content-type" };
+const DOWNLOADS = new Set(["mac-dmg", "mac-pkg", "mac-zip", "windows-beta", "gnome-beta", "install-script"]);
+
+// One more download or page visit for today. Sent by the website (a beacon, no cookies) and the
+// install script. Only the day, the file or page, the version, where the visitor came from
+// (a site name such as producthunt) and Cloudflare's country code are kept.
+async function count(request, env) {
+  let b;
+  try {
+    if (Number(request.headers.get("content-length") || 0) > 2048) throw 0;
+    b = JSON.parse(await request.text());
+  } catch {
+    return new Response("Bad request", { status: 400, headers: CORS });
+  }
+  const kind = b.kind === "download" || b.kind === "visit" ? b.kind : null;
+  const name = str(b.name, 60);
+  if (!kind || !name || (kind === "download" && !DOWNLOADS.has(name)) || (kind === "visit" && !/^\/[a-z0-9\/._-]*$/.test(name)))
+    return new Response("Bad request", { status: 400, headers: CORS });
+  const detail = kind === "download" && typeof b.detail === "string" && /^[0-9a-z.+-]{1,20}$/.test(b.detail) ? b.detail : "";
+  const ref = typeof b.ref === "string" && /^[a-z0-9.-]{1,40}$/.test(b.ref) ? b.ref : "direct";
+  const day = new Date().toISOString().slice(0, 10);
+  await env.DB.prepare(
+    `INSERT INTO counts (day, kind, name, detail, ref, country, n) VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1)
+     ON CONFLICT (day, kind, name, detail, ref, country) DO UPDATE SET n = n + 1`
+  ).bind(day, kind, name, detail, ref, str(request.cf?.country, 2) || "").run();
+  return new Response(null, { status: 204, headers: CORS });
+}
 
 async function heartbeat(request, env) {
   let b;
@@ -64,7 +97,22 @@ async function summary(env) {
     for (const [k, v] of Object.entries(JSON.parse(row.actions || "{}"))) actions[k] = (actions[k] || 0) + v;
   }
   const top = (o) => Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, 30).map(([name, n]) => ({ name, n }));
+  const sum = async (kind, days) => (await q(`SELECT coalesce(sum(n), 0) AS n FROM counts WHERE kind = '${kind}'${days ? ` AND ${since(days)}` : ""}`))[0].n;
+  const group = (kind, col, days = 30) => q(`SELECT ${col} AS name, sum(n) AS n FROM counts WHERE kind = '${kind}' AND ${since(days)} GROUP BY ${col} ORDER BY n DESC LIMIT 25`);
+  const [dlToday, dl7, dl30, dlEver, vToday, v7, v30] = await Promise.all([
+    q(`SELECT coalesce(sum(n), 0) AS n FROM counts WHERE kind = 'download' AND day = date('now')`).then((r) => r[0].n),
+    sum("download", 7), sum("download", 30), sum("download", 0),
+    q(`SELECT coalesce(sum(n), 0) AS n FROM counts WHERE kind = 'visit' AND day = date('now')`).then((r) => r[0].n),
+    sum("visit", 7), sum("visit", 30),
+  ]);
   return {
+    downloads: { today: dlToday, days7: dl7, days30: dl30, ever: dlEver,
+      daily: await q(`SELECT day, sum(n) AS n FROM counts WHERE kind = 'download' AND ${since(90)} GROUP BY day ORDER BY day`),
+      file: await group("download", "name"), version: await group("download", "detail"),
+      ref: await group("download", "ref"), country: await group("download", "country") },
+    visits: { today: vToday, days7: v7, days30: v30,
+      daily: await q(`SELECT day, sum(n) AS n FROM counts WHERE kind = 'visit' AND ${since(90)} GROUP BY day ORDER BY day`),
+      page: await group("visit", "name"), ref: await group("visit", "ref"), country: await group("visit", "country") },
     active: { today: today.n, days7: week.n, days30: month.n, ever: ever.n },
     daily: await q(`SELECT day, count(*) AS installs FROM heartbeats WHERE ${since(90)} GROUP BY day ORDER BY day`),
     version: await by("version"), macos: await by("macos"), model: await by("model"), chip: await by("chip"),
@@ -83,8 +131,20 @@ function dashboard(s) {
       return `<div class="row"><span>${esc(r.name)}</span><i style="width:${(n / max) * 100}%"></i><b>${n}</b></div>`;
     }).join("") || "<p>No data yet</p>"}</section>`;
   };
-  const max = Math.max(1, ...s.daily.map((d) => d.installs));
-  const bars = s.daily.map((d) => `<i title="${d.day}: ${d.installs}" style="height:${(d.installs / max) * 100}%"></i>`).join("");
+  const chart = (rows, key) => {
+    const m = Math.max(1, ...rows.map((d) => d[key]));
+    return `<div class="chart">${rows.map((d) => `<i title="${d.day}: ${d[key]}" style="height:${(d[key] / m) * 100}%"></i>`).join("")}</div>`;
+  };
+  const bars = chart(s.daily, "installs").slice('<div class="chart">'.length, -"</div>".length);
+  const d = s.downloads, v = s.visits;
+  const extra = `<h1 style="margin-top:28px">Downloads</h1>
+<div class="kpis"><div class="kpi"><b>${d.today}</b><span>Today</span></div><div class="kpi"><b>${d.days7}</b><span>Last 7 days</span></div>
+<div class="kpi"><b>${d.days30}</b><span>Last 30 days</span></div><div class="kpi"><b>${d.ever}</b><span>Ever</span></div></div>
+${chart(d.daily, "n")}<div class="grid">${table("File (30 days)", d.file)}${table("Version", d.version)}${table("Came from", d.ref)}${table("Country", d.country)}</div>
+<h1 style="margin-top:28px">Website visits</h1>
+<div class="kpis"><div class="kpi"><b>${v.today}</b><span>Today</span></div><div class="kpi"><b>${v.days7}</b><span>Last 7 days</span></div>
+<div class="kpi"><b>${v.days30}</b><span>Last 30 days</span></div></div>
+${chart(v.daily, "n")}<div class="grid">${table("Page (30 days)", v.page)}${table("Came from", v.ref)}${table("Country", v.country)}</div>`;
   return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Monorail stats</title>
 <style>
 :root{--bg:#FFF8F3;--card:#fff;--ink:#24112B;--muted:#7A5A70;--accent:#FF6B4A}
@@ -104,5 +164,6 @@ main{max-width:1100px;margin:auto}h1{margin:0 0 16px}.kpis{display:grid;grid-tem
 ${table("Version", s.version)}${table("macOS", s.macos)}${table("Mac model", s.model)}${table("Chip", s.chip)}
 ${table("Memory", s.memory)}${table("Displays", s.displays)}${table("Country", s.country)}${table("Language", s.language)}
 ${table("Installed from", s.source)}${table("Channel", s.channel)}${table("Settings changed from default", s.features)}${table("Most used actions (total)", s.actions)}
-</div><p style="color:var(--muted)">Breakdowns count each install once, using its latest report in the last 30 days.</p></main>`;
+</div><p style="color:var(--muted)">Breakdowns count each install once, using its latest report in the last 30 days.</p>
+${extra}<p style="color:var(--muted)">Downloads and visits are counted as they happen, with no cookies and no IP addresses; a visit is one page view.</p></main>`;
 }

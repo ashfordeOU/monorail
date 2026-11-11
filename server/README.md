@@ -33,6 +33,14 @@ It shows active installs today, over 7 and 30 days, and ever, with a 90-day char
 by version, macOS, Mac model, chip, memory, displays, country, language, install source, update
 channel, settings people change and the most used actions.
 
+## Downloads and website visits
+
+`POST /v1/count` adds one to a day's count of a download (`mac-dmg`, `mac-pkg`, `mac-zip`,
+`windows-beta`, `gnome-beta`, `install-script`, with the version) or a page view (the path), with the
+site the visitor came from and the country. The website sends these from `site/count.js` (no cookies,
+skipped for Do Not Track and Global Privacy Control) and `scripts/install.sh` sends one per install.
+They appear on the same dashboard under **Downloads** and **Website visits**.
+
 ## Retention
 
 To keep 13 months of data, run this monthly (for example from a Cron Trigger):

@@ -141,3 +141,43 @@ final class AgentSkillTests: XCTestCase {
         XCTAssertTrue(AgentSkill.markdown.hasPrefix("---\nname: monorail\n"))
     }
 }
+
+final class BatteryModelTests: XCTestCase {
+    func testTimeLeftAndWhatQuittingWouldSave() {
+        let state = BatteryState(percent: 44, isCharging: false, onBattery: true, watts: 6, remainingWattHours: 30)
+        XCTAssertEqual(state.minutesAtCurrentRate, 300)
+        XCTAssertEqual(state.minutesIfSaved(appWatts: 1), 360)
+        XCTAssertEqual(BatteryState.duration(352), "5 hr 52 min")
+        XCTAssertEqual(BatteryState.duration(38), "38 min")
+        XCTAssertEqual(BatteryState.duration(nil), "—")
+        let plugged = BatteryState(percent: 80, isCharging: true, onBattery: false, watts: 6, remainingWattHours: 30)
+        XCTAssertNil(plugged.minutesAtCurrentRate)
+    }
+
+    func testMacOSFigureWinsWhenItHasOne() {
+        let state = BatteryState(percent: 50, isCharging: false, onBattery: true, minutesLeft: 200, watts: 6, remainingWattHours: 30)
+        XCTAssertEqual(state.minutesAtCurrentRate, 200)
+    }
+
+    func testHistoryKeepsADayAndSkipsRepeats() {
+        let now = Date()
+        var points: [BatteryPoint] = [BatteryPoint(time: now.addingTimeInterval(-90_000), percent: 90, charging: false)]
+        points = BatteryHistory.adding(BatteryPoint(time: now.addingTimeInterval(-600), percent: 50, charging: false), to: points)
+        XCTAssertEqual(points.count, 1, "the 25-hour-old point is dropped")
+        points = BatteryHistory.adding(BatteryPoint(time: now.addingTimeInterval(-500), percent: 50, charging: false), to: points)
+        XCTAssertEqual(points.count, 1, "same reading a moment later is skipped")
+        points = BatteryHistory.adding(BatteryPoint(time: now, percent: 49, charging: false), to: points)
+        XCTAssertEqual(points.count, 2)
+        let split = BatteryHistory.segments([BatteryPoint(time: now, percent: 1, charging: false),
+                                             BatteryPoint(time: now.addingTimeInterval(300), percent: 1, charging: false),
+                                             BatteryPoint(time: now.addingTimeInterval(9000), percent: 1, charging: false)])
+        XCTAssertEqual(split.map(\.count), [2, 1])
+    }
+
+    func testRecognisesAgents() {
+        XCTAssertEqual(AgentProcesses.agent(processName: "claude"), "Claude Code")
+        XCTAssertEqual(AgentProcesses.agent(processName: "node", arguments: ["node", "/usr/local/lib/node_modules/@anthropic-ai/claude-code/cli.js"]), "Claude Code")
+        XCTAssertEqual(AgentProcesses.agent(processName: "codex"), "Codex")
+        XCTAssertNil(AgentProcesses.agent(processName: "node", arguments: ["node", "server.js"]))
+    }
+}

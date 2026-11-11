@@ -1155,17 +1155,15 @@ private struct SliderPopoverView: View {
                 .popover(isPresented: $showsThemes, arrowEdge: .bottom) {
                     ThemeQuickPicker(store: store)
                 }
-                if store.settings.powerMarkers {
-                    Button { showsPower.toggle() } label: {
-                        let hot = !power.hungry.isEmpty
-                        Image(systemName: hot ? "bolt.fill" : "bolt")
-                            .foregroundStyle(hot ? Color.orange : Color.primary)
-                            .accessibilityLabel(Text(hot ? "Battery: \(power.hungry.count) apps using a lot" : "Battery use"))
-                    }
-                    .help(power.onBattery ? "Which apps are using the most battery" : "Battery use (measured while on battery)")
-                    .popover(isPresented: $showsPower, arrowEdge: .bottom) {
-                        PowerQuickControls(store: store, power: power, openSettings: more.openPowerSettings)
-                    }
+                Button { showsPower.toggle() } label: {
+                    let hot = !power.hungry.isEmpty
+                    Image(systemName: hot ? "bolt.fill" : "bolt")
+                        .foregroundStyle(hot ? Color.orange : Color.primary)
+                        .accessibilityLabel(Text(hot ? "Battery: \(power.hungry.count) apps using a lot" : "Battery"))
+                }
+                .help(power.onBattery ? "Battery: which apps use the most" : "Battery")
+                .popover(isPresented: $showsPower, arrowEdge: .bottom) {
+                    BatteryPanel(store: store, openSettings: more.openPowerSettings)
                 }
                 Button { showsAwake.toggle() } label: {
                     let on = awake.isOn()
@@ -1250,7 +1248,7 @@ private struct QuickRow: View {
 
     private var chips: some View {
         HStack(spacing: 6) {
-            if store.settings.powerMarkers, power.onBattery {
+            if power.onBattery {
                 chip(batteryText, systemImage: batteryIcon, tint: power.hungry.isEmpty ? nil : .orange) { showsPower = true }
                     .help("Which apps are using the most battery")
             }
@@ -1329,63 +1327,6 @@ private struct QuickRow: View {
     }
 }
 
-/// ⚡ in the popover: the apps using the most battery, with Hide and Quit.
-private struct PowerQuickControls: View {
-    @ObservedObject var store: SettingsStore
-    @ObservedObject var power: PowerWatch
-    let openSettings: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("Battery use").font(.headline)
-                Spacer()
-                if let level = power.batteryPercent, power.onBattery {
-                    Text("\(level)% left").font(.caption).foregroundStyle(.secondary)
-                }
-            }
-            if !power.onBattery {
-                Text("Plugged in. Monorail measures which apps use the most power while your Mac runs on its battery.")
-                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            } else if power.uses.isEmpty {
-                Text("Measuring… check again in a minute.").font(.callout).foregroundStyle(.secondary)
-            } else {
-                ForEach(power.uses.prefix(6)) { use in
-                    HStack(spacing: 8) {
-                        if let icon = NSRunningApplication.runningApplications(withBundleIdentifier: use.bundleID).first?.icon {
-                            Image(nsImage: icon).resizable().frame(width: 18, height: 18)
-                        }
-                        VStack(alignment: .leading, spacing: 1) {
-                            HStack(spacing: 4) {
-                                Text(use.appName).lineLimit(1)
-                                if use.isHungry { Image(systemName: "bolt.fill").foregroundStyle(.orange).font(.caption2) }
-                            }
-                            Text(use.summary).font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Button("Hide") { power.hide(use.bundleID) }
-                        Button("Quit") { power.quit(use.bundleID) }
-                    }
-                    .buttonStyle(.bordered).controlSize(.small)
-                }
-            }
-            if !power.parked.isEmpty {
-                Button("Show the \(power.parked.count) apps hidden to save battery") { power.showParked() }
-                    .buttonStyle(.link)
-            }
-            Divider()
-            Toggle("Mark power-hungry windows with ⚡", isOn: $store.settings.powerMarkers)
-            Toggle("On battery, hide hungry apps left alone for an hour", isOn: $store.settings.parkPowerHogs)
-                .help("They're hidden, never quit, and come back when you plug in")
-            Text("Estimates from the processor time and energy macOS counts for each app and its helpers. Quit asks the app to quit, as ⌘Q does.")
-                .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            Button("More battery settings…", action: openSettings).buttonStyle(.link)
-        }
-        .toggleStyle(.switch)
-        .padding(14)
-        .frame(width: 330)
-    }
-}
 
 /// Evening Mode from the slider popover: on or off, how warm, when, and red light, without opening Settings.
 private struct EveningQuickControls: View {

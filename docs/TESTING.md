@@ -67,6 +67,9 @@ the Product Hunt launch). It takes about 30 minutes. Note anything that's off an
 ## 6b. New in 1.7.29
 
 - [ ] Unplug, open Chrome with a few busy tabs, wait two minutes: ⚡ in the slider popover turns orange and lists Chrome; its windows show ⚡ in the overview (⌃⌥O). Right-click a window there → Hide This App works.
+- [ ] Battery panel (⚡ in the popover, or Settings → Apps → show the battery in the menu bar): charge, time left and watts match System Settings → Battery roughly; the history line fills in over an hour; Low Power Mode switches (asks for your password).
+- [ ] Pause an app from the panel: it stops using the processor (Activity Monitor), shows under “Resting”; click its Dock icon or plug in and it wakes. Quit Monorail while an app is paused: the app wakes.
+- [ ] Run `claude` or `codex` in Terminal: it appears under AI agents. `monorail battery` prints the same figures as JSON.
 - [ ] Settings → Apps → turn on hiding power-hungry apps; leave a busy app untouched for an hour on battery: it's hidden with a notice; plug in and it comes back.
 - [ ] The popover's row under the slides: Layouts applies a saved layout, Focus toggles focus mode, and the battery chip opens ⚡.
 - [ ] Turn on Stage Manager: Monorail pauses with a notice and the popover shows “Paused for Stage Manager”; turn it off and tiling carries on.

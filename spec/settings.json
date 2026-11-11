@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 229,
+  "count": 230,
   "settings": [
     {
       "key": "layout",
@@ -661,6 +661,12 @@
       "type": "Bool",
       "default": "false",
       "about": "On battery, hide (never quit) power-hungry apps left alone for an hour; they come back when plugged in."
+    },
+    {
+      "key": "batteryMenuBar",
+      "type": "Bool",
+      "default": "false",
+      "about": "A battery item in the menu bar (charge or time left), opening the battery panel."
     },
     {
       "key": "focusFlash",

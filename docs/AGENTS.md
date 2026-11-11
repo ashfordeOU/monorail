@@ -49,6 +49,8 @@ for an hour while the build runs.”
 | Move a window to a workspace | | `POST /move` | `move_window` |
 | Apply a saved layout | `monorail layout Coding` | `POST /layout` | `apply_layout` |
 | Keep the Mac awake | `monorail awake 60` | | `stay_awake` |
+| Battery and the apps using it | `monorail battery` | `GET /battery` | `battery_status` |
+| Hide, pause or quit a hungry app | | `POST /battery` | `save_battery` |
 
 Every action is listed in [the actions reference](ACTIONS.md).
 

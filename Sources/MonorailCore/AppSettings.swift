@@ -745,6 +745,8 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var powerMarkers = true
     /// On battery, hide (never quit) power-hungry apps left alone for an hour; they come back when plugged in.
     public var parkPowerHogs = false
+    /// A battery item in the menu bar (charge or time left), opening the battery panel.
+    public var batteryMenuBar = false
     /// A quick highlight of the focused window when focus moves by keyboard.
     public var focusFlash = false
     /// The slider bar's opacity and size (0.8, 1 or 1.25).
@@ -1140,7 +1142,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
-        case assistantProvider, assistantModels, assistantBaseURL
+        case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar
     }
 
     public init(from decoder: Decoder) throws {
@@ -1382,6 +1384,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         assistantProvider = value(.assistantProvider, d.assistantProvider)
         assistantModels = value(.assistantModels, d.assistantModels)
         assistantBaseURL = value(.assistantBaseURL, d.assistantBaseURL)
+        batteryMenuBar = value(.batteryMenuBar, d.batteryMenuBar)
         // Settings from before 1.1 get the narrow menu bar once.
         compactMenuBarApplied = (try? c.decodeIfPresent(Bool.self, forKey: .compactMenuBarApplied)) ?? false
         if !compactMenuBarApplied {

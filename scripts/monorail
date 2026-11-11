@@ -2,7 +2,7 @@
 # Command-line control for Monorail by Ashforde®.
 #   monorail <action>                 run any action (focus-left, overview, …)
 #   monorail layout|pair|template|snapshot|focus-app|notify|awake <name>
-#   monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
+#   monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights|battery
 #   monorail say "<sentence>"           do what a sentence asks ("Slack and Mail side by side")
 #   monorail subscribe                 follow live events (one JSON object per line)
 # Queries need the local API (Settings → Automation → Local API) and print JSON.
@@ -12,7 +12,7 @@ usage() {
     cat <<'USAGE'
 Usage: monorail <action>
        monorail layout|pair|template|snapshot|focus-app|notify|awake <name>
-       monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights
+       monorail windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights|battery
        monorail say "Slack and Mail side by side on 2"
        monorail subscribe    live events: state, action, agent_waiting, window_closed (JSON lines)
 
@@ -61,7 +61,7 @@ case "$1" in
         sock="$HOME/Library/Application Support/Monorail/events.sock"
         [ -S "$sock" ] || { echo "monorail: Monorail isn't running" >&2; exit 69; }
         exec nc -U "$sock" ;;
-    windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights)
+    windows|state|workspaces|layouts|pairs|templates|snapshots|actions|history|insights|battery)
         api "$1" ;;
     say)
         [ $# -ge 2 ] || { usage; exit 64; }

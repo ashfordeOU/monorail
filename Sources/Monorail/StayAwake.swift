@@ -421,7 +421,7 @@ final class StayAwake {
         runAsAdministrator("/usr/bin/pmset -a disablesleep \(on ? 1 : 0)", completion: completion)
     }
 
-    private static func runAsAdministrator(_ command: String, completion: @escaping (Bool) -> Void) {
+    static func runAsAdministrator(_ command: String, completion: @escaping (Bool) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             let escaped = command.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
             let script = "do shell script \"\(escaped)\" with administrator privileges"

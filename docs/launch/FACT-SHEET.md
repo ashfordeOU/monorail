@@ -36,7 +36,7 @@ Monorail is native Swift, free with no paid tier.
 - **Say it:** a command palette that understands sentences, processed on the Mac.
 - **AI agent alerts:** a chime when your AI coding assistant needs you.
 - **Switch in a minute:** imports AeroSpace, yabai/skhd and Rectangle configurations.
-- **Battery:** ⚡ marks windows of apps draining the battery, with Hide and Quit one click away.
+- **Battery manager built in:** charge, time left, watts, history and health; every app and AI agent by battery use, with Quit, Pause or Hide; ⚡ marks hungry windows.
 - **Every kind of display:** portrait monitors stack windows, screen edges can be kept clear, and Stage Manager pauses it.
 - **27 themes**, safe screen sharing, presentation tools and a scripting API.
 

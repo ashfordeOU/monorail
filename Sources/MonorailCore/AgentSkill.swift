@@ -61,6 +61,15 @@ $M layout "Coding"      # apply a saved layout; also: pair, template, snapshot, 
 $M awake 60             # keep the Mac awake for 60 minutes; awake off ends it
 ```
 
+## Battery
+
+```sh
+$M battery     # charge, watts, time left, health, and the apps and AI agents using the most power
+```
+
+To save battery, POST `/battery` with `{"app": "Google Chrome", "do": "hide"}` (also `pause`, `resume`,
+or `quit`, which the person confirms). Pausing freezes an app until it's opened or the Mac is plugged in.
+
 ## Over HTTP or MCP
 
 The same things are at `http://127.0.0.1:<port>`; the port is in
@@ -76,8 +85,8 @@ POST JSON to `/say` (`{"text": "..."}`), `/action` (`{"action": "focus-left"}`),
 `/move` (`{"id": 12, "workspace": 2}`) or `/pair` (`{"ids": [12, 15], "layout": "columns"}`).
 
 MCP clients can run `/Applications/Monorail.app/Contents/MacOS/Monorail --mcp` instead; its tools
-include `get_state`, `list_windows`, `say`, `perform_action`, `pair_windows`, `move_window` and
-`apply_layout`.
+include `get_state`, `list_windows`, `say`, `perform_action`, `pair_windows`, `move_window`,
+`apply_layout`, `battery_status` and `save_battery`.
 
 ## Be careful
 

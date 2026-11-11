@@ -115,6 +115,7 @@ public static class SettingKeys
     public const string AppAppearance = "appAppearance";
     public const string PowerMarkers = "powerMarkers";
     public const string ParkPowerHogs = "parkPowerHogs";
+    public const string BatteryMenuBar = "batteryMenuBar";
     public const string FocusFlash = "focusFlash";
     public const string SliderOpacity = "sliderOpacity";
     public const string SliderScale = "sliderScale";
@@ -401,6 +402,8 @@ public static class SettingDefaults
     public const bool PowerMarkers = true;
     /// <summary>On battery, hide (never quit) power-hungry apps left alone for an hour; they come back when plugged in.</summary>
     public const bool ParkPowerHogs = false;
+    /// <summary>A battery item in the menu bar (charge or time left), opening the battery panel.</summary>
+    public const bool BatteryMenuBar = false;
     /// <summary>A quick highlight of the focused window when focus moves by keyboard.</summary>
     public const bool FocusFlash = false;
     /// <summary>The slider bar's opacity and size (0.8, 1 or 1.25).</summary>

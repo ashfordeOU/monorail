@@ -11,7 +11,15 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **`monorail say "…"`** does what a sentence asks from the command line: “Slack and Mail side by side on 2”.
 - **Choose the assistant's provider.** Besides Anthropic (Claude): OpenAI, Google Gemini, xAI (Grok), OpenRouter, a model in Ollama on this Mac (nothing leaves the Mac, and Settings lists the installed models), or any OpenAI-compatible server such as LM Studio. Each key is kept in your Keychain.
 - **See what's draining your battery, right on the window.** On battery, the windows of apps using the most power get a small ⚡ in the overview and the window switcher; hover it for an estimate like “about 6% of the battery an hour”, and right-click to hide or quit the app. Measured once a minute and only on battery, counting each app's helper processes too. Estimates in battery per hour need an Apple silicon Mac; Intel Macs show how busy the app is.
-- **⚡ in the slider popover** lists the apps using the most battery, with Hide and Quit (Quit asks the app to quit, as ⌘Q does, so it can still ask to save). It turns orange when an app is using a lot.
+- **A full battery panel**, from ⚡ in the slider popover or its own menu bar item (turn on “Show the battery in the menu bar”):
+  - Charge, time left at the current rate, and the watts the whole Mac draws right now.
+  - Low Power Mode on or off in one click.
+  - A day of battery history, pink on battery and green while charging, with battery health and charge cycles.
+  - **Needs your attention:** the app using the most, with Quit, Pause, Hide or Keep, and what quitting gives you back (“If you quit: 5 hr 52 min → 5 hr 58 min”).
+  - Every app with its watts, battery per hour, processor share and number of processes, Top or All, with search (⌘F).
+  - **AI agents** running on the Mac (Claude Code, Codex, Gemini CLI, Aider, Ollama and more), even inside a terminal or editor.
+  - **Pause** freezes a power-hungry app (and its helpers) without losing anything; it wakes when you open it, plug in, or quit Monorail.
+- **Battery for AI agents.** `monorail battery`, `GET /battery` and the MCP tools `battery_status` and `save_battery` give assistants the same figures, and let them hide, pause or (with your OK) quit the hungriest apps.
 - **Park power-hungry apps on battery** (off unless you turn it on): apps using a lot of power that you haven't touched for an hour are hidden, never quit, and come back when you plug in.
 - **More in the slider popover.** A row under the slides shows your battery level and its biggest user, applies a saved layout or restores a snapshot, turns focus mode on or off, and tells you about shortcut clashes or a pause for Stage Manager, each one click away.
 - **Shortcut clash check.** Settings → Shortcuts lists any Monorail shortcut that macOS also uses (Mission Control, Spotlight, screenshots, input sources, switching desktops and more), says what uses it, and swaps it for a free combination in one click. **Change in macOS…** opens the Mac's own shortcut settings instead.

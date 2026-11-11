@@ -189,6 +189,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         stats.save()
+        // Nothing stays frozen after Monorail quits.
+        PowerWatch.shared.resumeAll()
         // Give Caps Lock back to macOS while Monorail isn't running.
         if store.settings.capsLockKey { CapsLockKey.set(false) }
         sliderBar.hideAll(animated: false)
@@ -643,6 +645,60 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in self?.checkNotch() }
         watchDormancy()
         wireUpAwake()
+    }
+
+    // MARK: Battery in the menu bar
+
+    private var batteryItem: NSStatusItem?
+    private var batteryPopover: NSPopover?
+    private var batteryWatch: AnyCancellable?
+
+    private func updateBatteryItem(_ on: Bool) {
+        guard on else {
+            if let item = batteryItem { NSStatusBar.system.removeStatusItem(item) }
+            batteryItem = nil
+            batteryWatch = nil
+            return
+        }
+        guard batteryItem == nil else { return }
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        item.button?.target = self
+        item.button?.action = #selector(toggleBatteryPanel)
+        item.button?.toolTip = "Battery: charge, time left and which apps use it"
+        batteryItem = item
+        refreshBatteryItem()
+        batteryWatch = PowerWatch.shared.objectWillChange.sink { [weak self] _ in
+            DispatchQueue.main.async { self?.refreshBatteryItem() }
+        }
+    }
+
+    private func refreshBatteryItem() {
+        guard let button = batteryItem?.button else { return }
+        let power = PowerWatch.shared
+        let hot = !power.hungry.isEmpty
+        button.image = NSImage(systemSymbolName: hot ? "bolt.fill" : (power.battery.isCharging ? "battery.100.bolt" : "bolt"),
+                               accessibilityDescription: "Battery")
+        button.imagePosition = .imageLeading
+        var title = " \(power.battery.percent)%"
+        if power.battery.onBattery, let minutes = power.battery.minutesAtCurrentRate { title += " · \(BatteryState.duration(minutes))" }
+        button.title = title
+        button.contentTintColor = hot ? .systemOrange : nil
+    }
+
+    @objc private func toggleBatteryPanel() {
+        if let popover = batteryPopover, popover.isShown {
+            popover.performClose(nil)
+            return
+        }
+        let popover = NSPopover()
+        popover.behavior = .transient
+        popover.contentViewController = NSHostingController(rootView: BatteryPanel(store: store, openSettings: { [weak self] in
+            self?.batteryPopover?.performClose(nil)
+            self?.navigation.tab = .apps
+            self?.showSettings()
+        }))
+        batteryPopover = popover
+        if let button = batteryItem?.button { popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY) }
     }
 
     // MARK: Stage Manager
@@ -2081,7 +2137,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         if settings.pauseForStageManager != (stageManagerTimer != nil) { watchStageManager() }
         PowerWatch.shared.parkOnBattery = settings.parkPowerHogs
-        PowerWatch.shared.isEnabled = settings.powerMarkers
+        PowerWatch.shared.showMarkers = settings.powerMarkers
+        PowerWatch.shared.isEnabled = true
+        updateBatteryItem(settings.batteryMenuBar)
         evening.update()
         WorkspaceColor.theme = settings.theme
         stats.isEnabled = settings.collectStats
@@ -2787,6 +2845,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return ["json": engine.layoutJSON() ?? ""]
         case ("POST", "say"):
             return ["ok": say(text("text") ?? "")]
+        case ("GET", "battery"):
+            PowerWatch.shared.refreshIfStale()
+            return PowerWatch.shared.report()
+        case ("POST", "battery"):
+            guard let app = text("app") else { return ["error": "Needs app (a bundle ID or name)"] }
+            let power = PowerWatch.shared
+            let id = power.apps.first { $0.id == app || $0.use.appName.caseInsensitiveCompare(app) == .orderedSame }?.id ?? app
+            switch text("do") ?? "" {
+            case "hide": power.hide(id)
+            case "pause":
+                guard power.canPause(id) else { return ["ok": false, "error": "That app can't be paused"] }
+                power.pause(id)
+            case "resume": power.resume(id)
+            case "quit":
+                let alert = NSAlert()
+                alert.messageText = "Quit \(PowerWatch.appName(id) ?? id)?"
+                alert.informativeText = "An assistant asked to quit it to save battery. It can still ask you to save your work."
+                alert.addButton(withTitle: "Quit")
+                alert.addButton(withTitle: "Cancel")
+                guard alert.runModal() == .alertFirstButtonReturn else { return ["ok": false, "error": "Declined"] }
+                power.quit(id)
+            default: return ["error": "do: hide, pause, resume or quit"]
+            }
+            return ["ok": true]
         case ("GET", "awake"):
             return ["on": awake.isOn, "status": awake.statusText]
         case ("POST", "awake"):

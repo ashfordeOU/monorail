@@ -891,6 +891,21 @@ final class SliderPopover {
         /// Whether Evening Mode is warming the screen now (by hand or on its schedule).
         var isEveningOn: () -> Bool = { false }
         var openEveningSettings: () -> Void = {}
+        var awake = AwakeControls()
+    }
+
+    /// Stay Awake from the popover: the same as its menu, without opening Settings.
+    struct AwakeControls {
+        var isOn: () -> Bool = { false }
+        var status: () -> String = { "Off" }
+        /// Minutes, or 0 for until it's ended.
+        var start: (Int) -> Void = { _ in }
+        var startWhileDownloading: () -> Void = {}
+        var end: () -> Void = {}
+        var toggleKeepAvailable: () -> Void = {}
+        var toggleClosedLid: () -> Void = {}
+        var refresh: () -> Void = {}
+        var openSettings: () -> Void = {}
     }
 
     var mapProvider: () -> Engine.MiniMap? = { nil }
@@ -995,6 +1010,12 @@ final class SliderPopover {
         let view = SliderPopoverView(
             model: model, paused: paused, updater: updater ?? Updater(), store: store ?? SettingsStore(), actions: wrapped,
             isEveningOn: controls.isEveningOn,
+            awake: {
+                var awake = controls.awake
+                let open = awake.openSettings
+                awake.openSettings = { close(); open() }
+                return awake
+            }(),
             openEveningSettings: {
                 close()
                 controls.openEveningSettings()
@@ -1060,11 +1081,15 @@ private struct SliderPopoverView: View {
     @ObservedObject var store: SettingsStore
     let actions: SliderBarController.Actions
     let isEveningOn: () -> Bool
+    let awake: SliderPopover.AwakeControls
     let openEveningSettings: () -> Void
     let resetPairs: () -> Void
     let togglePause: () -> Void
     let openSettings: () -> Void
     @State private var showsEvening = false
+    @State private var showsAwake = false
+    @State private var showsThemes = false
+    @State private var awakeTick = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -1089,6 +1114,24 @@ private struct SliderPopoverView: View {
                     .controlSize(.small)
                     .disabled(updater.isInstalling)
                     .help("Download, install and relaunch — your windows stay where they are")
+                }
+                Button { showsThemes.toggle() } label: {
+                    Image(systemName: "paintpalette").accessibilityLabel(Text("Theme: \(store.settings.theme.title)"))
+                }
+                .help("Theme: \(store.settings.theme.title)")
+                .popover(isPresented: $showsThemes, arrowEdge: .bottom) {
+                    ThemeQuickPicker(store: store)
+                }
+                Button { showsAwake.toggle() } label: {
+                    let on = awake.isOn()
+                    Image(systemName: on ? "cup.and.saucer.fill" : "cup.and.saucer")
+                        .foregroundStyle(on ? Color.orange : Color.primary)
+                        .accessibilityLabel(Text(on ? "Stay Awake, on" : "Stay Awake, off"))
+                        .id(awakeTick)
+                }
+                .help("Stay Awake: keep your Mac from sleeping")
+                .popover(isPresented: $showsAwake, arrowEdge: .bottom) {
+                    AwakeQuickControls(store: store, awake: awake, tick: $awakeTick)
                 }
                 Button { showsEvening.toggle() } label: {
                     let on = store.settings.eveningOn || isEveningOn()
@@ -1215,6 +1258,106 @@ private struct EveningQuickControls: View {
         case .scheduled: return onNow ? "On, for the schedule" : "Comes on with the schedule"
         case .sun: return onNow ? "On until sunrise" : "Comes on at sunset"
         }
+    }
+}
+
+/// Stay Awake from the slider popover: on or off, for how long, and its main options.
+private struct AwakeQuickControls: View {
+    @ObservedObject var store: SettingsStore
+    let awake: SliderPopover.AwakeControls
+    @Binding var tick: Int
+
+    /// Runs an action, then redraws once Stay Awake has settled.
+    private func run(_ action: () -> Void) {
+        action()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { tick += 1 }
+    }
+
+    var body: some View {
+        let on = awake.isOn()
+        VStack(alignment: .leading, spacing: 12) {
+            Toggle(isOn: Binding(get: { on }, set: { want in run { want ? awake.start(store.settings.awakeDefaultMinutes) : awake.end() } })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Stay Awake").font(.headline)
+                    Text(awake.status()).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                }
+            }
+            .toggleStyle(.switch)
+            .id(tick)
+
+            Text("Keep this Mac awake").font(.caption).foregroundStyle(.secondary)
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
+                ForEach([("15 min", 15), ("30 min", 30), ("1 hour", 60), ("2 hours", 120), ("4 hours", 240), ("8 hours", 480)], id: \.1) { item in
+                    Button(item.0) { run { awake.start(item.1) } }.frame(maxWidth: .infinity)
+                }
+            }
+            .buttonStyle(.bordered).controlSize(.small)
+            HStack(spacing: 6) {
+                Button("Until I end it") { run { awake.start(0) } }
+                Button("While downloading") { run { awake.startWhileDownloading() } }
+            }
+            .buttonStyle(.bordered).controlSize(.small)
+
+            Divider()
+            Toggle("Keep the display on", isOn: Binding(get: { store.settings.awakeKeepDisplayOn },
+                                                        set: { v in store.settings.awakeKeepDisplayOn = v; awake.refresh() }))
+            Toggle("Keep me Available in Teams and Slack", isOn: Binding(get: { store.settings.keepAvailable },
+                                                                         set: { _ in run { awake.toggleKeepAvailable() } }))
+            if !Edition.isAppStore {
+                Toggle("Keep running with the lid closed", isOn: Binding(get: { store.settings.awakeClosedLid },
+                                                                       set: { _ in run { awake.toggleClosedLid() } }))
+                    .help("Only while plugged in, and it stops if the Mac gets hot")
+            }
+
+            Divider()
+            Button("More Stay Awake settings…", action: awake.openSettings)
+                .buttonStyle(.link)
+        }
+        .toggleStyle(.switch)
+        .padding(14)
+        .frame(width: 300)
+    }
+}
+
+/// Every theme, with its colours, one click to switch.
+private struct ThemeQuickPicker: View {
+    @ObservedObject var store: SettingsStore
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Theme").font(.headline)
+                Spacer()
+                Text(store.settings.theme.title).font(.caption).foregroundStyle(.secondary)
+            }
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                    ForEach(Theme.allCases, id: \.self) { theme in
+                        let selected = store.settings.theme == theme
+                        Button { store.settings.theme = theme } label: {
+                            VStack(spacing: 4) {
+                                HStack(spacing: 2) {
+                                    ForEach(Array(WorkspaceColor.palette(theme).prefix(4).enumerated()), id: \.offset) { _, color in
+                                        RoundedRectangle(cornerRadius: 3).fill(color).frame(height: 18)
+                                    }
+                                }
+                                .padding(3)
+                                .background(RoundedRectangle(cornerRadius: 6).strokeBorder(selected ? Color.accentColor : Color.secondary.opacity(0.25),
+                                                                                             lineWidth: selected ? 2 : 1))
+                                Text(theme.title).font(.caption2).lineLimit(1)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(Text(theme.title))
+                        .accessibilityAddTraits(selected ? .isSelected : [])
+                    }
+                }
+            }
+            .frame(maxHeight: 300)
+        }
+        .padding(14)
+        .frame(width: 320)
     }
 }
 

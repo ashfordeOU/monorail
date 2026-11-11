@@ -6,6 +6,10 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Stay Awake in the slider popover.** The cup button turns it on or off, keeps the Mac awake for 15 minutes to 8 hours, until you end it or while something downloads, and switches the display, Keep me Available and lid-closed options. It glows orange while your Mac is kept awake.
+- **Themes in the slider popover.** The palette button shows every theme with its colours; one click switches.
+
 ## [1.7.27] - 2026-11-11
 
 ### Changed

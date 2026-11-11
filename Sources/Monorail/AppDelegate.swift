@@ -299,7 +299,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             togglePause: { [weak self] in self?.engine.togglePause() },
             openSettings: { [weak self] in self?.showSettings() },
             isEveningOn: { [weak self] in self?.evening.isOn ?? false },
-            openEveningSettings: { [weak self] in self?.showEveningSettingsFromMenu() }
+            openEveningSettings: { [weak self] in self?.showEveningSettingsFromMenu() },
+            awake: SliderPopover.AwakeControls(
+                isOn: { [weak self] in self?.awake.isOn ?? false },
+                status: { [weak self] in self?.awake.statusText ?? "Off" },
+                start: { [weak self] minutes in self?.awake.start(minutes: minutes) },
+                startWhileDownloading: { [weak self] in self?.awake.start(.whileDownloading) },
+                end: { [weak self] in self?.awake.end() },
+                toggleKeepAvailable: { [weak self] in self?.toggleKeepAvailableFromMenu() },
+                toggleClosedLid: { [weak self] in self?.toggleAwakeLidFromMenu() },
+                refresh: { [weak self] in self?.awake.refresh() },
+                openSettings: { [weak self] in self?.showAwakeSettingsFromMenu() })
         )
         popover.store = store
         sliderBar.stepAside = { [weak self] frame in

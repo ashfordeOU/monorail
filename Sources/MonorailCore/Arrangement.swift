@@ -20,6 +20,16 @@ public enum Arrangement: String, Codable, CaseIterable, Sendable {
     /// right, down, left, up.
     case spiral
 
+    /// The same layout turned for a display taller than it is wide: side by side becomes
+    /// one above the other, and the main window moves to the top.
+    public var forPortrait: Arrangement {
+        switch self {
+        case .columns: return .stack
+        case .mainLeft: return .mainTop
+        default: return self
+        }
+    }
+
     /// The built-in layouts, for pickers (custom ones come from Settings).
     public static let standard: [Arrangement] = [.columns, .stack, .grid, .mainLeft, .mainTop, .spiral, .accordion]
 

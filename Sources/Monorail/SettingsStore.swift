@@ -331,15 +331,16 @@ struct SetupCheck: Identifiable {
                 state: running.isEmpty ? .ok : .warning
             ))
 
-        let stageManager = UserDefaults(suiteName: "com.apple.WindowManager")?.bool(forKey: "GloballyEnabled") ?? false
+        let stageManager = StageManagerCheck.isOn
+        let pauses = settings.pauseForStageManager
         checks.append(
             SetupCheck(
                 id: "stage-manager",
                 title: "Stage Manager",
-                detail: stageManager
-                    ? "Stage Manager is on and rearranges windows. Turn it off in Control Centre."
-                    : "Off.",
-                state: stageManager ? .warning : .ok,
+                detail: !stageManager ? "Off."
+                    : pauses ? "On. Monorail is paused until you turn it off in Control Centre."
+                    : "Stage Manager is on and rearranges windows. Turn it off in Control Centre.",
+                state: stageManager && !pauses ? .warning : .ok,
                 fixURL: stageManager ? URL(string: "x-apple.systempreferences:com.apple.Desktop-Settings.extension") : nil
             ))
 

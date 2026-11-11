@@ -379,7 +379,9 @@ enum ShortcutRunner {
 /// Stage Manager and Monorail both arrange windows; say so once if both are on.
 enum StageManagerCheck {
     static var isOn: Bool {
-        UserDefaults(suiteName: "com.apple.WindowManager")?.bool(forKey: "GloballyEnabled") ?? false
+        let domain = "com.apple.WindowManager" as CFString
+        CFPreferencesAppSynchronize(domain)
+        return (CFPreferencesCopyAppValue("GloballyEnabled" as CFString, domain) as? Bool) ?? false
     }
 }
 

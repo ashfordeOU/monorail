@@ -54,7 +54,7 @@ jobs:
           base=https://monorail.ashforde.org
           {
             printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-            for page in "" download/ changelog/ press/ support/ privacy/ docs/it/ docs/actions/ docs/settings/ docs/compatibility/ docs/security/ docs/licence/ docs/trademarks/; do printf '<url><loc>%s/%s</loc></url>' "$base" "$page"; done
+            for page in "" download/ changelog/ performance/ press/ support/ privacy/ docs/it/ docs/actions/ docs/settings/ docs/compatibility/ docs/security/ docs/licence/ docs/trademarks/; do printf '<url><loc>%s/%s</loc></url>' "$base" "$page"; done
             printf '</urlset>\n'
           } > public/sitemap.xml
           # The press kit: screenshots, icon, the docking GIF and the fact sheet, in one zip.

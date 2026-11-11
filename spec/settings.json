@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 219,
+  "count": 224,
   "settings": [
     {
       "key": "layout",
@@ -619,6 +619,36 @@
       "type": "Bool",
       "default": "false",
       "about": ""
+    },
+    {
+      "key": "pauseForStageManager",
+      "type": "Bool",
+      "default": "true",
+      "about": "Monorail pauses while Stage Manager is on and carries on when it's turned off."
+    },
+    {
+      "key": "portraitStacks",
+      "type": "Bool",
+      "default": "true",
+      "about": "On a display taller than it is wide, slides stack top to bottom and the main window goes on top."
+    },
+    {
+      "key": "restoreHidesOthers",
+      "type": "Bool",
+      "default": "false",
+      "about": "Restoring a saved layout or snapshot hides (never quits) the apps that aren't in it."
+    },
+    {
+      "key": "reservedEdges",
+      "type": "ReservedEdges",
+      "default": "ReservedEdges()",
+      "about": "Space kept clear at each screen edge for another app's bar or dock."
+    },
+    {
+      "key": "appAppearance",
+      "type": "AppAppearance",
+      "default": ".system",
+      "about": "Monorail's own windows in light or dark, or following the Mac."
     },
     {
       "key": "focusFlash",

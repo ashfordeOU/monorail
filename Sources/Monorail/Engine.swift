@@ -273,6 +273,7 @@ final class Engine {
         if settings.attentionMarkers != old.attentionMarkers { refreshAttention() }
         if settings.layout != old.layout || settings.keepHeights != old.keepHeights
             || settings.sliderBar != old.sliderBar || settings.sliderBarEdge != old.sliderBarEdge
+            || settings.reservedEdges != old.reservedEdges
         {
             for (key, var strip) in strips {
                 if let display = display(for: key) {
@@ -1994,7 +1995,7 @@ final class Engine {
     /// The area windows are laid out in: the display's visible frame, minus
     /// room for the slider bar when it is always shown.
     private func viewport(of display: Display) -> Rect {
-        var area = display.viewport
+        var area = settings.reservedEdges.inset(display.viewport)
         guard settings.sliderBar(for: display.uuid) == .always else { return area }
         let reserved = AppSettings.sliderBarHeight - (settings.compactSlider ? 12 : 0)
         area.height -= reserved
@@ -3474,6 +3475,7 @@ final class Engine {
         scheduleSave()
         onStateChange()
         onNotice(used.isEmpty ? "No open windows match “\(name)”" : "Applied layout “\(name)”")
+        if !used.isEmpty { hideApps(notIn: Set(used.compactMap { windows[$0]?.bundleID } + (saved.apps ?? []))) }
     }
 
     // MARK: - Marks
@@ -3947,6 +3949,7 @@ final class Engine {
         }
         onNotice(launched > 0 ? "Restoring “\(name)” · opening \(launched) apps…" : "Restoring “\(name)”")
         recordHistory()
+        hideApps(notIn: Set(snapshot.apps ?? []))
         for delay in launched > 0 ? [0.2, 3.0, 7.0, 12.0] : [0.05] {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
                 self?.sync()
@@ -4189,7 +4192,7 @@ final class Engine {
             let frame = AXUIElement.application(app.processIdentifier).focusedWindow?.frame,
             let display = display(containing: frame) ?? displays.first
         else { return nil }
-        return CGRect(position.frame(in: display.viewport, gap: layoutConfig(for: display).gap))
+        return CGRect(position.frame(in: settings.reservedEdges.inset(display.viewport), gap: layoutConfig(for: display).gap))
     }
 
     func snapFocused(_ position: SnapPosition) {
@@ -5395,7 +5398,25 @@ final class Engine {
     /// A slide's layout for a new window: the app's rule, then the workspace's, then the default.
     private func slideArrangement(for window: ManagedWindow, in key: StripKey) -> Arrangement {
         if let ruled = settings.rule(for: window.bundleID)?.arrangement { return ruled }
-        return settings.workspaceConfig(key.workspace).arrangement ?? settings.slideArrangement
+        if let chosen = settings.workspaceConfig(key.workspace).arrangement { return chosen }
+        // A portrait display stacks slides top to bottom, main window on top.
+        if settings.portraitStacks, let display = displays.first(where: { $0.uuid == key.display }),
+            display.frame.height > display.frame.width {
+            return settings.slideArrangement.forPortrait
+        }
+        return settings.slideArrangement
+    }
+
+    /// Hides (never quits) every other app, so only a restored layout's apps show.
+    private func hideApps(notIn keep: Set<String>) {
+        guard settings.restoreHidesOthers, !keep.isEmpty else { return }
+        let me = Bundle.main.bundleIdentifier
+        var hidden = 0
+        for app in NSWorkspace.shared.runningApplications where app.activationPolicy == .regular && !app.isHidden {
+            guard let id = app.bundleIdentifier, id != me, !keep.contains(id) else { continue }
+            if app.hide() { hidden += 1 }
+        }
+        if hidden > 0 { onNotice("Hid \(hidden) other apps · they're still running") }
     }
 
     /// Parks workspaces that haven't been visited for the set number of hours.
@@ -6175,7 +6196,7 @@ final class Engine {
             window.lastApplied = nil
             layout(animated: true)
         }
-        let target = position.frame(in: display.viewport, gap: layoutConfig(for: display).gap)
+        let target = position.frame(in: settings.reservedEdges.inset(display.viewport), gap: layoutConfig(for: display).gap)
         element.setFrame(CGRect(target))
     }
 

@@ -607,14 +607,51 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 self?.toast.show("Safe mode · rules, scripts and automations are off until Monorail restarts")
             }
         }
-        if StageManagerCheck.isOn {
+        if StageManagerCheck.isOn && !store.settings.pauseForStageManager {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
                 self?.toast.show("Stage Manager is on as well · turn it off in Control Centre so Monorail can arrange windows")
             }
         }
+        watchStageManager()
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in self?.checkNotch() }
         watchDormancy()
         wireUpAwake()
+    }
+
+    // MARK: Stage Manager
+
+    private var stageManagerTimer: Timer?
+    private var pausedForStageManager = false
+
+    /// While Stage Manager is on, Monorail pauses (windows stay where they are) and
+    /// carries on by itself when it's turned off. Checked every few seconds.
+    private func watchStageManager() {
+        stageManagerTimer?.invalidate()
+        stageManagerTimer = nil
+        guard store.settings.pauseForStageManager else {
+            if pausedForStageManager {
+                pausedForStageManager = false
+                engine.setPaused(false)
+            }
+            return
+        }
+        checkStageManager()
+        let timer = Timer.every(4) { [weak self] _ in self?.checkStageManager() }
+        timer.tolerance = 1
+        stageManagerTimer = timer
+    }
+
+    private func checkStageManager() {
+        let on = StageManagerCheck.isOn
+        if on, !pausedForStageManager, !engine.isPaused {
+            pausedForStageManager = true
+            engine.setPaused(true)
+            toast.show("Stage Manager is on · Monorail is paused until you turn it off")
+        } else if !on, pausedForStageManager {
+            pausedForStageManager = false
+            engine.setPaused(false)
+            toast.show("Stage Manager is off · Monorail is arranging windows again")
+        }
     }
 
     // MARK: Stay Awake
@@ -2009,6 +2046,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let syncWasOn = engine.settings.syncThroughICloud
         let liveReloadWasOn = engine.settings.liveReloadSettings
         engine.settings = settings
+        switch settings.appAppearance {
+        case .system: NSApp.appearance = nil
+        case .light: NSApp.appearance = NSAppearance(named: .aqua)
+        case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
+        }
+        if settings.pauseForStageManager != (stageManagerTimer != nil) { watchStageManager() }
         evening.update()
         WorkspaceColor.theme = settings.theme
         stats.isEnabled = settings.collectStats

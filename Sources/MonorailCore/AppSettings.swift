@@ -252,6 +252,37 @@ public enum HotCorner: String, Codable, CaseIterable, Sendable {
     }
 }
 
+/// Points kept clear at each screen edge, for another app's bar or dock.
+public struct ReservedEdges: Equatable, Hashable, Codable, Sendable {
+    public var top: Double = 0
+    public var bottom: Double = 0
+    public var left: Double = 0
+    public var right: Double = 0
+    public init(top: Double = 0, bottom: Double = 0, left: Double = 0, right: Double = 0) {
+        self.top = top; self.bottom = bottom; self.left = left; self.right = right
+    }
+    public var isEmpty: Bool { top <= 0 && bottom <= 0 && left <= 0 && right <= 0 }
+    /// `area` (y measured down from the top) with the edges taken off, never smaller than 200 × 200.
+    public func inset(_ area: Rect) -> Rect {
+        guard !isEmpty else { return area }
+        let t = max(0, top), b = max(0, bottom), l = max(0, left), r = max(0, right)
+        let width = max(200, area.width - l - r), height = max(200, area.height - t - b)
+        return Rect(x: area.x + l, y: area.y + t, width: width, height: height)
+    }
+}
+
+/// Light or dark for Monorail's own windows.
+public enum AppAppearance: String, Codable, CaseIterable, Sendable {
+    case system, light, dark
+    public var title: String {
+        switch self {
+        case .system: return "Match the Mac"
+        case .light: return "Light"
+        case .dark: return "Dark"
+        }
+    }
+}
+
 /// Settings for one workspace.
 public struct WorkspaceConfig: Equatable, Hashable, Codable, Sendable {
     /// Its colour (hex), instead of the theme's.
@@ -700,6 +731,16 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// The focus border glows, and can take the app icon's colour.
     public var focusGlow = false
     public var borderFromAppIcon = false
+    /// Monorail pauses while Stage Manager is on and carries on when it's turned off.
+    public var pauseForStageManager = true
+    /// On a display taller than it is wide, slides stack top to bottom and the main window goes on top.
+    public var portraitStacks = true
+    /// Restoring a saved layout or snapshot hides (never quits) the apps that aren't in it.
+    public var restoreHidesOthers = false
+    /// Space kept clear at each screen edge for another app's bar or dock.
+    public var reservedEdges = ReservedEdges()
+    /// Monorail's own windows in light or dark, or following the Mac.
+    public var appAppearance: AppAppearance = .system
     /// A quick highlight of the focused window when focus moves by keyboard.
     public var focusFlash = false
     /// The slider bar's opacity and size (0.8, 1 or 1.25).
@@ -1088,6 +1129,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case noticePosition, noticeDuration, pomodoroFocus, pomodoroBreak, breakReminderMinutes, dailyFocusGoal
         case workspaceConfigs, autoParkHours, floatSmallerThan, floatSettingsWindows, pauseForApps, retileAfterWake
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
+        case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance
     }
 
     public init(from decoder: Decoder) throws {
@@ -1319,6 +1361,11 @@ public struct AppSettings: Equatable, Codable, Sendable {
         agentBringIntoView = value(.agentBringIntoView, d.agentBringIntoView)
         ruleSuggestions = value(.ruleSuggestions, d.ruleSuggestions)
         suggestedRules = value(.suggestedRules, d.suggestedRules)
+        pauseForStageManager = value(.pauseForStageManager, d.pauseForStageManager)
+        portraitStacks = value(.portraitStacks, d.portraitStacks)
+        restoreHidesOthers = value(.restoreHidesOthers, d.restoreHidesOthers)
+        reservedEdges = value(.reservedEdges, d.reservedEdges)
+        appAppearance = value(.appAppearance, d.appAppearance)
         // Settings from before 1.1 get the narrow menu bar once.
         compactMenuBarApplied = (try? c.decodeIfPresent(Bool.self, forKey: .compactMenuBarApplied)) ?? false
         if !compactMenuBarApplied {

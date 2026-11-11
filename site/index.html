@@ -434,6 +434,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
     <div class="cta">
       <a class="btn primary two dl" href="download/" data-smartdl><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl"><span data-dl-label>Download for Mac</span><small data-dl-sub>macOS 13 or later · notarised by Apple</small></span></a>
       <a class="btn ghost" href="#demo">Try it here ↓</a>
+      <button class="btn ghost" type="button" id="film-open" aria-haspopup="dialog"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>Watch the film · 85 s</button>
     </div>
     <p class="hint" id="dlmeta" style="margin:-4px 0 10px">macOS 13 or later</p>
     <div class="trust"><span class="notarised">Notarised by Apple</span><span>Free, every feature, every Mac</span><span>No account</span><span>Apple silicon and Intel</span><span>SIP stays on</span></div>
@@ -523,6 +524,9 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
       <div class="feature"><div class="ic">📐</div><h3>Draw your own layouts</h3><p>The zone editor splits a slide any way you like. Use it on any slide from its menu.</p></div>
       <div class="feature"><div class="ic">📦</div><h3>Switch in a minute</h3><p>Imports your shortcuts, gaps and app rules from AeroSpace, yabai and skhd, or Rectangle.</p></div>
       <div class="feature"><div class="ic">🏷️</div><h3>Tags</h3><p>Keep a window on the workspaces you choose, or show another workspace alongside this one.</p></div>
+      <div class="feature"><div class="ic">📱</div><h3>Every kind of display</h3><p>On a portrait display, windows stack top to bottom with the main one on top. Keep any screen edge clear for another app's bar, and Monorail steps aside while Stage Manager is on.</p></div>
+      <div class="feature"><div class="ic">🧭</div><h3>Shortcuts that never clash</h3><p>Settings shows any Monorail shortcut that macOS already uses, and swaps it for a free one in one click. Every shortcut can be changed or removed.</p></div>
+      <div class="feature"><div class="ic">🗂️</div><h3>Back to your setup</h3><p>Restore a saved layout and its apps open where they were. Turn on one switch and every other app hides, never quits, so only that work is in front of you.</p></div>
       <div class="feature"><div class="ic">🔌</div><h3>Built to be scripted</h3><p>monorail:// links, a CLI with a live event stream, a local API, MCP for AI assistants, and shareable layout links.</p></div>
     </div>
   </section>
@@ -568,7 +572,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
   <section class="center reveal">
     <div class="kicker">Light on your battery</div>
     <h2>So light you'll forget it's running</h2>
-    <p class="sub">Measured on a 14-inch MacBook Pro with M4 Pro, on battery, managing real windows, idle for five minutes, Monorail 1.7.24. Measure it on yours with <a href="perf-check.sh">a one-minute check in Terminal</a>.</p>
+    <p class="sub">Measured on a 14-inch MacBook Pro with M4 Pro, on battery, managing real windows, idle for five minutes, Monorail 1.7.24. Measure it on yours with <a href="perf-check.sh">a one-minute check in Terminal</a>, or read <a href="performance/">how we measure and check every build</a>.</p>
     <div class="numbers">
       <div class="number"><b class="grad" data-count="0.15" data-dec="2" data-suffix="%">0%</b><span>of one core</span></div>
       <div class="number"><b class="grad" data-count="0" data-dec="0">0</b><span>wake-ups a second</span></div>
@@ -629,6 +633,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
 <li><label><input type="checkbox" value="snap" data-lo="2" data-hi="5" checked><span class="t"><b>Window snapping</b><span>Drag a window to an edge or a corner, or snap it with keys.</span><i>For example Magnet, BetterSnapTool</i></span><span class="price">$2–5</span></label></li>
 <li><label><input type="checkbox" value="switcher" data-lo="10" data-hi="25" checked><span class="t"><b>A window switcher with previews</b><span>Hold ⌘Tab for every window, then close, minimise or quit from it.</span><i>For example AltTab Pro, Witch, Contexts</i></span><span class="price">$10–25</span></label></li>
 <li><label><input type="checkbox" value="kbpro" data-lo="10" data-hi="10" checked><span class="t"><b>A pro keyboard window manager</b><span>Stash windows at an edge, pin one to a side, a layout per display.</span><i>For example Rectangle Pro</i></span><span class="price">about $10</span></label></li>
+<li><label><input type="checkbox" value="autotile" data-lo="10" data-hi="15"><span class="t"><b>An automatic tiling window manager</b><span>Windows arrange themselves as they open, and the rest fill the gap when one closes.</span><i>For example Shoji</i></span><span class="price">$10–15</span></label></li>
 <li><label><input type="checkbox" value="layouts" data-lo="10" data-hi="10" checked><span class="t"><b>Saved window layouts</b><span>A layout for each desk that comes back when you plug in a display.</span><i>For example Moom</i></span><span class="price">about $10</span></label></li>
 <li><label><input type="checkbox" value="overview" data-lo="6" data-hi="6"><span class="t"><b>Mission Control with window controls</b><span>Close, minimise or move windows straight from the overview.</span><i>For example Mission Control Plus</i></span><span class="price">about $6</span></label></li>
 <li><label><input type="checkbox" value="displays" data-lo="10" data-hi="10"><span class="t"><b>Moving windows between displays</b><span>Send a window to the display on the left, or to display 3.</span><i>For example Hookshot</i></span><span class="price">about $10</span></label></li>
@@ -661,7 +666,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
       <details><summary>Does Monorail turn off SIP or change the Dock?</summary><p>No. System Integrity Protection stays on, there's no kernel extension, and nothing is injected into the Dock or other apps. Monorail arranges windows the way Apple intends, through the Accessibility permission, which you can take back at any time in System Settings.</p></details>
       <details><summary>Which Macs does it run on?</summary><p>Every Mac with macOS 13 Ventura or later, on Apple silicon and on Intel: one universal app, with the same features on both.</p></details>
       <details><summary>Can I use Monorail on a work Mac without admin rights?</summary><p>Yes. It installs without an administrator into your own Applications folder. Stay Awake, Keep me Available, Evening Mode, the display controls and arranging scriptable apps such as Safari, Finder and Terminal work straight away. Arranging every window needs Accessibility, which only an administrator can allow on a managed Mac, and IT can approve it for Monorail in one step: <a href="docs/it/">the guide for IT</a>.</p></details>
-      <details><summary>Will it fight my other window tools?</summary><p>It can, so quit other window managers and turn off Stage Manager. Settings → General → Mac setup checks for both.</p></details>
+      <details><summary>Will it fight my other window tools?</summary><p>Quit other window managers first; Settings → General → Mac setup checks for them. Stage Manager is fine to keep: Monorail pauses while it's on and carries on when you turn it off.</p></details>
       <details><summary>What happens to my windows if I quit?</summary><p>Every window comes back on screen. Next time Monorail starts, your layout returns.</p></details>
       <details><summary>Does it work with multiple displays, projectors and Sidecar?</summary><p>Yes: each display gets its own strip, an unplugged display's windows come back when you reconnect, and Sidecar iPads fit every slide.</p></details>
       <details><summary>Which languages?</summary><p>English, German, French, Spanish, Japanese, Chinese (Simplified), Portuguese, Korean and Italian.</p></details>
@@ -697,7 +702,7 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
       <a class="brand" href="#" style="display:flex;align-items:center;gap:10px;font-weight:700;color:var(--ink);text-decoration:none"><img src="assets/icon.png" alt="" width="28" height="28" style="border-radius:7px">Monorail by Ashforde®</a>
       <p>Every window rides one rail. A free scrolling window manager for Mac, by Ashforde OÜ, a company in the European Union.</p>
     </div>
-    <div><h2>Monorail</h2><ul><li><a href="#features">Features</a></li><li><a class="dl" href="download/">Download</a></li><li><a href="changelog/">Changelog</a></li><li><a href="privacy/">Privacy</a></li></ul></div>
+    <div><h2>Monorail</h2><ul><li><a href="#features">Features</a></li><li><a class="dl" href="download/">Download</a></li><li><a href="changelog/">Changelog</a></li><li><a href="performance/">Performance</a></li><li><a href="privacy/">Privacy</a></li></ul></div>
     <div><h2>Help</h2><ul><li><a href="support/">Support</a></li><li><a href="docs/actions/">All actions</a></li><li><a href="docs/settings/">All settings</a></li><li><a href="docs/it/">For IT</a></li><li><a href="docs/compatibility/">Compatibility</a></li><li><a href="docs/security/">Security</a></li><li><a href="mailto:contact@ashforde.org?subject=Monorail%20problem">Report a problem</a></li></ul></div>
     <div><h2>Ashforde</h2><ul><li><a href="docs/licence/">Licence</a></li><li><a href="docs/trademarks/">Trademarks</a></li><li><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></li></ul></div>
   </div>
@@ -1278,6 +1283,29 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Monorail by Ashforde","applicationCategory":"UtilitiesApplication","operatingSystem":"macOS 13 or later","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"url":"https://monorail.ashforde.org/","downloadUrl":"https://monorail.ashforde.org/download/","image":"https://monorail.ashforde.org/assets/icon.png","description":"A scrolling window manager for Mac: new windows slide in beside the one you're using, and nothing else ever shrinks.","publisher":{"@type":"Organization","name":"Ashforde OÜ","url":"https://ashforde.org"}}
+</script>
+<dialog id="film" aria-label="Monorail in 85 seconds">
+  <form method="dialog"><button class="film-x" aria-label="Close">✕</button></form>
+  <video id="film-video" controls playsinline preload="none" poster="assets/launch/v17/01-hero.png">
+    <source src="assets/launch/v17/monorail-demo.mp4" type="video/mp4">
+  </video>
+</dialog>
+<style>
+#film { padding:0; border:0; border-radius:20px; background:#000; width:min(1100px, calc(100vw - 32px)); max-height:calc(100vh - 32px); overflow:visible; }
+#film::backdrop { background:rgba(18,9,20,.78); backdrop-filter:blur(6px); }
+#film video { display:block; width:100%; border-radius:20px; aspect-ratio:16/9; background:#000; }
+#film .film-x { position:absolute; top:-14px; right:-14px; width:36px; height:36px; border-radius:50%; border:0; background:#fff; color:#24112B; font-size:16px; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,.35); z-index:2; }
+@media (max-width:640px) { #film .film-x { top:8px; right:8px; } }
+</style>
+<script>
+(() => {
+  const d = document.getElementById('film'), v = document.getElementById('film-video'), b = document.getElementById('film-open');
+  if (!d || !b) return;
+  if (typeof d.showModal !== 'function') { b.addEventListener('click', () => { location.href = 'assets/launch/v17/monorail-demo.mp4'; }); return; }
+  b.addEventListener('click', () => { d.showModal(); try { v.play(); } catch (e) {} });
+  d.addEventListener('close', () => v.pause());
+  d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+})();
 </script>
 </body>
 </html>

@@ -6,6 +6,17 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Shortcut clash check.** Settings → Shortcuts lists any Monorail shortcut that macOS also uses (Mission Control, Spotlight, screenshots, input sources, switching desktops and more), says what uses it, and swaps it for a free combination in one click. **Change in macOS…** opens the Mac's own shortcut settings instead.
+- **Portrait displays.** On a display taller than it is wide, new slides stack their windows top to bottom and the main window goes on top. Turn it off in Settings → Layout → Spacing.
+- **Keep screen edges clear.** Settings → Layout keeps any edge free for another app's bar or dock, like SketchyBar. Windows, and floating windows you snap, stay out of it.
+- **Restoring a setup can hide the other apps.** Turn on “Restoring a layout or snapshot hides the other apps” in Settings → General, and only that layout's apps stay in front. The others are hidden, never quit.
+- **Light or dark for Monorail's own windows.** Settings → Appearance → Monorail's windows: match the Mac, always light or always dark.
+- **On the website:** a [performance page](https://monorail.ashforde.org/performance/) with how Monorail is measured and checked on every build, the 85-second film in the hero, and an automatic tiling window manager in the list of paid apps Monorail replaces.
+
+### Changed
+- **Stage Manager no longer gets in the way.** Monorail pauses while Stage Manager is on (windows stay where they are) and carries on by itself when you turn it off, instead of asking you to turn it off. Switch this off in Settings → Apps.
+
 ## [1.7.28] - 2026-11-11
 
 ### Added

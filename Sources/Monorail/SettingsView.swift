@@ -322,6 +322,7 @@ private struct GeneralPane: View {
                 Toggle("VoiceOver also says which window got focus", isOn: $store.settings.announceWindows)
                     .disabled(!store.settings.announceChanges)
                 Toggle("Keep a “Last session” snapshot on quit and sleep", isOn: $store.settings.autoSnapshot)
+                Toggle("Restoring a layout or snapshot hides the other apps (never quits them)", isOn: $store.settings.restoreHidesOthers)
                 Toggle("Show the focused app’s name in the menu bar too", isOn: $store.settings.menuBarShowsApp)
                     .disabled(!store.settings.showColumnIndicator)
                 Toggle("Clicking the menu bar icon shows the slider (right-click for the menu)", isOn: $store.settings.iconOpensSlider)
@@ -468,6 +469,18 @@ private struct LayoutPane: View {
                 LabeledSlider(title: "Gap between windows", value: $store.settings.layout.gap, range: 0...40)
                 LabeledSlider(title: "Gap at screen edges", value: $store.settings.layout.edgeGap, range: 0...40)
                 Toggle("Smart gaps: none around a lone window, wider on big displays", isOn: $store.settings.smartGaps)
+                Toggle("Portrait displays stack windows top to bottom, main window on top", isOn: $store.settings.portraitStacks)
+            }
+            Section {
+                LabeledSlider(title: "Top", value: $store.settings.reservedEdges.top, range: 0...120)
+                LabeledSlider(title: "Bottom", value: $store.settings.reservedEdges.bottom, range: 0...120)
+                LabeledSlider(title: "Left", value: $store.settings.reservedEdges.left, range: 0...120)
+                LabeledSlider(title: "Right", value: $store.settings.reservedEdges.right, range: 0...120)
+            } header: {
+                Text("Keep screen edges clear")
+            } footer: {
+                Text("Room for another app’s bar or dock, like SketchyBar or a second Dock. Windows never go into it.")
+                    .font(.callout).foregroundStyle(.secondary)
             }
             Section("Comfort") {
                 Toggle("Open each app’s windows at the width you last gave it", isOn: $store.settings.rememberWidths)
@@ -785,6 +798,9 @@ private struct AppearancePane: View {
                 Toggle("Flash the focused window when focus moves", isOn: $store.settings.focusFlash)
             }
             Section("Overview, menu bar and notices") {
+                Picker("Monorail’s windows", selection: $store.settings.appAppearance) {
+                    ForEach(AppAppearance.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
                 Toggle("Plain overview backdrop (no colours or glows)", isOn: $store.settings.plainOverview)
                     .help("Also used when Reduce Transparency is on")
                 Toggle("App icons in the overview instead of live previews", isOn: $store.settings.overviewIconsOnly)
@@ -967,6 +983,7 @@ private struct AppsPane: View {
                     .labelsHidden().frame(width: 120)
                 }
                 Toggle("Settings and Preferences windows float", isOn: $store.settings.floatSettingsWindows)
+                Toggle("Pause while Stage Manager is on, and carry on when it’s off", isOn: $store.settings.pauseForStageManager)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Pause tiling while these apps are in front (games, video, presentations)")
                     ForEach(store.settings.pauseForApps, id: \.self) { bundleID in
@@ -2048,6 +2065,7 @@ private struct ShortcutsPane: View {
                     .help(store.settings.keymap == .default ? "Your shortcuts are the defaults" : "Put every shortcut back to its default")
                 }
             }
+            ShortcutClashSection(store: store)
             ForEach(Self.groups, id: \.0) { group in
                 Section(group.0) {
                     ForEach(group.1, id: \.self) { action in
@@ -2067,6 +2085,66 @@ private struct ShortcutsPane: View {
                 store.settings.keymap = store.settings.keymap.replacingPrefix(old, with: new)
             }
         )
+    }
+}
+
+/// Monorail shortcuts that macOS also uses, with a free one to switch to.
+private struct ShortcutClashSection: View {
+    @ObservedObject var store: SettingsStore
+    @State private var system: [SystemShortcuts.Entry] = []
+
+    var body: some View {
+        let clashes = store.settings.keymap.clashes(with: system)
+        Section {
+            if clashes.isEmpty {
+                Label("No clashes: macOS doesn’t use any of Monorail’s shortcuts", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+            } else {
+                ForEach(clashes) { clash in
+                    LabeledContent {
+                        HStack(spacing: 6) {
+                            if let suggestion = clash.suggestion {
+                                Button("Use \(suggestion.displayString)") { replace(clash, with: suggestion) }
+                                    .help("Change “\(clash.action.title)” to \(suggestion.displayString), which nothing else uses")
+                            }
+                            if clash.usedBy.hasPrefix("macOS") {
+                                Button("Change in macOS…") { openKeyboardShortcuts() }
+                            }
+                        }
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Label("\(clash.shortcut.displayString) · \(clash.action.title)", systemImage: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                            Text("Also used by \(clash.usedBy)").font(.callout).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+        } header: {
+            HStack {
+                Text("Clashes")
+                Spacer()
+                Button("Check again") { load() }.buttonStyle(.borderless)
+            }
+        }
+        .onAppear(perform: load)
+    }
+
+    private func load() {
+        let hotkeys = UserDefaults(suiteName: "com.apple.symbolichotkeys")?.dictionary(forKey: "AppleSymbolicHotKeys") ?? [:]
+        system = SystemShortcuts.parse(hotkeys)
+    }
+
+    private func replace(_ clash: ShortcutClash, with suggestion: Shortcut) {
+        let shortcuts = store.settings.keymap.shortcuts(for: clash.action)
+        guard let index = shortcuts.firstIndex(of: clash.shortcut) else { return }
+        store.settings.keymap.bind(suggestion, to: clash.action, replacingIndex: index)
+    }
+
+    private func openKeyboardShortcuts() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Shortcuts") {
+            NSWorkspace.shared.open(url)
+        }
     }
 }
 

@@ -108,6 +108,11 @@ public static class SettingKeys
     public const string MiddleClickZoom = "middleClickZoom";
     public const string FocusGlow = "focusGlow";
     public const string BorderFromAppIcon = "borderFromAppIcon";
+    public const string PauseForStageManager = "pauseForStageManager";
+    public const string PortraitStacks = "portraitStacks";
+    public const string RestoreHidesOthers = "restoreHidesOthers";
+    public const string ReservedEdges = "reservedEdges";
+    public const string AppAppearance = "appAppearance";
     public const string FocusFlash = "focusFlash";
     public const string SliderOpacity = "sliderOpacity";
     public const string SliderScale = "sliderScale";
@@ -381,6 +386,12 @@ public static class SettingDefaults
     /// <summary>The focus border glows, and can take the app icon's colour.</summary>
     public const bool FocusGlow = false;
     public const bool BorderFromAppIcon = false;
+    /// <summary>Monorail pauses while Stage Manager is on and carries on when it's turned off.</summary>
+    public const bool PauseForStageManager = true;
+    /// <summary>On a display taller than it is wide, slides stack top to bottom and the main window goes on top.</summary>
+    public const bool PortraitStacks = true;
+    /// <summary>Restoring a saved layout or snapshot hides (never quits) the apps that aren't in it.</summary>
+    public const bool RestoreHidesOthers = false;
     /// <summary>A quick highlight of the focused window when focus moves by keyboard.</summary>
     public const bool FocusFlash = false;
     /// <summary>The slider bar's opacity and size (0.8, 1 or 1.25).</summary>

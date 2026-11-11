@@ -136,6 +136,9 @@ Each display has four workspaces (up to nine), each with its own name and colour
 home workspace, keep work and home apart with profiles, and save a whole setup as a layout or a
 snapshot that survives a restart. Unplug a display and its slides wait for it; plug it back in and
 they return as they were.
+On a portrait display, windows stack top to bottom with the main one on top. Keep any screen edge
+clear for another app's bar or dock, and restore a layout with every other app hidden (never quit).
+Monorail pauses by itself while Stage Manager is on.
 
 ### Focus, Evening Mode and Stay Awake.
 
@@ -199,6 +202,9 @@ menu: Saved Layouts, Snapshots, App Pairs, Evening Mode, Stay Awake, Undo Histor
 
 Dialogs, file pickers and fixed-size windows float on purpose. Press <kbd>⌃⌥T</kbd> to tile one
 anyway, or add a rule for the app in Settings → Apps.
+
+If a shortcut does nothing, macOS may be using it too: Settings → Shortcuts → **Clashes** shows any
+Monorail shortcut that macOS also uses and swaps it for a free one.
 
 ## Keyboard shortcuts
 
@@ -364,7 +370,7 @@ policy: [monorail.ashforde.org/privacy](https://monorail.ashforde.org/privacy/).
 No. It works alongside them. Each Space keeps its own strip, and full-screen apps are left alone.
 
 **Will it fight with my other window tools?**
-Turn off other window managers (Rectangle, Magnet and the like) and Stage Manager. Settings → General → Mac setup checks for these.
+Turn off other window managers (Rectangle, Magnet and the like); Settings → General → Mac setup checks for them. Stage Manager can stay: Monorail pauses while it’s on.
 
 **What happens to my windows if I quit?**
 Every window is put back fully on screen. When Monorail starts again, it restores your layout.

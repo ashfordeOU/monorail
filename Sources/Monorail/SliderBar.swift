@@ -892,6 +892,23 @@ final class SliderPopover {
         var isEveningOn: () -> Bool = { false }
         var openEveningSettings: () -> Void = {}
         var awake = AwakeControls()
+        var more = MoreControls()
+    }
+
+    /// The quick row under the slides: battery, layouts, focus and anything that needs a look.
+    struct MoreControls {
+        var layouts: () -> [String] = { [] }
+        var snapshots: () -> [String] = { [] }
+        var applyLayout: (String) -> Void = { _ in }
+        var restoreSnapshot: (String) -> Void = { _ in }
+        var takeSnapshot: () -> Void = {}
+        var isFocusOn: () -> Bool = { false }
+        var toggleFocus: () -> Void = {}
+        var clashCount: () -> Int = { 0 }
+        var openShortcuts: () -> Void = {}
+        var pausedForStageManager: () -> Bool = { false }
+        var openPowerSettings: () -> Void = {}
+        var showOverview: () -> Void = {}
     }
 
     /// Stay Awake from the popover: the same as its menu, without opening Settings.
@@ -1031,7 +1048,19 @@ final class SliderPopover {
             openSettings: {
                 close()
                 controls.openSettings()
-            })
+            },
+            more: {
+                var more = controls.more
+                let apply = more.applyLayout, restore = more.restoreSnapshot, snapshot = more.takeSnapshot
+                let shortcuts = more.openShortcuts, power = more.openPowerSettings, overview = more.showOverview
+                more.applyLayout = { name in close(); apply(name) }
+                more.restoreSnapshot = { name in close(); restore(name) }
+                more.takeSnapshot = { close(); snapshot() }
+                more.openShortcuts = { close(); shortcuts() }
+                more.openPowerSettings = { close(); power() }
+                more.showOverview = { close(); overview() }
+                return more
+            }())
 
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 560, height: 300),
@@ -1086,6 +1115,10 @@ private struct SliderPopoverView: View {
     let resetPairs: () -> Void
     let togglePause: () -> Void
     let openSettings: () -> Void
+    let more: SliderPopover.MoreControls
+    @ObservedObject private var power = PowerWatch.shared
+    @State private var showsPower = false
+    @State private var focusTick = 0
     @State private var showsEvening = false
     @State private var showsAwake = false
     @State private var showsThemes = false
@@ -1121,6 +1154,18 @@ private struct SliderPopoverView: View {
                 .help("Theme: \(store.settings.theme.title)")
                 .popover(isPresented: $showsThemes, arrowEdge: .bottom) {
                     ThemeQuickPicker(store: store)
+                }
+                if store.settings.powerMarkers {
+                    Button { showsPower.toggle() } label: {
+                        let hot = !power.hungry.isEmpty
+                        Image(systemName: hot ? "bolt.fill" : "bolt")
+                            .foregroundStyle(hot ? Color.orange : Color.primary)
+                            .accessibilityLabel(Text(hot ? "Battery: \(power.hungry.count) apps using a lot" : "Battery use"))
+                    }
+                    .help(power.onBattery ? "Which apps are using the most battery" : "Battery use (measured while on battery)")
+                    .popover(isPresented: $showsPower, arrowEdge: .bottom) {
+                        PowerQuickControls(store: store, power: power, openSettings: more.openPowerSettings)
+                    }
                 }
                 Button { showsAwake.toggle() } label: {
                     let on = awake.isOn()
@@ -1182,11 +1227,163 @@ private struct SliderPopoverView: View {
                 Text("No windows on this workspace yet.").font(.callout).foregroundStyle(.secondary)
             }
 
-            Text("Drag the slider to move · click a slide to jump · right-click the icon for the full menu")
-                .font(.caption).foregroundStyle(.secondary)
+            QuickRow(store: store, power: power, more: more, showsPower: $showsPower, focusTick: $focusTick)
         }
         .padding(14)
         .frame(width: 560)
+        .help("Drag the slider to move · click a slide to jump · right-click the icon for the full menu")
+        .onAppear { power.refreshIfStale() }
+    }
+}
+
+/// Chips under the slides: battery, saved layouts and snapshots, focus mode, and anything that needs a look.
+private struct QuickRow: View {
+    @ObservedObject var store: SettingsStore
+    @ObservedObject var power: PowerWatch
+    let more: SliderPopover.MoreControls
+    @Binding var showsPower: Bool
+    @Binding var focusTick: Int
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) { chips }
+    }
+
+    private var chips: some View {
+        HStack(spacing: 6) {
+            if store.settings.powerMarkers, power.onBattery {
+                chip(batteryText, systemImage: batteryIcon, tint: power.hungry.isEmpty ? nil : .orange) { showsPower = true }
+                    .help("Which apps are using the most battery")
+            }
+            let layouts = more.layouts(), snapshots = more.snapshots()
+            Menu {
+                if layouts.isEmpty && snapshots.isEmpty { Text("No saved layouts yet") }
+                if !layouts.isEmpty {
+                    Section("Layouts") { ForEach(layouts, id: \.self) { name in Button(name) { more.applyLayout(name) } } }
+                }
+                if !snapshots.isEmpty {
+                    Section("Snapshots") { ForEach(snapshots, id: \.self) { name in Button(name) { more.restoreSnapshot(name) } } }
+                }
+                Divider()
+                Button("Take a Snapshot Now") { more.takeSnapshot() }
+            } label: {
+                Label("Layouts", systemImage: "rectangle.3.group")
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .font(.caption.weight(.medium))
+            .padding(.horizontal, 8).padding(.vertical, 4)
+            .background(Capsule().fill(Color.primary.opacity(0.08)))
+            .help("Apply a saved layout or restore a snapshot")
+            let focusOn = more.isFocusOn()
+            chip(focusOn ? "Focus on" : "Focus", systemImage: focusOn ? "scope" : "scope", tint: focusOn ? .accentColor : nil) {
+                more.toggleFocus()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { focusTick += 1 }
+            }
+            .id(focusTick)
+            .help("Focus mode: dim everything but this slide")
+            let clashes = more.clashCount()
+            if clashes > 0 {
+                chip(clashes == 1 ? "1 shortcut clash" : "\(clashes) shortcut clashes", systemImage: "exclamationmark.triangle.fill", tint: .orange) {
+                    more.openShortcuts()
+                }
+                .help("macOS uses some of Monorail's shortcuts too · fix them in one click")
+            }
+            if more.pausedForStageManager() {
+                chip("Paused for Stage Manager", systemImage: "rectangle.stack", tint: .orange) {}
+                    .help("Monorail carries on when you turn Stage Manager off in Control Centre")
+            }
+            if !power.parked.isEmpty {
+                chip("Show \(power.parked.count) hidden", systemImage: "eye", tint: nil) { power.showParked() }
+                    .help("Apps hidden to save battery")
+            }
+        }
+    }
+
+    private var batteryText: String {
+        let level = power.batteryPercent.map { "\($0)%" } ?? "Battery"
+        if let top = power.hungry.first { return "\(level) · \(top.appName)" }
+        return level
+    }
+
+    private var batteryIcon: String {
+        guard let level = power.batteryPercent else { return "battery.50" }
+        switch level {
+        case ..<13: return "battery.0"
+        case ..<38: return "battery.25"
+        case ..<63: return "battery.50"
+        case ..<88: return "battery.75"
+        default: return "battery.100"
+        }
+    }
+
+    private func chip(_ title: String, systemImage: String, tint: Color?, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.caption.weight(.medium))
+                .lineLimit(1)
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(Capsule().fill((tint ?? Color.primary).opacity(tint == nil ? 0.08 : 0.18)))
+                .foregroundStyle(tint ?? Color.primary)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// ⚡ in the popover: the apps using the most battery, with Hide and Quit.
+private struct PowerQuickControls: View {
+    @ObservedObject var store: SettingsStore
+    @ObservedObject var power: PowerWatch
+    let openSettings: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Battery use").font(.headline)
+                Spacer()
+                if let level = power.batteryPercent, power.onBattery {
+                    Text("\(level)% left").font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            if !power.onBattery {
+                Text("Plugged in. Monorail measures which apps use the most power while your Mac runs on its battery.")
+                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            } else if power.uses.isEmpty {
+                Text("Measuring… check again in a minute.").font(.callout).foregroundStyle(.secondary)
+            } else {
+                ForEach(power.uses.prefix(6)) { use in
+                    HStack(spacing: 8) {
+                        if let icon = NSRunningApplication.runningApplications(withBundleIdentifier: use.bundleID).first?.icon {
+                            Image(nsImage: icon).resizable().frame(width: 18, height: 18)
+                        }
+                        VStack(alignment: .leading, spacing: 1) {
+                            HStack(spacing: 4) {
+                                Text(use.appName).lineLimit(1)
+                                if use.isHungry { Image(systemName: "bolt.fill").foregroundStyle(.orange).font(.caption2) }
+                            }
+                            Text(use.summary).font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button("Hide") { power.hide(use.bundleID) }
+                        Button("Quit") { power.quit(use.bundleID) }
+                    }
+                    .buttonStyle(.bordered).controlSize(.small)
+                }
+            }
+            if !power.parked.isEmpty {
+                Button("Show the \(power.parked.count) apps hidden to save battery") { power.showParked() }
+                    .buttonStyle(.link)
+            }
+            Divider()
+            Toggle("Mark power-hungry windows with ⚡", isOn: $store.settings.powerMarkers)
+            Toggle("On battery, hide hungry apps left alone for an hour", isOn: $store.settings.parkPowerHogs)
+                .help("They're hidden, never quit, and come back when you plug in")
+            Text("Estimates from the processor time and energy macOS counts for each app and its helpers. Quit asks the app to quit, as ⌘Q does.")
+                .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Button("More battery settings…", action: openSettings).buttonStyle(.link)
+        }
+        .toggleStyle(.switch)
+        .padding(14)
+        .frame(width: 330)
     }
 }
 

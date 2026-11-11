@@ -68,3 +68,46 @@ final class PortraitTests: XCTestCase {
         XCTAssertEqual(Arrangement.grid.forPortrait, .grid)
     }
 }
+
+final class PowerUseTests: XCTestCase {
+    func testEstimatesShareOfCoreAndBatteryPerHour() {
+        // 30 s of processor time and 600 J over 60 s on a 60 Wh battery: half a core, 10 W, 16.7% an hour.
+        let use = PowerEstimate.use(bundleID: "a", appName: "A", before: PowerReading(cpuSeconds: 10, joules: 1000),
+                                    after: PowerReading(cpuSeconds: 40, joules: 1600), seconds: 60, batteryWattHours: 60)
+        XCTAssertEqual(use.cpuPercent, 50, accuracy: 0.01)
+        XCTAssertEqual(use.percentPerHour!, 16.67, accuracy: 0.01)
+        XCTAssertTrue(use.isHungry)
+        XCTAssertEqual(use.summary, "About 17% of the battery an hour")
+    }
+
+    func testWithoutEnergyFallsBackToProcessorTime() {
+        let use = PowerEstimate.use(bundleID: "a", appName: "A", before: PowerReading(cpuSeconds: 0, joules: nil),
+                                    after: PowerReading(cpuSeconds: 6, joules: nil), seconds: 60, batteryWattHours: 60)
+        XCTAssertNil(use.percentPerHour)
+        XCTAssertFalse(use.isHungry)
+        XCTAssertEqual(use.summary, "Busy: 10% of a core")
+    }
+
+    func testRestartedAppCountsAsNothingUsed() {
+        let use = PowerEstimate.use(bundleID: "a", appName: "A", before: PowerReading(cpuSeconds: 100, joules: 900),
+                                    after: PowerReading(cpuSeconds: 1, joules: 5), seconds: 60, batteryWattHours: 60)
+        XCTAssertEqual(use.cpuPercent, 0)
+        XCTAssertEqual(use.percentPerHour, 0)
+    }
+
+    func testParksOnlyHungryAppsLeftAloneForAnHour() {
+        let now = Date()
+        let uses = [PowerUse(bundleID: "hog", appName: "Hog", cpuPercent: 5, percentPerHour: 8),
+                    PowerUse(bundleID: "front", appName: "Front", cpuPercent: 5, percentPerHour: 9),
+                    PowerUse(bundleID: "recent", appName: "Recent", cpuPercent: 5, percentPerHour: 9),
+                    PowerUse(bundleID: "calm", appName: "Calm", cpuPercent: 1, percentPerHour: 0.5)]
+        let parked = PowerEstimate.toPark(uses, lastActive: ["recent": now.addingTimeInterval(-600)],
+                                          watchingSince: now.addingTimeInterval(-7200), frontmost: "front", now: now)
+        XCTAssertEqual(parked, ["hog"])
+    }
+
+    func testBatterySize() {
+        XCTAssertEqual(PowerEstimate.wattHours(capacityMilliampHours: 6000, voltageMillivolts: 12000)!, 72, accuracy: 0.01)
+        XCTAssertNil(PowerEstimate.wattHours(capacityMilliampHours: 100, voltageMillivolts: 12000))
+    }
+}

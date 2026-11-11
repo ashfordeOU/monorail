@@ -309,7 +309,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 toggleKeepAvailable: { [weak self] in self?.toggleKeepAvailableFromMenu() },
                 toggleClosedLid: { [weak self] in self?.toggleAwakeLidFromMenu() },
                 refresh: { [weak self] in self?.awake.refresh() },
-                openSettings: { [weak self] in self?.showAwakeSettingsFromMenu() })
+                openSettings: { [weak self] in self?.showAwakeSettingsFromMenu() }),
+            more: SliderPopover.MoreControls(
+                layouts: { [weak self] in self?.engine.layouts.map(\.name) ?? [] },
+                snapshots: { [weak self] in self?.engine.snapshots.map(\.name) ?? [] },
+                applyLayout: { [weak self] name in self?.engine.applyLayout(named: name) },
+                restoreSnapshot: { [weak self] name in self?.engine.restoreSnapshot(named: name) },
+                takeSnapshot: { [weak self] in self?.engine.perform(.takeSnapshot) },
+                isFocusOn: { [weak self] in self?.engine.isFocusMode ?? false },
+                toggleFocus: { [weak self] in self?.engine.perform(.toggleFocusMode) },
+                clashCount: { [weak self] in
+                    guard let self else { return 0 }
+                    let hotkeys = UserDefaults(suiteName: "com.apple.symbolichotkeys")?.dictionary(forKey: "AppleSymbolicHotKeys") ?? [:]
+                    return self.store.settings.keymap.clashes(with: SystemShortcuts.parse(hotkeys)).count
+                },
+                openShortcuts: { [weak self] in
+                    self?.navigation.tab = .shortcuts
+                    self?.showSettings()
+                },
+                pausedForStageManager: { [weak self] in self?.pausedForStageManager ?? false },
+                openPowerSettings: { [weak self] in
+                    self?.navigation.tab = .apps
+                    self?.showSettings()
+                },
+                showOverview: { [weak self] in self?.overview.show() })
         )
         popover.store = store
         sliderBar.stepAside = { [weak self] frame in
@@ -613,6 +636,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         }
         watchStageManager()
+        PowerWatch.shared.onNotice = { [weak self] text in self?.toast.show(text) }
+        PowerWatch.shared.onChange = { [weak self] in self?.sliderBar.update() }
+        PowerWatch.shared.start()
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in self?.checkNotch() }
         watchDormancy()
         wireUpAwake()
@@ -2052,6 +2078,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
         }
         if settings.pauseForStageManager != (stageManagerTimer != nil) { watchStageManager() }
+        PowerWatch.shared.parkOnBattery = settings.parkPowerHogs
+        PowerWatch.shared.isEnabled = settings.powerMarkers
         evening.update()
         WorkspaceColor.theme = settings.theme
         stats.isEnabled = settings.collectStats
@@ -2223,6 +2251,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         commands.setLayout = { [weak self] id, arrangement in self?.engine.setSlideLayout(of: id, to: arrangement) }
         commands.currentLayout = { [weak self] id in self?.engine.slideLayout(of: id) ?? nil }
         commands.customLayouts = { [weak self] in self?.store.settings.customLayouts ?? [] }
+        commands.appBundleID = { [weak self] id in self?.engine.bundleID(of: id) }
         commands.setCustomLayout = { [weak self] id, rows in self?.engine.setSlideLayout(of: id, to: .custom, rows: rows) }
         commands.setZones = { [weak self] id, zones in self?.engine.setSlideZones(of: id, to: zones) }
         commands.currentRows = { [weak self] id in self?.engine.slideRows(of: id) }

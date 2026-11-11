@@ -1599,7 +1599,12 @@ final class Engine {
         var mark: String?
         var note: String?
         var isPrivate = false
+        /// On battery, how much power the window's app is using, when it's one of the hungry ones.
+        var powerNote: String?
     }
+
+    /// The app a window belongs to.
+    func bundleID(of id: WindowID) -> String? { windows[id]?.bundleID }
 
     /// Windows of the active strip, left to right.
     func activeStripWindows() -> [WindowSummary] {
@@ -1662,7 +1667,8 @@ final class Engine {
             needsAttention: attentionApps.contains(window.appName),
             mark: marks.first { $0.value == window.id }?.key,
             note: windowNotes[window.id],
-            isPrivate: isPrivate(window)
+            isPrivate: isPrivate(window),
+            powerNote: PowerWatch.shared.note(for: window.bundleID)
         )
     }
 

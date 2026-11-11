@@ -726,6 +726,15 @@ struct WindowBadges: View {
                     .background(Circle().fill(Color.black.opacity(0.6)))
                     .help("Marked “\(mark)” · ⌃⌥; then \(mark) jumps here")
             }
+            if let power = window.powerNote {
+                Image(systemName: "bolt.fill")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 15, height: 15)
+                    .background(Circle().fill(Color.orange))
+                    .help("\(window.appName): \(power.prefix(1).lowercased() + power.dropFirst()) · right-click to hide or quit it")
+                    .accessibilityLabel(Text("Using a lot of battery"))
+            }
             if window.needsAttention {
                 Circle().fill(Color.red).frame(width: 9, height: 9)
                     .overlay(Circle().strokeBorder(Color.white.opacity(0.8), lineWidth: 1))
@@ -742,6 +751,7 @@ extension Engine.WindowSummary {
         if !title.isEmpty { parts.append(title) }
         if isFocused { parts.append("focused") }
         if needsAttention { parts.append("needs attention") }
+        if powerNote != nil { parts.append("using a lot of battery") }
         if let mark { parts.append("marked \(mark)") }
         return parts.joined(separator: ", ")
     }

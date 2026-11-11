@@ -984,6 +984,9 @@ private struct AppsPane: View {
                 }
                 Toggle("Settings and Preferences windows float", isOn: $store.settings.floatSettingsWindows)
                 Toggle("Pause while Stage Manager is on, and carry on when it’s off", isOn: $store.settings.pauseForStageManager)
+                Toggle("On battery, mark windows of power-hungry apps with ⚡", isOn: $store.settings.powerMarkers)
+                Toggle("On battery, hide power-hungry apps left alone for an hour (they come back when you plug in)", isOn: $store.settings.parkPowerHogs)
+                    .disabled(!store.settings.powerMarkers)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Pause tiling while these apps are in front (games, video, presentations)")
                     ForEach(store.settings.pauseForApps, id: \.self) { bundleID in

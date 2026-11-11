@@ -145,6 +145,8 @@ enum SettingsIndex {
         ("Float windows smaller than", "apps"),
         ("Settings and Preferences windows float", "apps"),
         ("Pause while Stage Manager is on, and carry on when it’s off", "apps"),
+        ("On battery, mark windows of power-hungry apps with ⚡", "apps"),
+        ("On battery, hide power-hungry apps left alone for an hour (they come back when you plug in)", "apps"),
         ("Partners", "apps"),
         ("In an empty workspace", "apps"),
         ("Start", "apps"),

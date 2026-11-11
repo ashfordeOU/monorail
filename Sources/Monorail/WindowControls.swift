@@ -38,6 +38,8 @@ struct WindowCommands {
     var neverManage: (WindowID) -> Void = { _ in }
     /// Float the window at an exact size, centred.
     var setSize: (WindowID, CGSize) -> Void = { _, _ in }
+    /// The window's app, for Hide and Quit.
+    var appBundleID: (WindowID) -> String? = { _ in nil }
 }
 
 /// Sizes for recordings and screenshots.
@@ -136,6 +138,12 @@ struct WindowContextMenu: View {
     let commands: WindowCommands
 
     var body: some View {
+        if let app = commands.appBundleID(window), let note = PowerWatch.shared.note(for: app) {
+            Text("⚡ \(note)")
+            Button("Hide This App") { PowerWatch.shared.hide(app) }
+            Button("Quit This App") { PowerWatch.shared.quit(app) }
+            Divider()
+        }
         Button("Rename…") { commands.rename(window) }
         Divider()
         Button("Focus") { commands.focus(window) }

@@ -12,7 +12,11 @@ asks. The images are in [`assets/launch/v17`](../../assets/launch/v17). Replies 
 Monorail does all of it, free. Lead with that everywhere: tagline, first image, first comment.
 
 **Tagline** (60 characters max). Pick one:
-> Stop paying for window managers. This one does it all, free (59)
+> Your whole Mac on one rail: windows, battery, focus. Free (57)
+
+Alternatives:
+- One free Mac app instead of five paid ones (42)
+- Stop paying for window managers. This one does it all, free (59)
 
 Alternatives:
 - The window manager you'd pay for, free with every feature (57)

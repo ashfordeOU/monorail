@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Monorail feature scenes</title>
+<!-- One small scene per feature for the website's feature cards. Open with ?f=<name>; scripts/launch/render-features.mjs renders them all. -->
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --soft:#FBEFEA; --pink:#E8437A; --plum:#8E3AB8;
+  --w1:#5B8CFF; --w2:#B06BFF; --w3:#FF5F9E; --w4:#FF9445; --w5:#45D18C; --w6:#33CCDB; --w7:#FFCC40; --w8:#8E7CFF; }
+* { box-sizing:border-box; }
+html, body { margin:0; width:800px; height:500px; overflow:hidden; font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing:antialiased; }
+#s { position:absolute; inset:0; background:radial-gradient(700px 420px at 90% -10%, rgba(255,140,170,.45), transparent 60%), radial-gradient(600px 400px at -10% 110%, rgba(140,90,255,.35), transparent 60%), linear-gradient(135deg,#2A1240,#5A1F5E 55%,#9A3466); overflow:hidden; color:#fff; }
+.abs { position:absolute; }
+.win { position:absolute; border-radius:10px; background:#fff; box-shadow:0 14px 34px rgba(0,0,0,.35); overflow:hidden; display:flex; flex-direction:column; color:var(--ink); }
+.win .bar { height:22px; flex:0 0 22px; display:flex; align-items:center; gap:5px; padding:0 9px; background:var(--soft); font:600 11px/1 -apple-system, "Inter", sans-serif; color:var(--muted); }
+.win .bar i { width:8px; height:8px; border-radius:50%; background:#FF5F57; } .win .bar i:nth-child(2){background:#FEBC2E} .win .bar i:nth-child(3){background:#28C840}
+.win .bar span { margin-left:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.win .body { flex:1; padding:10px; display:grid; gap:7px; align-content:start; background:linear-gradient(180deg, color-mix(in srgb, var(--a) 14%, #fff), #fff 70%); }
+.win .body b { display:block; height:9px; border-radius:5px; background:var(--a); width:55%; }
+.win .body s { display:block; height:6px; border-radius:3px; background:var(--line); }
+.win .body s:nth-child(3n) { width:78%; } .win .body s:nth-child(4n) { width:62%; }
+.win.focus { outline:3px solid #fff; outline-offset:2px; }
+.win.dim { filter:brightness(.42) saturate(.6); }
+.panel { position:absolute; border-radius:16px; background:rgba(28,18,32,.94); border:1px solid rgba(255,255,255,.12); box-shadow:0 30px 70px rgba(0,0,0,.5); color:#F6ECF3; padding:14px; font-size:13px; }
+.light { background:rgba(255,255,255,.97); color:var(--ink); border-color:rgba(0,0,0,.06); }
+.cardx { border-radius:11px; background:rgba(255,255,255,.07); padding:10px; }
+.light .cardx { background:rgba(36,17,43,.05); }
+.muted { color:rgba(246,236,243,.6); } .light .muted { color:var(--muted); }
+.btn { display:inline-block; padding:5px 10px; border-radius:7px; background:rgba(255,255,255,.12); font-weight:600; font-size:12px; }
+.btn.p { background:var(--pink); color:#fff; }
+.toast { position:absolute; padding:10px 16px; border-radius:999px; background:rgba(20,10,24,.9); color:#fff; font-weight:700; font-size:14px; box-shadow:0 12px 30px rgba(0,0,0,.4); white-space:nowrap; }
+.chip { display:inline-block; padding:7px 12px; border-radius:999px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); font-weight:600; font-size:13px; color:#fff; margin:0 6px 8px 0; }
+kbd { display:inline-block; padding:4px 8px; border-radius:7px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3); border-bottom-width:3px; font:700 15px/1 -apple-system, sans-serif; color:#fff; }
+.grad { background:linear-gradient(100deg,#FFB27A,#FF7AA8); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.mono { font:600 12.5px/1.5 ui-monospace, Menlo, monospace; }
+.bolt { display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; background:#FF9445; color:#fff; font-size:11px; font-weight:900; }
+.slider { position:absolute; left:50%; transform:translateX(-50%); height:30px; border-radius:999px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3); display:flex; align-items:center; gap:5px; padding:0 10px; }
+.slider span { width:34px; height:14px; border-radius:4px; background:rgba(255,255,255,.45); }
+.slider span.on { background:#fff; box-shadow:0 0 0 2px var(--pink); }
+</style></head>
+<body><div id="s"></div>
+<script>
+const S = document.getElementById('s');
+const C = ['--w1','--w2','--w3','--w4','--w5','--w6','--w7','--w8'];
+function el(html, style = '') { const d = document.createElement('div'); d.innerHTML = html.trim(); const e = d.firstChild; if (style) e.setAttribute('style', (e.getAttribute('style') || '') + ';' + style); S.append(e); return e; }
+function win(x, y, w, h, title, c = 0, cls = '') {
+  const lines = Math.max(2, Math.floor((h - 40) / 14));
+  return el(`<div class="win ${cls}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;--a:var(${C[c % 8]})"><div class="bar"><i></i><i></i><i></i><span>${title}</span></div><div class="body"><b></b>${'<s></s>'.repeat(lines)}</div></div>`);
+}
+function slider(y = 456, n = 7, on = 2) { el(`<div class="slider" style="top:${y}px">${Array.from({ length: n }, (_, i) => `<span class="${i === on ? 'on' : ''}"></span>`).join('')}</div>`); }
+function toast(text, x, y) { el(`<div class="toast" style="left:${x}px;top:${y}px">${text}</div>`); }
+
+const scenes = {
+  'say-it'() {
+    win(40, 60, 330, 300, 'Slack', 1); win(390, 60, 370, 300, 'Mail', 5);
+    el(`<div class="panel light" style="left:150px;top:150px;width:500px;padding:0;overflow:hidden">
+      <div style="padding:16px 18px;font-size:19px;border-bottom:1px solid var(--line)">Slack and Mail side by side on 3<span style="display:inline-block;width:2px;height:20px;background:var(--pink);vertical-align:-4px;margin-left:2px"></span></div>
+      <div style="margin:10px;padding:12px 14px;border-radius:10px;background:var(--pink);color:#fff;font-weight:700;font-size:15px">✦ Do it: Slack and Mail side by side, on workspace 3</div>
+      <div style="margin:0 10px 10px;padding:10px 14px;color:var(--muted);font-weight:600;font-size:14px">Understood on your Mac · ⌃⌥/</div></div>`);
+  },
+  'smart-slides'() {
+    win(-120, 70, 150, 300, 'Notes', 6, 'dim'); win(50, 70, 220, 300, 'Safari', 0);
+    win(290, 70, 210, 145, 'Terminal', 7, 'focus'); win(290, 225, 210, 145, 'Terminal', 7);
+    win(520, 70, 230, 300, 'Xcode', 1); win(770, 70, 150, 300, 'Figma', 3, 'dim');
+    slider(420, 6, 2); toast('Windows of one app share a slide', 260, 30);
+  },
+  overview() {
+    const ws = [['Code', '--w1'], ['Chat', '--w3'], ['Design', '--w5'], ['Music', '--w4']];
+    ws.forEach(([n, c], i) => {
+      const x = 40 + (i % 2) * 370, y = 40 + Math.floor(i / 2) * 220;
+      el(`<div class="abs" style="left:${x}px;top:${y}px;width:350px;height:200px;border-radius:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);padding:12px">
+        <div style="font-weight:700;font-size:14px;display:flex;gap:7px;align-items:center"><i style="width:9px;height:9px;border-radius:50%;background:var(${c})"></i>${i + 1} · ${n}</div></div>`);
+      for (let k = 0; k < 3; k++) win(x + 12 + k * 110, y + 40, 100, 145, ['Safari', 'Slack', 'Xcode', 'Mail', 'Figma', 'Music'][(i + k) % 6], i * 2 + k);
+    });
+  },
+  'stay-awake'() {
+    win(40, 80, 360, 320, 'Downloads', 4);
+    el(`<div class="panel" style="left:430px;top:40px;width:330px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:16px">☕ Stay Awake</b><div class="muted">On · 52 min left</div></div><div style="width:42px;height:24px;border-radius:12px;background:#FF9445;position:relative"><i style="position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff"></i></div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:14px 0">${['15 min', '30 min', '1 hour', '2 hours', '4 hours', '8 hours'].map((t, i) => `<span class="btn" style="text-align:center;${i === 2 ? 'background:#FF9445;color:#fff' : ''}">${t}</span>`).join('')}</div>
+      <div class="cardx" style="display:grid;gap:8px"><div>✓ Keep me Available in Teams and Slack</div><div>✓ While something downloads</div><div>✓ With the lid closed (plugged in)</div></div></div>`);
+  },
+  evening() {
+    win(40, 60, 330, 330, 'Pages', 4); win(390, 60, 370, 330, 'Safari', 0);
+    el(`<div class="abs" style="left:0;top:0;width:800px;height:500px;background:linear-gradient(90deg,transparent 0,transparent 45%,rgba(255,150,40,.33) 55%);mix-blend-mode:multiply"></div>`);
+    el(`<div class="panel" style="left:470px;top:300px;width:300px"><b>🌙 Evening Mode</b><div class="muted" style="margin:4px 0 10px">Warmer from sunset, fades in over 20 min</div>
+      <div style="height:8px;border-radius:4px;background:linear-gradient(90deg,#9EC5FF,#FFD27A,#FF8A3D);position:relative"><i style="position:absolute;left:68%;top:-5px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></i></div></div>`);
+  },
+  'ai-agents'() {
+    el(`<div class="panel" style="left:40px;top:60px;width:470px;height:330px;padding:0;background:#160E1A">
+      <div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.1)" class="muted mono">Terminal — claude</div>
+      <div class="mono" style="padding:14px;color:#E9D8E6">› refactor the strip layout<br><span style="color:#8DE0A6">✓</span> Read Engine.swift<br><span style="color:#8DE0A6">✓</span> Edited Strip.swift<br><br><span style="color:#FFB27A">Do you want to run swift test?</span><br>❯ 1. Yes<br>&nbsp;&nbsp;2. No</div></div>`);
+    win(540, 60, 220, 330, 'Docs', 2, 'dim');
+    toast('🔔 Claude Code is waiting for you · ⌃⌥J to go there', 170, 420);
+  },
+  'screen-share'() {
+    win(40, 70, 330, 300, 'Keynote', 3, 'focus');
+    el(`<div class="win" style="left:390px;top:70px;width:370px;height:300px;--a:var(--w5)"><div class="bar"><i></i><i></i><i></i><span>Messages</span></div><div class="body" style="filter:blur(7px)"><b></b><s></s><s></s><s></s><s></s><s></s><s></s></div></div>`);
+    el(`<div class="abs" style="left:470px;top:190px;padding:8px 14px;border-radius:999px;background:rgba(20,10,24,.85);font-weight:700">🛡️ Private · hidden while sharing</div>`);
+    toast('● Sharing your screen in Zoom', 270, 410);
+  },
+  focus() {
+    win(-60, 70, 220, 320, 'Mail', 5, 'dim'); win(190, 70, 420, 320, 'Pages · Q3 report', 4, 'focus'); win(640, 70, 220, 320, 'Slack', 1, 'dim');
+    el(`<div class="abs" style="left:310px;top:20px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);font-weight:700">🎯 Focus · 24:12 left</div>`);
+    slider(430, 5, 2);
+  },
+  displays() {
+    el(`<div class="abs" style="left:40px;top:70px;width:420px;height:260px;border-radius:12px;background:#120A16;border:6px solid #2C2230"></div>`);
+    el(`<div class="abs" style="left:520px;top:110px;width:240px;height:160px;border-radius:10px;background:#120A16;border:5px solid #2C2230"></div>`);
+    win(56, 86, 190, 228, 'Xcode', 1); win(256, 86, 190, 228, 'Safari', 0); win(533, 123, 214, 134, 'Slack', 3);
+    el(`<div class="abs" style="left:225px;top:330px;width:70px;height:30px;background:#2C2230;border-radius:0 0 8px 8px"></div>`);
+    toast('🖥️ Desk layout back · every window where it was', 170, 410);
+  },
+  'no-chords'() {
+    el(`<div class="abs" style="left:60px;top:70px;font-size:15px;font-weight:700;color:#FFC3D6;letter-spacing:.12em">TAP, PRESS, PLAY</div>`);
+    const items = [['⌥', 'Tap right Option for slide mode'], ['H J K L', 'Vim keys'], ['🎹', 'A MIDI pad'], ['🎮', 'A game controller'], ['📱', 'Your phone as a remote'], ['⇪', 'Caps Lock as the Monorail key']];
+    items.forEach(([k, t], i) => el(`<div class="abs" style="left:${60 + (i % 2) * 350}px;top:${120 + Math.floor(i / 2) * 110}px;width:330px;height:92px;border-radius:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:flex;gap:14px;align-items:center;padding:14px"><span style="min-width:70px;text-align:center"><kbd style="font-size:20px">${k}</kbd></span><b style="font-size:15px">${t}</b></div>`));
+  },
+  docking() {
+    win(40, 60, 340, 340, 'Safari', 0);
+    el(`<div class="abs" style="left:400px;top:60px;width:360px;height:340px;border-radius:10px;background:#fff;opacity:.95"></div>`);
+    win(400, 60, 360, 165, 'Mail', 5);
+    el(`<div class="abs" style="left:400px;top:235px;width:360px;height:165px;border-radius:10px;background:rgba(232,67,122,.55);border:3px solid #fff;display:grid;place-items:center;font-weight:800;font-size:16px">Drop here: split below</div>`);
+    win(470, 270, 220, 120, 'Notes', 6);
+    el(`<div class="abs" style="left:40px;top:28px;display:flex;gap:4px">${['Safari', 'Docs', 'Figma'].map((t, i) => `<span style="padding:5px 10px;border-radius:8px 8px 0 0;background:${i ? 'rgba(255,255,255,.35)' : '#fff'};color:${i ? '#fff' : 'var(--ink)'};font-weight:700;font-size:11px">${t}</span>`).join('')}</div>`);
+  },
+  'saved-views'() {
+    win(40, 120, 330, 260, 'Xcode', 1); win(390, 120, 370, 260, 'Simulator', 6);
+    el(`<div class="abs" style="left:40px;top:40px;display:flex;gap:8px;align-items:center"><kbd>‹</kbd><kbd>›</kbd>${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<span style="width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-weight:800;background:${n === 3 ? 'var(--pink)' : 'rgba(255,255,255,.14)'};border:1px solid rgba(255,255,255,.25)">${n}</span>`).join('')}</div>`);
+    toast('📍 View 3 · “Build and run”', 280, 410);
+  },
+  zones() {
+    el(`<div class="panel light" style="left:60px;top:40px;width:680px;height:400px;padding:16px">
+      <b style="font-size:15px">Draw your own layout</b><div class="muted" style="margin:2px 0 12px">Drag the lines; click to split</div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:8px;height:300px">
+      <div style="grid-row:1/3;border-radius:10px;background:color-mix(in srgb,var(--w1) 25%,#fff);border:2px solid var(--w1);display:grid;place-items:center;font-weight:800;color:var(--w1)">Editor · 66%</div>
+      <div style="border-radius:10px;background:color-mix(in srgb,var(--w3) 25%,#fff);border:2px solid var(--w3);display:grid;place-items:center;font-weight:800;color:var(--w3)">Preview</div>
+      <div style="border-radius:10px;background:color-mix(in srgb,var(--w5) 25%,#fff);border:2px solid var(--w5);display:grid;place-items:center;font-weight:800;color:#1E9E5E">Terminal</div></div></div>`);
+  },
+  import() {
+    ['AeroSpace', 'yabai + skhd', 'Rectangle'].forEach((n, i) => el(`<div class="panel light" style="left:50px;top:${60 + i * 120}px;width:300px;padding:14px 16px"><b style="font-size:16px">${n}</b><div class="mono muted">${['~/.aerospace.toml', '~/.yabairc · ~/.skhdrc', 'Rectangle settings'][i]}</div></div>`));
+    el(`<div class="abs" style="left:380px;top:200px;font-size:40px">→</div>`);
+    el(`<div class="panel" style="left:450px;top:120px;width:300px;height:240px"><b style="font-size:17px">Monorail</b><div class="muted" style="margin:4px 0 12px">Imported in a minute</div>
+      <div class="cardx" style="display:grid;gap:8px"><div>✓ 42 shortcuts</div><div>✓ Gaps and padding</div><div>✓ 18 app rules</div><div>✓ Workspaces</div></div></div>`);
+  },
+  tags() {
+    win(260, 90, 280, 270, 'Spotify', 4, 'focus');
+    [1, 2, 3, 4].forEach(n => el(`<div class="abs" style="left:${130 + (n - 1) * 140}px;top:390px;width:120px;padding:10px;border-radius:12px;text-align:center;font-weight:700;background:${[1, 3].includes(n) ? 'var(--pink)' : 'rgba(255,255,255,.12)'};border:1px solid rgba(255,255,255,.25)">Workspace ${n}</div>`));
+    toast('🏷️ On workspaces 1 and 3', 290, 30);
+  },
+  scripting() {
+    el(`<div class="panel" style="left:40px;top:50px;width:430px;height:400px;background:#160E1A">
+      <div class="muted mono" style="margin-bottom:10px">Terminal</div>
+      <div class="mono" style="color:#E9D8E6">$ monorail say "Slack and Mail side by side"<br><span style="color:#8DE0A6">ok</span><br>$ monorail windows | jq '.[0]'<br>{ "id": 41, "app": "Slack", "slide": 2 }<br>$ open -g monorail://layout/Coding<br>$ monorail subscribe<br>{"event":"agent_waiting","app":"Terminal"}</div></div>`);
+    ['monorail:// links', 'Command line', 'Local API', 'MCP', 'AppleScript', 'JavaScript', 'Raycast', 'Shortcuts'].forEach((t, i) => el(`<span class="chip abs" style="left:500px;top:${60 + i * 48}px">${t}</span>`));
+  },
+  battery() {
+    el(`<div class="panel" style="left:220px;top:16px;width:360px;padding:12px">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(135deg,#FF8A5B,#E8437A,#8E3AB8);font-weight:900">⚡</span><b>Battery</b></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${[['Mac battery', '44%', 'On battery'], ['Time left', '5 hr 52 min', 'At the current rate'], ['Using', '6.1 W', 'Whole Mac, now']].map(([a, b, c]) => `<div class="cardx" style="text-align:center"><div class="muted" style="font-size:10px">${a}</div><b style="font-size:16px">${b}</b><div class="muted" style="font-size:9.5px">${c}</div></div>`).join('')}</div>
+      <div class="cardx" style="margin-top:8px"><div style="display:flex;justify-content:space-between"><b style="font-size:12px">Battery history</b><b style="font-size:12px">44%</b></div>
+      <svg viewBox="0 0 320 60" width="100%" height="56"><polyline points="0,20 40,22 60,24" fill="none" stroke="#E8559A" stroke-width="2.5"/><polyline points="70,40 100,42 130,10" fill="none" stroke="#4CC77A" stroke-width="2.5"/><polyline points="140,8 220,14 300,30" fill="none" stroke="#E8559A" stroke-width="2.5"/><circle cx="300" cy="30" r="3.5" fill="#E8559A"/></svg>
+      <div class="muted" style="display:flex;justify-content:space-between;font-size:10px"><span>Capacity 100%</span><span>3 charge cycles</span></div></div>
+      <div class="cardx" style="margin-top:8px;background:rgba(255,148,69,.12);border:1px solid rgba(255,148,69,.3)"><div style="color:#FFB27A;font-weight:700;font-size:11px">⚡ Needs your attention</div>
+      <div style="display:flex;justify-content:space-between;margin:6px 0"><b style="font-size:15px">Google Chrome</b><b>6.2%/hr</b></div>
+      <span class="btn p">Quit App</span> <span class="btn">Pause</span> <span class="btn">Hide</span> <span class="btn" style="background:none">Keep</span>
+      <div style="font-size:11px;margin-top:6px"><span class="muted">If you quit</span> 5 hr 52 min → <b style="color:#4CC77A">6 hr 41 min</b></div></div></div>`);
+  },
+  'every-display'() {
+    el(`<div class="abs" style="left:60px;top:30px;width:230px;height:410px;border-radius:12px;background:#120A16;border:6px solid #2C2230"></div>`);
+    win(74, 44, 202, 190, 'Xcode · main', 1); win(74, 242, 202, 186, 'Terminal', 7);
+    el(`<div class="abs" style="left:340px;top:80px;width:420px;height:300px;border-radius:12px;background:#120A16;border:6px solid #2C2230"></div>`);
+    el(`<div class="abs" style="left:346px;top:86px;width:408px;height:30px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.2) 0 40px,rgba(255,255,255,.1) 40px 80px);font:700 11px/30px sans-serif;text-align:center;color:#fff">kept clear for SketchyBar</div>`);
+    win(356, 126, 190, 244, 'Safari', 0); win(556, 126, 190, 244, 'Slack', 3);
+    toast('Portrait stacks · edges kept clear · pauses for Stage Manager', 150, 450);
+  },
+  clashes() {
+    el(`<div class="panel light" style="left:80px;top:70px;width:640px;padding:16px">
+      <div style="display:flex;justify-content:space-between"><b style="font-size:15px">Clashes</b><span class="muted">Check again</span></div>
+      ${[['⌃⌥←', 'Focus left', 'Move left a space'], ['⌃⌥Space', 'Command palette', 'Select the previous input source']].map(([k, a, m]) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--line);margin-top:10px">
+        <div><b style="color:#D97706">⚠︎ ${k} · ${a}</b><div class="muted" style="font-size:12.5px">Also used by macOS: ${m}</div></div>
+        <div><span class="btn p">Use ${k.replace('⌃⌥', '⌃⌥⇧')}</span> <span class="btn" style="background:rgba(36,17,43,.06)">Change in macOS…</span></div></div>`).join('')}</div>`);
+    toast('✓ No clashes: every shortcut is free', 260, 410);
+  },
+  setup() {
+    win(40, 60, 340, 320, 'Xcode', 1, 'focus'); win(400, 60, 360, 320, 'Simulator', 6, 'focus');
+    ['Mail', 'Slack', 'Music', 'Photos'].forEach((n, i) => el(`<div class="abs" style="left:${130 + i * 140}px;top:400px;width:120px;padding:8px;border-radius:10px;background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.3);text-align:center;color:rgba(255,255,255,.6);font-weight:600;font-size:13px">${n} · hidden</div>`));
+    toast('🗂️ “Coding” restored · 4 other apps hidden, none quit', 160, 20);
+  },
+  agents() {
+    el(`<div class="abs" style="left:320px;top:180px;width:160px;height:160px;border-radius:36px;background:linear-gradient(135deg,#FF8A5B,#E8437A 55%,#C2456E);box-shadow:0 20px 60px rgba(232,67,122,.5);display:grid;place-items:center"><svg width="90" height="90" viewBox="0 0 64 64"><rect x="13" y="15" width="10" height="34" rx="4" fill="#FFF6F2"/><rect x="41" y="15" width="10" height="34" rx="4" fill="#FFF6F2"/><rect x="27" y="23" width="10" height="20" rx="3.5" fill="#2A1430"/></svg></div>`);
+    const names = [['Claude', 'MCP'], ['Cursor', 'MCP'], ['OpenClaw', 'skill'], ['Hermes Agent', 'skill'], ['Grok bot', 'command'], ['ChatGPT agent', 'command'], ['Computer use', 'command'], ['Codex', 'command']];
+    names.forEach(([n, how], i) => {
+      const a = (i / names.length) * Math.PI * 2 - Math.PI / 2, x = 400 + Math.cos(a) * 300 - 75, y = 260 + Math.sin(a) * 200 - 18;
+      el(`<div class="abs" style="left:${x}px;top:${y}px;width:150px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);text-align:center"><b style="font-size:13px">${n}</b><div style="font-size:10.5px;color:#FFC3D6">${how}</div></div>`);
+    });
+  },
+  'battery-windows'() {
+    win(40, 70, 230, 300, 'Google Chrome', 0); win(285, 70, 230, 300, 'Xcode', 1); win(530, 70, 230, 300, 'Slack', 3);
+    el(`<span class="bolt abs" style="left:240px;top:80px">⚡</span>`);
+    el(`<div class="panel light" style="left:150px;top:110px;width:250px;padding:8px"><div style="padding:6px 8px;color:var(--muted);font-size:12px">⚡ About 6% of the battery an hour</div><div style="padding:6px 8px">Hide This App</div><div style="padding:6px 8px;border-radius:6px;background:var(--pink);color:#fff">Quit This App</div><div style="padding:6px 8px">Pause Until I Open It</div></div>`);
+  },
+  themes() {
+    const t = [['Sunset', '#FF8A5B', '#E8437A'], ['Ocean', '#33CCDB', '#5B8CFF'], ['Forest', '#45D18C', '#1E7F5C'], ['Lavender', '#B06BFF', '#5A1F9E'], ['Seasons', '#FFCC40', '#FF5F9E'], ['Monochrome', '#8C7487', '#2A1430'], ['Synthwave', '#FF2BD6', '#00E0FF'], ['Paper', '#F3E9DC', '#C9B7A3']];
+    t.forEach(([n, a, b], i) => el(`<div class="abs" style="left:${40 + (i % 4) * 185}px;top:${70 + Math.floor(i / 4) * 190}px;width:170px;height:170px;border-radius:16px;background:linear-gradient(135deg,${a},${b});box-shadow:0 14px 30px rgba(0,0,0,.35);overflow:hidden"><i style="position:absolute;left:14px;top:30px;width:62px;height:90px;border-radius:7px;background:rgba(255,255,255,.92)"></i><i style="position:absolute;left:84px;top:30px;width:72px;height:90px;border-radius:7px;background:rgba(255,255,255,.92)"></i><b style="position:absolute;left:12px;bottom:10px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5)">${n}</b></div>`));
+  },
+};
+const name = new URLSearchParams(location.search).get('f') || 'battery';
+(scenes[name] || scenes.battery)();
+document.title = name;
+</script></body></html>

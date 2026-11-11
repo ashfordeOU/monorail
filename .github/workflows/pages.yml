@@ -32,7 +32,7 @@ jobs:
         run: |
           mkdir -p public/assets
           cp -R site/. public/
-          cp -R assets/readme assets/launch public/assets/
+          cp -R assets/readme assets/launch assets/features public/assets/
           cp assets/icon.png public/assets/icon.png
           cp site/index.html public/404.html
           # The Agent Skill, for agents told to read it from the site.

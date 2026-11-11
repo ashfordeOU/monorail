@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Monorail by Ashforde® · the scrolling window manager for Mac</title>
-<meta name="description" content="Monorail is a free scrolling window manager for Mac. New windows slide in beside the one you're using, and nothing else shrinks. Notarised by Apple.">
-<meta property="og:title" content="Monorail by Ashforde® · every window rides one rail">
-<meta property="og:description" content="A free scrolling window manager for Mac: new windows slide in beside the one you're using, and nothing else ever shrinks.">
+<title>Monorail by Ashforde® · your whole Mac, on one rail</title>
+<meta name="description" content="Monorail is a free Mac app that does the work of five paid ones: a scrolling window manager where nothing shrinks, a battery manager, Stay Awake, Evening Mode, focus tools and AI-agent control. Notarised by Apple.">
+<meta property="og:title" content="Monorail by Ashforde® · your whole Mac, on one rail">
+<meta property="og:description" content="Windows that never shrink, a built-in battery manager, Stay Awake, Evening Mode, focus tools and AI agents. One free Mac app instead of five paid ones.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Monorail by Ashforde">
 <meta property="og:image" content="https://monorail.ashforde.org/assets/launch/v17/01-hero.png">
@@ -164,8 +164,12 @@ h2 { font-size:clamp(30px, 4.4vw, 48px); letter-spacing:-1px; line-height:1.08; 
 .grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-top:38px; }
 @media (max-width:1000px) { .grid { grid-template-columns:repeat(2, minmax(0,1fr)); } }
 @media (max-width:600px) { .grid { grid-template-columns:minmax(0,1fr); } }
+@media (min-width:1001px) { #features .grid { grid-template-columns:repeat(3, minmax(0,1fr)); gap:20px; } }
 .feature { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px; transition:transform .35s var(--ease), box-shadow .35s var(--ease); }
 .feature:hover { transform:translateY(-4px); box-shadow:0 20px 50px rgba(42,20,48,.12); }
+.feature .shot { display:block; width:calc(100% + 44px); max-width:none; height:auto; aspect-ratio:8/5; object-fit:cover; margin:-22px -22px 16px; border-radius:var(--radius) var(--radius) 0 0; border-bottom:1px solid var(--line); }
+.feature .shot + .ic { display:none; }
+.feature { overflow:hidden; }
 .feature .ic { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; font-size:21px; background:var(--soft); margin-bottom:12px; }
 .feature h3 { margin:0 0 6px; font-size:18px; }
 .feature h3 kbd { margin-left:6px; vertical-align:2px; }
@@ -429,8 +433,8 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
 <header class="hero">
   <div class="wrap">
     <a class="eyebrow" href="changelog/" style="text-decoration:none"><b>New</b> See which apps drain your battery, right on the window</a>
-    <h1>Every window rides <em class="grad">one rail.</em></h1>
-    <p class="lede">A scrolling window manager for your Mac. New windows slide in next to the one you're using, <b>nothing else ever shrinks</b>, and quitting puts every window back.</p>
+    <h1>Your whole Mac, <em class="grad">on one rail.</em></h1>
+    <p class="lede">Windows slide in beside you and <b>nothing you're using ever shrinks</b>. A battery manager that shows what's draining it, Stay Awake, Evening Mode, focus tools, and a Mac your AI agents can drive. <b>One free app instead of five paid ones.</b></p>
     <div class="cta">
       <a class="btn primary two dl" href="download/" data-smartdl><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl"><span data-dl-label>Download for Mac</span><small data-dl-sub>macOS 13 or later · notarised by Apple</small></span></a>
       <a class="btn ghost" href="#demo">Try it here ↓</a>
@@ -509,26 +513,26 @@ footer .legal::before { content:""; display:block; border-top:1px solid var(--li
     <div class="center"><div class="kicker">Features</div><h2>Calm to use, <span class="grad">powerful</span> when you need it</h2>
     <p class="sub">270 actions, every one in the command palette and all free. Here are the ones to try first.</p></div>
     <div class="grid">
-      <div class="feature"><div class="ic">🗣️</div><h3>Say it <kbd>⌃⌥/</kbd></h3><p>“Slack and Mail side by side on 3.” “Safari two thirds.” “How do I keep my Mac awake?” Understood on your Mac, with an optional assistant from Claude, OpenAI, Gemini, Grok or a model running on your Mac for anything else.</p></div>
-      <div class="feature"><div class="ic">🧩</div><h3>Smart slides</h3><p>Windows of one app share a slide. Pair any two, in grids, main + side, tabs or tall slides.</p></div>
-      <div class="feature"><div class="ic">🗺️</div><h3>Overview <kbd>⌃⌥O</kbd></h3><p>Every workspace on one colourful canvas. Drag to pair, reorder, move or close.</p></div>
-      <div class="feature"><div class="ic">☕</div><h3>Stay Awake</h3><p>For an hour, until a time, while something downloads or while an app is open. Keeps Teams and Slack showing you as Available. It also keeps a MacBook running with the lid closed: only while plugged in unless you choose otherwise, and it stops if the Mac gets hot.</p></div>
-      <div class="feature"><div class="ic">🌙</div><h3>Evening Mode</h3><p>Less blue light from every display, as warm as you like. Turn it on by hand or on a schedule; it fades in over 20 minutes.</p></div>
-      <div class="feature"><div class="ic">🤖</div><h3>Made for AI agents</h3><p>Claude, Cursor, OpenClaw, Hermes Agent, Grok-based bots and computer-use agents can arrange your windows by MCP, a <a href="agents/SKILL.md">ready-made skill</a> or one command. A chime when your coding agent waits for you. <a href="docs/agents/">How to connect one</a>.</p></div>
-      <div class="feature"><div class="ic">🛡️</div><h3>Safe screen sharing</h3><p>Private windows step aside the moment you share in Zoom, Teams or Meet.</p></div>
-      <div class="feature"><div class="ic">🎯</div><h3>Focus and deep work <kbd>⌃⌥B</kbd></h3><p>Dim everything but your slide, hide distracting apps, and work in pomodoro blocks.</p></div>
-      <div class="feature"><div class="ic">🖥️</div><h3>Displays that remember</h3><p>Unplug and replug: every window goes back where it was. A layout for each desk.</p></div>
-      <div class="feature"><div class="ic">⌨️</div><h3>No chords needed</h3><p>Tap right ⌥ for slide mode, or use Vim keys, a MIDI pad, a game controller or your phone.</p></div>
-      <div class="feature"><div class="ic">🪟</div><h3>Dock anything, nest anywhere</h3><p>Split a slide by dragging, group windows from different apps into tabs, and resize two windows at once from the gap between them.</p></div>
-      <div class="feature"><div class="ic">📍</div><h3>Saved views <kbd>⌃⌥⌘1</kbd></h3><p>Nine places per display to jump back to, plus back and forward through where you've been, like a browser.</p></div>
-      <div class="feature"><div class="ic">📐</div><h3>Draw your own layouts</h3><p>The zone editor splits a slide any way you like. Use it on any slide from its menu.</p></div>
-      <div class="feature"><div class="ic">📦</div><h3>Switch in a minute</h3><p>Imports your shortcuts, gaps and app rules from AeroSpace, yabai and skhd, or Rectangle.</p></div>
-      <div class="feature"><div class="ic">🏷️</div><h3>Tags</h3><p>Keep a window on the workspaces you choose, or show another workspace alongside this one.</p></div>
-      <div class="feature"><div class="ic">⚡</div><h3>A battery manager, built in</h3><p>Charge, time left, watts and a day of history with battery health. Every app and AI agent by battery use, with Quit, Pause or Hide and what quitting gives you back. ⚡ marks hungry windows, and your assistant can ask too. No separate battery app needed.</p></div>
-      <div class="feature"><div class="ic">📱</div><h3>Every kind of display</h3><p>On a portrait display, windows stack top to bottom with the main one on top. Keep any screen edge clear for another app's bar, and Monorail steps aside while Stage Manager is on.</p></div>
-      <div class="feature"><div class="ic">🧭</div><h3>Shortcuts that never clash</h3><p>Settings shows any Monorail shortcut that macOS already uses, and swaps it for a free one in one click. Every shortcut can be changed or removed.</p></div>
-      <div class="feature"><div class="ic">🗂️</div><h3>Back to your setup</h3><p>Restore a saved layout and its apps open where they were. Turn on one switch and every other app hides, never quits, so only that work is in front of you.</p></div>
-      <div class="feature"><div class="ic">🔌</div><h3>Built to be scripted</h3><p>monorail:// links, a CLI with a live event stream, a local API, MCP for AI assistants, and shareable layout links.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/say-it.webp" alt="Say it in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🗣️</div><h3>Say it <kbd>⌃⌥/</kbd></h3><p>“Slack and Mail side by side on 3.” “Safari two thirds.” “How do I keep my Mac awake?” Understood on your Mac, with an optional assistant from Claude, OpenAI, Gemini, Grok or a model running on your Mac for anything else.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/smart-slides.webp" alt="Smart slides in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🧩</div><h3>Smart slides</h3><p>Windows of one app share a slide. Pair any two, in grids, main + side, tabs or tall slides.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/overview.webp" alt="Overview in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🗺️</div><h3>Overview <kbd>⌃⌥O</kbd></h3><p>Every workspace on one colourful canvas. Drag to pair, reorder, move or close.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/stay-awake.webp" alt="Stay Awake in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">☕</div><h3>Stay Awake</h3><p>For an hour, until a time, while something downloads or while an app is open. Keeps Teams and Slack showing you as Available. It also keeps a MacBook running with the lid closed: only while plugged in unless you choose otherwise, and it stops if the Mac gets hot.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/evening.webp" alt="Evening Mode in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🌙</div><h3>Evening Mode</h3><p>Less blue light from every display, as warm as you like. Turn it on by hand or on a schedule; it fades in over 20 minutes.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/agents.webp" alt="Made for AI agents in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🤖</div><h3>Made for AI agents</h3><p>Claude, Cursor, OpenClaw, Hermes Agent, Grok-based bots and computer-use agents can arrange your windows by MCP, a <a href="agents/SKILL.md">ready-made skill</a> or one command. A chime when your coding agent waits for you. <a href="docs/agents/">How to connect one</a>.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/screen-share.webp" alt="Safe screen sharing in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🛡️</div><h3>Safe screen sharing</h3><p>Private windows step aside the moment you share in Zoom, Teams or Meet.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/focus.webp" alt="Focus and deep work in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🎯</div><h3>Focus and deep work <kbd>⌃⌥B</kbd></h3><p>Dim everything but your slide, hide distracting apps, and work in pomodoro blocks.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/displays.webp" alt="Displays that remember in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🖥️</div><h3>Displays that remember</h3><p>Unplug and replug: every window goes back where it was. A layout for each desk.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/no-chords.webp" alt="No chords needed in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">⌨️</div><h3>No chords needed</h3><p>Tap right ⌥ for slide mode, or use Vim keys, a MIDI pad, a game controller or your phone.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/docking.webp" alt="Dock anything, nest anywhere in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🪟</div><h3>Dock anything, nest anywhere</h3><p>Split a slide by dragging, group windows from different apps into tabs, and resize two windows at once from the gap between them.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/saved-views.webp" alt="Saved views in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">📍</div><h3>Saved views <kbd>⌃⌥⌘1</kbd></h3><p>Nine places per display to jump back to, plus back and forward through where you've been, like a browser.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/zones.webp" alt="Draw your own layouts in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">📐</div><h3>Draw your own layouts</h3><p>The zone editor splits a slide any way you like. Use it on any slide from its menu.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/import.webp" alt="Switch in a minute in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">📦</div><h3>Switch in a minute</h3><p>Imports your shortcuts, gaps and app rules from AeroSpace, yabai and skhd, or Rectangle.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/tags.webp" alt="Tags in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🏷️</div><h3>Tags</h3><p>Keep a window on the workspaces you choose, or show another workspace alongside this one.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/battery.webp" alt="A battery manager, built in in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">⚡</div><h3>A battery manager, built in</h3><p>Charge, time left, watts and a day of history with battery health. Every app and AI agent by battery use, with Quit, Pause or Hide and what quitting gives you back. ⚡ marks hungry windows, and your assistant can ask too. No separate battery app needed.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/every-display.webp" alt="Every kind of display in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">📱</div><h3>Every kind of display</h3><p>On a portrait display, windows stack top to bottom with the main one on top. Keep any screen edge clear for another app's bar, and Monorail steps aside while Stage Manager is on.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/clashes.webp" alt="Shortcuts that never clash in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🧭</div><h3>Shortcuts that never clash</h3><p>Settings shows any Monorail shortcut that macOS already uses, and swaps it for a free one in one click. Every shortcut can be changed or removed.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/setup.webp" alt="Back to your setup in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🗂️</div><h3>Back to your setup</h3><p>Restore a saved layout and its apps open where they were. Turn on one switch and every other app hides, never quits, so only that work is in front of you.</p></div>
+      <div class="feature"><img class="shot" src="assets/features/scripting.webp" alt="Built to be scripted in Monorail" width="800" height="500" loading="lazy" decoding="async"><div class="ic">🔌</div><h3>Built to be scripted</h3><p>monorail:// links, a CLI with a live event stream, a local API, MCP for AI assistants, and shareable layout links.</p></div>
     </div>
   </section>
 

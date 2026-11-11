@@ -95,6 +95,11 @@ What's new in each version: [CHANGELOG.md](CHANGELOG.md). Help: [monorail.ashfor
 
 ## Features
 
+<p align="center">
+<img src="assets/features/smart-slides.webp" width="32%" alt="Smart slides"> <img src="assets/features/docking.webp" width="32%" alt="Docking"> <img src="assets/features/say-it.webp" width="32%" alt="Say it">
+<img src="assets/features/battery.webp" width="32%" alt="Battery manager"> <img src="assets/features/overview.webp" width="32%" alt="Overview"> <img src="assets/features/agents.webp" width="32%" alt="AI agents">
+</p>
+
 ### One strip. Nothing shrinks.
 
 Every display, Space and workspace has its own strip. Windows of the same app share a full-screen

@@ -7,4 +7,8 @@ binding = "DB"
 database_name = "monorail-stats"
 database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
 
+# Every Monday at 07:41 UTC: the weekly email (sent only when RESEND_API_KEY and REPORT_TO are set).
+[triggers]
+crons = ["41 7 * * 1"]
+
 # Set the dashboard key with: npx wrangler secret put STATS_KEY

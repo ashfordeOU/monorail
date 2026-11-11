@@ -41,6 +41,20 @@ site the visitor came from and the country. The website sends these from `site/c
 skipped for Do Not Track and Global Privacy Control) and `scripts/install.sh` sends one per install.
 They appear on the same dashboard under **Downloads** and **Website visits**.
 
+## Growth, retention and the funnel
+
+The dashboard's **Growth** section shows new installs per day, how many installs are still used a
+day, a week and a month after they started (and by weekly cohort), the funnel from site visits to
+downloads to new installs (by day and by where visitors came from), and which features used in the
+first week go with people staying. `GET /v1/stats?key=…&weekly=1` gives the week in a few lines.
+
+## The Monday email
+
+Every Monday at 07:41 UTC the Worker emails the week's numbers, once `RESEND_API_KEY` and
+`STATS_REPORT_TO` are GitHub secrets and the deploy workflow has run (Resend is free at this volume;
+verify ashforde.org there by adding its DNS records in Cloudflare, which doesn't touch the Proton mail
+records). Without them, nothing is sent.
+
 ## Retention
 
 To keep 13 months of data, run this monthly (for example from a Cron Trigger):

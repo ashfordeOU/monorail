@@ -7,6 +7,8 @@ name: Deploy usage stats server
 #                          template, plus Account → D1 → Edit)
 #   CLOUDFLARE_ACCOUNT_ID  shown on the Cloudflare dashboard's Workers & Pages page
 #   STATS_KEY              any long random password; it guards the dashboard
+#   RESEND_API_KEY         optional: a Resend API key, for the Monday email (resend.com, free)
+#   STATS_REPORT_TO        optional: where the Monday email goes, e.g. contact@ashforde.org
 # Safe to run again: it reuses the database and updates the Worker.
 
 on:
@@ -22,6 +24,8 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       STATS_KEY: ${{ secrets.STATS_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      STATS_REPORT_TO: ${{ secrets.STATS_REPORT_TO }}
     defaults:
       run:
         working-directory: server
@@ -52,6 +56,12 @@ jobs:
           set -euo pipefail
           npx --yes wrangler@4 deploy 2>&1 | tee deploy.txt
           printf '%s' "$STATS_KEY" | npx --yes wrangler@4 secret put STATS_KEY
+          # The Monday email, when an email service is set up.
+          if [ -n "$RESEND_API_KEY" ] && [ -n "$STATS_REPORT_TO" ]; then
+            printf '%s' "$RESEND_API_KEY" | npx --yes wrangler@4 secret put RESEND_API_KEY
+            printf '%s' "$STATS_REPORT_TO" | npx --yes wrangler@4 secret put REPORT_TO
+            echo "- Weekly email: every Monday to the address in STATS_REPORT_TO" >> "$GITHUB_STEP_SUMMARY"
+          fi
           url="$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.txt | head -n1)"
           {
             echo "### Usage stats server is live"

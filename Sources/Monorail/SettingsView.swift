@@ -837,8 +837,6 @@ private struct AppearancePane: View {
                 Picker("Monorail’s windows", selection: $store.settings.appAppearance) {
                     ForEach(AppAppearance.allCases, id: \.self) { Text($0.title).tag($0) }
                 }
-                Toggle("Plain overview backdrop (no colours or glows)", isOn: $store.settings.plainOverview)
-                    .help("Also used when Reduce Transparency is on")
                 Toggle("App icons in the overview instead of live previews", isOn: $store.settings.overviewIconsOnly)
                 Picker("Notices appear", selection: $store.settings.noticePosition) {
                     ForEach(NoticePosition.allCases, id: \.self) { Text($0.title).tag($0) }

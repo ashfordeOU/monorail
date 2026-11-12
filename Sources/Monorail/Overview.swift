@@ -131,17 +131,19 @@ enum OverviewStyle {
     static var live = true
 }
 
-/// The overview's backdrop: a deep, colourful gradient with soft glows and a
+/// The overview's backdrop (older themed version kept below for reference): a deep, colourful gradient with soft glows and a
 /// fine dot pattern, over a blur of the desktop.
 private struct OverviewBackground: View {
     let theme: Theme
     private var backdrop: (gradient: [Color], glows: [Color]) { WorkspaceColor.backdrop(theme) }
 
+    /// Mission Control's look: your own desktop, blurred (the window's frosted glass), dimmed a
+    /// little. No theme colours, glows or patterns.
     var body: some View {
-        if OverviewStyle.plain || NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency {
-            backdrop.gradient[0].opacity(0.97).ignoresSafeArea()
+        if NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency {
+            Color(white: 0.1).opacity(0.97).ignoresSafeArea()
         } else {
-            fancy
+            Color.black.opacity(0.3).ignoresSafeArea()
         }
     }
 
@@ -414,15 +416,11 @@ private struct StripRow: View {
             }
         }
         .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(LinearGradient(
-                    colors: [color.opacity(strip.isActive ? 0.22 : 0.12), Color.white.opacity(0.04)],
-                    startPoint: .topLeading, endPoint: .bottomTrailing)))
+        // Quiet glass, as in Mission Control: the workspace you're on has a soft white edge.
+        .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Color.white.opacity(strip.isActive ? 0.08 : 0.04)))
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(color.opacity(strip.isActive ? 0.85 : 0.3), lineWidth: strip.isActive ? 2 : 1))
-        .shadow(color: strip.isActive ? color.opacity(0.35) : .clear, radius: 18)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(Color.white.opacity(strip.isActive ? 0.45 : 0.08), lineWidth: strip.isActive ? 1.5 : 1))
     }
 }
 
@@ -503,7 +501,7 @@ private struct ColumnCard: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
                         .strokeBorder(
-                            targeted ? Color.white : (column.isFocused ? WorkspaceColor.color(strip.workspace) : Color.clear),
+                            targeted ? Color.white : (column.isFocused ? Color.white.opacity(0.7) : Color.clear),
                             lineWidth: targeted ? 3 : 2))
         }
         .onDrop(of: [UTType.text], isTargeted: $targeted) { providers in
@@ -582,7 +580,7 @@ private struct WindowTile: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 7).fill(Color(white: 0.18))
+            RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color(white: 0.18))
             if thumbnail == nil, let icon = window.icon {
                 // No picture (Screen Recording off, or not taken yet): the app's own colour.
                 RoundedRectangle(cornerRadius: 7).fill(
@@ -605,19 +603,29 @@ private struct WindowTile: View {
                     .frame(width: 40, height: 40)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            HStack(spacing: 4) {
-                if thumbnail != nil, let icon = window.icon {
-                    Image(nsImage: icon).resizable().frame(width: 14, height: 14)
-                }
+            // As in Mission Control: the title only while you point at it or pick it.
+            if hovering || isSelected {
                 Text(window.title.isEmpty ? window.appName : window.title)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 11, weight: .medium))
                     .lineLimit(1)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .environment(\.colorScheme, .dark)
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 30)
+                    .transition(.opacity)
             }
-            .foregroundStyle(.white)
-            .padding(.horizontal, 6).padding(.vertical, 3)
-            .background(Capsule().fill(Color.black.opacity(0.55)))
-            .padding(4)
         }
+        // The app's icon at the bottom centre of the window, as Mission Control shows it.
+        .overlay(alignment: .bottom) {
+            if thumbnail != nil, let icon = window.icon {
+                Image(nsImage: icon).resizable().frame(width: 26, height: 26)
+                    .shadow(color: .black.opacity(0.4), radius: 3, y: 1)
+                    .padding(.bottom, 4)
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: hovering)
         .overlay(alignment: .topTrailing) { WindowBadges(window: window).padding(5) }
         .overlay(alignment: .topLeading) {
             if let note = window.note {
@@ -627,11 +635,12 @@ private struct WindowTile: View {
             }
         }
         .help(window.note ?? "")
-        .clipShape(RoundedRectangle(cornerRadius: 7))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .shadow(color: .black.opacity(0.35), radius: 8, y: 4)
         .overlay(
-            RoundedRectangle(cornerRadius: 7)
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .strokeBorder(
-                    isSelected ? Color.white : (window.isFocused ? Color.accentColor : Color.white.opacity(hovering ? 0.6 : 0.12)),
+                    isSelected ? Color.white : (window.isFocused ? Color.white.opacity(0.75) : Color.white.opacity(hovering ? 0.5 : 0.1)),
                     lineWidth: isSelected ? 3 : (window.isFocused ? 2 : 1)))
         .onHover { hovering = $0 }
         .accessibilityElement(children: .ignore)

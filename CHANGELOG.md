@@ -13,6 +13,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 - **A calmer slider bar, like the Dock.** Just the apps: no boxes, outlines or numbers. Several windows of one app show as a small pile of its icon, two apps overlap a little, and the slide on screen gets a dot under it and a soft frame. Workspace dots are smaller and neutral. The panel's Windows card shows only the bar (click a slide to go there; hover for its live preview).
 
+- **Overview looks like Mission Control.** Your desktop, blurred and dimmed, with no theme colours, glows or dot pattern. Workspaces are quiet glass rows (the current one has a soft white edge), windows have rounder corners and a soft shadow, the app's icon sits at the bottom of each window, and the title shows when you point at one. The "Plain overview backdrop" setting is gone, since it's always plain now.
+
 ### Fixed
 - **The menu bar icon is easy to see again.** It's drawn white on a dark menu bar and black on a light one, like the icons next to it, and a little bolder. While paused it uses macOS's own dimmed look, which follows the theme; in 1.8.0 a paused icon came out dark grey on a dark menu bar.
 

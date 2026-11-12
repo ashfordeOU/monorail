@@ -312,7 +312,7 @@ private enum AppIcons {
     }
 }
 
-private struct SliderBarView: View {
+struct SliderBarView: View {
     @ObservedObject var model: SliderBarModel
     let actions: SliderBarController.Actions
     let onInteraction: () -> Void
@@ -909,6 +909,9 @@ final class SliderPopover {
         var pausedForStageManager: () -> Bool = { false }
         var openPowerSettings: () -> Void = {}
         var showOverview: () -> Void = {}
+        var openPalette: () -> Void = {}
+        /// Timers and modes that used to sit beside the menu bar icon ("25:00", "Deep work").
+        var statusExtra: () -> String? = { nil }
     }
 
     /// Stay Awake from the popover: the same as its menu, without opening Settings.
@@ -947,14 +950,22 @@ final class SliderPopover {
         set { peekWatcher.isEnabled = newValue }
     }
     private let paused = PausedState()
+    /// The page stack inside the panel.
+    let navigator = PanelNavigator()
 
     /// Space between the menu bar and the panel.
     private static let gap: CGFloat = 6
 
     var isShown: Bool { panel?.isVisible ?? false }
 
-    func toggle(relativeTo button: NSStatusBarButton) {
+    /// Opens the panel under `button` at a page (Home from the Monorail icon, Battery from ⚡),
+    /// or closes it. Clicking ⚡ while it's open at another page turns it to Battery instead.
+    func toggle(relativeTo button: NSStatusBarButton, page: PanelPage = .home) {
         if isShown {
+            if page != .home, navigator.top != page {
+                navigator.push(page)
+                return
+            }
             close()
             return
         }
@@ -963,11 +974,13 @@ final class SliderPopover {
         anchor = button
         model.map = mapProvider()
         paused.value = controls.isPaused()
+        navigator.reset(to: page)
         place()
         panel.alphaValue = 0
         panel.orderFrontRegardless()
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.12
+            context.duration = Motion.reduced ? 0.08 : 0.18
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
             panel.animator().alphaValue = 1
         }
         // Clicks in other apps close it; clicks in the panel are local and don't.
@@ -991,18 +1004,36 @@ final class SliderPopover {
     }
 
     /// Sizes the panel to its content and hangs it just below the icon,
-    /// centred on it but kept on screen.
-    private func place() {
+    /// centred on it but kept on screen. `height` comes from the page as it changes, and the
+    /// panel then grows or shrinks to it smoothly, its top edge staying put.
+    private func place(height: CGFloat? = nil) {
         guard let panel, let host, let button = anchor, let window = button.window else { return }
-        host.layoutSubtreeIfNeeded()
-        let size = host.fittingSize
+        var size: NSSize
+        if let height {
+            size = NSSize(width: PanelRoot.width, height: ceil(height))
+        } else {
+            host.layoutSubtreeIfNeeded()
+            size = host.fittingSize
+        }
+        size.width = PanelRoot.width
         let icon = window.convertToScreen(button.convert(button.bounds, to: nil))
         let screen = window.screen ?? NSScreen.screens.first { $0.frame.contains(icon.origin) } ?? NSScreen.main
         let visible = screen?.visibleFrame ?? icon
         var x = icon.midX - size.width / 2
         x = min(max(x, visible.minX + 8), visible.maxX - size.width - 8)
         let top = min(icon.minY, visible.maxY) - Self.gap
-        panel.setFrame(NSRect(x: x, y: top - size.height, width: size.width, height: size.height), display: true)
+        size.height = min(size.height, top - visible.minY - 8)
+        let frame = NSRect(x: x, y: top - size.height, width: size.width, height: size.height)
+        guard height != nil, panel.isVisible, panel.frame != frame, !Motion.reduced else {
+            panel.setFrame(frame, display: true)
+            return
+        }
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.32
+            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.32, 1.12, 0.4, 1)
+            context.allowsImplicitAnimation = true
+            panel.animator().setFrame(frame, display: true)
+        }
     }
 
     private func makePanel() -> NSPanel {
@@ -1024,8 +1055,8 @@ final class SliderPopover {
             rename(index)
         }
         let controls = self.controls
-        let view = SliderPopoverView(
-            model: model, paused: paused, updater: updater ?? Updater(), store: store ?? SettingsStore(), actions: wrapped,
+        let context = PanelContext(
+            actions: wrapped,
             isEveningOn: controls.isEveningOn,
             awake: {
                 var awake = controls.awake
@@ -1053,17 +1084,26 @@ final class SliderPopover {
                 var more = controls.more
                 let apply = more.applyLayout, restore = more.restoreSnapshot, snapshot = more.takeSnapshot
                 let shortcuts = more.openShortcuts, power = more.openPowerSettings, overview = more.showOverview
+                let palette = more.openPalette
                 more.applyLayout = { name in close(); apply(name) }
                 more.restoreSnapshot = { name in close(); restore(name) }
                 more.takeSnapshot = { close(); snapshot() }
                 more.openShortcuts = { close(); shortcuts() }
                 more.openPowerSettings = { close(); power() }
                 more.showOverview = { close(); overview() }
+                more.openPalette = { close(); palette() }
                 return more
             }())
+        let view = PanelRoot(
+            model: model, paused: paused, updater: updater ?? Updater(), store: store ?? SettingsStore(),
+            nav: navigator, context: context,
+            onHeight: { [weak self] height in
+                guard height > 0 else { return }
+                DispatchQueue.main.async { self?.place(height: height) }
+            })
 
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 560, height: 300),
+            contentRect: NSRect(x: 0, y: 0, width: PanelRoot.width, height: 300),
             styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -1103,233 +1143,8 @@ final class PausedState: ObservableObject {
     @Published var value = false
 }
 
-private struct SliderPopoverView: View {
-    @ObservedObject var model: SliderBarModel
-    @ObservedObject var paused: PausedState
-    @ObservedObject var updater: Updater
-    @ObservedObject var store: SettingsStore
-    let actions: SliderBarController.Actions
-    let isEveningOn: () -> Bool
-    let awake: SliderPopover.AwakeControls
-    let openEveningSettings: () -> Void
-    let resetPairs: () -> Void
-    let togglePause: () -> Void
-    let openSettings: () -> Void
-    let more: SliderPopover.MoreControls
-    @ObservedObject private var power = PowerWatch.shared
-    @State private var showsPower = false
-    @State private var focusTick = 0
-    @State private var showsEvening = false
-    @State private var showsAwake = false
-    @State private var showsThemes = false
-    @State private var awakeTick = 0
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(Brand.name).font(.headline)
-                    Text(Brand.maker).font(.caption).foregroundStyle(.secondary)
-                }
-                if let map = model.map {
-                    Text(map.workspaceCount > 1 ? "Workspace \(map.workspace + 1) · \(map.tiles.count) slides"
-                                                : "\(map.tiles.count) slides")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                }
-                Spacer()
-                if let release = updater.available {
-                    Button {
-                        updater.installAvailable()
-                    } label: {
-                        Label("Update to \(release.version)", systemImage: "arrow.down.circle.fill")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                    .disabled(updater.isInstalling)
-                    .help("Download, install and relaunch — your windows stay where they are")
-                }
-                Button { showsThemes.toggle() } label: {
-                    Image(systemName: "paintpalette").accessibilityLabel(Text("Theme: \(store.settings.theme.title)"))
-                }
-                .help("Theme: \(store.settings.theme.title)")
-                .popover(isPresented: $showsThemes, arrowEdge: .bottom) {
-                    ThemeQuickPicker(store: store)
-                }
-                Button { showsPower.toggle() } label: {
-                    let hot = !power.hungry.isEmpty
-                    Image(systemName: hot ? "bolt.fill" : "bolt")
-                        .foregroundStyle(hot ? Color.orange : Color.primary)
-                        .accessibilityLabel(Text(hot ? "Battery: \(power.hungry.count) apps using a lot" : "Battery"))
-                }
-                .help(power.onBattery ? "Battery: which apps use the most" : "Battery")
-                .popover(isPresented: $showsPower, arrowEdge: .bottom) {
-                    BatteryPanel(store: store, openSettings: more.openPowerSettings)
-                }
-                Button { showsAwake.toggle() } label: {
-                    let on = awake.isOn()
-                    Image(systemName: on ? "cup.and.saucer.fill" : "cup.and.saucer")
-                        .foregroundStyle(on ? Color.orange : Color.primary)
-                        .accessibilityLabel(Text(on ? "Stay Awake, on" : "Stay Awake, off"))
-                        .id(awakeTick)
-                }
-                .help("Stay Awake: keep your Mac from sleeping")
-                .popover(isPresented: $showsAwake, arrowEdge: .bottom) {
-                    AwakeQuickControls(store: store, awake: awake, tick: $awakeTick)
-                }
-                Button { showsEvening.toggle() } label: {
-                    let on = store.settings.eveningOn || isEveningOn()
-                    Image(systemName: on ? "moon.fill" : "moon")
-                        .foregroundStyle(on ? Color.orange : Color.primary)
-                        .accessibilityLabel(Text(on ? "Evening Mode, on" : "Evening Mode, off"))
-                }
-                .help("Evening Mode: a warmer screen in the evening")
-                .popover(isPresented: $showsEvening, arrowEdge: .bottom) {
-                    EveningQuickControls(store: store, isOn: isEveningOn, openSettings: openEveningSettings)
-                }
-                Button(action: resetPairs) { Image(systemName: "wand.and.stars").accessibilityLabel(Text("Reset to smart pairs: windows of the same app together")) }
-                    .help("Reset to smart pairs: windows of the same app together")
-                Button(action: togglePause) {
-                    Image(systemName: paused.value ? "play.fill" : "pause.fill").accessibilityLabel(Text(paused.value ? "Resume tiling" : "Pause tiling"))
-                }
-                .help(paused.value ? "Resume tiling" : "Pause tiling")
-                Button(action: actions.showOverview) { Image(systemName: "square.grid.3x2").accessibilityLabel("Overview") }
-                    .help("Overview")
-                Button(action: openSettings) { Image(systemName: "gearshape").accessibilityLabel("Settings") }
-                    .help("Settings")
-            }
-            .buttonStyle(.borderless)
-
-            SliderBarView(model: model, actions: actions) {}
-                .frame(height: 52)
-
-            if let map = model.map, !map.tiles.isEmpty {
-                ScrollViewReader { proxy in
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(Array(map.tiles.enumerated()), id: \.element.id) { number, tile in
-                                SlideCard(number: number + 1, tile: tile)
-                                    .id(tile.id)
-                                    .onTapGesture {
-                                        if let window = tile.windows.first { actions.focus(window.id) }
-                                    }
-                            }
-                        }
-                        .padding(.vertical, 2)
-                        .environment(\.layoutDirection, map.isRightToLeft ? .rightToLeft : .leftToRight)
-                    }
-                    .onAppear {
-                        if let focused = map.tiles.first(where: \.isFocused) { proxy.scrollTo(focused.id, anchor: .center) }
-                    }
-                }
-            } else {
-                Text("No windows on this workspace yet.").font(.callout).foregroundStyle(.secondary)
-            }
-
-            QuickRow(store: store, power: power, more: more, showsPower: $showsPower, focusTick: $focusTick)
-        }
-        .padding(14)
-        .frame(width: 560)
-        .help("Drag the slider to move · click a slide to jump · right-click the icon for the full menu")
-        .onAppear { power.refreshIfStale() }
-    }
-}
-
-/// Chips under the slides: battery, saved layouts and snapshots, focus mode, and anything that needs a look.
-private struct QuickRow: View {
-    @ObservedObject var store: SettingsStore
-    @ObservedObject var power: PowerWatch
-    let more: SliderPopover.MoreControls
-    @Binding var showsPower: Bool
-    @Binding var focusTick: Int
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) { chips }
-    }
-
-    private var chips: some View {
-        HStack(spacing: 6) {
-            if power.onBattery {
-                chip(batteryText, systemImage: batteryIcon, tint: power.hungry.isEmpty ? nil : .orange) { showsPower = true }
-                    .help("Which apps are using the most battery")
-            }
-            let layouts = more.layouts(), snapshots = more.snapshots()
-            Menu {
-                if layouts.isEmpty && snapshots.isEmpty { Text("No saved layouts yet") }
-                if !layouts.isEmpty {
-                    Section("Layouts") { ForEach(layouts, id: \.self) { name in Button(name) { more.applyLayout(name) } } }
-                }
-                if !snapshots.isEmpty {
-                    Section("Snapshots") { ForEach(snapshots, id: \.self) { name in Button(name) { more.restoreSnapshot(name) } } }
-                }
-                Divider()
-                Button("Take a Snapshot Now") { more.takeSnapshot() }
-            } label: {
-                Label("Layouts", systemImage: "rectangle.3.group")
-            }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
-            .font(.caption.weight(.medium))
-            .padding(.horizontal, 8).padding(.vertical, 4)
-            .background(Capsule().fill(Color.primary.opacity(0.08)))
-            .help("Apply a saved layout or restore a snapshot")
-            let focusOn = more.isFocusOn()
-            chip(focusOn ? "Focus on" : "Focus", systemImage: focusOn ? "scope" : "scope", tint: focusOn ? .accentColor : nil) {
-                more.toggleFocus()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { focusTick += 1 }
-            }
-            .id(focusTick)
-            .help("Focus mode: dim everything but this slide")
-            let clashes = more.clashCount()
-            if clashes > 0 {
-                chip(clashes == 1 ? "1 shortcut clash" : "\(clashes) shortcut clashes", systemImage: "exclamationmark.triangle.fill", tint: .orange) {
-                    more.openShortcuts()
-                }
-                .help("macOS uses some of Monorail's shortcuts too · fix them in one click")
-            }
-            if more.pausedForStageManager() {
-                chip("Paused for Stage Manager", systemImage: "rectangle.stack", tint: .orange) {}
-                    .help("Monorail carries on when you turn Stage Manager off in Control Centre")
-            }
-            if !power.parked.isEmpty {
-                chip("Show \(power.parked.count) hidden", systemImage: "eye", tint: nil) { power.showParked() }
-                    .help("Apps hidden to save battery")
-            }
-        }
-    }
-
-    private var batteryText: String {
-        let level = power.batteryPercent.map { "\($0)%" } ?? "Battery"
-        if let top = power.hungry.first { return "\(level) · \(top.appName)" }
-        return level
-    }
-
-    private var batteryIcon: String {
-        guard let level = power.batteryPercent else { return "battery.50" }
-        switch level {
-        case ..<13: return "battery.0"
-        case ..<38: return "battery.25"
-        case ..<63: return "battery.50"
-        case ..<88: return "battery.75"
-        default: return "battery.100"
-        }
-    }
-
-    private func chip(_ title: String, systemImage: String, tint: Color?, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.caption.weight(.medium))
-                .lineLimit(1)
-                .padding(.horizontal, 8).padding(.vertical, 4)
-                .background(Capsule().fill((tint ?? Color.primary).opacity(tint == nil ? 0.08 : 0.18)))
-                .foregroundStyle(tint ?? Color.primary)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-
 /// Evening Mode from the slider popover: on or off, how warm, when, and red light, without opening Settings.
-private struct EveningQuickControls: View {
+struct EveningQuickControls: View {
     @ObservedObject var store: SettingsStore
     let isOn: () -> Bool
     let openSettings: () -> Void
@@ -1381,7 +1196,7 @@ private struct EveningQuickControls: View {
                 .buttonStyle(.link)
         }
         .padding(14)
-        .frame(width: 280)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var scheduleLabel: String {
@@ -1400,7 +1215,7 @@ private struct EveningQuickControls: View {
 }
 
 /// Stay Awake from the slider popover: on or off, for how long, and its main options.
-private struct AwakeQuickControls: View {
+struct AwakeQuickControls: View {
     @ObservedObject var store: SettingsStore
     let awake: SliderPopover.AwakeControls
     @Binding var tick: Int
@@ -1453,12 +1268,12 @@ private struct AwakeQuickControls: View {
         }
         .toggleStyle(.switch)
         .padding(14)
-        .frame(width: 300)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 /// Every theme, with its colours, one click to switch.
-private struct ThemeQuickPicker: View {
+struct ThemeQuickPicker: View {
     @ObservedObject var store: SettingsStore
 
     var body: some View {
@@ -1495,12 +1310,12 @@ private struct ThemeQuickPicker: View {
             .frame(maxHeight: 300)
         }
         .padding(14)
-        .frame(width: 320)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 /// A slide in the popover: its layout outline, app icons and first window's title.
-private struct SlideCard: View {
+struct SlideCard: View {
     let number: Int
     let tile: Engine.MiniTile
 

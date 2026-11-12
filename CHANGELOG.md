@@ -6,6 +6,17 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **One panel, pages inside it.** Clicking the Monorail icon opens a single panel that turns into each page and back, like Control Centre: Battery, then an app, then ‹ back. It slides with a spring and grows or shrinks to fit, so nothing opens on top of anything else. ⚡ in the menu bar opens the same panel straight at Battery.
+- **A smart home page.** Everything at a glance: your windows and the slider, battery as three small rings, AI agents while they run, round switches for Stay Awake, Evening, Focus and Low Power (right-click one for its options), layouts, and Search. Calm, it keeps one order. When something needs you (a fast drain, a low battery, an update, a shortcut clash, tiling paused) that card moves to the top with its action on it, and the line at the top says so.
+- **Three battery rings.** Charge, time left against your usual, and drain against your usual, drawn in with a spring, with a soft glow behind them that breathes faster and warmer as the drain rises. Monorail learns your usual drain from the day's battery history. Still with Reduce Motion on.
+- **One app's page.** Click an app in Battery for what it uses now, an hour and since your last charge, with Quit, Pause, Hide and Show Windows.
+- **The menu bar icon stays the same.** Only the Monorail icon shows, always the same shape; its colour says what's on: the menu bar's own colour while running, grey while paused, orange while Stay Awake is on, red while recording. The slide position, timers and the cup moved into the panel, so the menu bar stays quiet.
+- **A calmer first run.** The welcome window opens with a large icon, the name and one sentence, and the Accessibility tick springs in once it's allowed.
+
+### Removed
+- The menu bar position styles (pips, dots, numbers) and the options to show the app's name or window title beside the icon.
+
 ## [1.7.30] - 2026-11-12
 
 ### Added

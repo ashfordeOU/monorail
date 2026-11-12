@@ -310,12 +310,7 @@ private struct GeneralPane: View {
                     .onChange(of: launchAtLogin) { LoginItem.setEnabled($0) }
                 Toggle("Pause tiling", isOn: $paused)
                     .onChange(of: paused) { setPaused($0) }
-                Toggle("Show column position in the menu bar", isOn: $store.settings.showColumnIndicator)
                 Toggle("List windows right in the menu (instead of a Windows submenu)", isOn: $store.settings.menuWindowsInline)
-                Picker("Menu bar shows", selection: $store.settings.menuBarStyle) {
-                    ForEach(MenuBarStyle.allCases, id: \.self) { Text($0.title).tag($0) }
-                }
-                .disabled(!store.settings.showColumnIndicator)
                 Toggle("Show the workspace’s name when switching", isOn: $store.settings.workspaceHUD)
                 Toggle("Quiet mode: no pop-up notices", isOn: $store.settings.quietMode)
                 Toggle("VoiceOver announces slide and workspace changes", isOn: $store.settings.announceChanges)
@@ -323,8 +318,6 @@ private struct GeneralPane: View {
                     .disabled(!store.settings.announceChanges)
                 Toggle("Keep a “Last session” snapshot on quit and sleep", isOn: $store.settings.autoSnapshot)
                 Toggle("Restoring a layout or snapshot hides the other apps (never quits them)", isOn: $store.settings.restoreHidesOthers)
-                Toggle("Show the focused app’s name in the menu bar too", isOn: $store.settings.menuBarShowsApp)
-                    .disabled(!store.settings.showColumnIndicator)
                 Toggle("Clicking the menu bar icon shows the slider (right-click for the menu)", isOn: $store.settings.iconOpensSlider)
                 Stepper(value: $store.settings.workspaceCount, in: 1...9) {
                     Text("Workspaces per display: \(store.settings.workspaceCount)")
@@ -804,7 +797,6 @@ private struct AppearancePane: View {
                 Toggle("Plain overview backdrop (no colours or glows)", isOn: $store.settings.plainOverview)
                     .help("Also used when Reduce Transparency is on")
                 Toggle("App icons in the overview instead of live previews", isOn: $store.settings.overviewIconsOnly)
-                Toggle("Show the focused window’s title in the menu bar", isOn: $store.settings.menuBarShowsTitle)
                 Picker("Notices appear", selection: $store.settings.noticePosition) {
                     ForEach(NoticePosition.allCases, id: \.self) { Text($0.title).tag($0) }
                 }

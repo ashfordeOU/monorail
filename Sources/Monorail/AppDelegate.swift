@@ -335,7 +335,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     self?.navigation.tab = .apps
                     self?.showSettings()
                 },
-                showOverview: { [weak self] in self?.overview.show() })
+                showOverview: { [weak self] in self?.overview.show() },
+                openPalette: { [weak self] in self?.palette.show() },
+                statusExtra: { [weak self] in self?.statusExtra })
         )
         popover.store = store
         sliderBar.stepAside = { [weak self] frame in
@@ -650,7 +652,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: Battery in the menu bar
 
     private var batteryItem: NSStatusItem?
-    private var batteryPopover: NSPopover?
     private var batteryWatch: AnyCancellable?
 
     private func updateBatteryItem(_ on: Bool) {
@@ -685,20 +686,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         button.contentTintColor = hot ? .systemOrange : nil
     }
 
+    /// ⚡ opens the same Monorail panel, straight at its Battery page: one panel, never two.
     @objc private func toggleBatteryPanel() {
-        if let popover = batteryPopover, popover.isShown {
-            popover.performClose(nil)
-            return
-        }
-        let popover = NSPopover()
-        popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: BatteryPanel(store: store, openSettings: { [weak self] in
-            self?.batteryPopover?.performClose(nil)
-            self?.navigation.tab = .apps
-            self?.showSettings()
-        }))
-        batteryPopover = popover
-        if let button = batteryItem?.button { popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY) }
+        guard let button = batteryItem?.button else { return }
+        popover.toggle(relativeTo: button, page: .battery)
     }
 
     // MARK: Stage Manager
@@ -3127,55 +3118,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         updateStatusItem()
     }
 
+    /// The menu bar shows only the Monorail icon, always the same shape. Its colour says what's on:
+    /// the menu bar's own colour while running, grey while paused, orange while Stay Awake is on,
+    /// red while recording. Position, timers and notices live in the panel instead.
     private func updateStatusItem() {
         guard let button = statusItem?.button else { return }
-        button.image = StatusIcon.image(paused: engine.isPaused, badge: updater.available != nil)
-        button.imagePosition = .imageLeading
-        if store.settings.menuBarStyle == .mini, store.settings.showColumnIndicator, !engine.isPaused,
-            let status = engine.status()
-        {
-            // The position lives in the icon; only extras (pomodoro, recording, focus) add text.
-            button.image = StatusIcon.mini(slide: status.focusedColumn, slides: status.columnCount,
-                                           workspace: status.workspace, workspaces: engine.workspaceCount,
-                                           badge: updater.available != nil)
-            var title = ""
-            if engine.isFocusMode { title += " ◉" }
-            if engine.isRecording { title += " ● REC" }
-            if store.settings.menuBarShowsApp, let app = engine.focusedAppName { title += " \(app)" }
-            if store.settings.menuBarShowsTitle, let focused = engine.lastFocusedTitle {
-                title += " " + (focused.count > 32 ? String(focused.prefix(31)) + "…" : focused)
-            }
-            if let statusExtra { title += " \(statusExtra)" }
-            button.title = title
-            button.imagePosition = title.isEmpty ? .imageOnly : .imageLeading
-            button.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular)
-        } else if store.settings.showColumnIndicator, !engine.isPaused, let status = engine.status() {
-            var position = "\(status.focusedColumn)/\(status.columnCount)"
-            switch store.settings.menuBarStyle {
-            case .dots where status.columnCount > 0 && status.columnCount <= 9:
-                position = (1...status.columnCount).map { $0 == status.focusedColumn ? "●" : "○" }.joined()
-            case .number:
-                position = engine.workspaceCount > 1 ? "\(status.workspace)" : "\(status.focusedColumn)"
-            default:
-                break
-            }
-            var title = engine.workspaceCount > 1 && store.settings.menuBarStyle != .number
-                ? " \(status.workspace) · \(position)" : " \(position)"
-            if store.settings.menuBarShowsApp, let app = engine.focusedAppName { title = " \(app) ·" + title }
-            if engine.isFocusMode { title = " ◉" + title }
-            if engine.isRecording { title = " ● REC" + title }
-            if store.settings.menuBarShowsTitle, let focused = engine.lastFocusedTitle {
-                let short = focused.count > 32 ? String(focused.prefix(31)) + "…" : focused
-                title = " \(short) ·" + title
-            }
-            if let statusExtra { title = " \(statusExtra) ·" + title }
-            button.title = title
-            button.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular)
-        } else {
-            button.title = statusExtra.map { " \($0)" } ?? ""
-        }
-        // Stay Awake shows as a small cup in the icon, in the same style.
-        if awake.isOn, let image = button.image { button.image = StatusIcon.addingCup(to: image) }
+        button.image = StatusIcon.image(paused: engine.isPaused)
+        button.title = ""
+        button.imagePosition = .imageOnly
+        let tint: NSColor? = engine.isRecording ? .systemRed
+            : engine.isPaused ? .tertiaryLabelColor
+            : awake.isOn ? .systemOrange
+            : nil
+        button.contentTintColor = tint
+        var states: [String] = []
+        if engine.isPaused { states.append("paused") }
+        if awake.isOn { states.append("Stay Awake on") }
+        if engine.isRecording { states.append("recording") }
+        if updater.available != nil { states.append("update ready") }
+        if let statusExtra { states.append(statusExtra) }
+        button.setAccessibilityLabel(states.isEmpty ? "Monorail" : "Monorail, " + states.joined(separator: ", "))
+        button.toolTip = states.isEmpty ? nil : states.joined(separator: " · ")
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {

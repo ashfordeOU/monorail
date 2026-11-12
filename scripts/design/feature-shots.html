@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Feature shots</title><link rel="stylesheet" href="mac.css">
+<style>
+html,body{margin:0;width:800px;height:500px;overflow:hidden}
+body{background:radial-gradient(700px 500px at 10% 100%,#5b2a86,transparent 60%),radial-gradient(700px 500px at 100% 0%,#9b3f73,transparent 60%),#2a1840}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.wid{display:flex;flex-direction:column;gap:6px}
+.top{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:.3px}
+.big{font-size:22px;font-weight:600;line-height:26px}
+.ctrls{display:grid;grid-template-columns:repeat(4,1fr);text-align:center;margin-top:8px;padding:10px 6px}
+.ctrls .round{margin:0 auto;width:34px;height:34px;flex-basis:34px}.ctrls .t3{display:block;margin-top:5px}
+.status{display:flex;align-items:center;gap:7px;margin:2px 2px 10px}.status i{width:8px;height:8px;border-radius:50%}
+.glow{position:absolute;inset:-28px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,10,.38),rgba(255,214,10,.12) 50%,transparent 70%)}
+</style></head><body><div id="app"></div><script src="mac.js"></script><script>
+const scene = new URLSearchParams(location.search).get('scene');
+const ctrls = `<div class="tile ctrls"><div><span class="round">${s('cup')}</span><span class="t3">Stay Awake</span></div><div><span class="round warm">${s('moon','f')}</span><span class="t3">Evening</span></div><div><span class="round">${s('scope')}</span><span class="t3">Focus</span></div><div><span class="round">${s('leaf')}</span><span class="t3">Low Power</span></div></div>`;
+const home = (x) => `<div class="panel" style="left:${x}px;top:28px;width:340px">
+  <div class="status"><i style="background:var(--good)"></i><span class="b">All calm</span><span class="t3">· 5 windows</span></div>
+  <div class="tile"><div class="row" style="margin-bottom:8px"><span class="b">Build</span><span class="t3">· 4 slides</span></div><div style="display:flex;gap:6px">${['Safari','Xcode','Slack','Chrome'].map((a,i)=>`<div style="flex:1;height:40px;border-radius:8px;display:grid;place-items:center;background:${i===1?'var(--tile-2)':'var(--tile)'};${i===1?'box-shadow:0 0 0 2px var(--blue)':''}">${app(a,16)}</div>`).join('')}</div></div>
+  <div class="grid2"><div class="tile wid"><div class="top" style="color:var(--good)">BATTERY</div><div class="row" style="gap:10px">${rings3([[64,'var(--good)'],[78,'var(--blue)'],[45,'var(--good)']],50,5,2)}<div><div class="big num">64%</div><div class="t3 num">5:52 left</div></div></div></div>
+  <div class="tile wid"><div class="top" style="color:var(--ink-2)">AGENTS</div><div class="b">Claude Code</div><div class="t2">Working · 18% CPU</div></div></div>
+  ${ctrls}</div>`;
+const needs = (x) => `<div class="panel" style="left:${x}px;top:28px;width:340px">
+  <div class="status"><i style="background:var(--ok)"></i><span class="b">Draining fast</span></div>
+  <div class="tile" style="padding:12px;background:color-mix(in srgb,var(--ok) 14%,var(--tile))"><div class="top" style="color:var(--ok)">BATTERY · DRAINING FAST</div>
+    <div class="row" style="gap:12px;margin-top:8px"><div style="position:relative">${rings3([[38,'var(--good)'],[10,'var(--blue)'],[100,'var(--low)']],72,7,2)}</div>
+    <div><div><span class="big num">1:32</span> <span class="t3">left</span></div><div class="t2">About 4× your usual. Chrome is the most of it.</div><div class="row" style="gap:6px;margin-top:6px"><span class="btn p">Quit Chrome</span><span class="btn">Pause</span></div></div></div></div>
+  <div class="tile" style="margin-top:8px"><div class="row"><span class="b">Build</span><span class="t3">· 4 slides</span><span style="margin-left:auto;display:flex;gap:4px">${['Safari','Xcode','Slack','Chrome'].map(a=>app(a,16)).join('')}</span></div></div>
+  ${ctrls}</div>`;
+const battery = `<div class="panel" style="left:220px;top:28px;width:360px">
+  <div class="row" style="margin:2px 2px 10px"><span style="color:var(--blue);font-weight:500">‹ Monorail</span><span class="b" style="margin:0 auto;transform:translateX(-36px)">Battery</span></div>
+  <div class="tile" style="display:flex;gap:14px;align-items:center;padding:12px"><div style="position:relative"><div class="glow"></div><div style="position:relative">${rings3([[64,'var(--good)'],[78,'var(--blue)'],[59,'var(--ok)']],104,10)}</div></div>
+    <div style="display:grid;gap:7px">${ringRow('var(--good)','CHARGE','64%','health 91%')}${ringRow('var(--blue)','TIME LEFT','5:52','until 03:45')}${ringRow('var(--ok)','DRAIN','6.1 W','usual 5.2')}</div></div>
+  <div class="tile row" style="margin-top:8px;background:color-mix(in srgb,var(--ok) 14%,var(--tile))"><span style="color:var(--ok)">${s('bolt','f')}</span><div><div class="b">Chrome is using a third of your battery</div><div class="t2">Quit it and you'd have about 6:41 left.</div></div></div>
+  <div class="h">Using Significant Energy</div>
+  <div class="list">${[['Chrome','6.2%/h'],['Claude','2.1%/h'],['Xcode','0.9%/h']].map(([a,v])=>`<div class="li ic">${app(a)}<span>${a==='Claude'?'Claude Code':a}</span><span class="v num">${v}</span><span style="color:var(--ink-3)">${s('chev')}</span></div>`).join('')}</div></div>`;
+document.getElementById('app').innerHTML = scene === 'battery' ? battery : home(44) + needs(416);
+</script></body></html>

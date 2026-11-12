@@ -12,7 +12,12 @@ struct BatteryPanel: View {
     @ObservedObject var store: SettingsStore
     @ObservedObject var power: PowerWatch = .shared
     var openSettings: () -> Void = {}
+    /// Set when Battery is a page in the menu bar panel: ‹ Monorail goes back.
+    var onBack: (() -> Void)? = nil
+    /// Opens one app's page; rows become clickable when it's set.
+    var openApp: ((String) -> Void)? = nil
     @State private var showAll = false
+    @State private var contentHeight: CGFloat = 420
     @State private var search = ""
     @State private var arranging = false
     @FocusState private var searching: Bool
@@ -25,7 +30,12 @@ struct BatteryPanel: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
+            if let onBack {
+                PageHeader(back: "Monorail", title: "Battery", onBack: onBack, trailing: AnyView(headerButtons))
+                    .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 2)
+            } else {
+                header
+            }
             ScrollView {
                 VStack(spacing: 10) {
                     ForEach(visibleCards, id: \.self) { id in
@@ -37,11 +47,17 @@ struct BatteryPanel: View {
                     }
                 }
                 .padding(12)
+                .background(GeometryReader { proxy in
+                    Color.clear.preference(key: BatteryContentHeight.self, value: proxy.size.height)
+                })
             }
+            .onPreferenceChange(BatteryContentHeight.self) { contentHeight = $0 }
+            // In the panel the list is as tall as its cards, up to a limit; then it scrolls.
+            .frame(height: onBack == nil ? nil : min(max(contentHeight, 120), 520))
             .frame(maxHeight: 560)
             if arranging { arrangeBar } else { searchBar }
         }
-        .frame(width: 370)
+        .frame(width: onBack == nil ? 370 : PanelRoot.width)
         .onAppear { power.setLive(true) }
         .onDisappear { power.setLive(false) }
     }
@@ -54,7 +70,7 @@ struct BatteryPanel: View {
     /// A card's view, or nil when it has nothing to show right now.
     private func cardView(_ id: String) -> AnyView? {
         switch id {
-        case "numbers": return AnyView(stats)
+        case "numbers": return AnyView(PowerWatch.hasBattery ? AnyView(hero) : AnyView(stats))
         case "lowPower": return AnyView(lowPower)
         case "sinceCharge": return power.session.since == nil || power.session.ranked.isEmpty ? nil : AnyView(sinceChargeCard)
         case "history": return PowerWatch.hasBattery ? AnyView(historyCard) : nil
@@ -212,6 +228,13 @@ struct BatteryPanel: View {
                     .background(Capsule().fill(Color.yellow.opacity(0.25)))
             }
             Spacer()
+            headerButtons
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+    }
+
+    private var headerButtons: some View {
+        HStack(spacing: 8) {
             Button { withAnimation(.easeOut(duration: 0.15)) { arranging.toggle() } } label: {
                 Image(systemName: arranging ? "checkmark.circle.fill" : "square.stack.3d.up").accessibilityLabel(arranging ? "Done arranging" : "Arrange cards")
             }
@@ -219,7 +242,33 @@ struct BatteryPanel: View {
             Button(action: openSettings) { Image(systemName: "gearshape").accessibilityLabel("Battery settings") }
                 .buttonStyle(.borderless).help("Battery settings")
         }
-        .padding(.horizontal, 14).padding(.vertical, 10)
+    }
+
+    /// Three rings and their glow: charge, time left against your usual, and drain against your usual.
+    private var hero: some View {
+        let b = power.battery
+        let rings = power.rings
+        let drainColor = Tone.of(rings.drainTone)
+        let until: String = {
+            guard b.onBattery, let minutes = b.minutesAtCurrentRate else { return b.isCharging ? "charging" : "plugged in" }
+            return "until " + Date().addingTimeInterval(Double(minutes) * 60).formatted(date: .omitted, time: .shortened)
+        }()
+        let usual = power.usualWatts.map { String(format: "usual %.1f", $0) } ?? (b.onBattery ? "now" : "on battery")
+        return HStack(spacing: 14) {
+            BatteryRingsView(rings: rings)
+            VStack(alignment: .leading, spacing: 7) {
+                RingLegend(color: Tone.good, label: "CHARGE", value: "\(b.percent)%",
+                           note: b.capacityPercent.map { "health \($0)%" } ?? (b.isCharging ? "charging" : ""))
+                RingLegend(color: Tone.blue, label: "TIME LEFT", value: b.onBattery ? HomePage.clock(b.minutesAtCurrentRate) : "—",
+                           note: until, delay: 0.09)
+                RingLegend(color: drainColor, label: "DRAIN", value: b.watts.map { String(format: "%.1f W", $0) } ?? "—",
+                           note: usual, delay: 0.18)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(0.06)))
+        .accessibilityElement(children: .combine)
     }
 
     private var stats: some View {
@@ -393,6 +442,9 @@ struct BatteryPanel: View {
                     Spacer(minLength: 4)
                     BatteryGauge(fraction: score(app) / maxScore, tint: app.use.isHungry ? .orange : Self.pink)
                     Text(rate(app.use)).font(.caption.weight(.semibold)).monospacedDigit().frame(width: 62, alignment: .trailing)
+                    if openApp != nil {
+                        Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary).accessibilityHidden(true)
+                    }
                     Menu {
                         Button("Show Its Windows") { NSRunningApplication.runningApplications(withBundleIdentifier: app.id).first?.activate() }
                         Button("Hide") { power.hide(app.id) }
@@ -406,6 +458,9 @@ struct BatteryPanel: View {
                     } label: { Image(systemName: "ellipsis") }
                     .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                 }
+                .contentShape(Rectangle())
+                .onTapGesture { openApp?(app.id) }
+                .accessibilityAddTraits(openApp == nil ? [] : .isButton)
             }
         }
         .padding(10).background(card)
@@ -560,5 +615,9 @@ private struct HistoryChart: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("Battery over the last \(points.count > 1 ? "hours" : "hour")"))
     }
+}
+private struct BatteryContentHeight: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }
 #endif

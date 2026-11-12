@@ -124,23 +124,27 @@ struct WelcomeView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack(spacing: 14) {
-                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 64, height: 64)
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("Welcome to \(Brand.name)").font(.title).fontWeight(.semibold)
-                        Text(Brand.maker).font(.title3).foregroundStyle(.secondary)
-                    }
-                    Text("Your windows sit side by side on one endless strip. Nothing shrinks, nothing overlaps.")
-                        .foregroundStyle(.secondary)
-                }
+            // A new Apple app's first screen: a large icon, the name, one sentence.
+            VStack(spacing: 8) {
+                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 84, height: 84)
+                    .shadow(color: .black.opacity(0.15), radius: 10, y: 6)
+                    .accessibilityHidden(true)
+                Text("Welcome to \(Brand.name)").font(.system(size: 26, weight: .bold))
+                Text("Your windows sit side by side on one endless strip. Nothing shrinks, nothing overlaps.")
+                    .font(.system(size: 13)).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center).frame(maxWidth: 360)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 6)
 
             GroupBox {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: trusted ? "checkmark.seal.fill" : "lock.shield")
                         .font(.title2)
                         .foregroundStyle(trusted ? Color.green : Color.orange)
+                        .scaleEffect(trusted ? 1 : 0.92)
+                        .animation(Motion.pop, value: trusted)
+                        .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 6) {
                         Text(L("1. Allow Accessibility")).fontWeight(.medium)
                         Text(

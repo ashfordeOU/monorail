@@ -40,3 +40,30 @@ const rings3 = (rs, size = 112, w = 11, gap = 3) => {
 // A legend row for the rings: colour bar, label, value and a short note.
 const ringRow = (col, label, value, note) => `<div style="display:flex;gap:8px;align-items:flex-start"><span style="width:3px;height:30px;border-radius:2px;background:${col};margin-top:1px"></span>
   <div><div class="t3" style="font-weight:600;color:${col}">${label}</div><div class="row" style="gap:5px;align-items:baseline"><span class="num" style="font-size:17px;font-weight:600;line-height:20px">${value}</span><span class="t3">${note}</span></div></div></div>`;
+
+// A Mac chip drawn as Apple shows it in keynotes: a dark glossy package with the core clusters laid
+// out as on the die, each core glowing by its value. mode 'load' (0-100%) or 'heat' (°C).
+const chipArt = (mode, p, e, g, opts = {}) => {
+  const w = opts.width || 316, name = opts.name || 'M3 Pro';
+  const colOf = (v) => mode === 'heat'
+    ? (v < 55 ? '#0A84FF' : v < 70 ? '#30D158' : v < 85 ? '#FFD60A' : '#FF453A')
+    : (v < 40 ? '#30D158' : v < 75 ? '#FFD60A' : '#FF453A');
+  const amt = (v) => mode === 'heat' ? Math.min(1, Math.max(0.15, (v - 35) / 55)) : Math.max(0.12, v / 100);
+  const core = (v, label, cw, ch) => { const c = colOf(v), a = amt(v);
+    return `<div style="width:${cw}px;height:${ch}px;border-radius:5px;position:relative;background:color-mix(in srgb, ${c} ${Math.round(18 + a * 62)}%, #16161a);box-shadow:0 0 ${Math.round(4 + a * 14)}px color-mix(in srgb, ${c} ${Math.round(a * 70)}%, transparent), inset 0 0 0 .5px rgba(255,255,255,.14), inset 0 1px 0 rgba(255,255,255,.18);display:grid;place-items:center;color:#fff;font:600 9px/1.1 'SF Pro Text',sans-serif;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.5)">${label}<span style="font-weight:500;opacity:.85;font-size:8.5px">${mode === 'heat' ? v + '°' : v + '%'}</span></div>`; };
+  const cl = (items, cols, cw, ch) => `<div style="display:grid;grid-template-columns:repeat(${cols},${cw}px);gap:4px">${items.map(([v, l]) => core(v, l, cw, ch)).join('')}</div>`;
+  const label = (t) => `<div style="font:600 8px 'SF Pro Text',sans-serif;letter-spacing:.6px;color:rgba(255,255,255,.42);margin-bottom:4px">${t}</div>`;
+  const gpu = `<div style="display:grid;grid-template-columns:repeat(6,14px);gap:3px">${g.map((v) => `<div style="width:14px;height:14px;border-radius:3px;background:color-mix(in srgb, ${colOf(v)} ${Math.round(18 + amt(v) * 62)}%, #16161a);box-shadow:0 0 ${Math.round(3 + amt(v) * 8)}px color-mix(in srgb, ${colOf(v)} ${Math.round(amt(v) * 60)}%, transparent), inset 0 0 0 .5px rgba(255,255,255,.12)"></div>`).join('')}</div>`;
+  const cache = `<div style="height:16px;border-radius:4px;background:repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 3px, transparent 3px 6px);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)"></div>`;
+  return `<div style="width:${w}px;border-radius:20px;padding:6px;background:linear-gradient(145deg,#3a3a40,#121215 55%,#26262b);box-shadow:0 14px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.18)">
+    <div style="border-radius:15px;padding:12px;background:radial-gradient(120% 90% at 20% 0%, #26262c, #0b0b0e 70%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)">
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px"><span style="font:600 13px 'SF Pro Display',sans-serif;color:#f5f5f7;letter-spacing:.2px">${name}</span><span style="font:500 9.5px 'SF Pro Text',sans-serif;color:rgba(255,255,255,.45)">${mode === 'heat' ? 'heat per core' : 'load per core'}</span></div>
+      <div style="display:flex;gap:12px">
+        <div>${label('PERFORMANCE')}${cl(p.map((v, i) => [v, 'P' + (i + 1)]), 3, 40, 34)}
+             <div style="height:8px"></div>${label('EFFICIENCY')}${cl(e.map((v, i) => [v, 'E' + (i + 1)]), 3, 40, 26)}</div>
+        <div style="flex:1">${label('GRAPHICS')}${gpu}<div style="height:8px"></div>${label('CACHE')}${cache}
+          <div style="height:8px"></div>${label('NEURAL ENGINE · MEDIA')}
+          <div style="display:flex;gap:4px">${core(mode === 'heat' ? 48 : 6, 'Neural', 66, 26)}${core(mode === 'heat' ? 52 : 18, 'Video', 34, 26)}</div></div>
+      </div>
+    </div></div>`;
+};

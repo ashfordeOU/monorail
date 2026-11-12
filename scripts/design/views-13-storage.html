@@ -1,0 +1,81 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Storage</title><link rel="stylesheet" href="mac.css">
+<style>
+.k { font-size:10.5px; font-weight:600; letter-spacing:.3px; color:var(--ink-2); }
+.stack { display:flex; height:18px; border-radius:6px; overflow:hidden; gap:2px; }
+.stack i { display:block; height:100%; }
+.leg { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; font-size:11.5px; color:var(--ink-2); margin-top:10px; }
+.leg span { display:flex; align-items:center; gap:6px; } .leg i { width:9px; height:9px; border-radius:3px; flex:none; } .leg b { margin-left:auto; color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums; }
+.clean { display:grid; grid-template-columns:28px 1fr auto; gap:10px; align-items:center; padding:8px 10px; border-top:.5px solid var(--sep); }
+.clean:first-child { border-top:0; }
+.ci { width:28px; height:28px; border-radius:7px; display:grid; place-items:center; color:#fff; }
+.ci svg.s { width:15px; height:15px; }
+.sz { font-weight:600; font-variant-numeric:tabular-nums; }
+.win { position:absolute; width:900px; height:640px; border-radius:14px; background:var(--win-content); box-shadow:var(--shadow); overflow:hidden; }
+.wbar { height:44px; display:flex; align-items:center; gap:10px; padding:0 16px; border-bottom:.5px solid var(--sep); }
+.wbar .tl { display:flex; gap:7px; } .wbar .tl i { width:12px; height:12px; border-radius:50%; }
+.seg2 { display:flex; background:var(--off); border-radius:7px; padding:2px; font-size:11.5px; font-weight:500; }
+.seg2 span { padding:3px 12px; border-radius:5px; color:var(--ink-2); } .seg2 span.on { background:var(--tile-2); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.14); }
+.card { position:absolute; border-radius:12px; background:var(--tile); padding:12px 14px; }
+.row2 { display:grid; grid-template-columns:20px 1fr 70px; gap:8px; align-items:center; padding:6px 0; border-top:.5px solid var(--sep); font-size:12px; }
+.row2:first-of-type { border-top:0; }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const CAT = [['Apps', 92, '#0A84FF'], ['Developer', 148, '#AF52DE'], ['Documents', 61, '#FF9F0A'], ['Photos', 74, '#FF375F'], ['iCloud Drive', 28, '#64D2FF'], ['System Data', 57, '#8E8E93'], ['macOS', 21, '#636366']];
+const used = CAT.reduce((a, c) => a + c[1], 0), total = 994, free = total - used;
+const stack = `<div class="stack">${CAT.map(([n, v, c]) => `<i style="flex:${v};background:${c}"></i>`).join('')}<i style="flex:${free};background:var(--off)"></i></div>`;
+const legend = `<div class="leg">${CAT.map(([n, v, c]) => `<span><i style="background:${c}"></i>${n}<b>${v} GB</b></span>`).join('')}<span><i style="background:var(--off)"></i>Free<b>${free} GB</b></span></div>`;
+const ic = (bg, name) => `<span class="ci" style="background:${bg}">${s(name)}</span>`;
+const cleans = [
+  [ic('#AF52DE', 'code'), 'Xcode build files', 'DerivedData · rebuilt when needed', '38.2 GB'],
+  [ic('#5E5CE6', 'display'), 'Old iOS simulators', '6 versions you no longer use', '21.6 GB'],
+  [ic('#30D158', 'grid'), 'node_modules folders', 'In 42 projects untouched for 3 months', '14.9 GB'],
+  [ic('#0A84FF', 'apps'), 'Docker images', '9 images not used this month', '11.3 GB'],
+  [ic('#FF9F0A', 'arrow'), 'Old Downloads', 'Older than 90 days', '8.4 GB'],
+  [ic('#8E8E93', 'x'), 'Trash', 'Empties for good', '3.1 GB'],
+];
+
+const a = `<div class="cap" style="left:40px;top:44px">1 · STORAGE PAGE IN THE PANEL</div>
+<div class="panel" style="left:40px;top:70px;width:360px">
+  <div class="row" style="margin:2px 2px 10px"><span style="color:var(--blue);font-weight:500">‹ System</span><span class="b" style="margin:0 auto;transform:translateX(-30px)">Storage</span></div>
+  <div class="tile" style="padding:12px">
+    <div class="row" style="align-items:baseline"><span class="num" style="font-size:22px;font-weight:600">${free} GB</span><span class="t3" style="margin-left:6px">free of 1 TB</span><span class="t3" style="margin-left:auto">Macintosh HD</span></div>
+    <div style="margin-top:10px">${stack}</div>${legend}</div>
+  <div class="tile" style="margin-top:8px;background:color-mix(in srgb,var(--good) 10%,var(--tile))">
+    <div class="row"><span style="color:var(--good)">${s('sparkles')}</span><div><div class="b">You can get back 103 GB</div><div class="t2">Six things only you or your tools made, all safe to remove</div></div></div></div>
+  <div class="h">Recommended clean-ups</div>
+  <div class="list">${cleans.slice(0, 4).map(([i, t, d, z]) => `<div class="clean">${i}<div><div class="b" style="font-size:12.5px">${t}</div><div class="t3">${d}</div></div><div style="text-align:right"><div class="sz">${z}</div><span class="btn" style="font-size:11px;padding:2px 8px;margin-top:3px">Clean</span></div></div>`).join('')}</div>
+  <div class="row" style="margin-top:10px"><span class="t3">Everything goes to the Trash first</span><span class="btn" style="margin-left:auto">Open Live View</span></div>
+</div>`;
+
+// Rings: inner = categories, outer = the biggest folders inside each.
+const arcRing = (cx, cy, r, w, parts, start = -90, gap = 1.2) => { let ang = start; const tot = parts.reduce((a, p) => a + p[0], 0);
+  return parts.map(([v, col]) => { const sweep = v / tot * 360 - gap, a0 = ang * Math.PI / 180, a1 = (ang + sweep) * Math.PI / 180; ang += sweep + gap;
+    const p = (a, rr) => `${(cx + Math.cos(a) * rr).toFixed(1)},${(cy + Math.sin(a) * rr).toFixed(1)}`, large = sweep > 180 ? 1 : 0;
+    return `<path d="M${p(a0, r)} A${r},${r} 0 ${large} 1 ${p(a1, r)} L${p(a1, r - w)} A${r - w},${r - w} 0 ${large} 0 ${p(a0, r - w)}Z" fill="${col}"/>`; }).join(''); };
+const inner = [...CAT.map(([n, v, c]) => [v, c]), [free, 'var(--off)']];
+const outerParts = [];
+const sub = { Apps: [40, 22, 18, 12], Developer: [62, 38, 22, 15, 11], Documents: [30, 18, 13], Photos: [74], 'iCloud Drive': [28], 'System Data': [35, 22], macOS: [21] };
+CAT.forEach(([n, v, c]) => (sub[n] || [v]).forEach((x, i) => outerParts.push([x, `color-mix(in srgb, ${c} ${100 - i * 14}%, var(--win-content))`])));
+outerParts.push([free, 'transparent']);
+const sun = `<svg viewBox="0 0 300 300" width="300" height="300">${arcRing(150, 150, 144, 34, outerParts)}${arcRing(150, 150, 106, 30, inner)}
+  <text x="150" y="146" text-anchor="middle" style="font:600 26px 'SF Pro Rounded',sans-serif;fill:var(--ink)">${used} GB</text>
+  <text x="150" y="166" text-anchor="middle" style="font:400 11px 'SF Pro Text',sans-serif;fill:var(--ink-3)">used of 1 TB</text></svg>`;
+const largest = [['Xcode', 'DerivedData', '38.2 GB'], ['Finder', 'Movies/Holiday 2025', '22.4 GB'], ['Terminal', '~/Library/Developer/CoreSimulator', '21.6 GB'], ['Finder', 'Downloads', '17.9 GB'], ['Chrome', 'Chrome cache', '4.2 GB']];
+const b = `<div class="cap" style="left:440px;top:44px">2 · STORAGE IN THE LIVE WINDOW: WHERE IT ALL WENT, AT A GLANCE</div>
+<div class="win" style="left:440px;top:70px">
+  <div class="wbar"><span class="tl"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></span><span class="b" style="margin-left:10px">Live</span>
+    <span class="seg2" style="margin-left:auto"><span>Overview</span><span>Processor</span><span>Memory</span><span class="on">Storage</span><span>Energy</span></span></div>
+  <div class="card" style="left:16px;top:60px;width:340px;height:420px;display:grid;place-items:center">${sun}
+    <div class="t3" style="text-align:center;margin-top:-6px">Inner ring: kinds of files · outer ring: the biggest folders in each. Click a slice to look inside.</div></div>
+  <div class="card" style="left:372px;top:60px;width:512px;height:204px"><div class="k" style="margin-bottom:6px">LARGEST ITEMS</div>
+    ${largest.map(([ico, path, z]) => `<div class="row2">${app(ico, 18)}<span>${path}</span><span class="sz" style="text-align:right">${z}</span></div>`).join('')}</div>
+  <div class="card" style="left:372px;top:276px;width:512px;height:204px"><div class="row" style="margin-bottom:4px"><span class="k">CLEAN UP 103 GB</span><span class="btn p" style="margin-left:auto">Clean Selected</span></div>
+    ${cleans.slice(0, 5).map(([i, t, d, z], n) => `<div class="row2" style="grid-template-columns:18px 1fr 70px"><span style="width:14px;height:14px;border-radius:4px;background:${n < 4 ? 'var(--blue)' : 'transparent'};box-shadow:inset 0 0 0 1.3px ${n < 4 ? 'var(--blue)' : 'var(--ink-3)'};display:grid;place-items:center;color:#fff;font-size:10px">${n < 4 ? '✓' : ''}</span><span><b>${t}</b> <span class="t3">· ${d}</span></span><span class="sz" style="text-align:right">${z}</span></div>`).join('')}</div>
+  <div class="card" style="left:16px;top:496px;width:868px;height:128px">
+    <div class="row"><span class="k">SPACE OVER THE LAST 30 DAYS</span><span class="t3" style="margin-left:auto">Down 14 GB · Xcode builds grew fastest</span></div>
+    <svg viewBox="0 0 840 70" width="100%" height="76" preserveAspectRatio="none" style="margin-top:6px"><path d="M0,40 L60,38 L120,35 L180,36 L240,30 L300,28 L360,22 L420,24 L480,18 L540,16 L600,12 L660,10 L700,30 L760,28 L840,26 L840,70 L0,70Z" fill="var(--blue)" opacity=".16"/><path d="M0,40 L60,38 L120,35 L180,36 L240,30 L300,28 L360,22 L420,24 L480,18 L540,16 L600,12 L660,10 L700,30 L760,28 L840,26" fill="none" stroke="var(--blue)" stroke-width="2"/></svg></div>
+</div>`;
+
+document.getElementById('app').innerHTML = menubar(`<span class="on">${monoIcon}</span>`) + a + b
+  + `<div class="notes" style="left:40px;top:780px;width:360px"><b>Station (App Store):</b> the bar, categories and free space; it looks inside only folders you pick. <b>Monorail:</b> the full scan and every clean-up.</div>`;
+</script></body></html>

@@ -3125,18 +3125,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     /// The menu bar shows only the Monorail icon, always the same shape. Its colour says what's on:
-    /// the menu bar's own colour while running, grey while paused, orange while Stay Awake is on,
+    /// the menu bar's own colour while running, dimmed while paused, orange while Stay Awake is on,
     /// red while recording. Position, timers and notices live in the panel instead.
     private func updateStatusItem() {
         guard let button = statusItem?.button else { return }
         button.image = StatusIcon.image(paused: engine.isPaused)
         button.title = ""
         button.imagePosition = .imageOnly
-        let tint: NSColor? = engine.isRecording ? .systemRed
-            : engine.isPaused ? .tertiaryLabelColor
-            : awake.isOn ? .systemOrange
-            : nil
-        button.contentTintColor = tint
+        // A template image, so macOS draws it white on a dark menu bar and black on a light one, like
+        // every other icon there. Paused uses macOS's own dimmed look, which follows the theme; a
+        // grey colour of our own resolved against the wrong appearance and nearly vanished.
+        button.appearsDisabled = engine.isPaused && !engine.isRecording
+        button.contentTintColor = engine.isRecording ? .systemRed : (awake.isOn && !engine.isPaused) ? .systemOrange : nil
         var states: [String] = []
         if engine.isPaused { states.append("paused") }
         if awake.isOn { states.append("Stay Awake on") }

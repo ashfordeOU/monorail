@@ -12,7 +12,8 @@ enum StatusIcon {
             // The M: two outlined windows standing tall…
             let sides = NSBezierPath(roundedRect: NSRect(x: 1.5, y: 1.5, width: 4.5, height: 13), xRadius: 1.6, yRadius: 1.6)
             sides.append(NSBezierPath(roundedRect: NSRect(x: 12, y: 1.5, width: 4.5, height: 13), xRadius: 1.6, yRadius: 1.6))
-            sides.lineWidth = 1.2
+            // As heavy as the other icons in the menu bar.
+            sides.lineWidth = 1.5
             sides.stroke()
             // …and the middle one, slid down.
             let middle = NSRect(x: 7, y: 2, width: 4, height: 8.5)

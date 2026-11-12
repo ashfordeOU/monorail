@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Live view</title><link rel="stylesheet" href="mac.css">
+<style>
+.win { position:absolute; left:40px; top:44px; width:1420px; height:880px; border-radius:14px; background:var(--win-content); box-shadow:var(--shadow); overflow:hidden; }
+.bar { height:44px; display:flex; align-items:center; gap:10px; padding:0 16px; border-bottom:.5px solid var(--sep); }
+.bar .tl { display:flex; gap:7px; } .bar .tl i { width:12px; height:12px; border-radius:50%; }
+.seg2 { display:flex; background:var(--off); border-radius:7px; padding:2px; font-size:11.5px; font-weight:500; }
+.seg2 span { padding:3px 12px; border-radius:5px; color:var(--ink-2); } .seg2 span.on { background:var(--tile-2); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.14); }
+.card { position:absolute; border-radius:12px; background:var(--tile); padding:12px 14px; }
+.k { font-size:10.5px; font-weight:600; letter-spacing:.3px; color:var(--ink-2); }
+.die { position:relative; margin-top:10px; border-radius:16px; background:linear-gradient(160deg, color-mix(in srgb,var(--ink) 7%,transparent), color-mix(in srgb,var(--ink) 3%,transparent)); box-shadow:inset 0 0 0 1px var(--sep); height:300px; }
+.cl { position:absolute; display:grid; gap:5px; }
+.cl .t { border-radius:6px; display:grid; place-items:center; font-size:10px; font-weight:600; color:#fff; text-shadow:0 1px 1px rgba(0,0,0,.25); }
+.cl .t small { display:block; font-weight:500; font-size:8.5px; opacity:.85; }
+.lab { position:absolute; font-size:10px; font-weight:600; color:var(--ink-3); letter-spacing:.3px; }
+.mini { display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; margin-top:10px; }
+.mini div { background:var(--tile-2); border-radius:8px; padding:6px 7px 4px; }
+.mini b { font-size:10px; color:var(--ink-2); display:flex; justify-content:space-between; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+th { text-align:left; font-size:10.5px; font-weight:600; color:var(--ink-3); letter-spacing:.3px; padding:6px 8px; border-bottom:.5px solid var(--sep); }
+td { padding:5px 8px; border-bottom:.5px solid var(--sep); }
+td.n { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; width:58px; }
+.cell { display:flex; align-items:center; gap:7px; }
+.m { display:inline-block; vertical-align:middle; height:5px; border-radius:3px; background:var(--off); width:70px; overflow:hidden; } .m i { display:block; height:100%; border-radius:3px; }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const heatCol = (t) => t < 55 ? '#0A84FF' : t < 70 ? '#30B45C' : t < 85 ? '#E6A700' : '#FF453A';
+const loadCol = (l) => l < 40 ? 'var(--good)' : l < 75 ? 'var(--ok)' : 'var(--low)';
+const tile = (t, label, w, h) => `<div class="t" style="width:${w}px;height:${h}px;background:linear-gradient(160deg,${heatCol(t)},color-mix(in srgb,${heatCol(t)} 72%,#000))">${label}<small>${t}°</small></div>`;
+const PC = [78, 74, 86, 66, 69, 77], EC = [52, 51, 54, 50, 52, 51], GC = [61, 63, 66, 64, 60, 62, 65, 67, 63, 61, 59, 62, 64, 66, 63, 60, 61, 62];
+const chip = `<div class="die">
+  <span class="lab" style="left:18px;top:12px">PERFORMANCE CORES</span>
+  <div class="cl" style="left:18px;top:30px;grid-template-columns:repeat(3,72px)">${PC.map((t, i) => tile(t, 'P' + (i + 1), 72, 58)).join('')}</div>
+  <span class="lab" style="left:18px;top:168px">EFFICIENCY CORES</span>
+  <div class="cl" style="left:18px;top:186px;grid-template-columns:repeat(3,72px)">${EC.map((t, i) => tile(t, 'E' + (i + 1), 72, 34)).join('')}</div>
+  <span class="lab" style="left:268px;top:12px">GRAPHICS · 18 CORES</span>
+  <div class="cl" style="left:268px;top:30px;grid-template-columns:repeat(6,38px);gap:4px">${GC.map((t, i) => tile(t, '', 38, 38)).join('')}</div>
+  <span class="lab" style="left:268px;top:168px">NEURAL ENGINE</span>
+  <div class="cl" style="left:268px;top:186px">${tile(48, 'Idle', 252, 46)}</div>
+  <div style="position:absolute;left:18px;right:18px;bottom:12px;display:flex;gap:12px;align-items:center;font-size:10.5px;color:var(--ink-2)">
+    <span>Cool 40°</span><span style="flex:1;height:6px;border-radius:3px;background:linear-gradient(90deg,#0A84FF,#30B45C 35%,#E6A700 70%,#FF453A)"></span><span>Hot 100°</span></div>
+</div>`;
+const area = (pts, col, w = 150, h = 34) => { const step = w / (pts.length - 1), line = pts.map((v, i) => `${i ? 'L' : 'M'}${(i * step).toFixed(1)},${(h - v * h / 100).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none"><path d="${line} L${w},${h} L0,${h}Z" fill="${col}" opacity=".18"/><path d="${line}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round"/></svg>`; };
+const wave = (base, amp, n = 30, seed = 1) => Array.from({ length: n }, (_, i) => Math.max(2, Math.min(98, base + amp * Math.sin(i / 2.3 + seed) + (amp / 2) * Math.sin(i / 0.9 + seed * 3))));
+const cores = [...PC.map((t, i) => ['P' + (i + 1), [82, 64, 91, 38, 55, 72][i]]), ...EC.map((t, i) => ['E' + (i + 1), [22, 18, 35, 12, 28, 16][i]])];
+const miniGrid = `<div class="mini">${cores.map(([n, l], i) => `<div><b><span>${n}</span><span class="num">${l}%</span></b>${area(wave(l, l / 4, 30, i), loadCol(l))}</div>`).join('')}</div>`;
+const rows = [['Chrome', 'Chrome', 186, 62, 34, 412], ['Xcode', 'Xcode', 142, 48, 12, 188], ['Claude', 'Claude Code', 64, 19, 18, 96], ['Terminal', 'node (in Terminal)', 41, 8, 6, 22], ['Slack', 'Slack', 18, 11, 4, 64], ['Music', 'Music', 9, 3, 2, 31], ['Finder', 'Finder', 3, 2, 1, 12]];
+const table = `<table><tr><th>App</th><th>Processor</th><th></th><th>Memory</th><th></th><th>Battery share</th><th></th><th style="text-align:right">Threads</th></tr>
+  ${rows.map(([ic, n, cpu, mem, bat, th]) => `<tr><td><span class="cell">${app(ic, 18)}${n}</span></td><td class="n">${cpu}%</td><td><span class="m"><i style="width:${Math.min(cpu / 2, 100)}%;background:${loadCol(cpu / 2)}"></i></span></td><td class="n">${(mem / 10).toFixed(1)} GB</td><td><span class="m"><i style="width:${mem}%;background:var(--blue)"></i></span></td><td class="n">${bat}%</td><td><span class="m"><i style="width:${bat * 2.5}%;background:#FF9F0A"></i></span></td><td class="n">${th}</td></tr>`).join('')}</table>`;
+
+document.getElementById('app').innerHTML = menubar(`<span class="on">${monoIcon}</span>`) + `
+<div class="win">
+  <div class="bar"><span class="tl"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></span>
+    <span class="b" style="margin-left:10px">Live</span><span class="t3">Apple M3 Pro · 12 cores · 36 GB</span>
+    <span class="seg2" style="margin-left:auto"><span class="on">Overview</span><span>Processor</span><span>Memory</span><span>Energy</span><span>Network</span></span>
+    <span class="seg2"><span>1 min</span><span class="on">5 min</span><span>1 hr</span></span></div>
+  <div class="card" style="left:16px;top:60px;width:560px;height:360px"><div class="row"><span class="k">YOUR CHIP</span><span class="seg2" style="margin-left:12px"><span>Load</span><span class="on">Heat</span></span><span class="t3" style="margin-left:auto">Hottest P3 · 86 °C · fans 2,400 rpm</span></div>
+    <div style="display:grid;place-items:center;margin-top:14px">${chipArt('heat', PC, EC, GC, { width: 520 })}</div>
+    <div style="display:flex;gap:10px;align-items:center;font-size:10.5px;color:var(--ink-2);margin:14px 6px 0"><span>Cool 40°</span><span style="flex:1;height:6px;border-radius:3px;background:linear-gradient(90deg,#0A84FF,#30D158 35%,#FFD60A 70%,#FF453A)"></span><span>Hot 100°</span></div></div>
+  <div class="card" style="left:592px;top:60px;width:812px;height:180px"><div class="row"><span class="k">LOAD PER CORE</span><span class="t3" style="margin-left:auto">Total 62% · 4.2 GHz peak</span></div>${miniGrid}</div>
+  <div class="card" style="left:592px;top:256px;width:262px;height:164px"><div class="k">NETWORK</div><div class="row" style="gap:14px;margin:6px 0"><span><span class="t3">Down</span> <b class="num">48 MB/s</b></span><span><span class="t3">Up</span> <b class="num">3.1 MB/s</b></span></div>${area(wave(55, 25, 30, 2), 'var(--blue)', 240, 70)}</div>
+  <div class="card" style="left:867px;top:256px;width:262px;height:164px"><div class="k">DISK</div><div class="row" style="gap:14px;margin:6px 0"><span><span class="t3">Read</span> <b class="num">612 MB/s</b></span><span><span class="t3">Write</span> <b class="num">88 MB/s</b></span></div>${area(wave(35, 30, 30, 5), '#AF52DE', 240, 70)}</div>
+  <div class="card" style="left:1142px;top:256px;width:262px;height:164px"><div class="k">GRAPHICS</div><div class="row" style="gap:14px;margin:6px 0"><span><span class="t3">Use</span> <b class="num">38%</b></span><span><span class="t3">Power</span> <b class="num">6.4 W</b></span></div>${area(wave(38, 18, 30, 8), 'var(--good)', 240, 70)}</div>
+  <div class="card" style="left:16px;top:436px;width:1388px;height:428px">
+    <div class="row" style="margin-bottom:6px"><span class="k">WHAT'S RUNNING</span><span class="t3" style="margin-left:6px">412 processes, grouped by app</span><span class="btn" style="margin-left:auto">Pause</span><span class="btn">Quit</span></div>
+    ${table}</div>
+</div>`;
+</script></body></html>

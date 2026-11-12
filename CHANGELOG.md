@@ -6,6 +6,9 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- **The menu bar icon is easy to see again.** It's drawn white on a dark menu bar and black on a light one, like the icons next to it, and a little bolder. While paused it uses macOS's own dimmed look, which follows the theme; in 1.8.0 a paused icon came out dark grey on a dark menu bar.
+
 ## [1.8.0] - 2026-11-12
 
 ### Changed

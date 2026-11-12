@@ -1,0 +1,87 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>System</title><link rel="stylesheet" href="mac.css">
+<style>
+.status { display:flex; align-items:center; gap:7px; margin:2px 2px 10px; }
+.k { font-size:10.5px; font-weight:600; letter-spacing:.3px; }
+.cores { display:flex; gap:5px; align-items:flex-end; height:86px; padding:4px 2px 0; }
+.core { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.core .bar { width:100%; height:62px; border-radius:6px; background:var(--off); position:relative; overflow:hidden; }
+.core .bar i { position:absolute; left:0; right:0; bottom:0; border-radius:6px; }
+.core b { font-size:9.5px; font-weight:600; color:var(--ink-3); }
+.sep { width:1px; align-self:stretch; background:var(--sep); margin:0 3px 16px; }
+.seg2 { display:flex; background:var(--off); border-radius:7px; padding:2px; font-size:11px; font-weight:500; }
+.seg2 span { flex:1; text-align:center; padding:3px 0; border-radius:5px; color:var(--ink-2); }
+.seg2 span.on { background:var(--tile-2); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.14); }
+.prow { display:grid; grid-template-columns:22px 1fr 64px 52px; gap:8px; align-items:center; padding:6px 10px; border-top:.5px solid var(--sep); font-size:12px; }
+.prow:first-child { border-top:0; }
+.prow .val { text-align:right; font-weight:600; }
+.meter { height:5px; border-radius:3px; background:var(--off); overflow:hidden; } .meter i { display:block; height:100%; border-radius:3px; }
+.stack { display:flex; height:16px; border-radius:5px; overflow:hidden; gap:2px; }
+.stack i { display:block; height:100%; }
+.leg { display:flex; flex-wrap:wrap; gap:6px 12px; font-size:11px; color:var(--ink-2); margin-top:8px; }
+.leg span { display:flex; align-items:center; gap:5px; } .leg i { width:8px; height:8px; border-radius:2px; }
+.eater { text-align:center; padding:16px 12px 12px; position:relative; overflow:hidden; }
+.eater .halo { position:absolute; left:50%; top:-13px; width:150px; height:150px; margin-left:-75px; border-radius:50%; background:radial-gradient(circle, rgba(255,159,10,.42), rgba(255,69,58,.14) 50%, transparent 70%); }
+.dot { position:absolute; width:3px; height:3px; border-radius:50%; background:#FF9F0A; }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const heatCol = (t) => t < 55 ? 'var(--blue)' : t < 70 ? 'var(--good)' : t < 85 ? 'var(--ok)' : 'var(--low)';
+const loadCol = (l) => l < 40 ? 'var(--good)' : l < 75 ? 'var(--ok)' : 'var(--low)';
+const PC = [[82, 74], [64, 71], [91, 83], [38, 66], [55, 69], [72, 77]], EC = [[22, 52], [18, 51], [35, 54], [12, 50], [28, 52], [16, 51]];
+const coreBars = (by) => `<div class="cores">${PC.map(([l, t], i) => `<div class="core"><div class="bar"><i style="height:${l}%;background:${by === 'heat' ? heatCol(t) : loadCol(l)}"></i></div><b>P${i + 1}</b></div>`).join('')}<div class="sep"></div>${EC.map(([l, t], i) => `<div class="core"><div class="bar"><i style="height:${l}%;background:${by === 'heat' ? heatCol(t) : loadCol(l)}"></i></div><b>E${i + 1}</b></div>`).join('')}</div>`;
+const spark = (pts, col) => `<svg viewBox="0 0 64 18" width="64" height="18"><path d="${pts.map((v, i) => `${i ? 'L' : 'M'}${i * (64 / (pts.length - 1))},${17 - v * 16 / 100}`).join(' ')}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const a = `<div class="cap" style="left:40px;top:44px">1 · SYSTEM: THREE RINGS, THEN YOUR CHIP, CORE BY CORE</div>
+<div class="panel" style="left:40px;top:70px;width:350px">
+  <div class="row" style="margin:2px 2px 10px"><span style="color:var(--blue);font-weight:500">‹ Monorail</span><span class="b" style="margin:0 auto;transform:translateX(-36px)">System</span></div>
+  <div class="tile" style="display:flex;gap:14px;align-items:center;padding:12px">
+    ${rings3([[62, 'var(--good)'], [71, 'var(--blue)'], [58, 'var(--ok)']], 96, 9)}
+    <div style="display:grid;gap:6px">${ringRow('var(--good)', 'PROCESSOR', '62%', '12 cores')}${ringRow('var(--blue)', 'MEMORY', '71%', 'pressure low')}${ringRow('var(--ok)', 'HEAT', 'Warm', '74 °C hottest')}</div></div>
+  <div class="tile" style="margin-top:8px;padding:10px">
+    <div class="row" style="margin-bottom:8px"><span class="k" style="color:var(--ink-2)">YOUR CHIP</span><span class="seg2" style="margin-left:auto;width:120px"><span class="on">Load</span><span>Heat</span></span></div>
+    ${chipArt('load', PC.map(x => x[0]), EC.map(x => x[0]), [38,42,35,40,44,39,36,41,37,43,40,38,35,39,42,36,40,37])}
+  </div>
+  <div class="tile" style="margin-top:8px;padding:10px">
+    <div class="row" style="margin-bottom:8px"><span class="k" style="color:var(--ink-2)">SAME CHIP, HEAT</span><span class="t3" style="margin-left:auto">hottest P3 · 83 °C</span></div>
+    ${chipArt('heat', PC.map(x => x[1]), EC.map(x => x[1]), [61,63,66,64,60,62,65,67,63,61,59,62,64,66,63,60,61,62])}
+  </div>
+</div>`;
+
+const apps = [['Chrome', 186, 'Chrome', [30, 45, 60, 55, 80, 92, 85, 90]], ['Xcode', 142, 'Xcode', [10, 20, 70, 90, 60, 40, 75, 70]], ['Claude', 64, 'Claude Code', [20, 30, 25, 40, 35, 30, 32, 30]],
+  ['Slack', 18, 'Slack', [5, 8, 12, 10, 9, 8, 9, 8]], ['Music', 9, 'Music', [4, 4, 5, 4, 4, 5, 4, 4]], ['Finder', 3, 'Finder', [2, 1, 2, 1, 1, 2, 1, 1]]];
+const b = `<div class="cap" style="left:420px;top:44px">2 · WHAT'S RUNNING: SORT BY WHAT YOU CARE ABOUT</div>
+<div class="panel" style="left:420px;top:70px;width:350px">
+  <div class="row" style="margin:2px 2px 10px"><span style="color:var(--blue);font-weight:500">‹ System</span><span class="b" style="margin:0 auto;transform:translateX(-30px)">Processes</span></div>
+  <div class="seg2" style="margin-bottom:8px"><span class="on">Processor</span><span>Memory</span><span>Energy</span><span>Heat</span></div>
+  <div class="list" style="background:var(--tile)">${apps.map(([icon, cpu, name, pts]) => `<div class="prow">${app(icon, 22)}<div><div>${name}</div><div class="meter" style="margin-top:4px;width:${Math.min(cpu / 2, 100)}%"><i style="width:100%;background:${loadCol(cpu / 2)}"></i></div></div>${spark(pts, loadCol(cpu / 2))}<span class="val num">${cpu}%</span></div>`).join('')}</div>
+  <div class="row" style="margin-top:10px"><span class="t3">412 processes · 2,914 threads</span><span class="btn" style="margin-left:auto">Open Live View</span></div>
+</div>`;
+
+const c = `<div class="cap" style="left:800px;top:44px">3 · MEMORY: PRESSURE FIRST, THEN WHERE IT WENT</div>
+<div class="panel" style="left:800px;top:70px;width:350px">
+  <div class="row" style="margin:2px 2px 10px"><span style="color:var(--blue);font-weight:500">‹ System</span><span class="b" style="margin:0 auto;transform:translateX(-30px)">Memory</span></div>
+  <div class="tile" style="display:flex;gap:14px;align-items:center;padding:12px">
+    ${rings3([[34, 'var(--good)']], 76, 10)}
+    <div><div class="k" style="color:var(--good)">PRESSURE</div><div class="num" style="font-size:22px;font-weight:600">Low</div><div class="t3">26.4 of 36 GB in use · no swap</div></div></div>
+  <div class="tile" style="margin-top:8px">
+    <div class="stack"><i style="flex:44;background:var(--blue)"></i><i style="flex:12;background:#AF52DE"></i><i style="flex:9;background:var(--ok)"></i><i style="flex:8;background:var(--ink-3)"></i><i style="flex:27;background:var(--off)"></i></div>
+    <div class="leg"><span><i style="background:var(--blue)"></i>Apps 15.8 GB</span><span><i style="background:#AF52DE"></i>Wired 4.3 GB</span><span><i style="background:var(--ok)"></i>Compressed 3.2 GB</span><span><i style="background:var(--ink-3)"></i>Cached 3.1 GB</span><span><i style="background:var(--off)"></i>Free 9.6 GB</span></div></div>
+  <div class="h">Using the most</div>
+  <div class="list">${[['Chrome', '6.2 GB', 62], ['Xcode', '4.8 GB', 48], ['Claude', '1.9 GB', 19], ['Slack', '1.1 GB', 11]].map(([n, v, w]) => `<div class="prow" style="grid-template-columns:22px 1fr 60px">${app(n, 22)}<div><div>${n === 'Claude' ? 'Claude Code' : n}</div><div class="meter" style="margin-top:4px"><i style="width:${w}%;background:var(--blue)"></i></div></div><span class="val num">${v}</span></div>`).join('')}</div>
+</div>`;
+
+const dots = Array.from({ length: 22 }, (_, i) => { const a = i / 22 * Math.PI * 2, r = 54 + (i % 3) * 9; return `<span class="dot" style="left:${133 + Math.cos(a) * r}px;top:${62 + Math.sin(a) * r}px;opacity:${.35 + (i % 4) * .18}"></span>`; }).join('');
+const d = `<div class="cap" style="left:1180px;top:44px">4 · THE ONE EATING YOUR BATTERY</div>
+<div class="panel" style="left:1180px;top:70px;width:290px">
+  <div class="tile eater"><div class="halo"></div>${dots}
+    <div style="position:relative;width:64px;height:64px;border-radius:15px;margin:14px auto 0;background:linear-gradient(150deg,#FBBC05,#b08304);box-shadow:0 10px 24px rgba(255,159,10,.4)"></div>
+    <div class="b" style="font-size:15px;margin-top:14px;position:relative">Chrome is eating your battery</div>
+    <div class="t2" style="position:relative">6.2% an hour · a third of the drain</div>
+    <div class="row" style="justify-content:center;gap:6px;margin-top:10px;position:relative"><span class="btn p">Quit</span><span class="btn">Pause</span><span class="btn">Tabs ›</span></div></div>
+  <div class="tile" style="margin-top:8px">
+    <div class="k" style="color:var(--ink-2);margin-bottom:8px">WHERE THE DRAIN GOES</div>
+    <div class="stack" style="height:12px"><i style="flex:34;background:#FF9F0A"></i><i style="flex:22;background:var(--blue)"></i><i style="flex:12;background:#AF52DE"></i><i style="flex:18;background:var(--good)"></i><i style="flex:14;background:var(--ink-3)"></i></div>
+    <div class="leg"><span><i style="background:#FF9F0A"></i>Chrome 34%</span><span><i style="background:var(--blue)"></i>Display 22%</span><span><i style="background:#AF52DE"></i>Xcode 12%</span><span><i style="background:var(--good)"></i>Claude Code 18%</span><span><i style="background:var(--ink-3)"></i>Rest 14%</span></div></div>
+</div>`;
+
+document.getElementById('app').innerHTML = menubar(`<span class="on">${monoIcon}</span>`) + a + b + c + d;
+</script></body></html>

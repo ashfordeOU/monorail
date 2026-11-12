@@ -31,16 +31,16 @@ const t1 = `
 <div class="cap" style="left:60px;top:52px">1 · TODAY: WILL IT LAST?</div>
 <div class="panel" style="left:60px;top:72px">
   <div class="nav"><span>Battery</span><span class="t2" style="margin-left:auto;font-weight:400">Today</span></div>
-  <div class="tile hero">
-    <div class="dial">${arc(78, 'var(--good)')}<div class="c"><div class="num" style="font-size:52px;font-weight:600;letter-spacing:-1.5px;line-height:1">5:52</div><div class="t2" style="margin-top:2px">left, until about 03:45</div></div></div>
-    <div class="row" style="justify-content:center;gap:6px;margin-top:2px"><span class="pill" style="background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)">● On track</span><span class="t3">lasts past bedtime</span></div>
+  <div class="tile" style="display:flex;gap:14px;align-items:center;padding:14px 12px">
+    ${rings3([[64, 'var(--good)'], [78, 'var(--blue)'], [55, 'var(--ok)']])}
+    <div style="display:grid;gap:8px">
+      ${ringRow('var(--good)', 'CHARGE', '64%', 'on battery')}
+      ${ringRow('var(--blue)', 'TIME LEFT', '5:52', 'until 03:45')}
+      ${ringRow('var(--ok)', 'DRAIN', '6.1 W', 'usual 5.2')}
+    </div>
   </div>
-  <div class="trio">
-    <div class="mini"><div class="ring">${ring(64, 'var(--good)')}</div><div class="num" style="font-weight:600">64%</div><div class="t3">Charge</div></div>
-    <div class="mini"><div class="ring">${ring(48, 'var(--ok)')}</div><div class="num" style="font-weight:600">6.1 W</div><div class="t3">Drain</div></div>
-    <div class="mini"><div class="ring">${ring(100, 'var(--good)')}</div><div class="num" style="font-weight:600">100%</div><div class="t3">Health</div></div>
-  </div>
-  <div class="tile coach" style="margin-top:10px"><span class="coach-ico ico" style="background:var(--ok)">!</span>
+  <div class="row" style="margin:8px 2px 0;gap:6px"><span class="pill" style="background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)">● On track</span><span class="t3">Lasts past bedtime · health 100%</span></div>
+  <div class="tile coach" style="margin-top:8px"><span class="coach-ico ico" style="background:var(--ok)">!</span>
     <div><div style="font-weight:600">Chrome is using a third of your battery</div><div class="t2" style="margin-top:2px">Quit it and you'd have about 6:41 left.</div>
     <div class="row" style="margin-top:8px"><span class="btn p">Quit Chrome</span><span class="btn">Pause</span><span class="t3" style="margin-left:auto">Not now</span></div></div></div>
 </div>`;
@@ -58,9 +58,9 @@ const t2 = `
   <div class="nav"><span class="back">‹ Today</span><span style="margin-left:auto">This Week</span></div>
   <div class="tile">
     <div class="row"><div><div class="t2">Average drain</div><div class="num" style="font-size:30px;font-weight:600;letter-spacing:-.6px">6.0 W</div></div>
-      <span class="pill" style="margin-left:auto;background:color-mix(in srgb,var(--ok) 20%,transparent);color:color-mix(in srgb,var(--ok) 70%,var(--ink))">▲ 12% vs last week</span></div>
+      <span class="pill" style="margin-left:auto;background:color-mix(in srgb,var(--ok) 20%,transparent);color:color-mix(in srgb,var(--ok) 70%,var(--ink))">▲ 12% vs last week</span></div><div class="t3" style="margin-top:2px">- - - your usual, 6.0 W</div>
     <div style="position:relative;margin-top:10px"><div style="position:absolute;left:0;right:0;top:${118 - base / 9 * 110}px;border-top:1px dashed var(--ink-3)"></div>
-      <div class="t3" style="position:absolute;left:0;top:${100 - base / 9 * 110}px;background:var(--tile);padding-right:4px">your usual</div><div style="display:flex;gap:4px">${bars}</div></div>
+      <div style="display:flex;gap:4px">${bars}</div></div>
   </div>
   <div class="tile coach"><span class="ico" style="background:var(--blue)">i</span>
     <div><div style="font-weight:600">Tuesday was your heaviest day</div><div class="t2" style="margin-top:2px">Xcode builds and Chrome ran together for 3 hours. On build days, plug in after lunch.</div></div></div>

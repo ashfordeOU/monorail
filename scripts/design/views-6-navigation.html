@@ -18,10 +18,11 @@ const home = (x, y, hi = '') => `<div class="panel" style="left:${x}px;top:${y}p
 
 const battery = (x, y) => `<div class="panel" style="left:${x}px;top:${y}px;width:330px">
   <div class="row" style="margin:2px 2px 10px"><span class="back">${s('chev').replace('<path d="m9 6 6 6-6 6"/>', '<path d="m15 6-6 6 6 6"/>')}Monorail</span><span class="b" style="margin-left:auto;margin-right:auto;transform:translateX(-30px)">Battery</span></div>
-  <div class="tile" style="display:flex;justify-content:space-around;padding:12px 4px">
-    ${[[62, 'var(--good)', '62%', 'Charge'], [36, 'var(--ok)', '1:32', 'Left'], [84, 'var(--good)', '84%', 'Health']].map(([p, c, v, l]) => `<div style="text-align:center"><div style="display:grid;place-items:center">${ring(p, c, 52, 5)}</div><div class="num b" style="margin-top:4px">${v}</div><div class="t3">${l}</div></div>`).join('')}
+  <div class="tile" style="display:flex;gap:14px;align-items:center;padding:12px">
+    ${rings3([[62, 'var(--good)'], [36, 'var(--blue)'], [92, 'var(--low)']], 100, 10)}
+    <div style="display:grid;gap:7px">${ringRow('var(--good)', 'CHARGE', '62%', 'health 84%')}${ringRow('var(--blue)', 'TIME LEFT', '1:32', 'until 00:31')}${ringRow('var(--low)', 'DRAIN', '28.8 W', 'usual 7')}</div>
   </div>
-  <div class="tile row" style="margin-top:8px;background:color-mix(in srgb,var(--ok) 12%,var(--tile))"><span style="color:var(--ok)">${s('bolt', 'f')}</span><div><div class="b">Using 28.8 W, about 4× your usual</div><div class="t2">Low Power Mode is on. Quitting Safari gives 9 min.</div></div></div>
+  <div class="tile row" style="margin-top:8px;background:color-mix(in srgb,var(--ok) 12%,var(--tile))"><span style="color:var(--ok)">${s('bolt', 'f')}</span><div><div class="b">About 4× your usual drain</div><div class="t2">Quitting Safari gives 9 more minutes.</div></div></div>
   <div class="h">Using Significant Energy</div>
   <div class="list">${[['Safari', '0.2%/h'], ['Firefox', '<0.1%/h'], ['Chrome', '<0.1%/h']].map(([a, v]) => `<div class="li ic">${app(a)}<span>${a}</span><span class="v num">${v}</span><span style="color:var(--ink-3)">${s('chev')}</span></div>`).join('')}</div>
   <div class="row" style="margin-top:10px"><span class="t3">Show in menu bar</span><span class="switch"><i></i></span></div>
@@ -36,7 +37,7 @@ const detail = (x, y) => `<div class="panel" style="left:${x}px;top:${y}px;width
   <div class="row" style="margin-top:10px"><span class="btn p">Quit</span><span class="btn">Pause</span><span class="btn">Hide</span><span class="btn" style="margin-left:auto">Show Windows</span></div>
 </div>`;
 
-const arrow = (x, y, t) => `<div class="step" style="left:${x}px;top:${y}px">→</div><div class="t3" style="position:absolute;left:${x - 30}px;top:${y + 32}px;width:90px;text-align:center">${t}</div>`;
+const arrow = (x, y, t) => `<div class="step" style="left:${x}px;top:${y}px">→</div><div class="t3" style="position:absolute;left:${x - 14}px;top:${y + 32}px;width:52px;text-align:center">${t}</div>`;
 document.getElementById('app').innerHTML = menubar(`<span class="on">${monoIcon}</span><span>⚡ 62%</span>`)
   + `<div class="cap" style="left:40px;top:44px">ONE PANEL, PAGES INSIDE IT (LIKE CONTROL CENTRE)</div>`
   + home(40, 70, 'box-shadow:0 0 0 2px var(--blue)')

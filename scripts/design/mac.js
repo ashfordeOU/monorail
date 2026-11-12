@@ -28,3 +28,15 @@ const win = (x, y, w, h, title, appName, extra = '') => `<div style="position:ab
   <div style="height:26px;display:flex;align-items:center;gap:6px;padding:0 9px;background:var(--win);font-size:11px;color:var(--ink-2)"><i style="width:9px;height:9px;border-radius:50%;background:#FF5F57"></i><i style="width:9px;height:9px;border-radius:50%;background:#FEBC2E"></i><i style="width:9px;height:9px;border-radius:50%;background:#28C840"></i><span style="margin-left:6px">${title}</span></div>
   <div style="padding:12px;display:grid;gap:7px"><b style="display:block;height:9px;width:50%;border-radius:5px;background:${C[appName] || '#888'};opacity:.7"></b>${'<i style="display:block;height:6px;border-radius:3px;background:var(--off)"></i>'.repeat(Math.max(2, Math.floor((h - 60) / 14)))}</div></div>`;
 const menubar = (right = '') => `<div class="menubar"><b>Finder</b><span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Window</span><div class="r">${right}<span>Wed 12 Nov&nbsp;&nbsp;21:54</span></div></div>`;
+// Three concentric rings, like Activity: each [percent, colour], outside in. A thin gap between rings, rounded ends.
+const rings3 = (rs, size = 112, w = 11, gap = 3) => {
+  const c = size / 2;
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="transform:rotate(-90deg);flex:0 0 ${size}px">${rs.map(([p, col], i) => {
+    const r = c - w / 2 - i * (w + gap), len = 2 * Math.PI * r;
+    return `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${col}" stroke-opacity=".18" stroke-width="${w}"/>
+      <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${len * Math.min(p, 100) / 100} ${len}"/>`;
+  }).join('')}</svg>`;
+};
+// A legend row for the rings: colour bar, label, value and a short note.
+const ringRow = (col, label, value, note) => `<div style="display:flex;gap:8px;align-items:flex-start"><span style="width:3px;height:30px;border-radius:2px;background:${col};margin-top:1px"></span>
+  <div><div class="t3" style="font-weight:600;color:${col}">${label}</div><div class="row" style="gap:5px;align-items:baseline"><span class="num" style="font-size:17px;font-weight:600;line-height:20px">${value}</span><span class="t3">${note}</span></div></div></div>`;

@@ -85,3 +85,5 @@ kbd { font:500 11px/1 "SF Pro Text", -apple-system, sans-serif; padding:2px 5px;
 /* In a menu where some items have icons, text lines up in one column. */
 .menu .mi:not(:has(svg)):not(:has(.app)) { padding-left:31px; }
 .menu .mh { padding-left:10px; }
+/* Big figures get their own line height so labels below never touch them. */
+.num { line-height:normal; }

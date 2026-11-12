@@ -1,0 +1,312 @@
+<title>Monorail Motion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a Mac desktop strip with the Monorail panel hanging from the menu bar; one panel, pages slide inside it. */
+:root {
+  --desk-a: #c9dcff; --desk-b: #f6d2e3; --desk: #e4e8f3;
+  --mat: rgba(240,240,244,.78); --edge: rgba(255,255,255,.65); --tile: rgba(255,255,255,.62); --tile-2: rgba(255,255,255,.92);
+  --sep: rgba(60,60,67,.14); --ink: #1d1d1f; --ink-2: rgba(60,60,67,.72); --ink-3: rgba(60,60,67,.42);
+  --good: #28B463; --ok: #E6A700; --low: #E5484D; --blue: #0A84FF; --orange: #FF9500; --off: rgba(120,120,128,.18);
+  --shadow: 0 0 0 .5px rgba(0,0,0,.14), 0 24px 60px rgba(0,0,0,.20);
+  --bar: rgba(255,255,255,.4); --page: #f2f3f7;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --round: ui-rounded, "SF Pro Rounded", -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --desk-a: #14233f; --desk-b: #3a1730; --desk: #0b0d14;
+  --mat: rgba(32,32,36,.82); --edge: rgba(255,255,255,.10); --tile: rgba(255,255,255,.07); --tile-2: rgba(255,255,255,.14);
+  --sep: rgba(84,84,88,.55); --ink: #f5f5f7; --ink-2: rgba(235,235,245,.64); --ink-3: rgba(235,235,245,.36);
+  --good: #30D158; --ok: #FFD60A; --low: #FF453A; --off: rgba(120,120,128,.30); --bar: rgba(0,0,0,.35); --page: #111216;
+  --shadow: 0 0 0 .5px rgba(255,255,255,.10), 0 24px 60px rgba(0,0,0,.6); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --desk-a: #14233f; --desk-b: #3a1730; --desk: #0b0d14;
+  --mat: rgba(32,32,36,.82); --edge: rgba(255,255,255,.10); --tile: rgba(255,255,255,.07); --tile-2: rgba(255,255,255,.14);
+  --sep: rgba(84,84,88,.55); --ink: #f5f5f7; --ink-2: rgba(235,235,245,.64); --ink-3: rgba(235,235,245,.36);
+  --good: #30D158; --ok: #FFD60A; --low: #FF453A; --off: rgba(120,120,128,.30); --bar: rgba(0,0,0,.35); --page: #111216;
+  --shadow: 0 0 0 .5px rgba(255,255,255,.10), 0 24px 60px rgba(0,0,0,.6); color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font: 400 13px/1.25 var(--font); letter-spacing: -.08px; -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; }
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 18px; }
+.intro h1 { font: 600 22px/1.2 var(--font); margin: 0 0 4px; letter-spacing: -.3px; }
+.intro p { margin: 0; color: var(--ink-2); max-width: 62ch; }
+.desk { position: relative; height: 640px; border-radius: 16px; overflow: hidden; background: radial-gradient(900px 600px at 15% 0%, var(--desk-a), transparent 60%), radial-gradient(800px 600px at 95% 100%, var(--desk-b), transparent 60%), var(--desk); box-shadow: 0 0 0 .5px var(--sep); }
+.menubar { height: 26px; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: var(--bar); backdrop-filter: blur(30px); font-size: 13px; }
+.menubar .r { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.mb-btn { border: 0; background: transparent; color: var(--ink); padding: 2px 7px; border-radius: 5px; display: flex; align-items: center; gap: 5px; font: inherit; cursor: default; }
+.mb-btn[aria-expanded="true"] { background: var(--off); }
+.mb-btn:focus-visible, .tile:focus-visible, .row-btn:focus-visible, .back:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* The panel: one surface that grows and shrinks with its page. */
+.panel { position: absolute; right: 74px; top: 34px; width: 330px; border-radius: 16px; background: var(--mat); backdrop-filter: blur(50px) saturate(1.8); box-shadow: var(--shadow);
+  border: .5px solid var(--edge); overflow: hidden; transform-origin: 85% 0; transition: height .52s cubic-bezier(.32,1.25,.4,1), opacity .2s ease, transform .42s cubic-bezier(.3,1.3,.4,1); }
+.panel.closed { opacity: 0; transform: scale(.92) translateY(-6px); pointer-events: none; }
+.pages { position: relative; }
+.page { position: absolute; inset: 0 0 auto 0; padding: 12px; transition: transform .5s cubic-bezier(.32,1.12,.4,1), opacity .3s ease, filter .3s ease; will-change: transform; }
+.page.left { transform: translateX(-30%); opacity: 0; filter: blur(2px); pointer-events: none; }
+.page.right { transform: translateX(100%); opacity: 0; pointer-events: none; }
+
+.tile { background: var(--tile); border-radius: 12px; padding: 10px; border: 0; color: inherit; font: inherit; text-align: left; width: 100%; display: block; }
+button.tile { cursor: default; transition: transform .25s cubic-bezier(.3,1.4,.4,1), background .2s; }
+button.tile:hover { background: var(--tile-2); }
+button.tile:active { transform: scale(.97); }
+.mods { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.mod { display: flex; align-items: center; gap: 9px; }
+.round { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--off); flex: 0 0 28px; color: var(--ink); transition: background .3s, color .3s, transform .35s cubic-bezier(.3,1.6,.4,1); }
+.round.on { color: #fff; }
+.b { font-weight: 600; } .t2 { font-size: 11px; color: var(--ink-2); } .t3 { font-size: 11px; color: var(--ink-3); }
+.num { font-family: var(--round); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+svg.i { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.slides { display: flex; gap: 6px; }
+.slide { flex: 1; height: 52px; border-radius: 8px; background: var(--tile); display: grid; place-items: center; transition: box-shadow .3s, background .3s; }
+.slide.on { background: var(--tile-2); box-shadow: 0 0 0 2px var(--blue); }
+.appi { width: 18px; height: 18px; border-radius: 5px; box-shadow: 0 .5px 1.5px rgba(0,0,0,.2); }
+.nav { display: flex; align-items: center; margin: 0 2px 10px; min-height: 22px; position: relative; }
+.back { border: 0; background: none; color: var(--blue); font: 500 13px var(--font); display: flex; align-items: center; gap: 2px; padding: 0; cursor: default; }
+.nav .title { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 600; }
+
+/* Rings and their glow */
+.hero { display: flex; gap: 14px; align-items: center; padding: 12px; position: relative; overflow: hidden; }
+.glowbox { position: relative; width: 108px; height: 108px; flex: 0 0 108px; }
+.glowbox canvas { position: absolute; inset: -26px; width: 160px; height: 160px; }
+.glowbox svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.ringarc { transition: stroke-dashoffset 1.1s cubic-bezier(.25,1.15,.35,1); }
+.legend { display: grid; gap: 7px; min-width: 0; }
+.lg { display: flex; gap: 8px; align-items: flex-start; opacity: 0; transform: translateY(6px); transition: opacity .4s ease, transform .5s cubic-bezier(.3,1.3,.4,1); }
+.lg.in { opacity: 1; transform: none; }
+.lg i { width: 3px; height: 30px; border-radius: 2px; margin-top: 1px; }
+.lg .k { font-size: 10.5px; font-weight: 600; letter-spacing: .3px; }
+.lg .v { font-size: 17px; font-weight: 600; line-height: 1.2; }
+.coach { display: flex; gap: 9px; align-items: flex-start; margin-top: 8px; }
+.coach .dot { width: 22px; height: 22px; border-radius: 50%; background: var(--ok); color: #1d1d1f; font-weight: 800; display: grid; place-items: center; flex: 0 0 22px; font-size: 12px; }
+.h { font-size: 11px; font-weight: 600; color: var(--ink-2); padding: 12px 4px 6px; }
+.list { background: var(--tile); border-radius: 10px; overflow: hidden; }
+.row-btn { display: flex; width: 100%; align-items: center; gap: 9px; padding: 8px 10px; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; position: relative; cursor: default; }
+.row-btn + .row-btn::before { content: ""; position: absolute; top: 0; right: 0; left: 37px; height: .5px; background: var(--sep); }
+.row-btn:hover { background: var(--tile-2); }
+.row-btn .v { margin-left: auto; color: var(--ink-2); }
+.chev { color: var(--ink-3); }
+.btn { border: 0; padding: 4px 11px; border-radius: 6px; background: var(--tile-2); color: var(--ink); font: 500 12px var(--font); box-shadow: 0 0 0 .5px var(--sep); cursor: default; transition: transform .2s cubic-bezier(.3,1.5,.4,1); }
+.btn:active { transform: scale(.95); }
+.btn.p { background: var(--blue); color: #fff; box-shadow: none; }
+.stats { display: flex; gap: 18px; margin-top: 10px; }
+.stats .v { font-size: 20px; font-weight: 600; }
+.spark path { transition: stroke-dashoffset 1.2s cubic-bezier(.3,1,.4,1); }
+.hint { position: absolute; left: 20px; bottom: 18px; max-width: 360px; color: var(--ink-2); font-size: 12px; line-height: 1.5; }
+.hint kbd { font: 500 11px var(--font); padding: 1px 5px; border-radius: 4px; background: var(--off); }
+.notes { color: var(--ink-2); font-size: 13px; line-height: 1.55; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 22px; }
+.notes b { color: var(--ink); font-weight: 600; }
+@media (max-width: 560px) { .desk { height: 700px; } .panel { right: 50%; transform-origin: 50% 0; margin-right: -165px; } .hint { right: 20px; } }
+@media (prefers-reduced-motion: reduce) { .panel, .page, .ringarc, .lg, .spark path, button.tile, .btn { transition-duration: .01s !important; } }
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>Monorail, in motion</h1>
+    <p>Click the Monorail icon in the menu bar, then Battery, then an app. One panel turns into each page and back, the rings draw in, and the glow behind them moves with how fast the battery drains. Press <b>D</b> to change the drain.</p>
+  </div>
+
+  <div class="desk" id="desk">
+    <div class="menubar">
+      <b>Finder</b><span>File</span><span>Edit</span><span>View</span>
+      <div class="r">
+        <button class="mb-btn" id="mb" aria-expanded="false" aria-label="Monorail"><svg viewBox="0 0 18 14" width="17" height="13" aria-hidden="true"><rect x="1" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="13" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="7" y="3.5" width="4" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></button>
+        <button class="mb-btn" id="mbBat" aria-label="Battery"><span>⚡</span><span class="num" id="mbPct">64%</span></button>
+        <span>Wed 12 Nov&nbsp; 21:54</span>
+      </div>
+    </div>
+
+    <div class="panel closed" id="panel" role="dialog" aria-label="Monorail">
+      <div class="pages" id="pages">
+        <!-- Home -->
+        <section class="page" data-page="home">
+          <div class="tile">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span class="b">Workspace 1</span><span class="t3">· 4 slides</span></div>
+            <div class="slides" id="slides"></div>
+            <div class="t2" style="margin-top:8px" id="slideTitle">Xcode — Engine.swift</div>
+          </div>
+          <div class="mods">
+            <button class="tile mod" id="mAwake"><span class="round" id="rAwake"><svg class="i" viewBox="0 0 24 24"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/></svg></span><span><span class="b" style="display:block">Stay Awake</span><span class="t2" id="sAwake">Off</span></span></button>
+            <button class="tile mod" id="mEve"><span class="round on" id="rEve" style="background:var(--orange)"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></span><span><span class="b" style="display:block">Evening</span><span class="t2" id="sEve">Until 07:00</span></span></button>
+            <button class="tile mod" id="mFocus"><span class="round" id="rFocus"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></span><span><span class="b" style="display:block">Focus</span><span class="t2" id="sFocus">Off</span></span></button>
+            <button class="tile mod" id="mBat"><span class="round on" style="background:var(--good)"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span><span class="b" style="display:block">Battery</span><span class="t2 num" id="sBat">64% · 5:52</span></span><span class="chev" style="margin-left:auto">›</span></button>
+          </div>
+        </section>
+
+        <!-- Battery -->
+        <section class="page right" data-page="battery">
+          <div class="nav"><button class="back" data-back>‹ Monorail</button><span class="title">Battery</span></div>
+          <div class="tile hero">
+            <div class="glowbox"><canvas id="glow" width="320" height="320" aria-hidden="true"></canvas><svg id="rings" viewBox="0 0 108 108" width="108" height="108" role="img" aria-label="Charge, time left and drain"></svg></div>
+            <div class="legend" id="legend"></div>
+          </div>
+          <div class="tile coach"><span class="dot">!</span><div><div class="b" id="coachTitle">Chrome is using a third of your battery</div><div class="t2" id="coachSub">Quit it and you'd have about 6:41 left.</div>
+            <div style="display:flex;gap:6px;margin-top:8px"><button class="btn p">Quit Chrome</button><button class="btn">Pause</button></div></div></div>
+          <div class="h">Using Significant Energy</div>
+          <div class="list" id="apps"></div>
+        </section>
+
+        <!-- App detail -->
+        <section class="page right" data-page="app">
+          <div class="nav"><button class="back" data-back>‹ Battery</button><span class="title" id="appTitle">Google Chrome</span></div>
+          <div class="tile">
+            <div style="display:flex;align-items:center;gap:9px"><span class="appi" id="appIcon" style="width:28px;height:28px;border-radius:7px"></span><div><div class="b" id="appName">Google Chrome</div><div class="t3" id="appMeta">21 processes · 3 windows</div></div></div>
+            <div class="stats"><div><div class="v num" id="aNow">2.1 W</div><div class="t3">now</div></div><div><div class="v num" id="aHr">6.2%</div><div class="t3">an hour</div></div><div><div class="v num" id="aSince">4.2%</div><div class="t3">since charge</div></div></div>
+            <svg class="spark" viewBox="0 0 300 54" width="100%" height="54" aria-hidden="true"><path id="sparkPath" fill="none" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px"><button class="btn p">Quit</button><button class="btn">Pause</button><button class="btn">Hide</button><button class="btn" style="margin-left:auto">Show Windows</button></div>
+        </section>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">Click the <b>Monorail icon</b> in the menu bar. Inside: <kbd>⌘[</kbd> back, <kbd>Esc</kbd> close, <kbd>D</kbd> change the drain.</div>
+  </div>
+
+  <div class="notes">
+    <div><b>One panel.</b> No popover opens on top of another; the panel itself becomes Battery, then the app, and back.</div>
+    <div><b>Springs, not fades.</b> Pages slide with a slight overshoot and the panel resizes to fit, like Control Centre.</div>
+    <div><b>Three rings, one glance.</b> Charge, time left against your usual day, drain against your usual, drawn in on open.</div>
+    <div><b>A living glow.</b> Particles stream around the rings, faster and warmer as the drain rises; still with Reduce Motion on.</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const panel = $('panel'), pagesEl = $('pages'), mb = $('mb');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const APPS = [
+    { n: 'Google Chrome', c: '#FBBC05', hr: 6.2, w: 2.1, since: 4.2, meta: '21 processes · 3 windows' },
+    { n: 'Claude Code', c: '#D97757', hr: 2.1, w: .7, since: 1.8, meta: '12 processes · in Terminal' },
+    { n: 'Xcode', c: '#1565C0', hr: .9, w: .3, since: .9, meta: '10 processes · 2 windows' },
+  ];
+  const appIcon = (c, s = 18) => `<span class="appi" style="width:${s}px;height:${s}px;background:linear-gradient(150deg,${c},color-mix(in srgb,${c} 70%,#000))"></span>`;
+  $('slides').innerHTML = [['#1E88E5'], ['#1565C0', '#2B2B2B'], ['#4A154B'], ['#FBBC05']].map((cs, i) => `<div class="slide ${i === 1 ? 'on' : ''}">${'<span style="display:flex;gap:3px">' + cs.map(c => appIcon(c)).join('') + '</span>'}</div>`).join('');
+  $('apps').innerHTML = APPS.map((a, i) => `<button class="row-btn" data-app="${i}">${appIcon(a.c, 22)}<span>${a.n}</span><span class="v num">${a.hr}%/h</span><span class="chev">›</span></button>`).join('');
+
+  // Drain states: what D cycles through.
+  const STATES = [
+    { drain: 6.1, usual: 5.2, left: '5:52', until: '03:45', leftPct: 78, coach: ['Chrome is using a third of your battery', "Quit it and you'd have about 6:41 left."] },
+    { drain: 14.8, usual: 5.2, left: '2:31', until: '00:25', leftPct: 34, coach: ['About 3× your usual drain', 'Xcode is building. Plug in or pause it to get past 01:00.'] },
+    { drain: 3.4, usual: 5.2, left: '9:40', until: '07:34', leftPct: 100, coach: ['Calm today', 'Everything is under your usual. Nothing to do.'] },
+  ];
+  let st = 0;
+  const pct = 64;
+
+  // Rings
+  const R = [{ r: 48.5, col: 'var(--good)' }, { r: 35.5, col: 'var(--blue)' }, { r: 22.5, col: 'var(--ok)' }];
+  const ringsSvg = $('rings');
+  ringsSvg.innerHTML = R.map((x, i) => {
+    const len = 2 * Math.PI * x.r;
+    return `<circle cx="54" cy="54" r="${x.r}" fill="none" stroke="${x.col}" stroke-opacity=".18" stroke-width="11"/>
+      <circle class="ringarc" id="arc${i}" cx="54" cy="54" r="${x.r}" fill="none" stroke="${x.col}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${len}" stroke-dashoffset="${len}"/>`;
+  }).join('');
+  const setRings = (vals) => vals.forEach((v, i) => { const len = 2 * Math.PI * R[i].r; $('arc' + i).style.strokeDashoffset = len * (1 - Math.min(v, 100) / 100); });
+  const resetRings = () => R.forEach((x, i) => { $('arc' + i).style.strokeDashoffset = 2 * Math.PI * x.r; });
+
+  const drainCol = (s) => s.drain > s.usual * 1.6 ? 'var(--low)' : s.drain > s.usual * 1.05 ? 'var(--ok)' : 'var(--good)';
+  function legend(animate) {
+    const s = STATES[st], dc = drainCol(s);
+    $('arc2').style.stroke = dc; ringsSvg.children[4].setAttribute('stroke', dc);
+    $('legend').innerHTML = [['var(--good)', 'CHARGE', pct + '%', 'on battery'], ['var(--blue)', 'TIME LEFT', s.left, 'until ' + s.until], [dc, 'DRAIN', s.drain.toFixed(1) + ' W', 'usual ' + s.usual]]
+      .map(([c, k, v, n]) => `<div class="lg"><i style="background:${c}"></i><div><div class="k" style="color:${c}">${k}</div><div style="display:flex;gap:5px;align-items:baseline"><span class="v num">${v}</span><span class="t3">${n}</span></div></div></div>`).join('');
+    const rows = [...$('legend').children];
+    rows.forEach((el, i) => animate && !reduce ? setTimeout(() => el.classList.add('in'), 140 + i * 90) : el.classList.add('in'));
+    $('coachTitle').textContent = s.coach[0]; $('coachSub').textContent = s.coach[1];
+    $('sBat').textContent = pct + '% · ' + s.left;
+    setRings([pct, s.leftPct, Math.min(100, s.drain / (s.usual * 2) * 100)]);
+  }
+
+  // Particle glow: energy streaming around the rings, speed and warmth follow the drain.
+  const cv = $('glow'), cx = cv.getContext('2d');
+  const parts = Array.from({ length: 260 }, () => ({ a: Math.random() * Math.PI * 2, r: 60 + Math.random() * 64, s: .3 + Math.random() * .7, z: Math.random() }));
+  let running = false;
+  function frame() {
+    if (!running) return;
+    const s = STATES[st], k = Math.min(3, s.drain / s.usual);
+    cx.clearRect(0, 0, 320, 320);
+    const dark = getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0, 3).reduce((a, b) => a + +b, 0) < 300;
+    const hue = k > 1.6 ? 4 : k > 1.05 ? 42 : 140;
+    // A soft bloom that breathes, slower when calm and quicker when draining hard.
+    const t = performance.now() / 1000, breath = reduce ? .5 : .5 + .5 * Math.sin(t * (.9 + k * .6));
+    const g = cx.createRadialGradient(160, 160, 40, 160, 160, 150);
+    g.addColorStop(0, `hsla(${hue}, 90%, 60%, ${(dark ? .32 : .22) + breath * .12})`);
+    g.addColorStop(.55, `hsla(${hue}, 90%, 60%, ${(dark ? .12 : .08) + breath * .05})`);
+    g.addColorStop(1, `hsla(${hue}, 90%, 60%, 0)`);
+    cx.fillStyle = g; cx.fillRect(0, 0, 320, 320);
+    cx.globalCompositeOperation = dark ? 'lighter' : 'source-over';
+    for (const p of parts) {
+      p.a += .004 * p.s * k * (reduce ? 0 : 1);
+      p.r += (reduce ? 0 : Math.sin(p.a * 3 + p.z * 9) * .08 * k);
+      const x = 160 + Math.cos(p.a) * p.r, y = 160 + Math.sin(p.a) * p.r;
+      const a = (1 - Math.abs(p.r - 96) / 70) * (dark ? .75 : .5) * (.4 + p.z * .6);
+      if (a <= 0) continue;
+      cx.fillStyle = `hsla(${hue}, 85%, ${dark ? 62 : 48}%, ${a})`;
+      cx.beginPath(); cx.arc(x, y, .7 + p.z * 1.6, 0, Math.PI * 2); cx.fill();
+    }
+    cx.globalCompositeOperation = 'source-over';
+    requestAnimationFrame(frame);
+  }
+
+  // Navigation: one panel, a stack of pages.
+  const pages = Object.fromEntries([...pagesEl.children].map(el => [el.dataset.page, el]));
+  let stack = ['home'];
+  function fit() { const cur = pages[stack[stack.length - 1]]; panel.style.height = cur.offsetHeight + 'px'; }
+  function show(name, dir) {
+    const from = pages[stack[stack.length - 1]];
+    if (dir === 'forward') { from.className = 'page left'; stack.push(name); }
+    else { from.className = 'page right'; stack.pop(); }
+    const to = pages[stack[stack.length - 1]];
+    to.className = 'page';
+    if (to.dataset.page === 'battery') { resetRings(); requestAnimationFrame(() => requestAnimationFrame(() => legend(true))); if (!running) { running = true; frame(); } }
+    else running = false;
+    if (to.dataset.page === 'app') spark();
+    fit();
+  }
+  function open(at) {
+    stack = ['home'];
+    Object.values(pages).forEach(p => p.className = 'page right'); pages.home.className = 'page';
+    panel.classList.remove('closed'); mb.setAttribute('aria-expanded', 'true'); fit();
+    if (at === 'battery') setTimeout(() => show('battery', 'forward'), reduce ? 0 : 120);
+    $('hint').hidden = true;
+  }
+  function close() { panel.classList.add('closed'); mb.setAttribute('aria-expanded', 'false'); running = false; }
+  mb.addEventListener('click', () => panel.classList.contains('closed') ? open() : close());
+  $('mbBat').addEventListener('click', () => open('battery'));
+  $('mBat').addEventListener('click', () => show('battery', 'forward'));
+  pagesEl.addEventListener('click', (e) => {
+    if (e.target.closest('[data-back]')) return show(null, 'back');
+    const row = e.target.closest('[data-app]');
+    if (row) { const a = APPS[+row.dataset.app];
+      $('appTitle').textContent = a.n; $('appName').textContent = a.n; $('appMeta').textContent = a.meta;
+      $('appIcon').style.background = `linear-gradient(150deg,${a.c},color-mix(in srgb,${a.c} 70%,#000))`;
+      $('aNow').textContent = a.w + ' W'; $('aHr').textContent = a.hr + '%'; $('aSince').textContent = a.since + '%';
+      show('app', 'forward'); }
+  });
+  function spark() {
+    const p = [8, 12, 9, 22, 30, 27, 34, 31, 18, 24, 29, 26].map((v, i) => `${i ? 'L' : 'M'}${i * 27},${52 - v * 1.4}`).join(' ');
+    const path = $('sparkPath'); path.setAttribute('d', p);
+    const len = path.getTotalLength(); path.style.transition = 'none'; path.style.strokeDasharray = len; path.style.strokeDashoffset = len;
+    requestAnimationFrame(() => { path.style.transition = ''; path.style.strokeDashoffset = 0; });
+  }
+  // Toggles on the home page: the round icon fills with a little spring.
+  const toggle = (btn, round, label, on, off, col) => btn.addEventListener('click', () => {
+    const now = !round.classList.contains('on'); round.classList.toggle('on', now); round.style.background = now ? col : '';
+    round.animate([{ transform: 'scale(.82)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }], { duration: reduce ? 1 : 380, easing: 'cubic-bezier(.3,1.4,.4,1)' });
+    label.textContent = now ? on : off;
+  });
+  toggle($('mAwake'), $('rAwake'), $('sAwake'), '1 hour', 'Off', 'var(--orange)');
+  toggle($('mEve'), $('rEve'), $('sEve'), 'Until 07:00', 'Off', 'var(--orange)');
+  toggle($('mFocus'), $('rFocus'), $('sFocus'), '25 min', 'Off', 'var(--blue)');
+
+  document.addEventListener('keydown', (e) => {
+    if (panel.classList.contains('closed')) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === '[' && (e.metaKey || e.ctrlKey) && stack.length > 1) { e.preventDefault(); show(null, 'back'); }
+    else if (e.key.toLowerCase() === 'd') { st = (st + 1) % STATES.length; if (stack[stack.length - 1] === 'battery') legend(false); }
+  });
+  legend(false);
+  // Open on load so the first frame shows the panel at the Battery page.
+  setTimeout(() => open('battery'), 350);
+})();
+</script>

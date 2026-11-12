@@ -6,6 +6,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-11-13
+
 ### Changed
 - **Settings looks like System Settings.** A Monorail card at the top of the sidebar (version, running or paused), each section with a coloured rounded icon, and groups set apart by space instead of headings.
 - **Switches you can see the options of.** On the panel's Home, Stay Awake, Evening, Focus and Low Power are tiles, as in Control Centre: the round icon turns it on or off, and the name, its state and a › open its options. No more hidden right-click.

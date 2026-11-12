@@ -1,8 +1,9 @@
 name: App Store
 
 # The Mac App Store edition (docs/APP-STORE.md). Run by hand from the Actions tab.
-#   sandbox-check: builds the edition with Apple's sandbox on, allows it Accessibility on GitHub's Mac
-#     (possible there, not on a normal Mac), and checks it still sees and arranges real windows.
+#   sandbox-check: builds the edition with Apple's sandbox on and runs `Monorail --probe-sandbox`, which
+#     tries each capability Monorail Station would use (battery, Stay Awake, Evening Mode, other apps,
+#     clipboard, calendar…) and reports which the sandbox allows, in the run's summary.
 #   upload: when the App Store secrets are set, signs it for the App Store and uploads it to App Store
 #     Connect, where it appears in TestFlight. Nothing is submitted for review: that's done by hand.
 # Secrets for the upload (the owner adds them; never in the repository):
@@ -14,13 +15,18 @@ name: App Store
 
 on:
   workflow_dispatch:
+    inputs:
+      upload:
+        description: "Also sign it and upload it to TestFlight (needs the App Store secrets)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
   sandbox-check:
-    name: Sandboxed edition arranges real windows (macOS)
+    name: What the sandboxed edition may do (macOS)
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v5
@@ -49,92 +55,47 @@ jobs:
           id="$(defaults read "$PWD/$app/Contents/Info" CFBundleIdentifier)"
           [ "$id" = "org.ashforde.monorail.appstore" ] || { echo "::error::Wrong bundle ID $id"; exit 1; }
           echo "Bundle ID $id, sandboxed"
-      - name: Allow Accessibility for this build
-        # GitHub's Macs run with System Integrity Protection off, so the permission database can be written.
-        run: |
-          set -euo pipefail
-          app="$PWD/dist/AppStore/Monorail.app"
-          bin="$app/Contents/MacOS/Monorail"
-          db="/Library/Application Support/com.apple.TCC/TCC.db"
-          # Store the app's code requirement with the grant, as System Settings does: the sandbox
-          # only lets an app reach other apps' windows when the grant matches its signature.
-          codesign -d -r- "$app" 2>&1 | sed -n 's/^designated => //p' > "$RUNNER_TEMP/req.txt"
-          cat "$RUNNER_TEMP/req.txt"
-          csreq -r "$RUNNER_TEMP/req.txt" -b "$RUNNER_TEMP/req.bin"
-          req="X'$(xxd -p "$RUNNER_TEMP/req.bin" | tr -d '\n')'"
-          for client in "org.ashforde.monorail.appstore:0" "$bin:1"; do
-            name="${client%:*}"; type="${client##*:}"
-            sudo sqlite3 "$db" "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, csreq, indirect_object_identifier, flags, last_modified) VALUES ('kTCCServiceAccessibility', '$name', $type, 2, 4, 1, $req, 'UNUSED', 0, CAST(strftime('%s','now') AS INTEGER));"
-          done
-          sudo killall -9 tccd 2>/dev/null || true
-      - name: Run the sandboxed engine while TextEdit windows open, take focus and close
+      - name: Measure what the sandbox allows (Monorail --probe-sandbox)
+        # Each capability Monorail Station would use is tried for real and undone (docs/APP-STORE.md).
         run: |
           set -uo pipefail
-          bin="$PWD/dist/AppStore/Monorail.app/Contents/MacOS/Monorail"
-          mkdir -p "$RUNNER_TEMP/docs"
-          for n in one two three; do echo "Window $n" > "$RUNNER_TEMP/docs/$n.txt"; done
-          # Opened the way a person opens it (through Launch Services), so macOS holds Monorail itself
-          # responsible for its permissions, not the script that started it.
           app="$PWD/dist/AppStore/Monorail.app"
-          : > engine.log
-          open -n --stdout "$PWD/engine.log" --stderr "$PWD/engine.log" "$app" --args --shared-engine
-          sleep 6
-          engine="$(pgrep -f "$app/Contents/MacOS/Monorail" | head -n1 || true)"
-          if [ -z "$engine" ]; then
-            cat engine.log
-            echo "::error::The sandboxed engine stopped at once (no Accessibility inside the sandbox?)."
-            exit 1
-          fi
-          for n in one two three; do open -a TextEdit "$RUNNER_TEMP/docs/$n.txt"; sleep 3; done
-          open -a Finder; sleep 2; open -a TextEdit; sleep 2
-          # Close the windows by ending TextEdit (Apple Events to it timed out on this machine).
-          killall TextEdit 2>/dev/null || true
-          sleep 3
-          kill -INT "$engine" 2>/dev/null || true
-          sleep 1
-          cat engine.log
-      - name: What the sandbox and the permission system said (for diagnosis)
+          mkdir -p "$RUNNER_TEMP/docs"; echo "Probe" > "$RUNNER_TEMP/docs/probe.txt"
+          open -a TextEdit "$RUNNER_TEMP/docs/probe.txt"; sleep 3
+          echo "Monorail Station clipboard check" | pbcopy
+          : > probe.log
+          # Opened through Launch Services, as a person would, so the sandbox applies as in real use.
+          open -n -W --stdout "$PWD/probe.log" --stderr "$PWD/probe.log" "$app" --args --probe-sandbox || true
+          cat probe.log
+          grep -q "^PROBE summary" probe.log || { echo "::error::The probe didn't finish"; exit 1; }
+          {
+            echo "### What Monorail Station may do in the App Store sandbox"
+            echo "| Check | Allowed | Detail |"
+            echo "|---|---|---|"
+            grep "^PROBE " probe.log | grep -v "^PROBE summary" | while read -r _ name result detail; do
+              mark="❌"; [ "$result" = ok ] && mark="✅"
+              echo "| $name | $mark | $detail |"
+            done
+            grep "^PROBE summary" probe.log | sed 's/^PROBE summary ok /**/; s/$/**/'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: What the sandbox refused (for diagnosis)
         if: always()
         run: |
-          log show --last 15m --style compact --predicate '(sender == "Sandbox" OR subsystem == "com.apple.sandbox.reporting") AND eventMessage CONTAINS[c] "monorail"' 2>/dev/null | tail -n 80 | tee sandbox.log || true
-          echo "----- permission decisions -----"
-          log show --last 15m --style compact --predicate 'subsystem == "com.apple.TCC" AND eventMessage CONTAINS[c] "monorail"' 2>/dev/null | tail -n 40 | tee -a sandbox.log || true
-          echo "----- TextEdit -----"
-          pgrep -lf TextEdit || echo "TextEdit isn't running"
-      - name: Check what the sandboxed engine saw
-        run: |
-          set -euo pipefail
-          created="$(grep -c 'event: created' engine.log || true)"
-          destroyed="$(grep -c 'event: destroyed' engine.log || true)"
-          focused="$(grep -c 'event: focused' engine.log || true)"
-          moved="$(grep -oE 'windows moved: [0-9]+' engine.log | awk '{ s += $3 } END { print s + 0 }')"
-          {
-            echo "### App Store edition, sandboxed, on GitHub's Mac"
-            echo "| Opened | Closed | Focus changes | Windows moved |"
-            echo "|---|---|---|---|"
-            echo "| $created | $destroyed | $focused | $moved |"
-          } >> "$GITHUB_STEP_SUMMARY"
-          fail=0
-          [ "$created" -ge 3 ] || { echo "::error::Expected 3 windows to open, saw $created"; fail=1; }
-          [ "$destroyed" -ge 1 ] || { echo "::error::Expected windows to close, saw $destroyed"; fail=1; }
-          [ "$focused" -ge 1 ] || { echo "::error::Expected focus changes, saw $focused"; fail=1; }
-          [ "$moved" -ge 1 ] || { echo "::error::Expected the engine to arrange windows, it moved $moved"; fail=1; }
-          exit $fail
+          log show --last 10m --style compact --predicate '(sender == "Sandbox" OR subsystem == "com.apple.sandbox.reporting") AND eventMessage CONTAINS[c] "monorail"' 2>/dev/null | tail -n 80 | tee sandbox.log || true
       - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: appstore-sandbox-check
           path: |
-            engine.log
+            probe.log
             entitlements.txt
             sandbox.log
 
   upload:
     name: Sign for the App Store and upload to TestFlight
     needs: sandbox-check
-    # GitHub's Mac can't give a sandboxed app Accessibility, so the check above fails there; the
-    # upload still goes ahead and TestFlight on a real Mac decides.
-    if: ${{ !cancelled() }}
+    # Only when asked for: running the probe alone never uploads a build.
+    if: ${{ !cancelled() && inputs.upload }}
     runs-on: macos-15
     env:
       APP_CERT: ${{ secrets.APPSTORE_APP_CERT }}

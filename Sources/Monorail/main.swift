@@ -12,6 +12,8 @@ if CommandLine.arguments.contains("--self-check-available") { exit(SelfTest.chec
 if let index = CommandLine.arguments.firstIndex(of: "--render-screens"), CommandLine.arguments.count > index + 1 {
     exit(ScreenRender.run(into: URL(fileURLWithPath: CommandLine.arguments[index + 1])))
 }
+// `Monorail --probe-sandbox` measures what the App Store edition is allowed to do (appstore.yml).
+if SandboxProbe.isRequested { SandboxProbe.run() }
 // `Monorail --shared-engine` tries the platform-free engine on this Mac's real windows (docs/PLATFORMS.md).
 if SharedEngineRunner.isRequested { SharedEngineRunner.run() }
 

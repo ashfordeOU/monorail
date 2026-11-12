@@ -22,6 +22,19 @@ is the same.
 The code for this is `Edition.isAppStore` (`Sources/Monorail/Edition.swift`), set by building with
 `-DAPPSTORE`. CI checks that the edition compiles on every change.
 
+## Plan: Monorail Station (November 2026)
+
+Since the sandbox can't arrange windows (below), the App Store edition becomes **Monorail Station**: the
+menu bar half of Monorail, complete on its own, with one card and its About page pointing to the
+free Monorail. It isn't called "Lite" and has no locked features: Apple doesn't allow demos.
+
+What Station may do is measured, not guessed: `Monorail --probe-sandbox` tries each capability
+(battery and health, other apps' energy, Stay Awake, Keep me Available, Evening Mode, window frames,
+hiding, quitting and opening apps, the clipboard, calendar, microphone in use, Bluetooth batteries,
+Low Power Mode, a local server, and moving windows) and undoes what it changes. **App Store** in the
+Actions tab runs it with the sandbox on and puts the results in the run's summary. Uploading to
+TestFlight is a separate tick box.
+
 ## Status: parked (November 2026)
 
 **The sandboxed edition can't arrange windows, so it isn't submitted.** Tested on 9 November 2026

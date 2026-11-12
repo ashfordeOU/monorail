@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Monorail design pass 3</title>
+<!-- WHOOP's ideas (one question per screen, three-tier disclosure, three colours, a hero number, coaching in the data)
+     in macOS's own idiom. ?theme=dark. -->
+<link rel="stylesheet" href="mac.css"><style>.nav { display:flex; align-items:center; gap:6px; margin-bottom:10px; font-weight:600; }
+.nav .back { color:var(--blue); font-weight:500; }
+.hero { text-align:center; padding:6px 0 2px; }
+.dial { position:relative; width:168px; height:168px; margin:0 auto; }
+.dial svg { position:absolute; inset:0; transform:rotate(135deg); }
+.dial .c { position:absolute; inset:0; display:grid; place-content:center; text-align:center; }
+.trio { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+.mini { background:var(--tile); border-radius:12px; padding:10px 6px; text-align:center; }
+.mini .ring { width:46px; height:46px; margin:0 auto 4px; position:relative; }
+.coach { display:flex; gap:9px; align-items:flex-start; margin-top:10px; }
+.coach .ico { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; flex:0 0 26px; color:#fff; font-size:13px; font-weight:800; }
+.chev { color:var(--ink-3); margin-left:6px; }
+.panel { width:340px; }</style></head>
+<body>
+
+<div id="app"></div>
+<script src="mac.js"></script>
+<script>
+const arc = (pct, col, r = 74, w = 12, size = 168, sweep = 270) => {
+  const len = 2 * Math.PI * r * (sweep / 360);
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--off)" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${len} 999"/>
+    <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${len * pct / 100} 999"/></svg>`;
+};
+
+// Tier 1: Today. One question: will the battery last?
+const t1 = `
+<div class="cap" style="left:60px;top:52px">1 · TODAY: WILL IT LAST?</div>
+<div class="panel" style="left:60px;top:72px">
+  <div class="nav"><span>Battery</span><span class="t2" style="margin-left:auto;font-weight:400">Today</span></div>
+  <div class="tile hero">
+    <div class="dial">${arc(78, 'var(--good)')}<div class="c"><div class="num" style="font-size:52px;font-weight:600;letter-spacing:-1.5px;line-height:1">5:52</div><div class="t2" style="margin-top:2px">left, until about 03:45</div></div></div>
+    <div class="row" style="justify-content:center;gap:6px;margin-top:2px"><span class="pill" style="background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)">● On track</span><span class="t3">lasts past bedtime</span></div>
+  </div>
+  <div class="trio">
+    <div class="mini"><div class="ring">${ring(64, 'var(--good)')}</div><div class="num" style="font-weight:600">64%</div><div class="t3">Charge</div></div>
+    <div class="mini"><div class="ring">${ring(48, 'var(--ok)')}</div><div class="num" style="font-weight:600">6.1 W</div><div class="t3">Drain</div></div>
+    <div class="mini"><div class="ring">${ring(100, 'var(--good)')}</div><div class="num" style="font-weight:600">100%</div><div class="t3">Health</div></div>
+  </div>
+  <div class="tile coach" style="margin-top:10px"><span class="coach-ico ico" style="background:var(--ok)">!</span>
+    <div><div style="font-weight:600">Chrome is using a third of your battery</div><div class="t2" style="margin-top:2px">Quit it and you'd have about 6:41 left.</div>
+    <div class="row" style="margin-top:8px"><span class="btn p">Quit Chrome</span><span class="btn">Pause</span><span class="t3" style="margin-left:auto">Not now</span></div></div></div>
+</div>`;
+
+// Tier 2: Trend. One question: is it getting better or worse?
+const days = [['Thu', 7.2], ['Fri', 6.4], ['Sat', 4.1], ['Sun', 3.8], ['Mon', 6.9], ['Tue', 7.8], ['Wed', 6.1]];
+const base = 6.0;
+const bars = days.map(([d, w], i) => {
+  const h = w / 9 * 110, col = w > base * 1.15 ? 'var(--low)' : w > base * .95 ? 'var(--ok)' : 'var(--good)';
+  return `<div style="flex:1;text-align:center"><div style="height:118px;display:flex;align-items:flex-end;justify-content:center"><div style="width:22px;height:${h}px;border-radius:6px;background:${col};opacity:${i === 6 ? 1 : .8}"></div></div><div class="t3" style="margin-top:4px;${i === 6 ? 'color:var(--ink);font-weight:600' : ''}">${d}</div></div>`;
+}).join('');
+const t2 = `
+<div class="cap" style="left:430px;top:52px">2 · THIS WEEK: BETTER OR WORSE?</div>
+<div class="panel" style="left:430px;top:72px">
+  <div class="nav"><span class="back">‹ Today</span><span style="margin-left:auto">This Week</span></div>
+  <div class="tile">
+    <div class="row"><div><div class="t2">Average drain</div><div class="num" style="font-size:30px;font-weight:600;letter-spacing:-.6px">6.0 W</div></div>
+      <span class="pill" style="margin-left:auto;background:color-mix(in srgb,var(--ok) 20%,transparent);color:color-mix(in srgb,var(--ok) 70%,var(--ink))">▲ 12% vs last week</span></div>
+    <div style="position:relative;margin-top:10px"><div style="position:absolute;left:0;right:0;top:${118 - base / 9 * 110}px;border-top:1px dashed var(--ink-3)"></div>
+      <div class="t3" style="position:absolute;left:0;top:${100 - base / 9 * 110}px;background:var(--tile);padding-right:4px">your usual</div><div style="display:flex;gap:4px">${bars}</div></div>
+  </div>
+  <div class="tile coach"><span class="ico" style="background:var(--blue)">i</span>
+    <div><div style="font-weight:600">Tuesday was your heaviest day</div><div class="t2" style="margin-top:2px">Xcode builds and Chrome ran together for 3 hours. On build days, plug in after lunch.</div></div></div>
+  <div class="h">Since Last Charge<span class="t3" style="margin-left:auto;font-weight:400">100% at 18:26</span></div>
+  <div class="list">${[['Chrome', 'Google Chrome', '4.2%'], ['Claude', 'Claude Code', '1.8%'], ['Codex', 'Codex', '0.9%']].map(([a, n, v]) => `<div class="li">${app(a)}<span>${n}</span><span class="v">${v}</span><span class="chev">›</span></div>`).join('')}</div>
+</div>`;
+
+// Tier 3: Detail. One question: what exactly is this app doing?
+const spark = (() => { const p = [8, 12, 9, 22, 30, 27, 34, 31, 18, 24, 29, 26]; return `<svg viewBox="0 0 300 60" width="100%" height="60"><polyline points="${p.map((v, i) => `${i * 27},${60 - v * 1.6}`).join(' ')}" fill="none" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`; })();
+const t3 = `
+<div class="cap" style="left:800px;top:52px">3 · DETAIL: WHAT IS CHROME DOING?</div>
+<div class="panel" style="left:800px;top:72px">
+  <div class="nav"><span class="back">‹ This Week</span><span style="margin-left:auto">Google Chrome</span></div>
+  <div class="tile">
+    <div class="row">${app('Chrome')}<div><div style="font-weight:600">Google Chrome</div><div class="t3">21 processes · 3 windows</div></div><span class="pill" style="margin-left:auto;background:color-mix(in srgb,var(--ok) 20%,transparent);color:color-mix(in srgb,var(--ok) 70%,var(--ink))">High</span></div>
+    <div class="row" style="margin-top:12px;gap:18px">
+      <div><div class="num" style="font-size:26px;font-weight:600">2.1 W</div><div class="t3">now</div></div>
+      <div><div class="num" style="font-size:26px;font-weight:600">6.2%</div><div class="t3">an hour</div></div>
+      <div><div class="num" style="font-size:26px;font-weight:600">4.2%</div><div class="t3">since charge</div></div>
+    </div>
+    <div style="margin-top:8px">${spark}</div><div class="row t3"><span>18:26</span><span style="margin-left:auto">now</span></div>
+  </div>
+  <div class="h">Windows</div>
+  <div class="list">${[['YouTube — Lo-fi beats', '1.1 W'], ['Figma — Monorail site', '0.7 W'], ['Gmail', '0.3 W']].map(([n, v]) => `<div class="li">${app('Chrome')}<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${n}</span><span class="v t2">${v}</span></div>`).join('')}</div>
+  <div class="row" style="margin-top:10px"><span class="btn p">Quit</span><span class="btn">Pause</span><span class="btn">Hide</span><span class="btn" style="margin-left:auto">Keep</span></div>
+</div>`;
+
+const notes = `<div class="notes" style="left:1170px;top:72px;width:300px">
+  <div class="cap" style="position:static;margin-bottom:8px">FROM WHOOP, MADE FOR THE MAC</div>
+  • <b>One question per screen</b>: Today (will it last?), This Week (better or worse?), Detail (what is this app doing?). Each tile leads one level deeper, with a back button like System Settings.<br><br>
+  • <b>Three colours, one meaning</b>: green on track, yellow watch it, red act now, on every dial, bar and badge.<br><br>
+  • <b>One hero number</b>: time left, huge, with when it runs out. Everything else is small.<br><br>
+  • <b>Coaching in the data</b>, in plain words: what's wrong, what to do, what you'd gain, one button.<br><br>
+  • <b>Your usual</b> as the baseline, like WHOOP compares against your norms.<br><br>
+  • Still macOS: system glass, SF type, rounded figures, accent-blue buttons, inset lists, light and dark.
+</div>`;
+document.getElementById('app').innerHTML = menubar('<span>⚡ 64%</span>') + t1 + t2 + t3 + notes;
+</script></body></html>

@@ -1,0 +1,77 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Menu bar</title><link rel="stylesheet" href="mac.css"></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const popover = `
+<div class="cap" style="left:40px;top:44px">CLICK THE MENU BAR ICON</div>
+<div class="panel" style="left:40px;top:64px;width:344px">
+  <div class="tile">
+    <div class="row" style="margin-bottom:8px"><span class="b">Workspace 1</span><span class="t3">· Code</span>
+      <span style="margin-left:auto;display:flex;gap:5px">${[1, 2, 3, 4].map(n => `<span style="width:7px;height:7px;border-radius:50%;background:${n === 1 ? 'var(--blue)' : 'var(--off)'}"></span>`).join('')}</span></div>
+    <div style="display:flex;gap:6px">
+      ${[['Safari'], ['Xcode', 'Terminal'], ['Slack'], ['Chrome']].map((a, i) => `<div style="flex:1;height:58px;border-radius:8px;display:grid;place-items:center;background:${i === 1 ? 'var(--tile-2)' : 'var(--tile)'};${i === 1 ? 'box-shadow:0 0 0 2px var(--blue)' : ''}"><div class="row" style="gap:3px">${a.map(n => app(n, 18)).join('')}</div></div>`).join('')}
+    </div>
+    <div style="height:4px;border-radius:2px;background:var(--off);margin-top:8px;position:relative"><i style="position:absolute;left:24%;width:28%;top:0;bottom:0;border-radius:2px;background:var(--ink-3)"></i></div>
+    <div class="t2" style="margin-top:6px">Xcode — Engine.swift</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+    <div class="tile row"><span class="round warm">${s('cup')}</span><div><div class="b">Stay Awake</div><div class="t2">52 min left</div></div></div>
+    <div class="tile row"><span class="round warm">${s('moon', 'f')}</span><div><div class="b">Evening</div><div class="t2">Until 07:00</div></div></div>
+    <div class="tile row"><span class="round">${s('scope')}</span><div><div class="b">Focus</div><div class="t2">Off</div></div></div>
+    <div class="tile row"><span class="round" style="background:var(--good);color:#fff">${s('bolt', 'f')}</span><div><div class="b">Battery</div><div class="t2 num">64% · 5:52 left</div></div></div>
+  </div>
+  <div class="tile row" style="margin-top:8px;padding:6px 8px;justify-content:space-between">
+    ${[['layout', 'Layouts'], ['wand', 'Tidy'], ['grid', 'Overview'], ['palette', 'Theme'], ['pause', 'Pause'], ['gear', 'Settings']].map(([n, t]) => `<div style="text-align:center;width:46px"><div style="display:grid;place-items:center;height:22px;color:var(--ink-2)">${s(n)}</div><div class="t3" style="font-size:10px">${t}</div></div>`).join('')}
+  </div>
+</div>`;
+
+const menu = `
+<div class="cap" style="left:420px;top:44px">RIGHT-CLICK THE ICON</div>
+<div class="menu" style="left:420px;top:64px;width:290px">
+  <div class="mh" style="color:var(--ink-2);font-size:12px;padding:4px 10px 6px">Monorail is arranging 14 windows</div>
+  <div class="mi">${s('pause')}Pause<span class="k">⌃⌥P</span></div>
+  <div class="msep"></div>
+  <div class="mi">${s('grid')}Overview<span class="k">⌃⌥O</span></div>
+  <div class="mi">${s('search')}Command Palette<span class="k">⌃⌥/</span></div>
+  <div class="mi sel">${s('window')}Windows<span class="k">14 ›</span></div>
+  <div class="mi">${s('layout')}Layouts and Snapshots<span class="k">›</span></div>
+  <div class="mi">${s('clock')}Saved Views<span class="k">›</span></div>
+  <div class="msep"></div>
+  <div class="mi">${s('cup')}Stay Awake<span class="k" style="color:var(--orange)">52 min ›</span></div>
+  <div class="mi">${s('moon')}Evening Mode<span class="k" style="color:var(--orange)">On ›</span></div>
+  <div class="mi">${s('bolt')}Battery<span class="k">64% ›</span></div>
+  <div class="msep"></div>
+  <div class="mi">Rescue Windows</div>
+  <div class="mi">Undo Layout Change<span class="k">⌃⌥Z</span></div>
+  <div class="msep"></div>
+  <div class="mi">Settings…<span class="k">⌘,</span></div>
+  <div class="mi">Check for Updates…</div>
+  <div class="mi">Report a Problem…</div>
+  <div class="mi">About Monorail</div>
+  <div class="msep"></div>
+  <div class="mi">Quit Monorail<span class="k">⌘Q</span></div>
+</div>
+<div class="menu" style="left:706px;top:154px;width:270px">
+  ${[['Xcode', 'Engine.swift', 1], ['Terminal', 'zsh — claude', 0], ['Safari', 'Monorail — Docs', 0], ['Slack', '#launch', 0], ['Chrome', 'Product Hunt', 0]].map(([a, t, sel]) => `<div class="mi">${app(a, 16)}<span>${a}</span><span class="t3" style="margin-left:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:120px">${t}</span>${sel ? '<span class="k">✓</span>' : ''}</div>`).join('')}
+  <div class="msep"></div><div class="mi dis">9 more on other workspaces</div>
+</div>`;
+
+const awake = `
+<div class="cap" style="left:1020px;top:44px">STAY AWAKE · EVENING MODE</div>
+<div class="panel" style="left:1020px;top:64px;width:300px">
+  <div class="row"><span class="round warm">${s('cup')}</span><div><div class="b">Stay Awake</div><div class="t2">52 min left · until 22:46</div></div><span class="switch on" style="background:var(--orange)"><i></i></span></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">${['15 min', '1 hour', '2 hours', '4 hours', 'Until…', 'Downloads'].map((t, i) => `<span class="btn" style="text-align:center;${i === 1 ? 'background:var(--orange);color:#fff;box-shadow:none' : ''}">${t}</span>`).join('')}</div>
+  <div class="list" style="margin-top:10px">
+    <div class="li">Keep the display on<span class="switch on"><i></i></span></div>
+    <div class="li">Available in Teams and Slack<span class="switch on"><i></i></span></div>
+    <div class="li">With the lid closed<span class="t3" style="margin-left:auto;margin-right:6px">plugged in</span><span class="switch"><i></i></span></div>
+  </div>
+</div>
+<div class="panel" style="left:1020px;top:360px;width:300px">
+  <div class="row"><span class="round warm">${s('moon', 'f')}</span><div><div class="b">Evening Mode</div><div class="t2">On until 07:00 · sunset to sunrise</div></div><span class="switch on" style="background:var(--orange)"><i></i></span></div>
+  <div class="t3" style="margin:12px 2px 6px">Warmth</div>
+  <div style="height:22px;border-radius:11px;background:linear-gradient(90deg,#cfe3ff,#ffe2a8,#ff9b4a);position:relative"><i style="position:absolute;left:62%;top:1px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></i></div>
+  <div class="row" style="margin-top:10px"><span class="seg"><span>Off</span><span class="on">Sunset</span><span>Custom</span></span><span class="t3" style="margin-left:auto">Red light</span><span class="switch" style="margin-left:6px"><i></i></span></div>
+</div>`;
+
+const notes = `<div class="notes" style="left:1350px;top:64px;width:130px">Left-click: Control Centre-style modules. Right-click: a plain macOS menu, grouped, with shortcuts on the right and live states in colour.</div>`;
+document.getElementById('app').innerHTML = menubar(`<span class="on">${monoIcon}</span><span>⚡ 64%</span>`) + popover + menu + awake + notes;
+</script></body></html>

@@ -1,0 +1,87 @@
+/* Monorail's design system for the mock-ups: macOS's own materials, type and colours. */
+:root {
+  --desk: radial-gradient(1200px 800px at 15% 0%, #c8dcff, transparent 60%), radial-gradient(900px 700px at 95% 100%, #f7d0e2, transparent 60%), #e3e7f3;
+  --mat: rgba(238,238,242,.76); --edge: rgba(255,255,255,.6); --tile: rgba(255,255,255,.58); --tile-2: rgba(255,255,255,.88); --sep: rgba(60,60,67,.14);
+  --win: #ececef; --win-side: rgba(232,232,236,.82); --win-content: #f6f6f8; --sel: #0A84FF;
+  --ink: #1d1d1f; --ink-2: rgba(60,60,67,.70); --ink-3: rgba(60,60,67,.40);
+  --good: #28B463; --ok: #E6A700; --low: #E5484D; --blue: #0A84FF; --orange: #FF9500; --purple: #AF52DE; --off: rgba(120,120,128,.18);
+  --shadow: 0 0 0 .5px rgba(0,0,0,.14), 0 22px 56px rgba(0,0,0,.18);
+}
+[data-theme="dark"] {
+  --desk: radial-gradient(1200px 800px at 15% 0%, #14233f, transparent 60%), radial-gradient(900px 700px at 95% 100%, #3a1730, transparent 60%), #0b0d14;
+  --mat: rgba(30,30,34,.80); --edge: rgba(255,255,255,.10); --tile: rgba(255,255,255,.06); --tile-2: rgba(255,255,255,.12); --sep: rgba(84,84,88,.55);
+  --win: #2a2a2e; --win-side: rgba(40,40,44,.86); --win-content: #1e1e21;
+  --ink: #f5f5f7; --ink-2: rgba(235,235,245,.62); --ink-3: rgba(235,235,245,.34);
+  --good: #30D158; --ok: #FFD60A; --low: #FF453A; --orange: #FF9F0A; --purple: #BF5AF2; --off: rgba(120,120,128,.30);
+  --shadow: 0 0 0 .5px rgba(255,255,255,.10), 0 22px 56px rgba(0,0,0,.6);
+}
+* { box-sizing:border-box; }
+html, body { margin:0; width:1500px; height:960px; overflow:hidden; font:400 13px/16px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing:-.08px; -webkit-font-smoothing:antialiased; font-feature-settings:"kern"; color:var(--ink); }
+/* Apple's text styles for macOS: large title 26, title 22/17/15, headline 13 semibold, body 13, callout 12, subheadline 11, footnote 10. */
+.lt { font:700 26px/32px "SF Pro Display", -apple-system, sans-serif; letter-spacing:.2px; }
+.ti1 { font:400 22px/26px "SF Pro Display", -apple-system, sans-serif; letter-spacing:-.26px; }
+.ti2 { font:400 17px/22px "SF Pro Text", -apple-system, sans-serif; letter-spacing:-.43px; }
+.ti3 { font:400 15px/20px "SF Pro Text", -apple-system, sans-serif; letter-spacing:-.23px; }
+.hl { font-weight:600; }
+.callout { font-size:12px; line-height:15px; letter-spacing:0; }
+body { background:var(--desk); position:relative; }
+.menubar { height:26px; background:rgba(255,255,255,.35); backdrop-filter:blur(40px); display:flex; align-items:center; padding:0 18px; gap:20px; position:relative; z-index:5; }
+[data-theme="dark"] .menubar { background:rgba(0,0,0,.35); }
+.menubar .r { margin-left:auto; display:flex; gap:16px; align-items:center; }
+.menubar .on { background:rgba(0,0,0,.12); border-radius:5px; padding:2px 6px; } [data-theme="dark"] .menubar .on { background:rgba(255,255,255,.18); }
+.cap { position:absolute; font-size:11px; font-weight:600; color:var(--ink-2); letter-spacing:.02em; }
+.panel { position:absolute; background:var(--mat); backdrop-filter:blur(50px) saturate(1.8); border-radius:16px; box-shadow:var(--shadow); border:.5px solid var(--edge); padding:12px; }
+.tile { background:var(--tile); border-radius:12px; padding:10px; }
+.row { display:flex; align-items:center; gap:8px; }
+.num { font-family:"SF Pro Rounded", ui-rounded, -apple-system, sans-serif; font-variant-numeric:tabular-nums; letter-spacing:0; }
+.display { font-family:"SF Pro Display", -apple-system, sans-serif; }
+.b { font-weight:600; } .t2 { color:var(--ink-2); font-size:11px; line-height:14px; letter-spacing:.06px; } .t3 { color:var(--ink-3); font-size:11px; line-height:14px; letter-spacing:.06px; }
+.btn { display:inline-block; padding:3px 10px; border-radius:6px; background:var(--tile-2); font-size:12px; font-weight:500; box-shadow:0 0 0 .5px var(--sep); white-space:nowrap; }
+.btn.p { background:var(--blue); color:#fff; box-shadow:none; }
+.list { background:var(--tile); border-radius:10px; overflow:hidden; }
+.li { display:flex; align-items:center; gap:9px; padding:7px 10px; position:relative; min-height:34px; }
+.li + .li::before { content:""; position:absolute; top:0; right:0; left:10px; height:.5px; background:var(--sep); }
+.li.ic + .li.ic::before { left:41px; }
+.li .v { margin-left:auto; color:var(--ink-2); font-variant-numeric:tabular-nums; }
+.h { font-size:11px; font-weight:600; color:var(--ink-2); padding:12px 4px 6px; display:flex; }
+.app { width:22px; height:22px; border-radius:5px; flex:0 0 22px; box-shadow:0 .5px 1.5px rgba(0,0,0,.2); }
+.round { width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:var(--off); color:var(--ink); flex:0 0 28px; }
+.round.on { background:var(--blue); color:#fff; } .round.warm { background:var(--orange); color:#fff; }
+svg.s { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:0 0 15px; }
+svg.s.f { fill:currentColor; stroke:none; }
+.switch { width:26px; height:15px; border-radius:8px; background:var(--off); position:relative; margin-left:auto; flex:0 0 26px; }
+.switch i { position:absolute; top:1.5px; left:1.5px; width:12px; height:12px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.25); }
+.switch.on { background:var(--blue); } .switch.on i { left:12.5px; }
+.seg { display:inline-flex; background:var(--off); border-radius:7px; padding:2px; font-size:11.5px; font-weight:500; }
+.seg span { padding:2px 10px; border-radius:5px; color:var(--ink-2); }
+.seg span.on { background:var(--tile-2); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.14); }
+.pill { font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; }
+kbd { font:500 11px/1 "SF Pro Text", -apple-system, sans-serif; padding:2px 5px; border-radius:4px; background:var(--off); color:var(--ink-2); }
+/* Menus (NSMenu) */
+.menu { position:absolute; background:var(--mat); backdrop-filter:blur(50px) saturate(1.8); border-radius:10px; box-shadow:var(--shadow); border:.5px solid var(--edge); padding:5px; font-size:13px; width:270px; }
+.mi { display:flex; align-items:center; gap:7px; padding:0 9px; border-radius:4px; height:22px; }
+.mi.sel { background:var(--blue); color:#fff; } .mi.sel .k, .mi.sel .t3 { color:rgba(255,255,255,.8); }
+.mi .k { margin-left:auto; color:var(--ink-3); font-size:12px; letter-spacing:.5px; }
+.mi.dis { color:var(--ink-3); }
+.msep { height:.5px; background:var(--sep); margin:5px 10px; }
+.mh { font-size:11px; font-weight:600; color:var(--ink-3); padding:4px 10px 2px; }
+/* Windows */
+.window { position:absolute; background:var(--win-content); border-radius:12px; box-shadow:var(--shadow); overflow:hidden; display:flex; }
+.side { width:200px; background:var(--win-side); backdrop-filter:blur(40px); padding:44px 8px 8px; border-right:.5px solid var(--sep); }
+.side .search { background:var(--off); border-radius:7px; padding:5px 8px; color:var(--ink-3); margin:0 2px 10px; display:flex; gap:6px; align-items:center; }
+.side .item { display:flex; align-items:center; gap:8px; padding:4px 8px; border-radius:6px; margin-bottom:1px; }
+.side .item.sel { background:var(--blue); color:#fff; }
+.side .badge { width:20px; height:20px; border-radius:5px; display:grid; place-items:center; color:#fff; }
+.side .badge svg { width:12px; height:12px; }
+.lights { position:absolute; left:14px; top:14px; display:flex; gap:8px; }
+.lights i { width:12px; height:12px; border-radius:50%; background:#FF5F57; } .lights i:nth-child(2) { background:#FEBC2E; } .lights i:nth-child(3) { background:#28C840; }
+.content { flex:1; padding:14px 24px; overflow:hidden; }
+.content h1 { font-size:15px; margin:4px 0 14px; text-align:center; font-weight:600; }
+.group { background:var(--tile-2); border-radius:10px; box-shadow:0 0 0 .5px var(--sep); overflow:hidden; margin-bottom:14px; }
+[data-theme="dark"] .group { background:rgba(255,255,255,.05); }
+.group .li { min-height:36px; }
+.foot { font-size:11px; color:var(--ink-2); margin:-8px 4px 14px; line-height:1.4; }
+.notes { position:absolute; font-size:12px; line-height:1.55; color:var(--ink-2); }
+/* In a menu where some items have icons, text lines up in one column. */
+.menu .mi:not(:has(svg)):not(:has(.app)) { padding-left:31px; }
+.menu .mh { padding-left:10px; }

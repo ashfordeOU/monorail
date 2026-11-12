@@ -1,0 +1,59 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Overview and switcher</title><link rel="stylesheet" href="mac.css">
+<style>
+.ov { position:absolute; left:30px; top:62px; width:900px; height:540px; border-radius:14px; overflow:hidden; box-shadow:var(--shadow);
+  background:rgba(20,20,26,.35); backdrop-filter:blur(30px) saturate(1.4); }
+[data-theme="light"] .ov { background:rgba(255,255,255,.35); }
+.ws { position:absolute; border-radius:12px; padding:10px; background:var(--tile); }
+.ws .name { font-weight:600; display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.ws .dot { width:7px; height:7px; border-radius:50%; }
+.card { border-radius:8px; background:var(--win-content); box-shadow:0 4px 12px rgba(0,0,0,.18), 0 0 0 .5px var(--sep); overflow:hidden; }
+.card .t { height:16px; background:var(--win); display:flex; align-items:center; gap:4px; padding:0 6px; font-size:9.5px; color:var(--ink-2); }
+.sw { position:absolute; border-radius:18px; padding:14px; background:var(--mat); backdrop-filter:blur(50px) saturate(1.8); box-shadow:var(--shadow); border:.5px solid var(--edge); display:flex; gap:12px; }
+.sw .it { width:118px; text-align:center; }
+.sw .th { height:76px; border-radius:9px; background:var(--tile); display:grid; place-items:center; }
+.sw .it.on .th { box-shadow:0 0 0 2.5px var(--blue); background:var(--tile-2); }
+.pal { position:absolute; width:560px; border-radius:14px; background:var(--mat); backdrop-filter:blur(50px) saturate(1.8); box-shadow:var(--shadow); border:.5px solid var(--edge); overflow:hidden; }
+.pal .q { display:flex; align-items:center; gap:10px; padding:14px 16px; font:400 20px/24px "SF Pro Display", -apple-system, sans-serif; letter-spacing:.38px; border-bottom:.5px solid var(--sep); }
+.pal .r { display:flex; align-items:center; gap:10px; padding:7px 10px; margin:4px 6px; border-radius:8px; }
+.pal .r.on { background:var(--blue); color:#fff; } .pal .r.on .t3, .pal .r.on .k { color:rgba(255,255,255,.75); }
+.pal .r .k { margin-left:auto; color:var(--ink-3); font-size:12px; }
+.toast { position:absolute; display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:14px; background:var(--mat); backdrop-filter:blur(50px) saturate(1.8); box-shadow:var(--shadow); border:.5px solid var(--edge); }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const wss = [['Code', 'var(--blue)', [['Xcode', 'Engine.swift'], ['Terminal', 'claude'], ['Safari', 'Docs']], 1], ['Chat', 'var(--good)', [['Slack', '#launch'], ['Messages', 'Team'], ['Mail', 'Inbox']], 0],
+  ['Design', 'var(--purple)', [['Figma', 'Monorail site'], ['Chrome', 'Product Hunt']], 0], ['Music', 'var(--orange)', [['Music', 'Now Playing']], 0]];
+const overview = `
+<div class="cap" style="left:30px;top:42px">OVERVIEW ⌃⌥O</div>
+<div class="ov">
+  ${wss.map(([n, c, ws, on], i) => { const x = 24 + (i % 2) * 432, y = 24 + Math.floor(i / 2) * 250; return `
+  <div class="ws" style="left:${x}px;top:${y}px;width:412px;height:228px;${on ? 'box-shadow:0 0 0 2px var(--blue)' : ''}">
+    <div class="name"><span class="dot" style="background:${c}"></span>${i + 1} · ${n}<span class="t3" style="margin-left:auto;font-weight:400">${ws.length} slides</span></div>
+    <div style="display:flex;gap:8px">${ws.map(([a, t]) => `<div class="card" style="flex:1;height:170px"><div class="t">${app(a, 10)}<span>${a}</span></div>
+      <div style="padding:8px;display:grid;gap:5px">${'<i style="display:block;height:5px;border-radius:3px;background:var(--off)"></i>'.repeat(9)}</div></div>`).join('')}</div></div>`; }).join('')}
+</div>`;
+
+const switcher = `
+<div class="cap" style="left:960px;top:42px">WINDOW SWITCHER ⌥⇥</div>
+<div class="sw" style="left:960px;top:62px">
+  ${[['Xcode', 'Engine.swift', 1], ['Terminal', 'claude', 0], ['Slack', '#launch', 0]].map(([a, t, on]) => `<div class="it ${on ? 'on' : ''}"><div class="th">${app(a, 34)}</div><div class="b" style="margin-top:6px;font-size:12px">${a}</div><div class="t3" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t}</div></div>`).join('')}
+</div>`;
+
+const palette = `
+<div class="cap" style="left:30px;top:630px">COMMAND PALETTE ⌃⌥/</div>
+<div class="pal" style="left:30px;top:650px">
+  <div class="q"><span style="color:var(--ink-3)">${s('search')}</span>slack and mail side by side<span style="display:inline-block;width:2px;height:22px;background:var(--blue);margin-left:-6px"></span></div>
+  <div class="r on">${app('Slack', 20)}${app('Mail', 20)}<span>Put Slack and Mail side by side</span><span class="k">↩</span></div>
+  <div class="r">${s('layout')}<span>Apply layout “Chat”</span><span class="k">⌘1</span></div>
+  <div class="r">${s('sparkles')}<span>Ask the assistant</span><span class="t3" style="margin-left:6px">Claude</span><span class="k">⌘↩</span></div>
+  <div style="height:6px"></div>
+</div>`;
+
+const notices = `
+<div class="cap" style="left:960px;top:250px">NOTICES</div>
+<div class="toast" style="left:960px;top:270px">${app('Terminal', 22)}<div><div class="b">Claude Code is waiting for you</div><div class="t2">Terminal · approve the command</div></div><span class="btn p" style="margin-left:14px">Go</span></div>
+<div class="toast" style="left:960px;top:340px"><span class="round" style="background:var(--good);color:#fff;width:24px;height:24px;flex-basis:24px">${s('check')}</span><div><div class="b">Layout “Code” restored</div><div class="t2">4 other apps hidden, none quit</div></div><span class="btn" style="margin-left:14px">Undo</span></div>
+<div class="toast" style="left:960px;top:410px"><span class="round warm" style="width:24px;height:24px;flex-basis:24px">${s('bolt', 'f')}</span><div><div class="b">Chrome is using a lot of battery</div><div class="t2">About 6% an hour</div></div><span class="btn" style="margin-left:14px">Quit</span></div>
+<div class="toast" style="left:960px;top:480px;padding:8px 14px"><span class="t2">Workspace</span><span class="b">2 · Chat</span><span style="display:flex;gap:4px;margin-left:6px">${[1, 2, 3, 4].map(n => `<i style="width:6px;height:6px;border-radius:50%;background:${n === 2 ? 'var(--blue)' : 'var(--off)'}"></i>`).join('')}</span></div>
+<div class="notes" style="left:960px;top:560px;width:500px">Overview: workspaces as frosted tiles with real window previews, the current one ringed in your accent colour. Switcher and palette match Spotlight: one large search line, blue selection, shortcuts on the right. Notices are small, rounded and short, with one button at most.</div>`;
+document.getElementById('app').innerHTML = menubar(`<span>${monoIcon}</span>`) + overview + switcher + palette + notices;
+</script></body></html>

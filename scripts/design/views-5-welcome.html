@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Welcome</title><link rel="stylesheet" href="mac.css">
+<style>
+.wel { position:absolute; width:440px; height:520px; border-radius:14px; background:var(--win-content); box-shadow:var(--shadow); overflow:hidden; text-align:center; padding:56px 40px 24px; }
+.wel .icon { width:84px; height:84px; border-radius:19px; margin:0 auto 18px; background:linear-gradient(140deg,#FF8A5B,#E8437A 60%,#C2456E); display:grid; place-items:center; color:#fff; box-shadow:0 10px 24px rgba(232,67,122,.35); }
+.wel h2 { font:700 26px/32px "SF Pro Display", -apple-system, sans-serif; letter-spacing:.2px; margin:0 0 8px; }
+.wel p { color:var(--ink-2); margin:0 auto 20px; max-width:320px; font-size:13px; line-height:18px; }
+.wel .foot { position:absolute; left:0; right:0; bottom:22px; display:flex; justify-content:center; gap:8px; }
+.dots { position:absolute; left:0; right:0; bottom:64px; display:flex; justify-content:center; gap:6px; }
+.dots i { width:6px; height:6px; border-radius:50%; background:var(--off); } .dots i.on { background:var(--ink-2); }
+.choice { text-align:left; display:flex; gap:12px; align-items:center; padding:10px 12px; border-radius:10px; background:var(--tile); margin-bottom:8px; box-shadow:0 0 0 .5px var(--sep); }
+.choice.on { box-shadow:0 0 0 2px var(--blue); background:var(--tile-2); }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const big = monoIcon.replace('width="17" height="13"', 'width="46" height="36"');
+const s1 = `<div class="cap" style="left:40px;top:42px">WELCOME · 1</div><div class="wel" style="left:40px;top:62px">
+  <div class="icon">${big}</div><h2>Welcome to Monorail</h2>
+  <p>Your windows ride one strip that runs past the edges of your screen. New windows slide in beside you, and nothing you're using ever shrinks.</p>
+  <div style="display:flex;gap:6px;justify-content:center;margin-top:24px">${['Safari', 'Xcode', 'Slack'].map((a, i) => `<div style="width:92px;height:70px;border-radius:9px;background:var(--tile);display:grid;place-items:center;${i === 1 ? 'box-shadow:0 0 0 2px var(--blue)' : ''}">${app(a, 28)}</div>`).join('')}</div>
+  <div class="dots"><i class="on"></i><i></i><i></i></div><div class="foot"><span class="btn p" style="padding:5px 22px">Continue</span></div></div>`;
+const s2 = `<div class="cap" style="left:520px;top:42px">WELCOME · 2</div><div class="wel" style="left:520px;top:62px">
+  <div class="icon" style="background:var(--blue);box-shadow:0 10px 24px rgba(10,132,255,.35)">${s('hand').replace('class="s "', 'class="s" style="width:40px;height:40px"')}</div><h2>Allow Accessibility</h2>
+  <p>macOS asks for this before any app can move windows. It's the only permission Monorail needs, and System Integrity Protection stays on.</p>
+  <div class="group" style="text-align:left;margin-top:10px"><div class="li">${app('Finder', 20)}System Settings › Privacy &amp; Security › Accessibility<span style="margin-left:auto;color:var(--good)">${s('check')}</span></div></div>
+  <div class="dots"><i></i><i class="on"></i><i></i></div><div class="foot"><span class="btn">Back</span><span class="btn p" style="padding:5px 18px">Open System Settings</span></div></div>`;
+const s3 = `<div class="cap" style="left:1000px;top:42px">WELCOME · 3</div><div class="wel" style="left:1000px;top:62px;padding-top:44px">
+  <h2>How do you work?</h2><p style="margin-bottom:14px">Pick a start. You can change anything later.</p>
+  <div class="choice on"><span class="round on">${s('sparkles')}</span><div><div class="b">Simple</div><div class="t2">The essentials, nothing to set up</div></div></div>
+  <div class="choice"><span class="round">${s('keyboard')}</span><div><div class="b">Keyboard first</div><div class="t2">Every shortcut, every setting</div></div></div>
+  <div class="choice"><span class="round">${s('arrow')}</span><div><div class="b">Coming from another app</div><div class="t2">Bring your AeroSpace, yabai or Rectangle setup</div></div></div>
+  <div class="dots"><i></i><i></i><i class="on"></i></div><div class="foot"><span class="btn">Back</span><span class="btn p" style="padding:5px 22px">Start</span></div></div>`;
+const notes = `<div class="notes" style="left:40px;top:610px;width:1400px">The first run reads like a new Apple app: a large icon, one sentence, one blue button, page dots. Three short steps, then out of the way.</div>`;
+document.getElementById('app').innerHTML = menubar() + s1 + s2 + s3 + notes;
+</script></body></html>

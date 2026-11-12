@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Settings</title><link rel="stylesheet" href="mac.css">
+<style>
+.window .title { position:absolute; left:220px; right:0; top:12px; text-align:left; padding-left:24px; font-weight:600; font-size:13px; }
+.content { padding-top:46px; }
+.li .ctl { margin-left:auto; display:flex; align-items:center; gap:6px; }
+.popup { padding:2px 8px; border-radius:5px; background:var(--tile-2); box-shadow:0 0 0 .5px var(--sep), 0 .5px 1px rgba(0,0,0,.12); font-size:12px; display:flex; gap:6px; align-items:center; }
+.slider { width:150px; height:4px; border-radius:2px; background:var(--off); position:relative; }
+.slider i { position:absolute; left:0; top:0; bottom:0; border-radius:2px; background:var(--blue); }
+.slider b { position:absolute; top:-7px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3), 0 0 0 .5px rgba(0,0,0,.1); }
+.key { font:500 12px/1 "SF Pro Text", sans-serif; padding:3px 7px; border-radius:5px; background:var(--tile-2); box-shadow:0 0 0 .5px var(--sep), 0 1px 0 var(--sep); }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const items = [['General', 'gear', '#8E8E93'], ['Layout', 'layout', '#0A84FF'], ['Keyboard & Mouse', 'keyboard', '#8E8E93'], ['Shortcuts', 'keyboard', '#5E5CE6'],
+  ['Appearance', 'palette', '#FF2D55'], ['Battery', 'bolt', '#34C759'], ['Stay Awake', 'cup', '#FF9500'], ['Evening Mode', 'moon', '#FF9500'],
+  ['Apps', 'apps', '#0A84FF'], ['Displays', 'display', '#0A84FF'], ['Smart', 'sparkles', '#AF52DE'], ['Automation', 'code', '#8E8E93'],
+  ['Privacy', 'hand', '#0A84FF'], ['About', 'info', '#8E8E93']];
+const side = (sel) => `<div class="side"><div class="search">${s('search')}Search</div>${items.map(([n, ic, c]) => `<div class="item ${n === sel ? 'sel' : ''}"><span class="badge" style="background:${c}">${s(ic)}</span>${n}</div>`).join('')}</div>`;
+const lights = `<div class="lights"><i></i><i></i><i></i></div>`;
+
+const general = `
+<div class="cap" style="left:30px;top:42px">SETTINGS · GENERAL</div>
+<div class="window" style="left:30px;top:62px;width:700px;height:620px">${lights}${side('General')}<div class="title">General</div>
+  <div class="content">
+    <div class="group" style="padding:14px;display:flex;gap:14px;align-items:center">
+      <span style="width:52px;height:52px;border-radius:12px;background:linear-gradient(140deg,#FF8A5B,#E8437A 60%,#C2456E);display:grid;place-items:center;color:#fff">${monoIcon.replace('width="17" height="13"', 'width="30" height="23"')}</span>
+      <div><div class="b" style="font-size:15px">Monorail</div><div class="t2">Arranging 14 windows on 2 displays</div></div><span class="switch on" style="transform:scale(1.15)"><i></i></span></div>
+    <div class="group">
+      <div class="li">Open at login<span class="switch on"><i></i></span></div>
+      <div class="li">Show in menu bar<span class="ctl"><span class="popup">Icon and battery ⌃</span></span></div>
+      <div class="li">Slider bar<span class="ctl"><span class="popup">While sliding ⌃</span></span></div>
+      <div class="li">Workspaces per display<span class="ctl"><span class="num">4</span><span class="popup" style="padding:2px 5px">− +</span></span></div>
+    </div>
+    <div class="group">
+      <div class="li">Install updates automatically<span class="switch on"><i></i></span></div>
+      <div class="li">Share anonymous usage counts<span class="ctl"><span class="t3">What's sent</span><span class="switch on"><i></i></span></span></div>
+    </div>
+    <div class="foot">Monorail never sends window titles, app names or anything on your screen.</div>
+    <div class="group"><div class="li">Mac setup<span class="ctl"><span style="color:var(--good)">${s('check')}</span><span class="t2">Everything's ready</span></span></div></div>
+  </div></div>`;
+
+const shortcuts = `
+<div class="cap" style="left:760px;top:42px">SETTINGS · SHORTCUTS</div>
+<div class="window" style="left:760px;top:62px;width:700px;height:620px">${lights}${side('Shortcuts')}<div class="title">Shortcuts</div>
+  <div class="content">
+    <div class="group" style="background:color-mix(in srgb,var(--ok) 10%,var(--tile-2))">
+      <div class="li"><span style="color:var(--ok)">⚠︎</span><div><div>⌃⌥← is also Move Left a Space</div><div class="t3">macOS uses it too</div></div><span class="ctl"><span class="btn p">Use ⌃⌥⇧←</span></span></div>
+    </div>
+    <div class="row" style="margin:0 2px 8px"><div class="t3" style="font-weight:600">Modifier</div><span class="seg" style="margin-left:auto"><span class="on">⌃⌥</span><span>⌥</span><span>⌘⌥</span><span>⇪</span></span></div>
+    <div class="t3" style="font-weight:600;margin:6px 4px">Move around</div>
+    <div class="group">${[['Slide left', '⌃⌥←'], ['Slide right', '⌃⌥→'], ['Overview', '⌃⌥O'], ['Command palette', '⌃⌥/'], ['Window switcher', '⌥⇥']].map(([n, k]) => `<div class="li">${n}<span class="ctl"><span class="key">${k}</span></span></div>`).join('')}</div>
+    <div class="t3" style="font-weight:600;margin:6px 4px">Size</div>
+    <div class="group">${[['Cycle width', '⌃⌥R'], ['Full width', '⌃⌥F'], ['Centre', '⌃⌥C']].map(([n, k]) => `<div class="li">${n}<span class="ctl"><span class="key">${k}</span></span></div>`).join('')}</div>
+  </div></div>`;
+
+const notes = `<div class="notes" style="left:30px;top:700px;width:1430px">Settings follows System Settings in macOS: a searchable sidebar with coloured icon badges, grouped rounded sections, labels on the left and controls on the right (switches, pop-up menus, steppers, key caps), short footnotes under a group, and a clash warning at the top only when there is one. Advanced options live one level down.</div>`;
+document.getElementById('app').innerHTML = menubar(`<span>${monoIcon}</span>`) + general + shortcuts + notes;
+</script></body></html>

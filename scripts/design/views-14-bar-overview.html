@@ -1,0 +1,65 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Slider bar and Overview</title><link rel="stylesheet" href="mac.css">
+<style>
+.k { font-size:10.5px; font-weight:600; letter-spacing:.3px; color:var(--ink-2); }
+/* Slider bar, Dock-like */
+.dock { position:absolute; display:flex; align-items:flex-end; gap:10px; padding:8px 14px 7px; border-radius:20px; background:var(--mat); backdrop-filter:blur(40px) saturate(1.8); box-shadow:var(--shadow); border:.5px solid var(--edge); }
+.slot { position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.stackic { position:relative; width:36px; height:36px; }
+.stackic .appi { position:absolute; border-radius:9px; box-shadow:0 2px 5px rgba(0,0,0,.22); }
+.pip { width:4px; height:4px; border-radius:50%; background:transparent; }
+.slot.on .pip { background:var(--ink); }
+.slot.on .stackic { transform:scale(1.12); transform-origin:bottom; }
+.view { position:absolute; left:-6px; right:-6px; top:-5px; bottom:9px; border-radius:12px; box-shadow:0 0 0 1.5px var(--blue); background:color-mix(in srgb,var(--blue) 10%,transparent); }
+.wsdots { display:flex; gap:5px; align-self:center; margin-right:4px; }
+.wsdots i { width:5px; height:5px; border-radius:50%; background:var(--ink-3); } .wsdots i.on { background:var(--ink); }
+.sepv { width:1px; height:30px; background:var(--sep); align-self:center; }
+.tip { position:absolute; padding:3px 9px; border-radius:7px; font-size:11.5px; background:var(--mat); backdrop-filter:blur(30px); box-shadow:var(--shadow); white-space:nowrap; }
+.before { position:absolute; display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:20px; background:#2c2c30; }
+.before .b2 { width:62px; height:40px; border-radius:9px; background:#3a3a3f; display:flex; align-items:center; justify-content:center; gap:4px; color:#fff; font-weight:700; font-size:13px; }
+/* Mission Control-style overview */
+.desk { position:absolute; left:40px; top:330px; width:1420px; height:600px; border-radius:16px; overflow:hidden;
+  background:radial-gradient(900px 500px at 20% 10%, #3b5d8f, transparent 60%), radial-gradient(900px 600px at 90% 100%, #6b3a5d, transparent 60%), #1c2333; }
+.desk::after { content:""; position:absolute; inset:0; background:rgba(0,0,0,.28); backdrop-filter:blur(18px); }
+.spaces { position:absolute; left:0; right:0; top:14px; z-index:2; display:flex; justify-content:center; gap:14px; }
+.space { width:150px; text-align:center; color:rgba(255,255,255,.85); font-size:11.5px; }
+.space .mini { height:84px; border-radius:8px; background:linear-gradient(160deg,#4a6a9a,#5a3e66); box-shadow:0 4px 14px rgba(0,0,0,.35); margin-bottom:6px; position:relative; overflow:hidden; }
+.space.on .mini { box-shadow:0 0 0 2.5px #fff, 0 4px 14px rgba(0,0,0,.35); }
+.space .mini i { position:absolute; top:22px; height:42px; border-radius:3px; background:rgba(255,255,255,.75); }
+.space.add .mini { background:rgba(255,255,255,.12); display:grid; place-items:center; font-size:26px; color:rgba(255,255,255,.7); }
+.strip { position:absolute; left:0; right:0; top:170px; z-index:2; display:flex; justify-content:center; align-items:flex-start; gap:20px; }
+.wcard { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.pair { display:flex; gap:6px; padding:6px; border-radius:14px; }
+.pair.focus { background:rgba(255,255,255,.14); box-shadow:0 0 0 2px rgba(255,255,255,.85); }
+.thumb { border-radius:10px; background:#f4f4f6; box-shadow:0 14px 30px rgba(0,0,0,.45); overflow:hidden; position:relative; }
+.thumb .tb { height:16px; background:#e6e6ea; display:flex; gap:4px; align-items:center; padding-left:7px; } .thumb .tb i { width:6px; height:6px; border-radius:50%; }
+.thumb .ln { height:5px; border-radius:3px; background:#dcdce2; margin:7px 10px 0; }
+.wlabel { display:flex; align-items:center; gap:7px; color:#fff; font-size:12px; font-weight:500; text-shadow:0 1px 3px rgba(0,0,0,.5); }
+.hint { position:absolute; z-index:2; bottom:16px; left:0; right:0; text-align:center; color:rgba(255,255,255,.7); font-size:12px; }
+.hint kbd { font:500 11px 'SF Pro Text',sans-serif; padding:1px 6px; border-radius:4px; background:rgba(255,255,255,.18); color:#fff; }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const SL = [['DuckDuckGo', '#DE5833', 2], ['Chrome', '#FBBC05', 2], ['Telegram', '#2AABEE', 1], ['Safari', '#1E88E5', 2], ['Arc', '#5AC8FA', 1], ['Firefox', '#FF7139', 2]];
+const ai = (c, s) => `<span class="appi" style="width:${s}px;height:${s}px;background:linear-gradient(150deg,${c},color-mix(in srgb,${c} 70%,#000))"></span>`;
+const appi = (c, sz, l, t, op = 1) => `<span class="appi" style="width:${sz}px;height:${sz}px;left:${l}px;top:${t}px;opacity:${op};background:linear-gradient(150deg,${c},color-mix(in srgb,${c} 70%,#000))"></span>`;
+const stack = (c, n) => `<div class="stackic">${n > 1 ? appi(c, 30, 6, -3, .7) + appi(c, 32, 0, 3) : appi(c, 34, 1, 1)}</div>`;
+const before = `<div class="cap" style="left:40px;top:44px">NOW: A BOX, ICON AND NUMBER FOR EVERY SLIDE</div>
+<div class="before" style="left:40px;top:70px"><span style="display:flex;gap:5px"><i style="width:8px;height:8px;border-radius:50%;background:#0A84FF"></i><i style="width:8px;height:8px;border-radius:50%;background:#555"></i><i style="width:8px;height:8px;border-radius:50%;background:#555"></i></span>
+  ${SL.map(([n, c, k], i) => `<div class="b2" style="${i === 3 ? 'box-shadow:0 0 0 2px #0A84FF;background:#20406a' : ''}">${ai(c, 22)}${k > 1 ? '2' : ''}</div>`).join('')}<span style="color:#ccc;font-size:20px;margin-left:6px">⊞</span></div>`;
+const after = `<div class="cap" style="left:620px;top:44px">NEW: LIKE THE DOCK. JUST THE APPS; WHAT'S ON SCREEN GETS A SOFT FRAME</div>
+<div class="dock" style="left:620px;top:72px">
+  <span class="wsdots"><i class="on"></i><i></i><i></i></span><span class="sepv"></span>
+  ${SL.map(([n, c, k], i) => `<div class="slot ${i === 3 ? 'on' : ''}">${i === 3 ? '<span class="view"></span>' : ''}${stack(c, k)}<span class="pip"></span></div>`).join('')}
+</div>
+<div class="tip" style="left:1300px;top:92px">hover: Safari · 2 windows</div>
+<div class="notes" style="left:620px;top:150px;width:820px"><b>What changed:</b> no boxes or numbers. Two windows of an app show as two stacked icons, like a pile. The slide on screen is slightly larger, with a soft blue frame and a dot under it, as the Dock marks a running app. Workspaces are three small dots at the start. Hover for the name and window count; double-click or pinch for the overview.</div>`;
+const thumb = (w, h, c, t) => `<div class="thumb" style="width:${w}px;height:${h}px"><div class="tb"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></div><div style="height:16px;margin:8px 10px 0;border-radius:4px;background:${c};opacity:.75"></div>${'<div class="ln"></div>'.repeat(Math.floor((h - 50) / 13))}</div>`;
+const wins = [[['#DE5833', 'DuckDuckGo', 'Claude Code'], ['#DE5833', '', 'Fire Window']], [['#FBBC05', 'Chrome', 'Claude Code – High…']], [['#2AABEE', 'Telegram', 'Telegram']], [['#1E88E5', 'Safari', 'Claude Code, Private…'], ['#1E88E5', '', 'Claude Code']], [['#5AC8FA', 'Arc', 'Claude Code']]];
+const overview = `<div class="cap" style="left:40px;top:306px">NEW OVERVIEW: MISSION CONTROL'S LOOK. YOUR WALLPAPER, BLURRED; WORKSPACES ALONG THE TOP; REAL WINDOWS, NO THEME COLOURS</div>
+<div class="desk">
+  <div class="spaces">${['Main', 'Workspace 2', 'Workspace 3'].map((n, i) => `<div class="space ${i === 0 ? 'on' : ''}"><div class="mini">${i === 0 ? [8, 34, 60, 86, 112].map(x => `<i style="left:${x}px;width:22px"></i>`).join('') : ''}</div>${n}</div>`).join('')}<div class="space add"><div class="mini">+</div>New</div></div>
+  <div class="strip">${wins.map((ws, i) => `<div class="wcard"><div class="pair ${i === 3 ? 'focus' : ''}">${ws.map(([c]) => thumb(ws.length > 1 ? 118 : 178, 190, c)).join('')}</div>
+    <div class="wlabel">${ai(ws[0][0], 20)}<span>${ws.length > 1 ? `${ws[0][1]} · 2 windows` : ws[0][2]}</span></div></div>`).join('')}</div>
+  <div class="hint">Click a window to go there · drag one onto another to pair · drag to a workspace to move it · <kbd>esc</kbd> closes</div>
+</div>`;
+document.getElementById('app').innerHTML = menubar(`<span>${monoIcon}</span>`) + before + after + overview;
+</script></body></html>

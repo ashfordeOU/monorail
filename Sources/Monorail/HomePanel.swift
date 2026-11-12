@@ -318,10 +318,14 @@ struct HomePage: View {
                     Text(map.workspaceNames.indices.contains(map.workspace) && !map.workspaceNames[map.workspace].isEmpty
                          ? map.workspaceNames[map.workspace] : "Workspace \(map.workspace + 1)")
                         .font(.system(size: 13, weight: .semibold))
-                    Text("· \(map.tiles.count) slide\(map.tiles.count == 1 ? "" : "s")").font(.system(size: 11)).foregroundStyle(.tertiary)
+                    Text(paused.value ? "· paused" : "· \(map.tiles.count) slide\(map.tiles.count == 1 ? "" : "s")")
+                        .font(.system(size: 11)).foregroundStyle(paused.value ? Tone.ok : Color.secondary.opacity(0.7))
                     Spacer()
+                    pauseButton
                 } else {
                     Text("Windows").font(.system(size: 13, weight: .semibold))
+                    Spacer()
+                    pauseButton
                 }
             }
             SliderBarView(model: model, actions: context.actions) {}
@@ -348,6 +352,20 @@ struct HomePage: View {
             }
         }
         .tile()
+    }
+
+    /// Pause or resume tiling, right on the Windows card, as in the first popover.
+    private var pauseButton: some View {
+        Button(action: context.togglePause) {
+            Image(systemName: paused.value ? "play.fill" : "pause.fill")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(paused.value ? Color.white : Color.primary)
+                .frame(width: 26, height: 22)
+                .background(Capsule().fill(paused.value ? Tone.ok : Color.primary.opacity(0.1)))
+        }
+        .buttonStyle(PressStyle())
+        .accessibilityLabel(paused.value ? "Resume tiling" : "Pause tiling")
+        .help(paused.value ? "Resume tiling" : "Pause tiling: windows stay where they are")
     }
 
     private var agentsWidget: some View {

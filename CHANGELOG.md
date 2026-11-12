@@ -9,6 +9,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 - **Settings looks like System Settings.** A Monorail card at the top of the sidebar (version, running or paused), each section with a coloured rounded icon, and groups set apart by space instead of headings.
 - **Switches you can see the options of.** On the panel's Home, Stay Awake, Evening, Focus and Low Power are tiles, as in Control Centre: the round icon turns it on or off, and the name, its state and a › open its options. No more hidden right-click.
+- **Pause and resume where you can see them.** A pause button sits on the Windows card again (it turns into play while paused, and the card says so).
 
 ### Fixed
 - **The menu bar icon is easy to see again.** It's drawn white on a dark menu bar and black on a light one, like the icons next to it, and a little bolder. While paused it uses macOS's own dimmed look, which follows the theme; in 1.8.0 a paused icon came out dark grey on a dark menu bar.

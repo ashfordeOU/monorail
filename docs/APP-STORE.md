@@ -24,7 +24,7 @@ The code for this is `Edition.isAppStore` (`Sources/Monorail/Edition.swift`), se
 
 ## Plan: Monorail Station (November 2026)
 
-Since the sandbox can't arrange windows (below), the App Store edition becomes **Monorail Station**: the
+Since the sandbox can't arrange windows (below), the App Store edition becomes **Station**: the
 menu bar half of Monorail, complete on its own, with one card and its About page pointing to the
 free Monorail. It isn't called "Lite" and has no locked features: Apple doesn't allow demos.
 
@@ -84,7 +84,7 @@ where it appears in TestFlight. What to paste into App Store Connect is in
    PROVISIONING_PROFILE=~/Downloads/Monorail_App_Store.provisionprofile \
    scripts/build-appstore.sh
    ```
-4. **Upload** `dist/AppStore/Monorail-<version>.pkg` with Apple's **Transporter** app.
+4. **Upload** `dist/AppStore/Station-<version>.pkg` with Apple's **Transporter** app.
 5. **TestFlight**: add yourself as a tester and try it for a day: this is also how to run App Store
    betas later.
 6. **Listing**: use the Product Hunt kit (`assets/launch/v17`) for screenshots (App Store sizes are

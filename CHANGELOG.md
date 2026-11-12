@@ -6,15 +6,16 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Station, the App Store edition.** Built from the same code as the menu bar half of Monorail: the panel with battery rings, Stay Awake and Evening Mode, without the window strip (the App Store's sandbox doesn't let apps move other apps' windows) and without asking for Accessibility. Its own name, icon, menu, first run and Settings, and a permanent card that points to the free Monorail. Builds as `dist/AppStore/Station.app`.
+
 ## [1.8.1] - 2026-11-13
 
 ### Changed
 - **Settings looks like System Settings.** A Monorail card at the top of the sidebar (version, running or paused), each section with a coloured rounded icon, and groups set apart by space instead of headings.
 - **Switches you can see the options of.** On the panel's Home, Stay Awake, Evening, Focus and Low Power are tiles, as in Control Centre: the round icon turns it on or off, and the name, its state and a › open its options. No more hidden right-click.
 - **Pause, resume and smart pairs where you can see them.** The Windows card has a pause button again (it turns into play while paused, and the card says so) and a wand that puts windows of the same app back together.
-
 - **A calmer slider bar, like the Dock.** Just the apps: no boxes, outlines or numbers. Several windows of one app show as a small pile of its icon, two apps overlap a little, and the slide on screen gets a dot under it and a soft frame. Workspace dots are smaller and neutral. The panel's Windows card shows only the bar (click a slide to go there; hover for its live preview).
-
 - **Overview looks like Mission Control.** Your desktop, blurred and dimmed, with no theme colours, glows or dot pattern. Workspaces are quiet glass rows (the current one has a soft white edge), windows have rounder corners and a soft shadow, the app's icon sits at the bottom of each window, and the title shows when you point at one. The "Plain overview backdrop" setting is gone, since it's always plain now.
 
 ### Fixed

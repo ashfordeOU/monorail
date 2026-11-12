@@ -131,7 +131,9 @@ struct WelcomeView: View {
     @State private var appeared = false
     @State private var breathe = false
     @State private var finished = false
-    private static let pageCount = 6
+    /// The pages shown: Station (the App Store edition) has no window permission or practice to do.
+    private static let pages: [Int] = Edition.isAppStore ? [0, 1, 5] : [0, 1, 2, 3, 4, 5]
+    private static var pageCount: Int { pages.count }
 
     private func go(_ target: Int) {
         guard target != page, (0..<Self.pageCount).contains(target) else { return }
@@ -143,7 +145,7 @@ struct WelcomeView: View {
     var body: some View {
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
-                pageView(page)
+                pageView(Self.pages[page])
                     .id(page)
                     .transition(.asymmetric(
                         insertion: .move(edge: forward ? .trailing : .leading).combined(with: .opacity),
@@ -188,7 +190,9 @@ struct WelcomeView: View {
             .accessibilityHidden(true)
             Text("Welcome to \(Brand.name)").font(.system(size: 28, weight: .bold))
                 .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 8)
-            Text("Your windows ride one strip that runs past the edges of your screen. Nothing you’re using ever shrinks.")
+            Text(Edition.isAppStore
+                 ? "Your Mac at a glance from the menu bar: battery, Stay Awake, Evening Mode and what's keeping it busy."
+                 : "Your windows ride one strip that runs past the edges of your screen. Nothing you’re using ever shrinks.")
                 .font(.system(size: 13)).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).frame(maxWidth: 380)
                 .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 8)
@@ -206,14 +210,25 @@ struct WelcomeView: View {
     private var howItWorks: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text("Here’s how it works").font(.system(size: 26, weight: .bold)).frame(maxWidth: .infinity).padding(.bottom, 6)
-            FeatureRow(symbol: "rectangle.split.3x1", tint: Tone.blue, title: "One endless strip",
-                       text: "New windows slide in beside you. \(shortcut(.focusLeft)) and \(shortcut(.focusRight)) glide along it.", delay: 0)
-            FeatureRow(symbol: "square.grid.2x2.fill", tint: Color(red: 0.91, green: 0.33, blue: 0.45), title: "Everything in one panel",
-                       text: "Click the menu bar icon for your windows, battery and switches.", delay: 0.08)
-            FeatureRow(symbol: "bolt.fill", tint: Tone.good, title: "Knows your battery",
-                       text: "Three rings, and the app to quit when it drains fast.", delay: 0.16)
-            FeatureRow(symbol: "sparkles", tint: Color(nsColor: .systemPurple), title: "Just say it",
-                       text: "“Slack and Mail side by side.” Press \(shortcut(.commandPalette)) and type.", delay: 0.24)
+            if Edition.isAppStore {
+                FeatureRow(symbol: "bolt.fill", tint: Tone.good, title: "Three battery rings",
+                           text: "Charge, time left and drain against your usual, with a glow that follows the drain.", delay: 0)
+                FeatureRow(symbol: "cup.and.saucer.fill", tint: Tone.warm, title: "Stay Awake",
+                           text: "For an hour, until a time, or while something downloads.", delay: 0.08)
+                FeatureRow(symbol: "moon.fill", tint: Color(nsColor: .systemIndigo), title: "Evening Mode",
+                           text: "A warmer screen at night, on a schedule or by hand.", delay: 0.16)
+                FeatureRow(symbol: "rectangle.split.3x1.fill", tint: Color(red: 0.91, green: 0.33, blue: 0.45), title: "Want your windows arranged too?",
+                           text: "Monorail, Station’s free big sibling, puts them on one endless strip.", delay: 0.24)
+            } else {
+                FeatureRow(symbol: "rectangle.split.3x1", tint: Tone.blue, title: "One endless strip",
+                           text: "New windows slide in beside you. \(shortcut(.focusLeft)) and \(shortcut(.focusRight)) glide along it.", delay: 0)
+                FeatureRow(symbol: "square.grid.2x2.fill", tint: Color(red: 0.91, green: 0.33, blue: 0.45), title: "Everything in one panel",
+                           text: "Click the menu bar icon for your windows, battery and switches.", delay: 0.08)
+                FeatureRow(symbol: "bolt.fill", tint: Tone.good, title: "Knows your battery",
+                           text: "Three rings, and the app to quit when it drains fast.", delay: 0.16)
+                FeatureRow(symbol: "sparkles", tint: Color(nsColor: .systemPurple), title: "Just say it",
+                           text: "“Slack and Mail side by side.” Press \(shortcut(.commandPalette)) and type.", delay: 0.24)
+            }
             Spacer()
         }
         .padding(.horizontal, 24)
@@ -229,12 +244,14 @@ struct WelcomeView: View {
                 .scaleEffect(finished ? 1 : 0.5).opacity(finished ? 1 : 0)
                 .accessibilityHidden(true)
             Text("You’re all set").font(.system(size: 28, weight: .bold))
-            Text("Monorail lives in the menu bar. Click its icon for everything; it turns grey while paused and orange while your Mac stays awake.")
+            Text(Edition.isAppStore
+                 ? "Station lives in the menu bar. Click its icon for everything; it turns orange while your Mac stays awake."
+                 : "Monorail lives in the menu bar. Click its icon for everything; it turns grey while paused and orange while your Mac stays awake.")
                 .font(.system(size: 13)).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).frame(maxWidth: 380)
             Spacer()
             Button { onFinish() } label: {
-                Text(trusted ? "Start Using Monorail" : L("Continue without permission")).frame(maxWidth: .infinity)
+                Text(Edition.isAppStore ? "Start Using Station" : trusted ? "Start Using Monorail" : L("Continue without permission")).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent).controlSize(.large)
             .keyboardShortcut(.defaultAction)
@@ -254,7 +271,7 @@ struct WelcomeView: View {
                 Button("Back") { go(page - 1) }.controlSize(.large)
             }
             if page < Self.pageCount - 1 {
-                Button(page == 2 && !trusted ? L("Continue without permission") : "Continue") { go(page + 1) }
+                Button(Self.pages[page] == 2 && !trusted ? L("Continue without permission") : "Continue") { go(page + 1) }
                     .buttonStyle(.borderedProminent).controlSize(.large)
                     .keyboardShortcut(.defaultAction)
             }

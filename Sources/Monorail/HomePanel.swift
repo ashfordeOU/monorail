@@ -109,7 +109,7 @@ struct PanelRoot: View {
 
     private func subpage<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            PageHeader(back: "Monorail", title: title, onBack: nav.pop)
+            PageHeader(back: Brand.name, title: title, onBack: nav.pop)
                 .padding(.horizontal, 14).padding(.top, 12)
             content()
         }
@@ -136,7 +136,7 @@ struct HomePage: View {
         return HomePlanner.plan(HomeSignals(
             onBattery: PowerWatch.hasBattery && b.onBattery, percent: PowerWatch.hasBattery ? b.percent : nil,
             minutesLeft: b.minutesAtCurrentRate, drainRatio: power.rings.drainRatio,
-            agentsRunning: power.agents.count, clashes: more.clashCount(),
+            agentsRunning: Edition.isAppStore ? 0 : power.agents.count, clashes: Edition.isAppStore ? 0 : more.clashCount(),
             updateAvailable: updater.available != nil, paused: paused.value))
     }
 
@@ -151,7 +151,7 @@ struct HomePage: View {
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.97)))
             }
-            searchBar
+            if !Edition.isAppStore { searchBar }
         }
         .padding(12)
         .animation(Motion.reorder, value: plan.cards)
@@ -209,10 +209,10 @@ struct HomePage: View {
         switch card {
         case .notices: notices
         case .battery: raised ? AnyView(batteryRaised) : AnyView(batteryWidget)
-        case .windows: windows
+        case .windows: if Edition.isAppStore { MonorailCard() } else { windows }
         case .agents: agentsWidget
         case .controls: controls
-        case .layouts: layoutsRow
+        case .layouts: if !Edition.isAppStore { layoutsRow }
         }
     }
 
@@ -403,9 +403,12 @@ struct HomePage: View {
             ControlTile(title: "Evening", status: eveningOn ? "On" : "Off", systemImage: "moon.fill", isOn: eveningOn, tint: Tone.warm,
                         toggle: { store.settings.eveningOn.toggle(); settle() },
                         open: { nav.push(.evening) })
-            ControlTile(title: "Focus", status: focusOn ? "This slide only" : "Off", systemImage: "scope", isOn: focusOn, tint: Tone.blue,
-                        toggle: { more.toggleFocus(); settle() }, open: nil)
-            if PowerWatch.hasBattery {
+            if !Edition.isAppStore {
+                ControlTile(title: "Focus", status: focusOn ? "This slide only" : "Off", systemImage: "scope", isOn: focusOn, tint: Tone.blue,
+                            toggle: { more.toggleFocus(); settle() }, open: nil)
+            }
+            // Low Power Mode needs an administrator, which the App Store's sandbox doesn't allow.
+            if PowerWatch.hasBattery, !Edition.isAppStore {
                 ControlTile(title: "Low Power", status: power.battery.lowPowerMode ? "On" : "Off", systemImage: "leaf.fill",
                             isOn: power.battery.lowPowerMode, tint: Tone.ok,
                             toggle: { power.setLowPowerMode(!power.battery.lowPowerMode) }, open: { nav.push(.battery) })
@@ -441,7 +444,7 @@ struct HomePage: View {
         Button(action: more.openPalette) {
             HStack(spacing: 7) {
                 Image(systemName: "magnifyingglass")
-                Text("Search Monorail")
+                Text("Search \(Brand.name)")
                 Spacer()
             }
             .font(.system(size: 12))
@@ -508,6 +511,39 @@ struct ControlTile: View {
         .padding(.horizontal, 9).padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(0.06)))
+    }
+}
+
+/// Station's card for the full Monorail: always there, in its place on Home, never a pop-up.
+struct MonorailCard: View {
+    private var monorailRunning: Bool {
+        !NSRunningApplication.runningApplications(withBundleIdentifier: "org.ashforde.monorail").isEmpty
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Image(systemName: "rectangle.split.3x1.fill")
+                    .font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
+                    .frame(width: 34, height: 34)
+                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(LinearGradient(colors: [Color(red: 1, green: 0.54, blue: 0.36), Color(red: 0.91, green: 0.26, blue: 0.48)],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing)))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Monorail").font(.system(size: 13, weight: .semibold))
+                    Text(monorailRunning ? "Running: it does everything Station does, and more" : "Your windows on one endless strip")
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+            }
+            if !monorailRunning {
+                Text("Station's big sibling arranges your windows: new ones slide in beside you, nothing shrinks, and an overview shows them all. Free, from Ashforde.")
+                    .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Button("Get Monorail") { NSWorkspace.shared.open(Brand.monorailURL) }
+                    .buttonStyle(.borderedProminent).controlSize(.small)
+            }
+        }
+        .tile()
     }
 }
 
@@ -591,7 +627,7 @@ struct UpdatePage: View {
     var body: some View {
         let rows = ReleaseNotes.highlights(updater.notes, limit: 4)
         VStack(alignment: .leading, spacing: 12) {
-            PageHeader(back: "Monorail", title: "What's New", onBack: onBack)
+            PageHeader(back: Brand.name, title: "What's New", onBack: onBack)
             VStack(spacing: 4) {
                 Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 52, height: 52).accessibilityHidden(true)
                 Text("Monorail \(updater.available?.version ?? updater.currentVersion)").font(.system(size: 15, weight: .semibold))

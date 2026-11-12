@@ -171,7 +171,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         // Everything that doesn't move other apps' windows starts now, with or without Accessibility.
         startEssentials()
-        if Accessibility.isTrusted(prompt: false) {
+        if Edition.isAppStore {
+            // Station: the App Store's sandbox doesn't let apps move other apps' windows, so no
+            // window engine and no Accessibility request. Everything else starts as usual.
+        } else if Accessibility.isTrusted(prompt: false) {
             startEngine()
         } else {
             waitForPermission()
@@ -3149,6 +3152,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
+        if Edition.isAppStore {
+            stationMenu(menu)
+            return
+        }
         let trusted = Accessibility.isTrusted(prompt: false)
 
         let header = NSMenuItem(title: headerTitle(trusted: trusted), action: nil, keyEquivalent: "")
@@ -3360,7 +3367,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if !Edition.isAppStore { menu.addItem(item(L("Check for Updates…"), #selector(checkForUpdates))) }
         menu.addItem(item("About \(Brand.full)", #selector(showAbout)))
         menu.addItem(.separator())
-        menu.addItem(item(L("Quit Monorail"), #selector(quit), key: "q"))
+        menu.addItem(item(Edition.isAppStore ? "Quit \(Brand.name)" : L("Quit Monorail"), #selector(quit), key: "q"))
     }
 
     /// Every shortcut, so nobody has to remember them. Choosing one runs it.
@@ -3636,6 +3643,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func showSettingsFromMenu() { showSettings() }
     @objc private func showWelcomeFromMenu() { showWelcome() }
     @objc private func quit() { NSApp.terminate(nil) }
+
+    /// Station's menu: only what Station does, and the way to the full Monorail.
+    private func stationMenu(_ menu: NSMenu) {
+        let header = NSMenuItem(title: Brand.full, action: nil, keyEquivalent: "")
+        header.isEnabled = false
+        menu.addItem(header)
+        menu.addItem(awakeMenu())
+        menu.addItem(eveningMenu())
+        menu.addItem(.separator())
+        let monorail = item("Get Monorail: Arrange Your Windows…", #selector(openMonorailSite))
+        monorail.image = NSImage(systemSymbolName: "rectangle.split.3x1", accessibilityDescription: nil)
+        menu.addItem(monorail)
+        menu.addItem(.separator())
+        menu.addItem(item(L("Settings…"), #selector(showSettingsFromMenu), key: ","))
+        menu.addItem(item("About \(Brand.full)", #selector(showAbout)))
+        menu.addItem(item("Quit \(Brand.name)", #selector(quit), key: "q"))
+    }
+
+    @objc private func openMonorailSite() { NSWorkspace.shared.open(Brand.monorailURL) }
 
     @objc private func focusWindowFromMenu(_ sender: NSMenuItem) {
         let id = WindowID(sender.tag)

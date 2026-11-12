@@ -31,7 +31,7 @@ struct BatteryPanel: View {
     var body: some View {
         VStack(spacing: 0) {
             if let onBack {
-                PageHeader(back: "Monorail", title: "Battery", onBack: onBack, trailing: AnyView(headerButtons))
+                PageHeader(back: Brand.name, title: "Battery", onBack: onBack, trailing: AnyView(headerButtons))
                     .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 2)
             } else {
                 header
@@ -65,7 +65,12 @@ struct BatteryPanel: View {
     // MARK: Cards, in your order
 
     private var order: [String] { BatteryCards.normalised(store.settings.batteryCards) }
-    private var visibleCards: [String] { order.filter { !store.settings.batteryHiddenCards.contains($0) } }
+    private var visibleCards: [String] {
+        order.filter { !store.settings.batteryHiddenCards.contains($0) && !(Edition.isAppStore && Self.stationLeavesOut.contains($0)) }
+    }
+
+    /// What the App Store's sandbox doesn't allow: reading other apps' energy, and Low Power Mode.
+    private static let stationLeavesOut: Set<String> = ["apps", "agents", "attention", "resting", "lowPower", "sinceCharge"]
 
     /// A card's view, or nil when it has nothing to show right now.
     private func cardView(_ id: String) -> AnyView? {

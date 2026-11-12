@@ -65,7 +65,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 }
 
 final class SettingsNavigation: ObservableObject {
-    @Published var tab: SettingsTab = .basics
+    @Published var tab: SettingsTab = Edition.isAppStore ? .general : .basics
 }
 
 struct SettingsView: View {
@@ -133,7 +133,9 @@ struct SettingsView: View {
     /// The sidebar's groups, without the advanced sections while "Show all settings" is off.
     /// The section you're on always stays (search can open any of them).
     private var visibleGroups: [(String, [SettingsTab])] {
-        Self.groups.compactMap { group in
+        // Station shows only what Station does.
+        if Edition.isAppStore { return [("Station", [.general, .awake, .evening, .appearance]), ("About", [.about])] }
+        return Self.groups.compactMap { group in
             let tabs = group.1.filter {
                 SettingsVisibility.isShown($0.rawValue, showAll: store.settings.showAllSettings) || $0 == navigation.tab
             }
@@ -192,7 +194,8 @@ struct SettingsView: View {
     private func pane(_ tab: SettingsTab) -> some View {
         switch tab {
         case .basics: BasicsPane(store: store, navigation: navigation)
-        case .general: GeneralPane(store: store, isPaused: isPaused, setPaused: setPaused)
+        case .general:
+            if Edition.isAppStore { StationGeneralPane(store: store) } else { GeneralPane(store: store, isPaused: isPaused, setPaused: setPaused) }
         case .layout: LayoutPane(store: store)
         case .input: InputPane(store: store)
         case .appearance: AppearancePane(store: store)
@@ -231,6 +234,39 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+}
+
+// MARK: - Station's General
+
+/// Station's own short General page: starting at login, the battery in the menu bar, and the way
+/// to the full Monorail.
+private struct StationGeneralPane: View {
+    @ObservedObject var store: SettingsStore
+    @State private var launchAtLogin = LoginItem.isEnabled
+
+    var body: some View {
+        Form {
+            Section {
+                Toggle("Open Station when I log in", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { LoginItem.setEnabled($0) }
+                Toggle("Show the battery in the menu bar", isOn: $store.settings.batteryMenuBar)
+            }
+            Section {
+                LabeledContent("Privacy", value: "Nothing leaves your Mac")
+            } footer: {
+                Text("Station only reads your Mac's battery and its own settings.")
+            }
+            Section("Arrange your windows too") {
+                HStack {
+                    Text("Monorail, Station's free big sibling, puts your windows on one endless strip.")
+                    Spacer()
+                    Button("Get Monorail") { NSWorkspace.shared.open(Brand.monorailURL) }
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .onAppear { launchAtLogin = LoginItem.isEnabled }
     }
 }
 

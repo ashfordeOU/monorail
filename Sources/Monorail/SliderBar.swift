@@ -1315,7 +1315,7 @@ struct ThemeQuickPicker: View {
 }
 
 /// A slide in the popover: its layout outline, app icons and first window's title.
-struct SlideCard: View {
+struct PanelSlideCard: View {
     let number: Int
     let tile: Engine.MiniTile
 

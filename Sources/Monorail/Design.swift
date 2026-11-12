@@ -191,7 +191,7 @@ struct EnergyGlow: View {
 
     var body: some View {
         let still = Motion.reduced
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: still)) { timeline in
+        SwiftUI.TimelineView(.animation(minimumInterval: 1 / 30, paused: still)) { timeline in
             Canvas { context, canvas in
                 let t = timeline.date.timeIntervalSinceReferenceDate
                 let k = min(max(intensity, 0.5), 3)

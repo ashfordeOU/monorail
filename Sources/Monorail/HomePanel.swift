@@ -330,7 +330,7 @@ struct HomePage: View {
                         HStack(spacing: 8) {
                             ForEach(Array(map.tiles.enumerated()), id: \.element.id) { number, tile in
                                 Button { if let window = tile.windows.first { context.actions.focus(window.id) } } label: {
-                                    SlideCard(number: number + 1, tile: tile)
+                                    PanelSlideCard(number: number + 1, tile: tile)
                                 }
                                 .buttonStyle(PressStyle())
                                 .id(tile.id)

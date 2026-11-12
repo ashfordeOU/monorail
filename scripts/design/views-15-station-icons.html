@@ -1,0 +1,59 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Station icon ideas</title><link rel="stylesheet" href="mac.css">
+<style>
+.grid { position:absolute; left:40px; top:96px; right:40px; display:grid; grid-template-columns:repeat(5, 1fr); gap:34px 24px; }
+.cell { text-align:center; }
+.cell svg { width:168px; height:168px; filter:drop-shadow(0 10px 18px rgba(0,0,0,.22)); }
+.cell b { display:block; font-size:13px; margin-top:8px; }
+.cell span { display:block; font-size:11.5px; color:var(--ink-2); line-height:1.35; margin:3px auto 0; max-width:230px; }
+.pair { display:flex; justify-content:center; gap:10px; align-items:flex-end; }
+.pair svg.small { width:64px; height:64px; }
+h1 { position:absolute; left:40px; top:40px; margin:0; font:700 24px "SF Pro Display",sans-serif; }
+.sub { position:absolute; left:40px; top:72px; color:var(--ink-2); font-size:13px; }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+// Apple's icon grid: an 824 rounded square in 1024 (here 100 units: 10..90, radius ~18).
+const sq = (fill, inner = '') => `<svg viewBox="0 0 100 100"><defs>
+  <linearGradient id="mono" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".6" stop-color="#E8437A"/><stop offset="1" stop-color="#C2456E"/></linearGradient>
+  <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#263E78"/><stop offset="1" stop-color="#0A102A"/></linearGradient>
+  <linearGradient id="dusk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".45" stop-color="#E8437A"/><stop offset="1" stop-color="#2B3F86"/></linearGradient>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5AC8FA"/><stop offset="1" stop-color="#1E5BD8"/></linearGradient>
+  <linearGradient id="white" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E9E9EE"/></linearGradient>
+  </defs><rect x="10" y="10" width="80" height="80" rx="18" fill="${fill}"/>${inner}</svg>`;
+// Monorail's M: two tall windows and the middle one slid down. (cx, cy, scale)
+const M = (cx, cy, k = 1, col = '#fff', mid = null) => {
+  const x = (v) => cx + (v - 9) * k * 2.6, y = (v) => cy + (v - 7) * k * 2.6, w = (v) => v * k * 2.6;
+  return `<rect x="${x(1)}" y="${y(1)}" width="${w(4)}" height="${w(12)}" rx="${w(1.5)}" fill="none" stroke="${col}" stroke-width="${w(1.15)}"/>
+    <rect x="${x(13)}" y="${y(1)}" width="${w(4)}" height="${w(12)}" rx="${w(1.5)}" fill="none" stroke="${col}" stroke-width="${w(1.15)}"/>
+    ${mid ?? `<rect x="${x(7)}" y="${y(3.5)}" width="${w(4)}" height="${w(7)}" rx="${w(1.2)}" fill="${col}"/>`}`;
+};
+const arc = (cx, cy, r, w, share, col, track = .2) => { const c = 2 * Math.PI * r;
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-opacity="${track}" stroke-width="${w}"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${c * share} ${c}" transform="rotate(-90 ${cx} ${cy})"/>`; };
+const bolt = (cx, cy, s, col) => `<path transform="translate(${cx - 12 * s} ${cy - 12 * s}) scale(${s})" d="M13 2 4 14h7l-1 8 9-12h-7z" fill="${col}"/>`;
+
+const ideas = [
+  ['The M with a ring inside', 'Monorail’s gradient and M; the middle window becomes a little battery ring. Instantly the same family.',
+    sq('url(#mono)', M(50, 50, 1, '#fff', `${arc(50, 52, 6.2, 2.6, .72, '#fff', .35)}`))],
+  ['Sibling colours', 'The exact Monorail M, in Station navy with a glowing green middle: same shape, different job.',
+    sq('url(#navy)', M(50, 50, 1, '#fff', `<rect x="${50 - 5.2}" y="${50 - 9.1}" width="10.4" height="18.2" rx="3.1" fill="#30D158"/>`))],
+  ['M on the rings', 'Three Activity-style rings (charge, time, drain) with a small white M in the centre.',
+    sq('url(#navy)', arc(50, 50, 30, 6, .8, '#30D158') + arc(50, 50, 22, 6, .62, '#5AC8FA') + arc(50, 50, 14, 6, .9, '#FFD60A') + M(50, 50, .34))],
+  ['Departure board', 'A station sign: the M lit up on a dark board, with a thin rail under it.',
+    sq('#1C1C20', `<rect x="20" y="28" width="60" height="38" rx="7" fill="#2A2A30"/>${M(50, 47, .78, '#FFB648')}<rect x="20" y="72" width="60" height="3" rx="1.5" fill="#FF8A5B"/>`)],
+  ['Dusk gradient', 'Monorail’s pink sliding into Station’s night blue, the M outlined, a ring around it.',
+    sq('url(#dusk)', arc(50, 50, 31, 3.4, .78, '#fff', .25) + M(50, 50, .82))],
+  ['The bolt in the middle', 'The M where the middle window is a lightning bolt: battery first, still Monorail.',
+    sq('url(#mono)', M(50, 50, 1, '#fff', bolt(50, 51, .95, '#fff')))],
+  ['Platform', 'A rounded platform canopy over three windows on a rail: a station, in the M’s proportions.',
+    sq('url(#sky)', `<path d="M24 36 Q50 20 76 36" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>${M(50, 54, .74)}<rect x="22" y="73" width="56" height="3.5" rx="1.7" fill="#fff" opacity=".9"/>`)],
+  ['Light and calm', 'White tile, the M in Monorail’s gradient, the middle window filled like a charge gauge.',
+    sq('url(#white)', `<g>${M(50, 50, 1, '#E8437A', `<rect x="44.8" y="40.9" width="10.4" height="18.2" rx="3.1" fill="none" stroke="#E8437A" stroke-width="2.4"/><rect x="46.6" y="49" width="6.8" height="8.4" rx="1.6" fill="#30D158"/>`)}</g>`)],
+  ['Station clock', 'A round station clock whose face is the battery ring; the hands make a small M.',
+    sq('url(#navy)', `<circle cx="50" cy="50" r="30" fill="#F5F5F7"/>${arc(50, 50, 26, 4, .7, '#30D158', .15)}<path d="M50 50 L50 32 M50 50 L62 56" stroke="#1C1C20" stroke-width="3.4" stroke-linecap="round"/><circle cx="50" cy="50" r="3" fill="#E8437A"/>`)],
+  ['Half and half', 'Split down the middle: Monorail’s M on the left half, Station’s ring on the right, on one tile.',
+    sq('url(#dusk)', `<clipPath id="lh"><rect x="10" y="10" width="40" height="80"/></clipPath><clipPath id="rh"><rect x="50" y="10" width="40" height="80"/></clipPath><g clip-path="url(#lh)">${M(50, 50, 1)}</g><g clip-path="url(#rh)">${arc(50, 50, 22, 6, .78, '#fff', .25)}</g><rect x="49.4" y="22" width="1.2" height="56" fill="#fff" opacity=".5"/>`)],
+];
+document.getElementById('app').innerHTML = menubar(`<span>${monoIcon}</span>`)
+  + `<h1>Station icon ideas</h1><div class="sub">Each in Monorail's language: the rounded tile, the M of three windows with the middle one slid down, Monorail's pink-orange or Station's navy.</div>`
+  + `<div class="grid">${ideas.map(([t, d, svg], i) => `<div class="cell">${svg}<b>${i + 1}. ${t}</b><span>${d}</span></div>`).join('')}</div>`;
+</script></body></html>

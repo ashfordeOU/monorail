@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Monorail design pass 2</title>
+<!-- Mock-ups in Apple's own idiom: Control Centre modules, System Settings lists, the Batteries widget. ?theme=dark. -->
+<style>
+:root {
+  --desk: radial-gradient(1200px 800px at 20% 10%, #b9d3ff, transparent 60%), radial-gradient(1000px 700px at 90% 90%, #f5c3d9, transparent 60%), #dfe4f2;
+  --mat: rgba(236,236,240,.70); --edge: rgba(255,255,255,.55);
+  --tile: rgba(255,255,255,.55); --tile-2: rgba(255,255,255,.80); --sep: rgba(60,60,67,.14);
+  --ink: #1d1d1f; --ink-2: rgba(60,60,67,.70); --ink-3: rgba(60,60,67,.42);
+  --accent: #0A84FF; --green: #34C759; --orange: #FF9500; --red: #FF3B30; --off: rgba(120,120,128,.20);
+  --shadow: 0 0 0 .5px rgba(0,0,0,.14), 0 20px 50px rgba(0,0,0,.18);
+}
+[data-theme="dark"] {
+  --desk: radial-gradient(1200px 800px at 20% 10%, #1d3466, transparent 60%), radial-gradient(1000px 700px at 90% 90%, #4a1f3f, transparent 60%), #0f1220;
+  --mat: rgba(40,40,46,.72); --edge: rgba(255,255,255,.12);
+  --tile: rgba(255,255,255,.08); --tile-2: rgba(255,255,255,.14); --sep: rgba(84,84,88,.55);
+  --ink: #f5f5f7; --ink-2: rgba(235,235,245,.62); --ink-3: rgba(235,235,245,.36);
+  --accent: #0A84FF; --green: #30D158; --orange: #FF9F0A; --red: #FF453A; --off: rgba(120,120,128,.32);
+  --shadow: 0 0 0 .5px rgba(255,255,255,.12), 0 20px 50px rgba(0,0,0,.55);
+}
+* { box-sizing:border-box; }
+html, body { margin:0; width:1500px; height:960px; overflow:hidden; font:13px/1.3 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", sans-serif; -webkit-font-smoothing:antialiased; color:var(--ink); letter-spacing:-.08px; }
+body { background:var(--desk); }
+.menubar { height:26px; background:rgba(255,255,255,.35); backdrop-filter:blur(40px); display:flex; align-items:center; padding:0 18px; gap:20px; font-size:13px; }
+[data-theme="dark"] .menubar { background:rgba(0,0,0,.35); }
+.menubar b { font-weight:700; } .menubar .r { margin-left:auto; display:flex; gap:18px; align-items:center; }
+.cap { position:absolute; font-size:11px; font-weight:600; color:var(--ink-2); letter-spacing:.02em; }
+.panel { position:absolute; background:var(--mat); backdrop-filter:blur(50px) saturate(1.8); border-radius:16px; box-shadow:var(--shadow); border:.5px solid var(--edge); padding:10px; }
+.tile { background:var(--tile); border-radius:12px; }
+.row { display:flex; align-items:center; gap:8px; }
+.round { width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:var(--off); color:var(--ink); flex:0 0 28px; }
+.round.on { background:var(--accent); color:#fff; }
+.round.warm.on { background:var(--orange); }
+svg.s { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+svg.s.f { fill:currentColor; stroke:none; }
+.t1 { font-weight:600; font-size:13px; } .t2 { color:var(--ink-2); font-size:11px; }
+.num { font-family:"SF Pro Rounded", ui-rounded, -apple-system, "Inter", sans-serif; font-variant-numeric:tabular-nums; }
+.list { background:var(--tile); border-radius:10px; overflow:hidden; }
+.li { display:flex; align-items:center; gap:9px; padding:7px 10px; position:relative; }
+.li + .li::before { content:""; position:absolute; top:0; right:0; left:41px; height:.5px; background:var(--sep); }
+.li .v { margin-left:auto; color:var(--ink-2); font-variant-numeric:tabular-nums; }
+.h { font-size:11px; font-weight:600; color:var(--ink-2); padding:10px 4px 5px; display:flex; align-items:center; }
+.h .a { margin-left:auto; color:var(--accent); font-weight:500; }
+.app { width:22px; height:22px; border-radius:5px; flex:0 0 22px; box-shadow:0 .5px 1.5px rgba(0,0,0,.2); }
+.ring { width:58px; height:58px; position:relative; display:grid; place-items:center; }
+.ring svg { position:absolute; inset:0; transform:rotate(-90deg); }
+.switch { width:26px; height:15px; border-radius:8px; background:var(--off); position:relative; margin-left:auto; }
+.switch i { position:absolute; top:1.5px; left:1.5px; width:12px; height:12px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.25); }
+.switch.on { background:var(--green); } .switch.on i { left:12.5px; }
+.slides { display:flex; gap:6px; }
+.slide { flex:1; height:62px; border-radius:8px; background:var(--tile); display:grid; place-items:center; position:relative; }
+.slide.on { box-shadow:0 0 0 2px var(--accent); background:var(--tile-2); }
+.slide .pair { display:flex; gap:3px; }
+.mini { height:4px; border-radius:2px; background:var(--off); margin-top:6px; position:relative; }
+.mini i { position:absolute; top:0; bottom:0; border-radius:2px; background:var(--ink-2); }
+.btn { padding:3px 10px; border-radius:6px; background:var(--tile-2); font-size:12px; font-weight:500; box-shadow:0 0 0 .5px var(--sep); }
+.btn.p { background:var(--accent); color:#fff; box-shadow:none; }
+.grab { color:var(--ink-3); }
+.del { width:16px; height:16px; border-radius:50%; background:var(--red); display:grid; place-items:center; color:#fff; font-size:12px; font-weight:800; }
+.notes { position:absolute; font-size:12.5px; line-height:1.6; color:var(--ink-2); }
+</style></head>
+<body>
+<div class="menubar"><b>Finder</b><span>File</span><span>Edit</span><span>View</span><span>Go</span>
+  <div class="r"><span id="mb"></span><span>􀛨</span><span>Wed 12 Nov&nbsp;&nbsp;21:54</span></div></div>
+<div id="app"></div>
+<script>
+const theme = new URLSearchParams(location.search).get('theme') || 'light';
+document.documentElement.dataset.theme = theme;
+const P = {
+  bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>', moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>',
+  cup: '<path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/>',
+  scope: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>', pause: '<path d="M8 5v14M16 5v14"/>',
+  grid: '<rect x="3" y="4" width="7" height="7" rx="2"/><rect x="14" y="4" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+  wand: '<path d="m4 20 11-11"/><path d="m14 6 1-3 1 3 3 1-3 1-1 3-1-3-3-1z"/>', layout: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M12 4v16M12 12h9"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+  chev: '<path d="m9 6 6 6-6 6"/>', lines: '<path d="M4 8h16M4 12h16M4 16h16"/>', leaf: '<path d="M5 19c0-8 6-14 15-14 0 9-6 15-14 15"/><path d="M5 19 13 11"/>',
+  sparkles: '<path d="m12 3 1.8 4.7L18.5 9.5 13.8 11.3 12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/>', palette: '<path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.6-.9 1.2-1.8-.5-1-.1-2.2 1.3-2.2H17a4 4 0 0 0 4-4c0-5.5-4-10-9-10z"/>',
+};
+const s = (n, f = '') => `<svg class="s ${f}" viewBox="0 0 24 24">${P[n]}</svg>`;
+const C = { Safari: '#1E88E5', Xcode: '#1565C0', Slack: '#4A154B', Chrome: '#FBBC05', Mail: '#2196F3', Claude: '#D97757', Terminal: '#2B2B2B', Notes: '#FFCC00', Codex: '#111' };
+const app = (n, sz = 22) => `<span class="app" style="width:${sz}px;height:${sz}px;flex-basis:${sz}px;background:linear-gradient(150deg, ${C[n]}, color-mix(in srgb, ${C[n]} 70%, #000))"></span>`;
+document.getElementById('mb').innerHTML = `<svg viewBox="0 0 18 14" width="17" height="13"><rect x="1" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="13" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="7" y="3.5" width="4" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>`;
+const ring = (pct, col, label, sub, iconHTML) => `
+  <div style="text-align:center;width:72px"><div class="ring" style="margin:0 auto"><svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="25" fill="none" stroke="var(--off)" stroke-width="5"/><circle cx="29" cy="29" r="25" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(pct / 100) * 157} 157"/></svg>${iconHTML}</div>
+  <div class="num" style="font-weight:600;margin-top:4px">${label}</div><div class="t2">${sub}</div></div>`;
+
+// Popover: Control Centre modules
+const popover = `
+<div class="cap" style="left:60px;top:52px">MENU BAR · SLIDER</div>
+<div class="panel" style="left:60px;top:72px;width:340px">
+  <div class="tile" style="padding:10px">
+    <div class="row" style="margin-bottom:8px"><span class="t1">Workspace 1</span><span class="t2" style="margin-left:auto">2 of 6</span></div>
+    <div class="slides">
+      <div class="slide"><div class="pair">${app('Safari', 18)}</div></div>
+      <div class="slide on"><div class="pair">${app('Xcode', 18)}${app('Terminal', 18)}</div></div>
+      <div class="slide"><div class="pair">${app('Slack', 18)}</div></div>
+      <div class="slide"><div class="pair">${app('Chrome', 18)}</div></div>
+    </div>
+    <div class="mini"><i style="left:22%;width:30%"></i></div>
+    <div class="t2" style="margin-top:6px">Xcode — Engine.swift</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+    <div class="tile row" style="padding:9px"><span class="round warm on">${s('cup')}</span><div><div class="t1">Stay Awake</div><div class="t2">52 min left</div></div></div>
+    <div class="tile row" style="padding:9px"><span class="round warm on">${s('moon', 'f')}</span><div><div class="t1">Evening</div><div class="t2">Until 7:00</div></div></div>
+    <div class="tile row" style="padding:9px"><span class="round">${s('scope')}</span><div><div class="t1">Focus</div><div class="t2">Off</div></div></div>
+    <div class="tile row" style="padding:9px"><span class="round">${s('bolt', 'f')}</span><div><div class="t1">Battery</div><div class="t2 num">64% · 5:52</div></div></div>
+  </div>
+  <div class="tile row" style="padding:6px 8px;margin-top:8px;justify-content:space-between">
+    ${['layout', 'wand', 'grid', 'palette', 'pause', 'gear'].map(n => `<span class="round" style="background:none;width:30px;height:30px">${s(n)}</span>`).join('')}
+  </div>
+</div>`;
+
+// Battery panel: Batteries widget + System Settings lists
+const chart = (() => {
+  const d = [[0, 26], [60, 30], [110, 38], [130, 42]], c = [[130, 42], [155, 18], [175, 10]], e = [[175, 10], [230, 16], [290, 24], [318, 28]];
+  const line = (pts, col) => `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const area = (pts, col) => `<polygon points="${pts.map(p => p.join(',')).join(' ')} ${pts[pts.length - 1][0]},60 ${pts[0][0]},60" fill="${col}" opacity=".14"/>`;
+  return `<svg viewBox="0 0 320 64" width="100%" height="64">${area(d, 'var(--green)')}${area(c, 'var(--green)')}${area(e, 'var(--green)')}${line(d, 'var(--green)')}${line(c, 'var(--accent)')}${line(e, 'var(--green)')}</svg>`;
+})();
+const battery = `
+<div class="cap" style="left:440px;top:52px">BATTERY</div>
+<div class="panel" style="left:440px;top:72px;width:330px">
+  <div class="tile" style="padding:12px 8px;display:flex;justify-content:space-around">
+    ${ring(64, 'var(--green)', '64%', 'On battery', `<span style="color:var(--green)">${s('bolt', 'f')}</span>`)}
+    ${ring(73, 'var(--accent)', '5:52', 'Time left', `<span class="t2">${s('chev')}</span>`)}
+    ${ring(30, 'var(--orange)', '6.1 W', 'Using now', `<span style="color:var(--orange)">${s('sparkles')}</span>`)}
+  </div>
+  <div class="list" style="margin-top:8px"><div class="li"><span class="round" style="width:22px;height:22px;flex-basis:22px;background:var(--green);color:#fff">${s('leaf')}</span><span>Low Power Mode</span><span class="switch"><i></i></span></div></div>
+  <div class="h">Since Last Charge<span class="t2" style="margin-left:auto;font-weight:400">100% at 18:26</span></div>
+  <div class="list">
+    ${[['Chrome', 'Google Chrome', '4.2%'], ['Claude', 'Claude Code', '1.8%'], ['Codex', 'Codex', '0.9%']].map(([a, n, v]) => `<div class="li">${app(a)}<span>${n}</span><span class="v num">${v}</span></div>`).join('')}
+  </div>
+  <div class="h">Last 24 Hours<span class="a">Show All</span></div>
+  <div class="tile" style="padding:8px 10px">${chart}<div class="row t2"><span>Health 100%</span><span style="margin-left:auto">5 cycles</span></div></div>
+  <div class="h">Using Significant Energy</div>
+  <div class="list">
+    <div class="li">${app('Chrome')}<div><div>Google Chrome</div><div class="t2">Quitting gives about 49 min more</div></div><span class="btn" style="margin-left:auto">Quit</span></div>
+    <div class="li">${app('Claude')}<span>Claude</span><span class="v num">2.1%/h</span></div>
+    <div class="li">${app('Xcode')}<span>Xcode</span><span class="v num">0.9%/h</span></div>
+  </div>
+</div>`;
+
+// Arranging, the way Control Centre and widgets do it
+const arrange = `
+<div class="cap" style="left:810px;top:52px">BATTERY · EDIT</div>
+<div class="panel" style="left:810px;top:72px;width:330px">
+  <div class="row" style="padding:2px 4px 8px"><span class="t1">Edit Battery</span><span class="btn p" style="margin-left:auto">Done</span></div>
+  <div class="list">
+    ${['AI Agents', 'Since Last Charge', 'Battery and Time Left', 'Low Power Mode', 'Last 24 Hours', 'Using Significant Energy'].map((n, i) => `<div class="li"><span class="del">−</span><span>${n}</span><span class="grab" style="margin-left:auto">${s('lines')}</span></div>`).join('')}
+  </div>
+  <div class="h">More Cards</div>
+  <div class="list"><div class="li"><span class="del" style="background:var(--green)">+</span><span>Paused and Hidden Apps</span></div></div>
+</div>`;
+
+const notes = `
+<div class="notes" style="left:1180px;top:72px;width:290px">
+  <div class="cap" style="position:static;margin-bottom:8px">WHAT'S DIFFERENT</div>
+  Looks like Control Centre and System Settings, so it feels part of macOS.<br><br>
+  • Neutral glass; colour only means something: your accent colour for “on”, green for battery, orange for Stay Awake and Evening.<br>
+  • Control Centre modules with round toggles.<br>
+  • Batteries-widget rings for charge, time left and power.<br>
+  • System Settings lists: inset separators, grey values on the right, small section titles.<br>
+  • Editing like Control Centre: red − to remove, ≡ to drag, green + under More Cards, Done in the corner.<br>
+  • Follows your accent colour, Reduce Transparency and Increase Contrast.
+</div>`;
+document.getElementById('app').innerHTML = popover + battery + arrange + notes;
+</script></body></html>

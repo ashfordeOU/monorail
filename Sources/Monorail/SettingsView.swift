@@ -28,22 +28,38 @@ enum SettingsTab: String, CaseIterable, Identifiable {
         }
     }
 
+    /// System Settings' badge colours: a white symbol on a coloured rounded square.
+    var badge: Color {
+        switch self {
+        case .basics: return Color(nsColor: .systemYellow)
+        case .general, .automation, .about: return Color(nsColor: .systemGray)
+        case .layout, .apps, .devices: return Color(nsColor: .systemBlue)
+        case .input: return Color(nsColor: .systemTeal)
+        case .appearance: return Color(nsColor: .systemPink)
+        case .evening: return Color(nsColor: .systemIndigo)
+        case .smart: return Color(nsColor: .systemPurple)
+        case .awake: return Color(nsColor: .systemOrange)
+        case .insights: return Color(nsColor: .systemGreen)
+        case .shortcuts: return Color(red: 0.36, green: 0.36, blue: 0.40)
+        }
+    }
+
     var symbol: String {
         switch self {
-        case .basics: return "star"
-        case .general: return "gearshape"
+        case .basics: return "star.fill"
+        case .general: return "gearshape.fill"
         case .layout: return "rectangle.split.3x1"
-        case .input: return "hand.draw"
-        case .appearance: return "paintbrush"
-        case .evening: return "moon"
-        case .apps: return "square.grid.2x2"
+        case .input: return "hand.draw.fill"
+        case .appearance: return "paintbrush.fill"
+        case .evening: return "moon.fill"
+        case .apps: return "square.grid.2x2.fill"
         case .smart: return "sparkles"
         case .devices: return "dot.radiowaves.left.and.right"
-        case .awake: return "cup.and.saucer"
+        case .awake: return "cup.and.saucer.fill"
         case .automation: return "clock.arrow.2.circlepath"
-        case .insights: return "chart.bar"
-        case .shortcuts: return "keyboard"
-        case .about: return "info.circle"
+        case .insights: return "chart.bar.fill"
+        case .shortcuts: return "keyboard.fill"
+        case .about: return "info.circle.fill"
         }
     }
 }
@@ -96,15 +112,15 @@ struct SettingsView: View {
             .background(RoundedRectangle(cornerRadius: 7).fill(Color.primary.opacity(0.06)))
             .padding(.horizontal, 10).padding(.top, 12).padding(.bottom, 6)
             ScrollView {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
+                    identity
+                    // Like System Settings: groups set apart by space, not by headings.
                     ForEach(visibleGroups, id: \.0) { group in
-                        Text(group.0.uppercased())
-                            .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
-                            .padding(.horizontal, 12).padding(.top, 12).padding(.bottom, 2)
+                        Spacer().frame(height: 12)
                         ForEach(group.1) { tab in sidebarRow(tab) }
                     }
                 }
-                .padding(.horizontal, 8).padding(.bottom, 12)
+                .padding(.horizontal, 10).padding(.bottom, 12)
             }
             Divider()
             Toggle("Show all settings", isOn: $store.settings.showAllSettings)
@@ -133,16 +149,43 @@ struct SettingsView: View {
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: tab.symbol)
-                    .frame(width: 18)
-                    .foregroundStyle(selected ? Color.white : Color.accentColor)
-                Text(tab.title).foregroundStyle(selected ? Color.white : Color.primary)
+                    .font(.system(size: 11.5, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 22, height: 22)
+                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(tab.badge.gradient))
+                    .accessibilityHidden(true)
+                Text(tab.title).font(.system(size: 13)).foregroundStyle(selected ? Color.white : Color.primary)
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 8).padding(.vertical, 5)
-            .background(RoundedRectangle(cornerRadius: 6).fill(selected ? Color.accentColor : Color.clear))
+            .padding(.horizontal, 6).padding(.vertical, 4)
+            .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(selected ? Color.accentColor : Color.clear))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    /// The top of the sidebar, like the Apple Account row in System Settings: the app, its version
+    /// and whether it's running. Opens About.
+    private var identity: some View {
+        Button {
+            navigation.tab = .about
+            query = ""
+        } label: {
+            HStack(spacing: 10) {
+                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 38, height: 38).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(Brand.name).font(.system(size: 13, weight: .semibold))
+                    Text(isPaused() ? "Paused · \(Bundle.main.shortVersion)" : "Running · \(Bundle.main.shortVersion)")
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(8)
+            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color.primary.opacity(navigation.tab == .about ? 0.1 : 0.05)))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.top, 6)
     }
 
     @ViewBuilder

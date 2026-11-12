@@ -374,37 +374,28 @@ struct HomePage: View {
         .buttonStyle(PressStyle())
     }
 
+    /// Control Centre's pattern: the round icon switches it on or off; the rest of the tile, with
+    /// its › , opens its options. Nothing hidden behind a right-click.
     private var controls: some View {
         let awakeOn = context.awake.isOn()
         let eveningOn = store.settings.eveningOn || context.isEveningOn()
         let focusOn = more.isFocusOn()
-        return HStack(spacing: 4) {
-            RoundToggle(title: "Stay Awake", systemImage: "cup.and.saucer.fill", isOn: awakeOn, tint: Tone.warm) {
-                awakeOn ? context.awake.end() : context.awake.start(store.settings.awakeDefaultMinutes)
-                settle()
-            }
-            .contextMenu { Button("Stay Awake Options…") { nav.push(.awake) } }
-            .help("Click to turn on or off · right-click for options")
-            RoundToggle(title: "Evening", systemImage: "moon.fill", isOn: eveningOn, tint: Tone.warm) {
-                store.settings.eveningOn.toggle()
-                settle()
-            }
-            .contextMenu { Button("Evening Mode Options…") { nav.push(.evening) } }
-            .help("Click to turn on or off · right-click for options")
-            RoundToggle(title: "Focus", systemImage: "scope", isOn: focusOn) {
-                more.toggleFocus()
-                settle()
-            }
-            .help("Dim everything but this slide")
+        return LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible())], spacing: 8) {
+            ControlTile(title: "Stay Awake", status: awakeOn ? context.awake.status() : "Off", systemImage: "cup.and.saucer.fill",
+                        isOn: awakeOn, tint: Tone.warm,
+                        toggle: { awakeOn ? context.awake.end() : context.awake.start(store.settings.awakeDefaultMinutes); settle() },
+                        open: { nav.push(.awake) })
+            ControlTile(title: "Evening", status: eveningOn ? "On" : "Off", systemImage: "moon.fill", isOn: eveningOn, tint: Tone.warm,
+                        toggle: { store.settings.eveningOn.toggle(); settle() },
+                        open: { nav.push(.evening) })
+            ControlTile(title: "Focus", status: focusOn ? "This slide only" : "Off", systemImage: "scope", isOn: focusOn, tint: Tone.blue,
+                        toggle: { more.toggleFocus(); settle() }, open: nil)
             if PowerWatch.hasBattery {
-                RoundToggle(title: "Low Power", systemImage: "leaf.fill", isOn: power.battery.lowPowerMode, tint: Tone.ok) {
-                    power.setLowPowerMode(!power.battery.lowPowerMode)
-                }
-                .help("macOS asks for your password to change it")
+                ControlTile(title: "Low Power", status: power.battery.lowPowerMode ? "On" : "Off", systemImage: "leaf.fill",
+                            isOn: power.battery.lowPowerMode, tint: Tone.ok,
+                            toggle: { power.setLowPowerMode(!power.battery.lowPowerMode) }, open: { nav.push(.battery) })
             }
         }
-        .padding(.vertical, 2)
-        .tile(padding: 10)
     }
 
     private var layoutsRow: some View {
@@ -455,6 +446,53 @@ struct HomePage: View {
     static func clock(_ minutes: Int?) -> String {
         guard let minutes, minutes > 0 else { return "—" }
         return String(format: "%d:%02d", minutes / 60, minutes % 60)
+    }
+}
+
+/// One switch on Home, as in Control Centre: a round icon that switches it, and a name and state
+/// that open its page (with a › so you can see there's more).
+struct ControlTile: View {
+    let title: String
+    let status: String
+    let systemImage: String
+    let isOn: Bool
+    var tint: Color = Tone.blue
+    let toggle: () -> Void
+    let open: (() -> Void)?
+
+    var body: some View {
+        HStack(spacing: 9) {
+            Button(action: toggle) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(isOn ? Color.white : Color.primary)
+                    .frame(width: 30, height: 30)
+                    .background(Circle().fill(isOn ? tint : Color.primary.opacity(0.1)))
+                    .animation(Motion.pop, value: isOn)
+            }
+            .buttonStyle(PressStyle())
+            .accessibilityLabel(Text("\(title), \(isOn ? "on" : "off")"))
+            .help(isOn ? "Turn off" : "Turn on")
+            Button { (open ?? toggle)() } label: {
+                HStack(spacing: 4) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(title).font(.system(size: 12.5, weight: .semibold)).lineLimit(1)
+                        Text(status).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                    if open != nil {
+                        Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold)).foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
+                    }
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(open == nil ? "\(title): \(status)" : "\(title) options"))
+        }
+        .padding(.horizontal, 9).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(0.06)))
     }
 }
 

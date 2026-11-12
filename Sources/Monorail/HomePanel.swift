@@ -321,6 +321,7 @@ struct HomePage: View {
                     Text(paused.value ? "· paused" : "· \(map.tiles.count) slide\(map.tiles.count == 1 ? "" : "s")")
                         .font(.system(size: 11)).foregroundStyle(paused.value ? Tone.ok : Color.secondary.opacity(0.7))
                     Spacer()
+                    resetButton
                     pauseButton
                 } else {
                     Text("Windows").font(.system(size: 13, weight: .semibold))
@@ -352,6 +353,19 @@ struct HomePage: View {
             }
         }
         .tile()
+    }
+
+    /// Put windows of the same app back together, as in the first popover.
+    private var resetButton: some View {
+        Button(action: context.resetPairs) {
+            Image(systemName: "wand.and.stars")
+                .font(.system(size: 11, weight: .semibold))
+                .frame(width: 26, height: 22)
+                .background(Capsule().fill(Color.primary.opacity(0.1)))
+        }
+        .buttonStyle(PressStyle())
+        .accessibilityLabel("Reset to smart pairs")
+        .help("Reset to smart pairs: windows of the same app together")
     }
 
     /// Pause or resume tiling, right on the Windows card, as in the first popover.

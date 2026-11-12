@@ -393,6 +393,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             .sink { [weak self] _ in self?.updateStatusItem() }
             .store(in: &subscriptions)
         popover.updater = updater
+        updater.showUpdate = { [weak self] in
+            guard let self, let button = self.statusItem?.button else { return }
+            self.popover.toggle(relativeTo: button, page: .whatsNew)
+        }
         engine.onShowSwitcher = { [weak self] in self?.switcher.toggle() }
         engine.onShowOverview = { [weak self] in self?.overview.toggle() }
         engine.onNotice = { [weak self] text in
@@ -2091,8 +2095,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // After an update: what changed. (Not on a first install.)
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         if store.settings.hasCompletedOnboarding, !version.isEmpty, store.settings.lastSeenVersion != version {
+            // One notice, then What's New only for a release with something new to show.
+            toast.show("Updated to Monorail \(version)")
             whatsNew.store = store
-            whatsNew.show(version: version)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in self?.whatsNew.showIfNotable(version: version) }
         }
         if store.settings.lastSeenVersion != version { store.settings.lastSeenVersion = version }
         updateStatusItem()
@@ -3673,27 +3679,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         present(settingsWindow!)
     }
 
+    /// Closes a window by shrinking it into the Monorail icon in the menu bar, so you see
+    /// where Monorail lives. Just closes with Reduce Motion on.
+    private func shrinkIntoMenuBar(_ window: NSWindow?) {
+        guard let window else { return }
+        guard !Motion.reduced, let button = statusItem?.button, let bar = button.window else {
+            window.close()
+            return
+        }
+        let icon = bar.convertToScreen(button.convert(button.bounds, to: nil))
+        let original = window.frame
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.45
+            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.4, 0, 0.2, 1)
+            window.animator().setFrame(NSRect(x: icon.midX - 20, y: icon.midY - 14, width: 40, height: 28), display: true)
+            window.animator().alphaValue = 0
+        }, completionHandler: {
+            window.close()
+            window.alphaValue = 1
+            window.setFrame(original, display: false)
+        })
+    }
+
     private func showWelcome() {
         if welcomeWindow == nil {
             var view = WelcomeView(store: store, practice: practice) { [weak self] in
                 guard let self else { return }
                 self.store.settings.hasCompletedOnboarding = true
                 self.closeDemoWindows()
-                self.welcomeWindow?.close()
+                self.shrinkIntoMenuBar(self.welcomeWindow)
             }
             view.practiceWindows = { [weak self] open in
                 if open { self?.openDemoWindows() } else { self?.closeDemoWindows() }
             }
-            // Never taller than the screen: on a laptop the tour scrolls inside its window
-            // instead of running under the Dock.
-            let ideal = NSHostingView(rootView: view).fittingSize.height
-            let room = (NSScreen.main ?? NSScreen.screens.first)?.visibleFrame.height ?? 800
-            let height = min(ideal, max(room - 60, 400))
-            let root = ScrollView(.vertical) { view }.frame(width: 560, height: height)
-            let window = NSWindow(contentViewController: NSHostingController(rootView: root))
+            // One page at a time, in a window with no visible title bar, like a new Apple app.
+            let window = NSWindow(contentViewController: NSHostingController(rootView: view))
             window.title = "Welcome to \(Brand.full)"
             window.keepInFront()
-            window.styleMask = [.titled, .closable]
+            window.styleMask = [.titled, .closable, .fullSizeContentView]
+            window.titlebarAppearsTransparent = true
+            window.titleVisibility = .hidden
+            window.isMovableByWindowBackground = true
             window.isReleasedWhenClosed = false
             window.center()
             welcomeWindow = window

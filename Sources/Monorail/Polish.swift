@@ -60,6 +60,21 @@ final class WhatsNew {
         else { return }
         let notes = Self.section(for: version, in: changelog)
         guard !notes.isEmpty else { return }
+        showNotes(notes, version: version)
+    }
+
+    /// After an update: the window only for releases with something new to show; small fixes
+    /// stay quiet. Either way it's in the menu under What's New.
+    func showIfNotable(version: String) {
+        guard let url = Bundle.main.url(forResource: "CHANGELOG", withExtension: "md"),
+            let changelog = try? String(contentsOf: url, encoding: .utf8)
+        else { return }
+        let notes = Self.section(for: version, in: changelog)
+        guard ReleaseNotes.isNotable(notes) else { return }
+        showNotes(notes, version: version)
+    }
+
+    private func showNotes(_ notes: [String], version: String) {
         guard let store else { return }
         let view = WhatsNewView(version: version, lines: notes, store: store, offersSwitches: true,
                                 tryAction: { [weak self] action in
@@ -69,7 +84,10 @@ final class WhatsNew {
         let window = NSWindow(contentViewController: NSHostingController(rootView: view))
         window.title = "What’s New in \(Brand.full) \(version)"
         window.keepInFront()
-        window.styleMask = [.titled, .closable]
+        window.styleMask = [.titled, .closable, .fullSizeContentView]
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
         window.center()
         self.window = window
@@ -118,69 +136,61 @@ struct WhatsNewView: View {
         ("bell.badge", "AI agent alerts", "Run an AI coding assistant in a terminal: hear a chime when it waits for you.", .commandPalette),
     ]
 
+    /// Apple's "What's New": a big title, a few rows with coloured icons rising in one by one,
+    /// the rest folded away, and one blue button.
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 14) {
-                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 56, height: 56)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("What’s new in \(version)").font(.title2).fontWeight(.semibold)
-                    Text(Brand.full).foregroundStyle(.secondary)
-                }
-            }
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(Array(Self.highlights.enumerated()), id: \.offset) { _, item in
-                    VStack(alignment: .leading, spacing: 6) {
-                        Label(item.title, systemImage: item.symbol).font(.headline)
-                        Text(item.text).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                        Button("Try it") { tryAction(item.action) }.controlSize(.small)
-                    }
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.08)))
+        let rows = ReleaseNotes.highlights(lines, limit: 4)
+        VStack(spacing: 0) {
+            Text("What’s New in \(Brand.name)").font(.system(size: 28, weight: .bold)).multilineTextAlignment(.center)
+            Text("Version \(version)").font(.system(size: 12)).foregroundStyle(.secondary).padding(.top, 3).padding(.bottom, 24)
+            VStack(alignment: .leading, spacing: 18) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                    FeatureRow(symbol: ReleaseStyle.symbol(row.kind), tint: ReleaseStyle.tint(row.kind), title: row.title, text: row.text,
+                               delay: Double(index) * 0.08)
                 }
             }
             if offersSwitches, !newSwitches.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Try the new features").font(.headline)
+                    Text("Try the new features").font(.system(size: 13, weight: .semibold))
                     ForEach(newSwitches, id: \.self) { item in
                         Toggle(item.title, isOn: binding(item)).toggleStyle(.checkbox)
                     }
                     Text("They stay off unless you tick them. Change them any time in Settings.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.08)))
+                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.05)))
+                .padding(.top, 18)
             }
-            ScrollView {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                        if line.hasPrefix("### ") {
-                            Text(line.dropFirst(4)).font(.headline).padding(.top, 6)
-                        } else {
-                            let text = line.hasPrefix("- ") ? String(line.dropFirst(2)) : line
-                            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                Text("•").foregroundStyle(.secondary)
+            DisclosureGroup("All changes in \(version)") {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                            if line.hasPrefix("### ") {
+                                Text(line.dropFirst(4)).font(.system(size: 12, weight: .semibold)).padding(.top, 4)
+                            } else {
+                                let text = line.hasPrefix("- ") ? String(line.dropFirst(2)) : line
                                 Text((try? AttributedString(markdown: text)) ?? AttributedString(text))
-                                    .fixedSize(horizontal: false, vertical: true)
+                                    .font(.system(size: 12)).fixedSize(horizontal: false, vertical: true)
                             }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: 160)
             }
-            .frame(height: 240)
-            HStack {
-                Link("Full changelog", destination: URL(string: "https://monorail.ashforde.org/changelog/")!)
-                Spacer()
-                if offersSwitches, !newSwitches.isEmpty {
-                    Button("Not now", action: close).keyboardShortcut(.cancelAction)
-                }
-                Button("Continue", action: close).keyboardShortcut(.defaultAction)
-            }
+            .font(.system(size: 12))
+            .padding(.top, 18)
+            Button(action: close) { Text("Continue").frame(maxWidth: .infinity) }
+                .buttonStyle(.borderedProminent).controlSize(.large)
+                .keyboardShortcut(.defaultAction)
+                .padding(.top, 22)
+            Link("Full changelog", destination: URL(string: "https://monorail.ashforde.org/changelog/")!)
+                .font(.system(size: 11)).padding(.top, 10)
         }
-        .padding(22)
-        .frame(width: 620)
+        .padding(.horizontal, 44).padding(.top, 40).padding(.bottom, 20)
+        .frame(width: 500)
     }
 }
 

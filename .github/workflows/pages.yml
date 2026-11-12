@@ -73,6 +73,8 @@ jobs:
         # headings, nested bullet lists, paragraphs, **bold**, [links](…) and `code`, all HTML-escaped.
         run: |
           mkdir -p public/changelog
+          # The raw file too: the app reads a new version's notes from it before installing.
+          cp CHANGELOG.md public/changelog/CHANGELOG.md
           python3 - CHANGELOG.md public/changelog/index.html <<'PY'
           import datetime, html, re, sys
 

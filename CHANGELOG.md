@@ -14,6 +14,10 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **The menu bar icon stays the same.** Only the Monorail icon shows, always the same shape; its colour says what's on: the menu bar's own colour while running, grey while paused, orange while Stay Awake is on, red while recording. The slide position, timers and the cup moved into the panel, so the menu bar stays quiet.
 - **A calmer first run.** The welcome window opens with a large icon, the name and one sentence, and the Accessibility tick springs in once it's allowed.
 
+- **A first run like a new Apple app.** Six short pages, one idea each: a hello where the icon springs in with a breathing glow, how it works in four rows that rise in, the one permission with a tick that appears the moment it's allowed, how you work, a try-it page, and "You're all set". Pages slide with a spring and the dots stretch. At the end the window shrinks into the menu bar icon, so you see where Monorail lives.
+- **Updates that never interrupt.** A new version waits as one quiet card at the top of the panel, with what's in it, **Update Now**, **Tonight** (installs between 1 and 5 am while the Mac is idle) and **What's New**, which opens the release notes as a page in the panel. No more alert when an update is found. While it installs, the card shows each step and a small notice slides in at the top right if the panel is closed. Your windows stay put.
+- **What's New, Apple-style.** After a big update: a large title, up to four rows with coloured icons rising in, the full list folded away, and one Continue button. Small fixes only show a short "Updated to Monorail" notice.
+
 ### Removed
 - The menu bar position styles (pips, dots, numbers) and the options to show the app's name or window title beside the icon.
 

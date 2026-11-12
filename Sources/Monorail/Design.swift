@@ -271,4 +271,53 @@ struct PageHeader: View {
         .frame(height: 22)
     }
 }
+/// A row with a coloured icon, a bold title and a line under it, rising in after `delay`:
+/// the rows of an Apple "What's New" or welcome screen.
+struct FeatureRow: View {
+    let symbol: String
+    let tint: Color
+    let title: String
+    let text: String
+    var delay: Double = 0
+    @State private var shown = false
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: symbol)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 36, height: 36)
+                .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(tint))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.system(size: 13, weight: .semibold))
+                Text(text).font(.system(size: 12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .opacity(shown ? 1 : 0)
+        .offset(y: shown ? 0 : 10)
+        .onAppear { withAnimation(Motion.pop.delay(Motion.reduced ? 0 : 0.15 + delay)) { shown = true } }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Page dots; the current one stretches into a short bar.
+struct PageDots: View {
+    let count: Int
+    let current: Int
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<count, id: \.self) { index in
+                Capsule()
+                    .fill(index == current ? Color.primary.opacity(0.6) : Color.primary.opacity(0.18))
+                    .frame(width: index == current ? 16 : 6, height: 6)
+            }
+        }
+        .animation(Motion.page, value: current)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Page \(current + 1) of \(count)"))
+    }
+}
 #endif

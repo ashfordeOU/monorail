@@ -122,21 +122,149 @@ struct WelcomeView: View {
         }
     }
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            // A new Apple app's first screen: a large icon, the name, one sentence.
-            VStack(spacing: 8) {
-                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 84, height: 84)
-                    .shadow(color: .black.opacity(0.15), radius: 10, y: 6)
-                    .accessibilityHidden(true)
-                Text("Welcome to \(Brand.name)").font(.system(size: 26, weight: .bold))
-                Text("Your windows sit side by side on one endless strip. Nothing shrinks, nothing overlaps.")
-                    .font(.system(size: 13)).foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center).frame(maxWidth: 360)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.top, 6)
+    // MARK: Pages
 
+    /// The tour as pages, one idea each, like a new Apple app: hello, how it works, the one
+    /// permission, how you work, try it, and done. Pages slide with a spring; the dots stretch.
+    @State private var page = 0
+    @State private var forward = true
+    @State private var appeared = false
+    @State private var breathe = false
+    @State private var finished = false
+    private static let pageCount = 6
+
+    private func go(_ target: Int) {
+        guard target != page, (0..<Self.pageCount).contains(target) else { return }
+        forward = target > page
+        // One turn of the run loop later, so the page leaving slides the right way.
+        DispatchQueue.main.async { withAnimation(Motion.page) { page = target } }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack(alignment: .top) {
+                pageView(page)
+                    .id(page)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: forward ? .trailing : .leading).combined(with: .opacity),
+                        removal: .move(edge: forward ? .leading : .trailing).combined(with: .opacity)))
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .clipped()
+            footer
+        }
+        .padding(.horizontal, 28).padding(.top, 34).padding(.bottom, 22)
+        .frame(width: 560, height: 600)
+        .onReceive(timer) { _ in trusted = Accessibility.isTrusted(prompt: false) }
+    }
+
+    @ViewBuilder private func pageView(_ index: Int) -> some View {
+        switch index {
+        case 0: hello
+        case 1: howItWorks
+        case 2: permissionSection
+        case 3: ScrollView { VStack(alignment: .leading, spacing: 14) { startSection; extrasStep } }
+        case 4: ScrollView { VStack(alignment: .leading, spacing: 14) { aroundSection; practiceSection; keeperSection } }
+        default: done
+        }
+    }
+
+    private var hello: some View {
+        VStack(spacing: 10) {
+            Spacer(minLength: 24)
+            ZStack {
+                Circle()
+                    .fill(RadialGradient(colors: [Color(red: 1, green: 0.54, blue: 0.36).opacity(0.38), Color(red: 0.91, green: 0.26, blue: 0.48).opacity(0.12), .clear],
+                                         center: .center, startRadius: 20, endRadius: 120))
+                    .frame(width: 240, height: 240)
+                    .scaleEffect(breathe ? 1.06 : 0.94)
+                    .opacity(appeared ? 1 : 0)
+                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 112, height: 112)
+                    .shadow(color: .black.opacity(0.18), radius: 14, y: 8)
+                    .scaleEffect(appeared ? 1 : 0.6)
+                    .opacity(appeared ? 1 : 0)
+            }
+            .frame(height: 200)
+            .accessibilityHidden(true)
+            Text("Welcome to \(Brand.name)").font(.system(size: 28, weight: .bold))
+                .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 8)
+            Text("Your windows ride one strip that runs past the edges of your screen. Nothing you’re using ever shrinks.")
+                .font(.system(size: 13)).foregroundStyle(.secondary)
+                .multilineTextAlignment(.center).frame(maxWidth: 380)
+                .opacity(appeared ? 1 : 0).offset(y: appeared ? 0 : 8)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .onAppear {
+            withAnimation(Motion.reduced ? .easeOut(duration: 0.1) : .spring(response: 0.7, dampingFraction: 0.68).delay(0.1)) { appeared = true }
+            if !Motion.reduced {
+                withAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true)) { breathe = true }
+            }
+        }
+    }
+
+    private var howItWorks: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Here’s how it works").font(.system(size: 26, weight: .bold)).frame(maxWidth: .infinity).padding(.bottom, 6)
+            FeatureRow(symbol: "rectangle.split.3x1", tint: Tone.blue, title: "One endless strip",
+                       text: "New windows slide in beside you. \(shortcut(.focusLeft)) and \(shortcut(.focusRight)) glide along it.", delay: 0)
+            FeatureRow(symbol: "square.grid.2x2.fill", tint: Color(red: 0.91, green: 0.33, blue: 0.45), title: "Everything in one panel",
+                       text: "Click the menu bar icon for your windows, battery and switches.", delay: 0.08)
+            FeatureRow(symbol: "bolt.fill", tint: Tone.good, title: "Knows your battery",
+                       text: "Three rings, and the app to quit when it drains fast.", delay: 0.16)
+            FeatureRow(symbol: "sparkles", tint: Color(nsColor: .systemPurple), title: "Just say it",
+                       text: "“Slack and Mail side by side.” Press \(shortcut(.commandPalette)) and type.", delay: 0.24)
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+    }
+
+    private var done: some View {
+        VStack(spacing: 12) {
+            Spacer(minLength: 40)
+            Image(systemName: "checkmark").font(.system(size: 40, weight: .bold)).foregroundStyle(.white)
+                .frame(width: 88, height: 88)
+                .background(RoundedRectangle(cornerRadius: 21, style: .continuous).fill(Tone.good))
+                .shadow(color: Tone.good.opacity(0.35), radius: 14, y: 8)
+                .scaleEffect(finished ? 1 : 0.5).opacity(finished ? 1 : 0)
+                .accessibilityHidden(true)
+            Text("You’re all set").font(.system(size: 28, weight: .bold))
+            Text("Monorail lives in the menu bar. Click its icon for everything; it turns grey while paused and orange while your Mac stays awake.")
+                .font(.system(size: 13)).foregroundStyle(.secondary)
+                .multilineTextAlignment(.center).frame(maxWidth: 380)
+            Spacer()
+            Button { onFinish() } label: {
+                Text(trusted ? "Start Using Monorail" : L("Continue without permission")).frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent).controlSize(.large)
+            .keyboardShortcut(.defaultAction)
+        }
+        .frame(maxWidth: .infinity)
+        .onAppear {
+            finished = false
+            withAnimation(Motion.reduced ? .easeOut(duration: 0.1) : .spring(response: 0.5, dampingFraction: 0.6).delay(0.1)) { finished = true }
+        }
+    }
+
+    private var footer: some View {
+        HStack(spacing: 8) {
+            PageDots(count: Self.pageCount, current: page)
+            Spacer()
+            if page > 0, page < Self.pageCount - 1 {
+                Button("Back") { go(page - 1) }.controlSize(.large)
+            }
+            if page < Self.pageCount - 1 {
+                Button(page == 2 && !trusted ? L("Continue without permission") : "Continue") { go(page + 1) }
+                    .buttonStyle(.borderedProminent).controlSize(.large)
+                    .keyboardShortcut(.defaultAction)
+            }
+        }
+        .frame(height: 32)
+        .padding(.top, 12)
+    }
+
+    private var permissionSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
             GroupBox {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: trusted ? "checkmark.seal.fill" : "lock.shield")
@@ -174,6 +302,11 @@ struct WelcomeView: View {
                 .padding(6)
             }
 
+        }
+    }
+
+    private var startSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
             GroupBox {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(L("2. Choose how you see your slides")).fontWeight(.medium)
@@ -222,8 +355,11 @@ struct WelcomeView: View {
                 .padding(6)
             }
 
-            extrasStep
+        }
+    }
 
+    private var aroundSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
             GroupBox {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(L("3. Get around")).fontWeight(.medium)
@@ -244,6 +380,11 @@ struct WelcomeView: View {
                 .padding(6)
             }
 
+        }
+    }
+
+    private var keeperSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
             if Companions.keeperDownloadable,
                 NSWorkspace.shared.urlForApplication(withBundleIdentifier: Companions.keeper) == nil
             {
@@ -267,6 +408,11 @@ struct WelcomeView: View {
                 }
             }
 
+        }
+    }
+
+    private var practiceSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
             GroupBox {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -294,17 +440,9 @@ struct WelcomeView: View {
                 .padding(6)
             }
 
-            HStack {
-                Text("Every shortcut can be changed in Settings.").font(.callout).foregroundStyle(.secondary)
-                Spacer()
-                Button(trusted ? L("Start sliding") : L("Continue without permission")) { onFinish() }
-                    .keyboardShortcut(.defaultAction)
-            }
         }
-        .padding(24)
-        .frame(width: 560)
-        .onReceive(timer) { _ in trusted = Accessibility.isTrusted(prompt: false) }
     }
+
 }
 
 /// One of the two ways to see your slides, drawn as a little screen.

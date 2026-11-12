@@ -8,7 +8,7 @@ import SwiftUI
 // which slides across and resizes to fit. ‹ goes back. Nothing opens on top of anything else.
 
 enum PanelPage: Hashable {
-    case home, battery, app(String), awake, evening, theme
+    case home, battery, app(String), awake, evening, theme, whatsNew
 }
 
 final class PanelNavigator: ObservableObject {
@@ -102,6 +102,8 @@ struct PanelRoot: View {
             subpage("Evening Mode") { EveningQuickControls(store: store, isOn: context.isEveningOn, openSettings: context.openEveningSettings) }
         case .theme:
             subpage("Theme") { ThemeQuickPicker(store: store) }
+        case .whatsNew:
+            UpdatePage(updater: updater, onBack: nav.pop)
         }
     }
 
@@ -179,8 +181,8 @@ struct HomePage: View {
 
     private func statusLine(_ plan: HomeLayout) -> some View {
         HStack(spacing: 7) {
-            Circle().fill(Tone.of(plan.tone)).frame(width: 8, height: 8)
-            Text(plan.title).font(.system(size: 13, weight: .semibold))
+            Circle().fill(updater.available != nil && plan.tone != .urgent ? Tone.blue : Tone.of(plan.tone)).frame(width: 8, height: 8)
+            Text(updater.isInstalling ? "Updating" : plan.title).font(.system(size: 13, weight: .semibold))
             Text(detail(plan)).font(.system(size: 11)).foregroundStyle(.tertiary).lineLimit(1)
             Spacer(minLength: 4)
             Group {
@@ -216,9 +218,8 @@ struct HomePage: View {
 
     private var notices: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let release = updater.available {
-                notice("arrow.down.circle.fill", Tone.blue, "Monorail \(release.version) is ready",
-                       "Installs and relaunches; your windows stay put", button: "Update") { updater.installAvailable() }
+            if updater.available != nil {
+                UpdateCard(updater: updater, openWhatsNew: { nav.push(.whatsNew) })
             }
             let clashes = more.clashCount()
             if clashes > 0 {
@@ -232,7 +233,8 @@ struct HomePage: View {
                 notice("rectangle.stack", .secondary, "Paused for Stage Manager", "Carries on when you turn it off", button: nil) {}
             }
         }
-        .tile(tint: Tone.ok)
+        // Blue when it's only an update, amber when something else needs you.
+        .tile(tint: more.clashCount() == 0 && !paused.value && !more.pausedForStageManager() ? Tone.blue : Tone.ok)
     }
 
     private func notice(_ icon: String, _ color: Color, _ title: String, _ subtitle: String, button: String?, action: @escaping () -> Void) -> some View {
@@ -465,6 +467,131 @@ struct ChipStyle: ButtonStyle {
             .background(Capsule().fill(Color.primary.opacity(configuration.isPressed ? 0.16 : 0.08)))
             .scaleEffect(configuration.isPressed && !Motion.reduced ? 0.96 : 1)
             .animation(Motion.pop, value: configuration.isPressed)
+    }
+}
+
+// MARK: - Updates
+
+/// An update, waiting quietly at the top of Home: the version, one line about it, Update Now,
+/// Tonight and What's New. While installing, the icon turns in a ring and the stage shows.
+struct UpdateCard: View {
+    @ObservedObject var updater: Updater
+    let openWhatsNew: () -> Void
+
+    var body: some View {
+        if let release = updater.available {
+            VStack(alignment: .leading, spacing: 9) {
+                HStack(spacing: 11) {
+                    ZStack(alignment: .bottomTrailing) {
+                        Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 38, height: 38)
+                        if updater.isInstalling {
+                            Circle().trim(from: 0, to: 0.3).stroke(Tone.blue, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                                .frame(width: 46, height: 46).offset(x: 4, y: 4)
+                                .rotationEffect(.degrees(updater.isInstalling ? 360 : 0))
+                                .animation(Motion.reduced ? nil : .linear(duration: 1).repeatForever(autoreverses: false), value: updater.isInstalling)
+                        } else {
+                            Image(systemName: "arrow.down.circle.fill").font(.system(size: 15)).foregroundStyle(.white, Tone.blue)
+                                .offset(x: 4, y: 4)
+                        }
+                    }
+                    .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(updater.isInstalling ? "Installing Monorail \(release.version)" : "Monorail \(release.version)")
+                            .font(.system(size: 13, weight: .semibold))
+                        Text(subtitle).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
+                    }
+                    Spacer(minLength: 0)
+                }
+                if !updater.isInstalling {
+                    HStack(spacing: 6) {
+                        Button("Update Now") { updater.installAvailable() }.buttonStyle(.borderedProminent)
+                        if updater.installsTonight {
+                            Button("Not Tonight") { updater.cancelTonight() }
+                        } else {
+                            Button("Tonight") { updater.installTonight() }.help("Installs between 1 and 5 am while nobody's using the Mac")
+                        }
+                        Spacer()
+                        Button("What's New") { openWhatsNew() }.buttonStyle(.link)
+                    }
+                    .controlSize(.small)
+                }
+                Text(updater.isInstalling ? "Monorail restarts by itself. Nothing on your screen moves."
+                     : updater.installsTonight ? "Installs tonight while your Mac is idle." : "About ten seconds. Your windows stay exactly where they are.")
+                    .font(.system(size: 11)).foregroundStyle(.tertiary)
+            }
+            .transition(.opacity)
+        }
+    }
+
+    private var subtitle: String {
+        if updater.isInstalling { return (updater.stage ?? "Installing") + "…" }
+        let titles = ReleaseNotes.highlights(updater.notes, limit: 3).map(\.title)
+        return titles.isEmpty ? "A new version is ready" : titles.joined(separator: " · ")
+    }
+}
+
+/// What's New for a waiting update, as a page in the panel: the icon, the version and three rows.
+struct UpdatePage: View {
+    @ObservedObject var updater: Updater
+    let onBack: () -> Void
+
+    var body: some View {
+        let rows = ReleaseNotes.highlights(updater.notes, limit: 4)
+        VStack(alignment: .leading, spacing: 12) {
+            PageHeader(back: "Monorail", title: "What's New", onBack: onBack)
+            VStack(spacing: 4) {
+                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 52, height: 52).accessibilityHidden(true)
+                Text("Monorail \(updater.available?.version ?? updater.currentVersion)").font(.system(size: 15, weight: .semibold))
+            }
+            .frame(maxWidth: .infinity)
+            if rows.isEmpty {
+                Text("Reading the release notes…").font(.system(size: 12)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
+            }
+            ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                FeatureRow(symbol: ReleaseStyle.symbol(row.kind), tint: ReleaseStyle.tint(row.kind), title: row.title, text: row.text,
+                           delay: Double(index) * 0.07)
+            }
+            HStack {
+                if updater.available != nil, !updater.isInstalling {
+                    Button { updater.installAvailable() } label: { Text("Update Now").frame(maxWidth: .infinity) }
+                        .buttonStyle(.borderedProminent)
+                }
+                Link("All changes", destination: Updater.releasesURL).font(.system(size: 11))
+            }
+            .controlSize(.regular)
+        }
+        .padding(12)
+    }
+}
+
+/// The icon and colour for each kind of change.
+enum ReleaseStyle {
+    static func symbol(_ kind: ReleaseNotes.Kind) -> String {
+        switch kind {
+        case .panel: return "square.grid.2x2.fill"
+        case .battery: return "bolt.fill"
+        case .menuBar: return "menubar.rectangle"
+        case .agents: return "sparkles"
+        case .keyboard: return "keyboard"
+        case .windows: return "rectangle.split.3x1"
+        case .privacy: return "eye.slash"
+        case .welcome: return "hand.wave.fill"
+        case .general: return "star.fill"
+        }
+    }
+
+    static func tint(_ kind: ReleaseNotes.Kind) -> Color {
+        switch kind {
+        case .panel: return Color(red: 0.91, green: 0.33, blue: 0.45)
+        case .battery: return Tone.good
+        case .menuBar: return Color(nsColor: .systemGray)
+        case .agents: return Color(nsColor: .systemPurple)
+        case .keyboard: return Color(nsColor: .systemIndigo)
+        case .windows: return Tone.blue
+        case .privacy: return Color(nsColor: .systemTeal)
+        case .welcome: return Tone.warm
+        case .general: return Tone.ok
+        }
     }
 }
 

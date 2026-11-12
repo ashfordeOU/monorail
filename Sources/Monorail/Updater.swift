@@ -31,6 +31,16 @@ final class Updater: ObservableObject {
     /// A newer release, once one has been found.
     @Published private(set) var available: Release?
     @Published private(set) var isInstalling = false
+    /// What an install is doing now ("Downloading", "Checking", "Restarting"), for the panel.
+    @Published private(set) var stage: String?
+    /// The new version's notes from the website's changelog, once read.
+    @Published private(set) var notes: [String] = []
+    /// Set when "Tonight" was chosen: installs between 1 and 5 am while the Mac is idle.
+    @Published private(set) var installsTonight = false
+    /// Opens the panel at the update, for checks you asked for.
+    var showUpdate: () -> Void = {}
+    private static let changelogURL = URL(string: "https://monorail.ashforde.org/changelog/CHANGELOG.md")!
+    private var tonightTimer: Timer?
 
     /// Install without asking when a check finds a new version.
     var installAutomatically = false
@@ -84,12 +94,14 @@ final class Updater: ObservableObject {
                     return
                 }
                 self.available = release
-                let skipped = UserDefaults.standard.string(forKey: Self.skippedKey) == release.version
+                self.fetchNotes(for: release.version)
                 if self.installAutomatically && !userInitiated {
                     self.install(release)
-                } else if userInitiated || !skipped {
-                    self.offer(release)
+                } else if userInitiated {
+                    // No alert: the panel opens at the update, with what's new and Update Now.
+                    self.showUpdate()
                 }
+                // Found by itself, it waits quietly as a card at the top of the panel.
             }
         }
     }
@@ -140,20 +152,38 @@ final class Updater: ObservableObject {
         if let available { install(available) } else { check(userInitiated: true) }
     }
 
-    private func offer(_ release: Release) {
-        let alert = NSAlert()
-        alert.messageText = "Monorail \(release.version) is available"
-        alert.informativeText =
-            "You have version \(currentVersion). Monorail can download and install it for you, then reopen with your windows where they are."
-        alert.addButton(withTitle: "Install and Relaunch")
-        alert.addButton(withTitle: "Skip This Version")
-        alert.addButton(withTitle: "Later")
-        NSApp.activate(ignoringOtherApps: true)
-        switch alert.runModal() {
-        case .alertFirstButtonReturn: install(release)
-        case .alertSecondButtonReturn: UserDefaults.standard.set(release.version, forKey: Self.skippedKey)
-        default: break
+    /// Reads the new version's part of the changelog, for What's New before installing.
+    private func fetchNotes(for version: String) {
+        notes = []
+        var request = URLRequest(url: Self.changelogURL, timeoutInterval: 15)
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, _ in
+            guard let data, let text = String(data: data, encoding: .utf8) else { return }
+            let lines = ReleaseNotes.section(version, in: text)
+            DispatchQueue.main.async { self?.notes = lines }
+        }.resume()
+    }
+
+    /// "Tonight": installs between 1 and 5 am once nobody has touched the Mac for 15 minutes,
+    /// so nothing restarts while you work.
+    func installTonight() {
+        guard available != nil else { return }
+        installsTonight = true
+        tonightTimer?.invalidate()
+        tonightTimer = Timer.every(600) { [weak self] _ in
+            guard let self, let release = self.available, !self.isInstalling else { return }
+            let hour = Calendar.current.component(.hour, from: Date())
+            let idle = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: CGEventType(rawValue: ~0)!)
+            guard (1...4).contains(hour), idle > 900 else { return }
+            self.tonightTimer?.invalidate()
+            self.install(release)
         }
+    }
+
+    func cancelTonight() {
+        installsTonight = false
+        tonightTimer?.invalidate()
+        tonightTimer = nil
     }
 
     // MARK: - Installing
@@ -184,14 +214,20 @@ final class Updater: ObservableObject {
             return
         }
         isInstalling = true
-        hud.show("Updating Monorail to \(release.version)…")
+        stage = "Downloading"
+        hud.show("Updating to Monorail \(release.version)", detail: "Downloading…")
         DispatchQueue.global(qos: .userInitiated).async {
             do {
                 let app = try Self.downloadAndVerify(release)
-                DispatchQueue.main.async { self.relaunch(into: app, replacing: destination) }
+                DispatchQueue.main.async {
+                    self.stage = "Installing"
+                    self.hud.show("Updating to Monorail \(release.version)", detail: "Installing…")
+                    self.relaunch(into: app, replacing: destination)
+                }
             } catch {
                 DispatchQueue.main.async {
                     self.isInstalling = false
+                    self.stage = nil
                     self.hud.hide()
                     self.fail(error)
                 }
@@ -313,11 +349,13 @@ final class Updater: ObservableObject {
             try process.run()
         } catch {
             isInstalling = false
+            stage = nil
             hud.hide()
             fail(error)
             return
         }
-        hud.show("Restarting Monorail…")
+        stage = "Restarting"
+        hud.show("Restarting Monorail", detail: "Your windows stay where they are")
         willRelaunch()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { NSApp.terminate(nil) }
     }
@@ -341,30 +379,49 @@ final class Updater: ObservableObject {
     }
 }
 
-/// A small floating notice while an update downloads and installs.
+/// A small floating notice while an update installs, for when the panel is closed: the app icon
+/// with a turning ring, a title and a line under it, on glass. It slides down from the top.
 private final class UpdateHUD {
     private var panel: NSPanel?
     private let model = Model()
 
     final class Model: ObservableObject {
-        @Published var message = ""
+        @Published var title = ""
+        @Published var detail = ""
     }
 
-    func show(_ message: String) {
-        model.message = message
+    func show(_ title: String, detail: String) {
+        model.title = title
+        model.detail = detail
         let panel = self.panel ?? makePanel()
+        let firstShow = !panel.isVisible
         self.panel = panel
-        if let screen = NSScreen.main?.visibleFrame {
-            panel.setFrameOrigin(NSPoint(x: screen.midX - 170, y: screen.maxY - 120))
+        guard let screen = NSScreen.main?.visibleFrame else { return }
+        let target = NSPoint(x: screen.maxX - 340 - 16, y: screen.maxY - 72 - 12)
+        if firstShow {
+            panel.setFrameOrigin(NSPoint(x: target.x, y: target.y + (Motion.reduced ? 0 : 24)))
+            panel.alphaValue = 0
+            panel.orderFrontRegardless()
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = Motion.reduced ? 0.1 : 0.35
+                context.timingFunction = CAMediaTimingFunction(controlPoints: 0.3, 1.2, 0.4, 1)
+                panel.animator().setFrameOrigin(target)
+                panel.animator().alphaValue = 1
+            }
         }
-        panel.orderFrontRegardless()
     }
 
-    func hide() { panel?.orderOut(nil) }
+    func hide() {
+        guard let panel, panel.isVisible else { return }
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.2
+            panel.animator().alphaValue = 0
+        }, completionHandler: { panel.orderOut(nil) })
+    }
 
     private func makePanel() -> NSPanel {
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 340, height: 64),
+            contentRect: NSRect(x: 0, y: 0, width: 340, height: 72),
             styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -377,16 +434,31 @@ private final class UpdateHUD {
 
     private struct HUDView: View {
         @ObservedObject var model: Model
+        @State private var turning = false
 
         var body: some View {
             HStack(spacing: 12) {
-                ProgressView().controlSize(.small)
-                Text(model.message).font(.system(size: 13, weight: .medium))
+                ZStack {
+                    Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 30, height: 30)
+                    Circle().trim(from: 0, to: 0.28)
+                        .stroke(Tone.blue, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                        .frame(width: 40, height: 40)
+                        .rotationEffect(.degrees(turning ? 360 : 0))
+                        .animation(Motion.reduced ? nil : .linear(duration: 1).repeatForever(autoreverses: false), value: turning)
+                }
+                .frame(width: 42, height: 42)
+                .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(model.title).font(.system(size: 13, weight: .semibold))
+                    Text(model.detail).font(.system(size: 11)).foregroundStyle(.secondary)
+                }
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 18)
-            .frame(width: 340, height: 64)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .padding(.horizontal, 14)
+            .frame(width: 340, height: 72)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .onAppear { turning = true }
+            .accessibilityElement(children: .combine)
         }
     }
 }

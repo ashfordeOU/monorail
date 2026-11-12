@@ -72,6 +72,8 @@ the Product Hunt launch). It takes about 30 minutes. Note anything that's off an
 - [ ] Run `claude` or `codex` in Terminal: it appears under AI agents. `monorail battery` prints the same figures as JSON.
 - [ ] Settings → Apps → turn on hiding power-hungry apps; leave a busy app untouched for an hour on battery: it's hidden with a notice; plug in and it comes back.
 - [ ] The panel: Home → Battery → an app → ‹ back twice slides each way and the panel resizes smoothly; the round switches turn Stay Awake, Evening, Focus and Low Power on and off, and right-click opens their options; Layouts applies a saved layout; Search opens the command palette.
+- [ ] First run (reset with `defaults delete org.ashforde.monorail hasCompletedOnboarding` or a fresh user): six pages slide both ways with Continue and Back, the dots stretch, the Accessibility tick appears once allowed, and Start shrinks the window into the menu bar icon. With Reduce Motion on, it just closes.
+- [ ] Updates: with an older build installed, the panel shows the update card (no alert); What's New opens as a page with rows; Tonight changes to Not Tonight; Update Now shows Downloading → Installing → Restarting and the notice slides in at the top right; after the restart there's one "Updated to Monorail" notice, and the What's New window only for a release with Added or Changed items.
 - [ ] The menu bar icon keeps its shape: grey while paused, orange with Stay Awake on, red while recording; nothing else beside it.
 - [ ] Turn on Stage Manager: Monorail pauses with a notice and the panel shows “Paused for Stage Manager”; turn it off and tiling carries on.
 - [ ] Settings → Shortcuts → Clashes: set a Monorail shortcut to ⌃← (Move left a space) and it's listed; **Use …** swaps it for a free one.

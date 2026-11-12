@@ -6,6 +6,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-12
+
 ### Changed
 - **One panel, pages inside it.** Clicking the Monorail icon opens a single panel that turns into each page and back, like Control Centre: Battery, then an app, then ‹ back. It slides with a spring and grows or shrinks to fit, so nothing opens on top of anything else. ⚡ in the menu bar opens the same panel straight at Battery.
 - **A smart home page.** Everything at a glance: your windows and the slider, battery as three small rings, AI agents while they run, round switches for Stay Awake, Evening, Focus and Low Power (right-click one for its options), layouts, and Search. Calm, it keeps one order. When something needs you (a fast drain, a low battery, an update, a shortcut clash, tiling paused) that card moves to the top with its action on it, and the line at the top says so.

@@ -1,0 +1,78 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Smart home</title><link rel="stylesheet" href="mac.css">
+<style>
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.wid { display:flex; flex-direction:column; gap:6px; min-height:96px; }
+.wid .top { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--ink-2); }
+.big { font-size:22px; font-weight:600; line-height:26px; }
+.ctrls { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; text-align:center; margin-top:8px; padding:10px 6px; }
+.ctrls .t3 { margin-top:5px; display:block; }
+.ctrls .round { margin:0 auto; width:34px; height:34px; flex-basis:34px; }
+.chip { font-size:11px; font-weight:500; padding:3px 9px; border-radius:999px; background:var(--tile-2); box-shadow:0 0 0 .5px var(--sep); }
+.status { display:flex; align-items:center; gap:7px; margin:2px 2px 10px; }
+.status i { width:8px; height:8px; border-radius:50%; }
+.search { display:flex; align-items:center; gap:7px; margin-top:8px; padding:6px 9px; border-radius:8px; background:var(--tile); color:var(--ink-3); font-size:12px; }
+.key { font-size:11px; margin-left:auto; color:var(--ink-3); }
+.bar { height:4px; border-radius:2px; background:var(--off); overflow:hidden; } .bar b { display:block; height:100%; border-radius:2px; }
+.ghost { position:absolute; inset:12px; display:grid; gap:8px; align-content:start; filter:blur(6px); opacity:.55; }
+.ghost div { background:var(--tile); border-radius:12px; }
+.expand { position:relative; box-shadow:0 10px 30px rgba(0,0,0,.16), 0 0 0 .5px var(--sep); background:var(--tile-2); }
+.arrow { position:absolute; font-size:22px; color:var(--ink-3); }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const slides = (sel = 1) => `<div style="display:flex;gap:6px">${['Safari', 'Xcode', 'Slack', 'Chrome'].map((a, i) => `<div style="flex:1;height:44px;border-radius:8px;display:grid;place-items:center;background:${i === sel ? 'var(--tile-2)' : 'var(--tile)'};${i === sel ? 'box-shadow:0 0 0 2px var(--blue)' : ''}">${app(a, 16)}</div>`).join('')}</div>`;
+const ctrls = `<div class="tile ctrls">
+  <div><span class="round">${s('cup')}</span><span class="t3">Stay Awake</span></div>
+  <div><span class="round warm">${s('moon', 'f')}</span><span class="t3">Evening</span></div>
+  <div><span class="round">${s('scope')}</span><span class="t3">Focus</span></div>
+  <div><span class="round">${s('leaf')}</span><span class="t3">Low Power</span></div></div>`;
+const search = `<div class="search">${s('search')}Search Monorail<span class="key">⌃⌥/</span></div>`;
+
+const calm = `<div class="cap" style="left:40px;top:44px">1 · CALM: EVERYTHING AT A GLANCE</div>
+<div class="panel" style="left:40px;top:70px;width:360px">
+  <div class="status"><i style="background:var(--good)"></i><span class="b">All calm</span><span class="t3">· 5 windows · 2 workspaces</span><span style="margin-left:auto;color:var(--ink-3)">${s('gear')}</span></div>
+  <div class="tile"><div class="row" style="margin-bottom:8px"><span class="b">Build</span><span class="t3">Workspace 1</span><span style="margin-left:auto" class="t3">Writing · Calls</span></div>${slides()}</div>
+  <div class="grid2">
+    <div class="tile wid"><div class="top" style="color:var(--good)">${s('bolt', 'f')}BATTERY</div>
+      <div class="row" style="gap:10px">${rings3([[64, 'var(--good)'], [78, 'var(--blue)'], [45, 'var(--good)']], 50, 5, 2)}<div><div class="big num">64%</div><div class="t3 num">5:52 left</div></div></div></div>
+    <div class="tile wid"><div class="top">${app('Claude', 14)}AGENTS</div>
+      <div><div class="b">Claude Code</div><div class="t2">Working · 12 min</div></div><div class="bar"><b style="width:60%;background:var(--blue)"></b></div></div>
+  </div>
+  ${ctrls}
+  <div class="tile" style="margin-top:8px"><div class="row"><span class="t3" style="font-weight:600">LAYOUTS</span><span style="margin-left:auto;display:flex;gap:5px"><span class="chip">Coding</span><span class="chip">Writing</span><span class="chip">+</span></span></div></div>
+  ${search}
+</div>`;
+
+const needs = `<div class="cap" style="left:430px;top:44px">2 · SOMETHING NEEDS YOU: IT MOVES TO THE TOP</div>
+<div class="panel" style="left:430px;top:70px;width:360px">
+  <div class="status"><i style="background:var(--ok)"></i><span class="b">Two things need you</span><span style="margin-left:auto;color:var(--ink-3)">${s('gear')}</span></div>
+  <div class="tile" style="padding:12px;background:color-mix(in srgb,var(--ok) 10%,var(--tile))"><div class="top b" style="font-size:11px;color:var(--ok);display:flex;gap:5px;align-items:center">${s('bolt', 'f')}BATTERY · DRAINING FAST</div>
+    <div class="row" style="gap:12px;margin-top:8px">${rings3([[38, 'var(--good)'], [22, 'var(--blue)'], [90, 'var(--low)']], 72, 7, 2)}
+      <div style="display:grid;gap:2px"><div><span class="big num">1:32</span> <span class="t3">left at this rate</span></div><div class="t2">About 4× your usual. Chrome is most of it.</div>
+      <div class="row" style="gap:6px;margin-top:5px"><span class="btn p">Quit Chrome</span><span class="btn">Pause</span></div></div></div></div>
+  <div class="tile" style="margin-top:8px"><div class="row">${app('Claude', 22)}<div><div class="b">Claude Code is waiting for you</div><div class="t2">“Run the migration on staging?”</div></div><span class="btn p" style="margin-left:auto">Open</span></div></div>
+  <div class="tile" style="margin-top:8px"><div class="row"><span class="b">Build</span><span class="t3">· 5 windows</span><span style="margin-left:auto;display:flex;gap:4px">${['Safari', 'Xcode', 'Slack', 'Chrome'].map(a => app(a, 16)).join('')}</span></div></div>
+  ${ctrls}
+  ${search}
+</div>`;
+
+const expanded = `<div class="cap" style="left:820px;top:44px">3 · CLICK A CARD: IT GROWS IN PLACE</div>
+<div class="panel" style="left:820px;top:70px;width:360px;overflow:hidden">
+  <div class="ghost"><div style="height:24px"></div><div style="height:90px"></div><div style="height:110px"></div><div style="height:80px"></div><div style="height:46px"></div></div>
+  <div class="tile expand" style="padding:14px">
+    <div class="row"><span class="b" style="font-size:15px">Battery</span><span class="t3" style="margin-left:auto">More in Battery ›</span></div>
+    <div class="row" style="gap:14px;margin-top:12px">${rings3([[64, 'var(--good)'], [78, 'var(--blue)'], [55, 'var(--ok)']], 100, 10)}
+      <div style="display:grid;gap:7px">${ringRow('var(--good)', 'CHARGE', '64%', 'health 91%')}${ringRow('var(--blue)', 'TIME LEFT', '5:52', 'until 03:45')}${ringRow('var(--ok)', 'DRAIN', '6.1 W', 'usual 5.2')}</div></div>
+    <div class="h" style="padding-left:0">Top this hour</div>
+    <div class="list" style="background:var(--tile)">${[['Chrome', '6.2%/h'], ['Claude', '2.1%/h'], ['Xcode', '0.9%/h']].map(([a, v]) => `<div class="li ic">${app(a)}<span>${a === 'Claude' ? 'Claude Code' : a}</span><span class="v num">${v}</span></div>`).join('')}</div>
+    <div class="row" style="margin-top:10px"><span class="t3">Low Power on battery</span><span class="switch on"><i></i></span></div>
+  </div>
+  <div class="t3" style="text-align:center;margin-top:12px">Click outside the card or press ⎋ to shrink it back</div>
+</div>`;
+
+document.getElementById('app').innerHTML = menubar(`<span class="on">${monoIcon}</span><span>⚡ 64%</span>`) + calm + needs + expanded
+  + `<div class="notes" style="left:1210px;top:70px;width:260px">
+    <b>One look, everything.</b> Each module is a live mini-widget showing the one fact that matters: windows, battery, agents, switches, layouts.<br><br>
+    <b>It sorts itself.</b> Calm, it stays in a fixed order. When something needs you, a fast drain or an agent waiting, that card moves to the top and grows, with the action on it. Like a Smart Stack.<br><br>
+    <b>Grows in place.</b> Clicking a card zooms it open inside the panel, as Control Centre does; the rest blurs behind. “More in Battery ›” goes one level deeper.<br><br>
+    <b>Never a window on a window.</b> Settings still opens in its own window; everything else lives here.</div>`;
+</script></body></html>

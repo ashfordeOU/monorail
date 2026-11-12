@@ -1,0 +1,494 @@
+<title>Monorail Walkthrough</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a fixed 1000×620 Mac desktop stage scaled to fit, a step bar under it. A scripted pointer plays the first-run journey. */
+:root {
+  --desk-a: #c9dcff; --desk-b: #f6d2e3; --desk: #e4e8f3;
+  --mat: rgba(240,240,244,.82); --edge: rgba(255,255,255,.65); --tile: rgba(255,255,255,.62); --tile-2: rgba(255,255,255,.95);
+  --win: #ececef; --win-content: #fbfbfd;
+  --sep: rgba(60,60,67,.14); --ink: #1d1d1f; --ink-2: rgba(60,60,67,.72); --ink-3: rgba(60,60,67,.42);
+  --good: #28B463; --ok: #E6A700; --low: #E5484D; --blue: #0A84FF; --orange: #FF9500; --off: rgba(120,120,128,.18);
+  --shadow: 0 0 0 .5px rgba(0,0,0,.14), 0 24px 60px rgba(0,0,0,.20);
+  --bar: rgba(255,255,255,.45); --page: #f2f3f7; --veil: rgba(235,238,245,.55);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --round: ui-rounded, "SF Pro Rounded", -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --desk-a: #14233f; --desk-b: #3a1730; --desk: #0b0d14;
+  --mat: rgba(32,32,36,.84); --edge: rgba(255,255,255,.10); --tile: rgba(255,255,255,.07); --tile-2: rgba(255,255,255,.14);
+  --win: #2a2a2e; --win-content: #1e1e21;
+  --sep: rgba(84,84,88,.55); --ink: #f5f5f7; --ink-2: rgba(235,235,245,.64); --ink-3: rgba(235,235,245,.36);
+  --good: #30D158; --ok: #FFD60A; --low: #FF453A; --off: rgba(120,120,128,.30); --bar: rgba(0,0,0,.35); --page: #111216; --veil: rgba(10,12,18,.55);
+  --shadow: 0 0 0 .5px rgba(255,255,255,.10), 0 24px 60px rgba(0,0,0,.6); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --desk-a: #14233f; --desk-b: #3a1730; --desk: #0b0d14;
+  --mat: rgba(32,32,36,.84); --edge: rgba(255,255,255,.10); --tile: rgba(255,255,255,.07); --tile-2: rgba(255,255,255,.14);
+  --win: #2a2a2e; --win-content: #1e1e21;
+  --sep: rgba(84,84,88,.55); --ink: #f5f5f7; --ink-2: rgba(235,235,245,.64); --ink-3: rgba(235,235,245,.36);
+  --good: #30D158; --ok: #FFD60A; --low: #FF453A; --off: rgba(120,120,128,.30); --bar: rgba(0,0,0,.35); --page: #111216; --veil: rgba(10,12,18,.55);
+  --shadow: 0 0 0 .5px rgba(255,255,255,.10), 0 24px 60px rgba(0,0,0,.6); color-scheme: dark }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 400 13px/1.25 var(--font); letter-spacing: -.08px; -webkit-font-smoothing: antialiased;
+  padding: 20px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); }
+.wrap { max-width: 1000px; margin: 0 auto; display: grid; gap: 14px; }
+.intro h1 { font: 600 22px/1.2 var(--display); margin: 0 0 4px; letter-spacing: -.3px; }
+.intro p { margin: 0; color: var(--ink-2); max-width: 66ch; }
+.frame { position: relative; width: 100%; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 .5px var(--sep), 0 10px 40px rgba(0,0,0,.08); }
+.stage { position: absolute; left: 0; top: 0; width: 1000px; height: 620px; transform-origin: 0 0; overflow: hidden;
+  background: radial-gradient(900px 600px at 15% 0%, var(--desk-a), transparent 60%), radial-gradient(800px 600px at 95% 100%, var(--desk-b), transparent 60%), var(--desk); }
+.stage.instant, .stage.instant * { transition: none !important; animation: none !important; }
+.menubar { position: absolute; z-index: 40; inset: 0 0 auto 0; height: 26px; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: var(--bar); backdrop-filter: blur(30px); font-size: 13px; }
+.menubar .r { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.mb { padding: 2px 7px; border-radius: 5px; display: flex; align-items: center; gap: 5px; transition: background .2s, opacity .4s; }
+.mb.on { background: var(--off); }
+.mb.hide { opacity: 0; }
+.b { font-weight: 600; } .t2 { font-size: 11px; color: var(--ink-2); } .t3 { font-size: 11px; color: var(--ink-3); }
+.num { font-family: var(--round); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+svg.i { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.appi { display: inline-block; border-radius: 5px; box-shadow: 0 .5px 1.5px rgba(0,0,0,.2); flex: none; }
+.btn { display: inline-block; border: 0; padding: 4px 11px; border-radius: 6px; background: var(--tile-2); color: var(--ink); font: 500 12px var(--font); box-shadow: 0 0 0 .5px var(--sep), 0 .5px 1px rgba(0,0,0,.08); transition: transform .2s cubic-bezier(.3,1.5,.4,1), filter .2s; }
+.btn.p { background: var(--blue); color: #fff; box-shadow: none; }
+.pressed { transform: scale(.94) !important; filter: brightness(.92); }
+
+/* The strip of windows */
+.strip { position: absolute; left: 0; top: 46px; height: 500px; display: flex; gap: 12px; transform-origin: 0 0; transition: transform .75s cubic-bezier(.3,1.08,.4,1); z-index: 5; }
+.win { width: 420px; height: 500px; border-radius: 11px; background: var(--win-content); box-shadow: 0 10px 30px rgba(0,0,0,.18), 0 0 0 .5px var(--sep); overflow: hidden; flex: none;
+  transition: transform .7s cubic-bezier(.3,1.15,.4,1), opacity .4s ease, box-shadow .3s; }
+.win.out { transform: translateX(260px) scale(.96); opacity: 0; }
+.win.focus { box-shadow: 0 14px 40px rgba(0,0,0,.24), 0 0 0 2px var(--blue); }
+.win .tb { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 10px; background: var(--win); font-size: 12px; color: var(--ink-2); }
+.win .tb i { width: 11px; height: 11px; border-radius: 50%; }
+.win .body { padding: 16px; display: grid; gap: 9px; }
+.win .body b { display: block; height: 12px; width: 50%; border-radius: 6px; opacity: .75; }
+.win .body i { display: block; height: 8px; border-radius: 4px; background: var(--off); }
+.sbar { position: absolute; z-index: 6; left: 50%; bottom: 22px; transform: translate(-50%, 20px); opacity: 0; display: flex; gap: 5px; padding: 6px 8px; border-radius: 12px; background: var(--mat); backdrop-filter: blur(30px); box-shadow: var(--shadow); transition: opacity .4s, transform .5s cubic-bezier(.3,1.3,.4,1); }
+.sbar.in { opacity: 1; transform: translate(-50%, 0); }
+.sbar span { width: 34px; height: 22px; border-radius: 5px; background: var(--off); display: grid; place-items: center; transition: background .3s, box-shadow .3s; }
+.sbar span.vis { background: var(--tile-2); box-shadow: 0 0 0 1.5px var(--blue); }
+
+/* Overview */
+.ov { position: absolute; inset: 26px 0 0 0; z-index: 4; background: var(--veil); backdrop-filter: blur(24px); opacity: 0; pointer-events: none; transition: opacity .45s ease; }
+.stage.overview .ov { opacity: 1; }
+.ov .lab { position: absolute; left: 90px; font-weight: 600; font-size: 12px; color: var(--ink-2); }
+.ov .row2 { position: absolute; left: 90px; top: 386px; display: flex; gap: 5px; }
+.ov .row2 .c { width: 160px; height: 190px; border-radius: 8px; background: var(--win-content); box-shadow: 0 6px 18px rgba(0,0,0,.14), 0 0 0 .5px var(--sep); opacity: .85; }
+.stage.overview .win { border-radius: 26px; }
+.stage.overview .sbar { opacity: 0; }
+
+/* Welcome */
+.welcome { position: absolute; z-index: 30; left: 280px; top: 70px; width: 440px; height: 500px; border-radius: 14px; background: var(--win-content); box-shadow: var(--shadow); overflow: hidden;
+  transition: transform .6s cubic-bezier(.3,1.25,.4,1), opacity .35s ease; }
+.welcome.gone { opacity: 0; transform: scale(.9); pointer-events: none; }
+.wp { position: absolute; inset: 0; text-align: center; padding: 54px 40px 24px; transition: transform .55s cubic-bezier(.32,1.1,.4,1), opacity .3s ease; }
+.wp.left { transform: translateX(-40%); opacity: 0; } .wp.right { transform: translateX(100%); opacity: 0; }
+.wp h2 { font: 700 26px/32px var(--display); margin: 0 0 8px; }
+.wp p { color: var(--ink-2); margin: 0 auto 18px; max-width: 320px; line-height: 18px; }
+.wicon { width: 84px; height: 84px; border-radius: 19px; margin: 0 auto 18px; background: linear-gradient(140deg,#FF8A5B,#E8437A 60%,#C2456E); display: grid; place-items: center; color: #fff; box-shadow: 0 10px 24px rgba(232,67,122,.35); }
+.wfoot { position: absolute; left: 0; right: 0; bottom: 22px; display: flex; justify-content: center; gap: 8px; }
+.dots { position: absolute; left: 0; right: 0; bottom: 62px; display: flex; justify-content: center; gap: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--off); transition: background .3s; } .dots i.on { background: var(--ink-2); }
+.choice { text-align: left; display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--tile); margin-bottom: 8px; box-shadow: 0 0 0 .5px var(--sep); transition: box-shadow .25s, background .25s; }
+.choice.on { box-shadow: 0 0 0 2px var(--blue); background: var(--tile-2); }
+.round { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--off); flex: 0 0 28px; color: var(--ink); transition: background .3s, color .3s; }
+.round.on { color: #fff; }
+.perm { display: flex; align-items: center; gap: 8px; text-align: left; padding: 10px 12px; border-radius: 10px; background: var(--tile); box-shadow: 0 0 0 .5px var(--sep); font-size: 12px; }
+.perm .ok { margin-left: auto; color: var(--good); opacity: 0; transform: scale(.4); transition: opacity .3s, transform .45s cubic-bezier(.3,1.8,.4,1); }
+.perm.done .ok { opacity: 1; transform: none; }
+
+/* Panel */
+.panel { position: absolute; z-index: 20; right: 150px; top: 32px; width: 330px; border-radius: 16px; background: var(--mat); backdrop-filter: blur(50px) saturate(1.8); box-shadow: var(--shadow);
+  border: .5px solid var(--edge); overflow: hidden; transform-origin: 85% 0; transition: height .52s cubic-bezier(.32,1.25,.4,1), opacity .2s ease, transform .42s cubic-bezier(.3,1.3,.4,1); }
+.panel.closed { opacity: 0; transform: scale(.92) translateY(-6px); pointer-events: none; }
+.pages { position: relative; }
+.page { position: absolute; inset: 0 0 auto 0; padding: 12px; transition: transform .5s cubic-bezier(.32,1.12,.4,1), opacity .3s ease, filter .3s ease; }
+.page.left { transform: translateX(-30%); opacity: 0; filter: blur(2px); }
+.page.right { transform: translateX(100%); opacity: 0; }
+.tile { background: var(--tile); border-radius: 12px; padding: 10px; transition: transform .25s cubic-bezier(.3,1.4,.4,1), background .2s; }
+.mods { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.mod { display: flex; align-items: center; gap: 9px; }
+.slides { display: flex; gap: 6px; }
+.slide { flex: 1; height: 52px; border-radius: 8px; background: var(--tile); display: grid; place-items: center; transition: box-shadow .3s, background .3s; }
+.slide.on { background: var(--tile-2); box-shadow: 0 0 0 2px var(--blue); }
+.nav { display: flex; align-items: center; margin: 0 2px 10px; min-height: 22px; position: relative; }
+.back { color: var(--blue); font-weight: 500; }
+.nav .title { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 600; }
+.hero { display: flex; gap: 14px; align-items: center; padding: 12px; position: relative; overflow: hidden; }
+.glowbox { position: relative; width: 108px; height: 108px; flex: 0 0 108px; }
+.glowbox canvas { position: absolute; inset: -26px; width: 160px; height: 160px; }
+.glowbox svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.ringarc { transition: stroke-dashoffset 1.1s cubic-bezier(.25,1.15,.35,1); }
+.legend { display: grid; gap: 7px; min-width: 0; }
+.lg { display: flex; gap: 8px; align-items: flex-start; opacity: 0; transform: translateY(6px); transition: opacity .4s ease, transform .5s cubic-bezier(.3,1.3,.4,1); }
+.lg.in { opacity: 1; transform: none; }
+.lg i { width: 3px; height: 30px; border-radius: 2px; margin-top: 1px; }
+.lg .k { font-size: 10.5px; font-weight: 600; letter-spacing: .3px; }
+.lg .v { font-size: 17px; font-weight: 600; line-height: 1.2; }
+.coach { display: flex; gap: 9px; align-items: flex-start; margin-top: 8px; }
+.coach .dot { width: 22px; height: 22px; border-radius: 50%; background: var(--ok); color: #1d1d1f; font-weight: 800; display: grid; place-items: center; flex: 0 0 22px; font-size: 12px; }
+.h { font-size: 11px; font-weight: 600; color: var(--ink-2); padding: 12px 4px 6px; }
+.list { background: var(--tile); border-radius: 10px; overflow: hidden; }
+.li { display: flex; align-items: center; gap: 9px; padding: 8px 10px; position: relative; transition: background .2s; }
+.li + .li::before { content: ""; position: absolute; top: 0; right: 0; left: 37px; height: .5px; background: var(--sep); }
+.li .v { margin-left: auto; color: var(--ink-2); }
+.chev { color: var(--ink-3); }
+.hl { background: var(--tile-2) !important; }
+.stats { display: flex; gap: 18px; margin-top: 10px; }
+.stats .v { font-size: 20px; font-weight: 600; }
+.spark path { transition: stroke-dashoffset 1.2s cubic-bezier(.3,1,.4,1); }
+
+/* Palette */
+.pal { position: absolute; z-index: 25; left: 240px; top: 110px; width: 520px; border-radius: 14px; background: var(--mat); backdrop-filter: blur(50px) saturate(1.8); box-shadow: var(--shadow); border: .5px solid var(--edge); overflow: hidden;
+  transition: opacity .2s ease, transform .4s cubic-bezier(.3,1.3,.4,1); }
+.pal.closed { opacity: 0; transform: scale(.95) translateY(-8px); pointer-events: none; }
+.pal .in { display: flex; align-items: center; gap: 10px; padding: 14px 16px; font-size: 19px; border-bottom: .5px solid var(--sep); }
+.pal .in svg { width: 19px; height: 19px; color: var(--ink-3); }
+.pal .caret { display: inline-block; width: 1.5px; height: 21px; background: var(--blue); vertical-align: -4px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.pal .ph { color: var(--ink-3); }
+.pal .res { padding: 6px; }
+.pal .r { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; opacity: 0; transform: translateY(4px); transition: opacity .25s, transform .35s cubic-bezier(.3,1.3,.4,1), background .2s; }
+.pal .r.in2 { opacity: 1; transform: none; }
+.pal .r.sel { background: var(--blue); color: #fff; } .pal .r.sel .t3 { color: rgba(255,255,255,.75); }
+.pal .r .k { margin-left: auto; }
+.badge { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; color: #fff; flex: none; }
+.badge svg.i { width: 13px; height: 13px; }
+
+/* Settings */
+.set { position: absolute; z-index: 22; left: 170px; top: 60px; width: 660px; height: 480px; border-radius: 12px; background: var(--win-content); box-shadow: var(--shadow); overflow: hidden; display: flex;
+  transition: opacity .3s ease, transform .5s cubic-bezier(.3,1.25,.4,1); }
+.set.closed { opacity: 0; transform: scale(.94); pointer-events: none; }
+.side { width: 200px; background: var(--win); padding: 40px 8px 8px; display: grid; align-content: start; gap: 1px; position: relative; }
+.side .lights { position: absolute; left: 14px; top: 14px; display: flex; gap: 7px; } .side .lights i { width: 12px; height: 12px; border-radius: 50%; }
+.side .it { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; transition: background .2s, color .2s; }
+.side .it.sel { background: var(--blue); color: #fff; }
+.cont { flex: 1; padding: 14px 22px; overflow: hidden; position: relative; }
+.cont h3 { font: 600 13px var(--font); margin: 0 0 14px; }
+.cp { position: absolute; inset: 14px 22px auto 22px; transition: opacity .3s ease, transform .45s cubic-bezier(.3,1.2,.4,1); }
+.cp.hid { opacity: 0; transform: translateX(14px); }
+.grp { background: var(--tile-2); border-radius: 10px; box-shadow: 0 0 0 .5px var(--sep); margin-bottom: 12px; }
+.grp .li + .li::before { left: 10px; }
+.sw { margin-left: auto; width: 32px; height: 19px; border-radius: 10px; background: var(--off); position: relative; transition: background .25s; flex: none; }
+.sw::after { content: ""; position: absolute; left: 2px; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .3s cubic-bezier(.3,1.5,.4,1); }
+.sw.on { background: var(--good); } .sw.on::after { transform: translateX(13px); }
+.pop { margin-left: auto; padding: 2px 8px; border-radius: 5px; background: var(--tile-2); box-shadow: 0 0 0 .5px var(--sep), 0 .5px 1px rgba(0,0,0,.12); font-size: 12px; }
+
+/* Pointer, key HUD, end card */
+.cursor { position: absolute; z-index: 60; left: 500px; top: 420px; width: 22px; height: 22px; pointer-events: none; transition: left .75s cubic-bezier(.45,0,.2,1), top .75s cubic-bezier(.45,0,.2,1); filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.35)); }
+.cursor .ring { position: absolute; left: -12px; top: -12px; width: 24px; height: 24px; border-radius: 50%; background: var(--blue); opacity: 0; transform: scale(.3); }
+.cursor .ring.go { animation: tap .45s ease-out; }
+@keyframes tap { 0% { opacity: .45; transform: scale(.3); } 100% { opacity: 0; transform: scale(1.4); } }
+.hud { position: absolute; z-index: 55; left: 50%; bottom: 70px; transform: translate(-50%, 8px); opacity: 0; padding: 10px 16px; border-radius: 14px; background: rgba(30,30,32,.78); color: #fff; backdrop-filter: blur(20px);
+  font: 500 20px var(--font); display: flex; gap: 10px; align-items: center; transition: opacity .25s, transform .35s cubic-bezier(.3,1.4,.4,1); }
+.hud.in { opacity: 1; transform: translate(-50%, 0); }
+.hud small { font-size: 12px; color: rgba(255,255,255,.7); }
+.end { position: absolute; z-index: 50; inset: 26px 0 0 0; display: grid; place-items: center; text-align: center; background: var(--veil); backdrop-filter: blur(20px); opacity: 0; pointer-events: none; transition: opacity .5s; }
+.end.in { opacity: 1; }
+.end h2 { font: 700 30px/1.15 var(--display); margin: 14px 0 6px; }
+
+/* Step bar */
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ctl { border: 0; background: var(--blue); color: #fff; font: 500 13px var(--font); padding: 6px 14px; border-radius: 8px; cursor: pointer; }
+.ctl.sec { background: var(--tile-2); color: var(--ink); box-shadow: 0 0 0 .5px var(--sep); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 0; font: 500 12px var(--font); padding: 5px 10px; border-radius: 999px; background: var(--off); color: var(--ink); cursor: pointer; transition: background .2s, color .2s; }
+.chip.on { background: var(--ink); color: var(--page); }
+.ctl:focus-visible, .chip:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.say { min-height: 40px; }
+.say b { font-weight: 600; } .say span { color: var(--ink-2); }
+@media (prefers-reduced-motion: reduce) { .cursor { transition-duration: .01s; } }
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>Monorail, from first launch</h1>
+    <p>The whole app as a new user meets it, in one take: welcome, windows sliding in, the menu bar panel, Battery, an app, Overview, the command palette and Settings. Pick a step to jump to it.</p>
+  </div>
+
+  <div class="frame" id="frame">
+    <div class="stage" id="stage">
+      <div class="menubar">
+        <b>Finder</b><span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Window</span>
+        <div class="r">
+          <span class="mb hide" id="mbMono"><svg viewBox="0 0 18 14" width="17" height="13" aria-hidden="true"><rect x="1" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="13" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="7" y="3.5" width="4" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></span>
+          <span class="mb hide" id="mbBat">⚡ <span class="num">64%</span></span>
+          <span>Wed 12 Nov&nbsp; 21:54</span>
+        </div>
+      </div>
+
+      <div class="ov" id="ov"><div class="lab" style="top:112px">Workspace 1 · Build</div><div class="lab" style="top:364px">Workspace 2 · Writing</div><div class="row2" id="row2"></div></div>
+      <div class="strip" id="strip"></div>
+      <div class="sbar" id="sbar"></div>
+
+      <!-- Welcome -->
+      <div class="welcome gone" id="welcome">
+        <div class="wp" data-w="0">
+          <div class="wicon"><svg viewBox="0 0 18 14" width="46" height="36"><rect x="1" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="13" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="7" y="3.5" width="4" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+          <h2>Welcome to Monorail</h2>
+          <p>Your windows ride one strip that runs past the edges of your screen. New windows slide in beside you, and nothing you're using ever shrinks.</p>
+          <div style="display:flex;gap:6px;justify-content:center;margin-top:22px" id="wPreview"></div>
+          <div class="dots"><i class="on"></i><i></i><i></i></div><div class="wfoot"><span class="btn p" style="padding:5px 22px" id="w0next">Continue</span></div>
+        </div>
+        <div class="wp right" data-w="1">
+          <div class="wicon" style="background:var(--blue);box-shadow:0 10px 24px rgba(10,132,255,.35)"><svg class="i" viewBox="0 0 24 24" style="width:40px;height:40px"><path d="M7 11V6a2 2 0 0 1 4 0v5M11 10V4a2 2 0 0 1 4 0v6M15 10V6a2 2 0 0 1 4 0v8a7 7 0 0 1-14 0v-2a2 2 0 0 1 4 0"/></svg></div>
+          <h2>Allow Accessibility</h2>
+          <p>macOS asks for this before any app can move windows. It's the only permission Monorail needs.</p>
+          <div class="perm" id="perm"><span class="appi" style="width:20px;height:20px;background:linear-gradient(150deg,#8E8E93,#636366)"></span>Privacy &amp; Security › Accessibility<span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+          <div class="dots"><i></i><i class="on"></i><i></i></div><div class="wfoot"><span class="btn" >Back</span><span class="btn p" style="padding:5px 18px" id="w1next">Open System Settings</span></div>
+        </div>
+        <div class="wp right" data-w="2" style="padding-top:44px">
+          <h2>How do you work?</h2><p style="margin-bottom:14px">Pick a start. You can change anything later.</p>
+          <div class="choice" id="cSimple"><span class="round" style="background:var(--blue);color:#fff"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 1.8 4.7L18.5 9.5 13.8 11.3 12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg></span><div><div class="b">Simple</div><div class="t2">The essentials, nothing to set up</div></div></div>
+          <div class="choice"><span class="round"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 15h10"/></svg></span><div><div class="b">Keyboard first</div><div class="t2">Every shortcut, every setting</div></div></div>
+          <div class="choice"><span class="round"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><div><div class="b">Coming from another app</div><div class="t2">Bring your AeroSpace, yabai or Rectangle setup</div></div></div>
+          <div class="dots"><i></i><i></i><i class="on"></i></div><div class="wfoot"><span class="btn">Back</span><span class="btn p" style="padding:5px 22px" id="w2next">Start</span></div>
+        </div>
+      </div>
+
+      <!-- Menu bar panel -->
+      <div class="panel closed" id="panel">
+        <div class="pages" id="pages">
+          <section class="page" data-page="home">
+            <div class="tile">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span class="b">Workspace 1</span><span class="t3">· 5 windows</span></div>
+              <div class="slides" id="pSlides"></div>
+              <div class="t2" style="margin-top:8px" id="pTitle">Xcode — Engine.swift</div>
+            </div>
+            <div class="mods">
+              <div class="tile mod" id="mAwake"><span class="round" id="rAwake"><svg class="i" viewBox="0 0 24 24"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/></svg></span><span><span class="b" style="display:block">Stay Awake</span><span class="t2" id="sAwake">Off</span></span></div>
+              <div class="tile mod"><span class="round on" style="background:var(--orange)"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></span><span><span class="b" style="display:block">Evening</span><span class="t2">Until 07:00</span></span></div>
+              <div class="tile mod"><span class="round"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></span><span><span class="b" style="display:block">Focus</span><span class="t2">Off</span></span></div>
+              <div class="tile mod" id="mBat"><span class="round on" style="background:var(--good)"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span><span class="b" style="display:block">Battery</span><span class="t2 num">64% · 5:52</span></span><span class="chev" style="margin-left:auto">›</span></div>
+            </div>
+          </section>
+          <section class="page right" data-page="battery">
+            <div class="nav"><span class="back" id="back1">‹ Monorail</span><span class="title">Battery</span></div>
+            <div class="tile hero">
+              <div class="glowbox"><canvas id="glow" width="320" height="320" aria-hidden="true"></canvas><svg id="rings" viewBox="0 0 108 108" width="108" height="108" aria-hidden="true"></svg></div>
+              <div class="legend" id="legend"></div>
+            </div>
+            <div class="tile coach"><span class="dot">!</span><div><div class="b">Chrome is using a third of your battery</div><div class="t2">Quit it and you'd have about 6:41 left.</div>
+              <div style="display:flex;gap:6px;margin-top:8px"><span class="btn p">Quit Chrome</span><span class="btn">Pause</span></div></div></div>
+            <div class="h">Using Significant Energy</div>
+            <div class="list" id="apps"></div>
+          </section>
+          <section class="page right" data-page="app">
+            <div class="nav"><span class="back" id="back2">‹ Battery</span><span class="title">Google Chrome</span></div>
+            <div class="tile">
+              <div style="display:flex;align-items:center;gap:9px"><span class="appi" style="width:28px;height:28px;border-radius:7px;background:linear-gradient(150deg,#FBBC05,#b08304)"></span><div><div class="b">Google Chrome</div><div class="t3">21 processes · 3 windows</div></div></div>
+              <div class="stats"><div><div class="v num">2.1 W</div><div class="t3">now</div></div><div><div class="v num">6.2%</div><div class="t3">an hour</div></div><div><div class="v num">4.2%</div><div class="t3">since charge</div></div></div>
+              <svg class="spark" viewBox="0 0 300 54" width="100%" height="54" aria-hidden="true"><path id="sparkPath" fill="none" stroke="var(--ok)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:10px"><span class="btn p">Quit</span><span class="btn">Pause</span><span class="btn">Hide</span><span class="btn" style="margin-left:auto">Show Windows</span></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Command palette -->
+      <div class="pal closed" id="pal">
+        <div class="in"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span id="palText"></span><span class="caret"></span><span class="ph" id="palPh">Search Monorail</span></div>
+        <div class="res" id="palRes"></div>
+      </div>
+
+      <!-- Settings -->
+      <div class="set closed" id="set">
+        <div class="side" id="side"><div class="lights"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></div></div>
+        <div class="cont">
+          <div class="cp" id="cpGeneral"><h3>General</h3>
+            <div class="grp" style="padding:12px;display:flex;gap:12px;align-items:center"><span style="width:46px;height:46px;border-radius:11px;background:linear-gradient(140deg,#FF8A5B,#E8437A 60%,#C2456E);display:grid;place-items:center;color:#fff"><svg viewBox="0 0 18 14" width="26" height="20"><rect x="1" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="13" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="7" y="3.5" width="4" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></span><div><div class="b" style="font-size:15px">Monorail</div><div class="t2">Arranging 5 windows on 1 display</div></div><span class="sw on"></span></div>
+            <div class="grp"><div class="li">Open at login<span class="sw on"></span></div><div class="li">Show in menu bar<span class="pop">Icon and battery ⌃</span></div><div class="li">Slider bar<span class="pop">While sliding ⌃</span></div></div>
+            <div class="grp"><div class="li">Install updates automatically<span class="sw on"></span></div></div>
+          </div>
+          <div class="cp hid" id="cpBattery"><h3>Battery</h3>
+            <div class="grp"><div class="li">Show battery in the menu bar<span class="sw on"></span></div><div class="li">Warn when drain is above usual<span class="pop">2× ⌃</span></div><div class="li">Pause hungry apps on battery<span class="sw" id="swPause"></span></div></div>
+            <div class="grp"><div class="li">Cards on the Battery page<span class="pop">Arrange…</span></div><div class="li">Keep history for<span class="pop">30 days ⌃</span></div></div>
+            <div class="t3" style="padding:0 4px">Monorail reads energy use from macOS. Nothing leaves your Mac.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud" id="hud"></div>
+      <div class="end" id="end"><div>
+        <div class="wicon" style="margin:0 auto"><svg viewBox="0 0 18 14" width="46" height="36"><rect x="1" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="13" y="1" width="4" height="12" rx="1.5" fill="currentColor"/><rect x="7" y="3.5" width="4" height="7" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></div>
+        <h2>That's Monorail.</h2><div style="color:var(--ink-2)">One strip, one panel, one place for everything.</div></div></div>
+
+      <div class="cursor" id="cursor"><span class="ring" id="ring"></span><svg viewBox="0 0 22 22" width="22" height="22"><path d="M4 2v16l4.3-4.1 2.7 6.1 2.6-1.1-2.6-6H17z" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <button class="ctl" id="play">Pause</button>
+    <button class="ctl sec" id="replay">Replay</button>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="say" id="say"></div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), frame = $('frame');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Fit the 1000×620 stage to the page width.
+  let scale = 1;
+  const fitStage = () => { scale = Math.min(1, frame.clientWidth / 1000); stage.style.transform = `scale(${scale})`; frame.style.height = 620 * scale + 'px'; };
+  addEventListener('resize', fitStage); fitStage();
+
+  const ic = (c, s = 18) => `<span class="appi" style="width:${s}px;height:${s}px;border-radius:${s * .24}px;background:linear-gradient(150deg,${c},color-mix(in srgb,${c} 70%,#000))"></span>`;
+  const WINS = [['Safari', '#1E88E5', 'Monorail — Docs'], ['Xcode', '#1565C0', 'Engine.swift'], ['Slack', '#4A154B', '#design'], ['Chrome', '#FBBC05', 'Figma — Panel'], ['Notes', '#FFCC00', 'Ideas']];
+  $('strip').innerHTML = WINS.map(([n, c, t]) => `<div class="win out"><div class="tb"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i>${ic(c, 14)}<span>${n} — ${t}</span></div>
+    <div class="body"><b style="background:${c}"></b>${'<i></i>'.repeat(5)}<div style="height:120px;border-radius:8px;background:color-mix(in srgb,${c} 14%,transparent)"></div>${'<i></i>'.repeat(9)}</div></div>`).join('');
+  $('sbar').innerHTML = WINS.map(([, c]) => `<span>${ic(c, 12)}</span>`).join('');
+  $('row2').innerHTML = ['#FA233B', '#2196F3', '#34C759', '#D97757'].map(c => `<div class="c" style="border-top:22px solid color-mix(in srgb,${c} 30%,var(--win))"></div>`).join('');
+  $('wPreview').innerHTML = WINS.slice(0, 3).map(([, c], i) => `<div style="width:92px;height:70px;border-radius:9px;background:var(--tile);display:grid;place-items:center;${i === 1 ? 'box-shadow:0 0 0 2px var(--blue)' : 'box-shadow:0 0 0 .5px var(--sep)'}">${ic(c, 28)}</div>`).join('');
+  $('pSlides').innerHTML = WINS.slice(0, 4).map(([, c], i) => `<div class="slide ${i === 1 ? 'on' : ''}">${ic(c)}</div>`).join('');
+  $('apps').innerHTML = [['Google Chrome', '#FBBC05', '6.2'], ['Claude Code', '#D97757', '2.1'], ['Xcode', '#1565C0', '0.9']].map(([n, c, v], i) => `<div class="li" id="app${i}">${ic(c, 22)}<span>${n}</span><span class="v num">${v}%/h</span><span class="chev">›</span></div>`).join('');
+  const SIDE = [['General', '#8E8E93', '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>'], ['Layout', '#0A84FF', '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M12 4v16"/>'], ['Shortcuts', '#5E5CE6', '<rect x="2" y="6" width="20" height="13" rx="2"/><path d="M7 15h10"/>'], ['Appearance', '#FF2D55', '<circle cx="12" cy="12" r="8"/>'], ['Battery', '#34C759', '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'], ['Stay Awake', '#FF9500', '<path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/>'], ['Evening Mode', '#FF9500', '<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>'], ['Apps', '#0A84FF', '<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/>'], ['Privacy', '#0A84FF', '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>'], ['About', '#8E8E93', '<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/>']];
+  $('side').insertAdjacentHTML('beforeend', SIDE.map(([n, c, p]) => `<div class="it" data-s="${n}"><span class="badge" style="background:${c}"><svg class="i" viewBox="0 0 24 24">${p}</svg></span>${n}</div>`).join(''));
+
+  // Rings and glow (same as the motion prototype)
+  const R = [{ r: 48.5, col: 'var(--good)', v: 64 }, { r: 35.5, col: 'var(--blue)', v: 78 }, { r: 22.5, col: 'var(--ok)', v: 59 }];
+  $('rings').innerHTML = R.map((x, i) => { const len = 2 * Math.PI * x.r;
+    return `<circle cx="54" cy="54" r="${x.r}" fill="none" stroke="${x.col}" stroke-opacity=".18" stroke-width="11"/><circle class="ringarc" id="arc${i}" cx="54" cy="54" r="${x.r}" fill="none" stroke="${x.col}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${len}" stroke-dashoffset="${len}"/>`; }).join('');
+  $('legend').innerHTML = [['var(--good)', 'CHARGE', '64%', 'on battery'], ['var(--blue)', 'TIME LEFT', '5:52', 'until 03:45'], ['var(--ok)', 'DRAIN', '6.1 W', 'usual 5.2']]
+    .map(([c, k, v, n]) => `<div class="lg"><i style="background:${c}"></i><div><div class="k" style="color:${c}">${k}</div><div style="display:flex;gap:5px;align-items:baseline"><span class="v num">${v}</span><span class="t3">${n}</span></div></div></div>`).join('');
+  const rings = (on) => { R.forEach((x, i) => { const len = 2 * Math.PI * x.r; $('arc' + i).style.strokeDashoffset = on ? len * (1 - x.v / 100) : len; });
+    [...$('legend').children].forEach((el, i) => on ? setTimeout(() => el.classList.add('in'), stage.classList.contains('instant') ? 0 : 140 + i * 90) : el.classList.remove('in')); };
+  const cv = $('glow'), g2 = cv.getContext('2d');
+  const parts = Array.from({ length: 260 }, () => ({ a: Math.random() * 6.283, r: 60 + Math.random() * 64, s: .3 + Math.random() * .7, z: Math.random() }));
+  let glowOn = false;
+  (function frameGlow() {
+    requestAnimationFrame(frameGlow);
+    if (!glowOn) return;
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches, k = 6.1 / 5.2, hue = 42;
+    const t = performance.now() / 1000, br = reduce ? .5 : .5 + .5 * Math.sin(t * 1.6);
+    g2.clearRect(0, 0, 320, 320);
+    const g = g2.createRadialGradient(160, 160, 40, 160, 160, 150);
+    g.addColorStop(0, `hsla(${hue},90%,60%,${(dark ? .32 : .22) + br * .12})`); g.addColorStop(.55, `hsla(${hue},90%,60%,${(dark ? .12 : .08) + br * .05})`); g.addColorStop(1, `hsla(${hue},90%,60%,0)`);
+    g2.fillStyle = g; g2.fillRect(0, 0, 320, 320);
+    g2.globalCompositeOperation = dark ? 'lighter' : 'source-over';
+    for (const p of parts) {
+      if (!reduce) { p.a += .004 * p.s * k; p.r += Math.sin(p.a * 3 + p.z * 9) * .08 * k; }
+      const x = 160 + Math.cos(p.a) * p.r, y = 160 + Math.sin(p.a) * p.r, a = (1 - Math.abs(p.r - 96) / 70) * (dark ? .75 : .5) * (.4 + p.z * .6);
+      if (a <= 0) continue; g2.fillStyle = `hsla(${hue},85%,${dark ? 62 : 48}%,${a})`; g2.beginPath(); g2.arc(x, y, .7 + p.z * 1.6, 0, 6.283); g2.fill();
+    }
+    g2.globalCompositeOperation = 'source-over';
+  })();
+
+  // --- Director -------------------------------------------------------
+  let run = 0, fast = false, paused = false;
+  class Stop extends Error {}
+  const sleep = (ms, id) => new Promise((res, rej) => {
+    const tick = () => { if (id !== run) return rej(new Stop()); if (paused && !fast) return setTimeout(tick, 120); res(); };
+    if (fast) return tick();
+    setTimeout(tick, reduce ? Math.min(ms, 250) : ms);
+  });
+  const pos = (el) => { const a = el.getBoundingClientRect(), s = stage.getBoundingClientRect(); return [(a.left - s.left + a.width / 2) / scale, (a.top - s.top + a.height / 2) / scale]; };
+  const cursor = $('cursor');
+  async function point(el, id, wait = 800) { const [x, y] = pos(el); cursor.style.left = x - 4 + 'px'; cursor.style.top = y - 2 + 'px'; await sleep(wait, id); }
+  async function click(el, id) { await point(el, id);
+    if (!fast) { const r = $('ring'); r.classList.remove('go'); void r.offsetWidth; r.classList.add('go'); el.classList.add('pressed'); }
+    await sleep(160, id); el.classList.remove('pressed'); }
+  async function keys(k, label, id) { const h = $('hud'); h.innerHTML = `${k}<small>${label}</small>`; h.classList.add('in'); await sleep(1100, id); h.classList.remove('in'); }
+
+  // Panel pages
+  const pages = Object.fromEntries([...$('pages').children].map(el => [el.dataset.page, el]));
+  let stack = ['home'];
+  const fitPanel = () => { $('panel').style.height = pages[stack[stack.length - 1]].offsetHeight + 'px'; };
+  function go(name) { const from = pages[stack[stack.length - 1]];
+    if (name) { from.className = 'page left'; stack.push(name); } else { from.className = 'page right'; stack.pop(); }
+    const to = pages[stack[stack.length - 1]]; to.className = 'page';
+    const top = to.dataset.page;
+    if (top === 'battery') { rings(false); requestAnimationFrame(() => requestAnimationFrame(() => rings(true))); glowOn = true; } else glowOn = false;
+    if (top === 'app') { const p = $('sparkPath'); p.setAttribute('d', [8, 12, 9, 22, 30, 27, 34, 31, 18, 24, 29, 26].map((v, i) => `${i ? 'L' : 'M'}${i * 27},${52 - v * 1.4}`).join(' '));
+      const len = p.getTotalLength(); p.style.transition = 'none'; p.style.strokeDasharray = len; p.style.strokeDashoffset = len; requestAnimationFrame(() => { p.style.transition = ''; p.style.strokeDashoffset = 0; }); }
+    fitPanel(); }
+
+  // Strip
+  let focus = 1;
+  const wins = () => [...$('strip').children];
+  function place() { if (stage.classList.contains('overview')) return;
+    $('strip').style.transform = `translateX(${70 - focus * 432}px)`;
+    wins().forEach((w, i) => w.classList.toggle('focus', i === focus));
+    [...$('sbar').children].forEach((s, i) => s.classList.toggle('vis', i === focus || i === focus + 1)); }
+
+  function reset() {
+    $('welcome').classList.add('gone'); [...$('welcome').children].forEach((p, i) => p.className = 'wp' + (i ? ' right' : ''));
+    [...document.querySelectorAll('.dots')].forEach(() => {}); $('perm').classList.remove('done'); $('cSimple').classList.remove('on');
+    wins().forEach(w => w.classList.add('out')); $('sbar').classList.remove('in'); focus = 1; stage.classList.remove('overview'); place();
+    $('mbMono').classList.add('hide'); $('mbBat').classList.add('hide'); $('mbMono').classList.remove('on');
+    $('panel').classList.add('closed'); stack = ['home']; Object.values(pages).forEach(p => p.className = 'page right'); pages.home.className = 'page'; glowOn = false;
+    $('rAwake').classList.remove('on'); $('rAwake').style.background = ''; $('sAwake').textContent = 'Off';
+    $('pal').classList.add('closed'); $('palText').textContent = ''; $('palPh').hidden = false; $('palRes').innerHTML = '';
+    $('set').classList.add('closed'); [...$('side').querySelectorAll('.it')].forEach(e => e.classList.toggle('sel', e.dataset.s === 'General'));
+    $('cpGeneral').classList.remove('hid'); $('cpBattery').classList.add('hid'); $('swPause').classList.remove('on');
+    $('end').classList.remove('in'); $('hud').classList.remove('in');
+    cursor.style.left = '520px'; cursor.style.top = '430px';
+  }
+
+  const STEPS = [
+    { t: 'Welcome', say: ['First launch.', 'A large icon, one sentence, one blue button. Three short steps, then out of the way.'], run: async (id) => {
+      await sleep(300, id); $('welcome').classList.remove('gone'); await sleep(900, id);
+      const W = [...$('welcome').children];
+      const next = async (i) => { W[i].className = 'wp left'; W[i + 1].className = 'wp'; await sleep(700, id); };
+      await click($('w0next'), id); await next(0);
+      await click($('w1next'), id); await sleep(500, id); $('perm').classList.add('done'); await sleep(900, id); await next(1);
+      await click($('cSimple'), id); $('cSimple').classList.add('on'); await sleep(400, id);
+      await click($('w2next'), id); $('welcome').classList.add('gone'); await sleep(500, id);
+      $('mbMono').classList.remove('hide'); await sleep(250, id); $('mbBat').classList.remove('hide'); await sleep(500, id); } },
+    { t: 'Your windows', say: ['Windows slide onto one strip.', 'New ones arrive beside you. Nothing you\'re using shrinks; ⌃⌥← and → glide along the strip.'], run: async (id) => {
+      for (const w of wins()) { w.classList.remove('out'); await sleep(170, id); }
+      place(); $('sbar').classList.add('in'); await sleep(1100, id);
+      await keys('⌃⌥→', 'Slide right', id); focus = 2; place(); await sleep(900, id);
+      await keys('⌃⌥→', 'Slide right', id); focus = 3; place(); await sleep(900, id);
+      await keys('⌃⌥←', 'Slide left', id); focus = 1; place(); await sleep(900, id); } },
+    { t: 'Menu bar', say: ['Click the Monorail icon.', 'One panel drops down from the menu bar: your slides and the switches you reach for most.'], run: async (id) => {
+      await click($('mbMono'), id); $('mbMono').classList.add('on'); $('panel').classList.remove('closed'); fitPanel(); await sleep(900, id);
+      await click($('mAwake'), id); $('rAwake').classList.add('on'); $('rAwake').style.background = 'var(--orange)'; $('sAwake').textContent = '1 hour';
+      if (!fast) $('rAwake').animate([{ transform: 'scale(.8)' }, { transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 380, easing: 'cubic-bezier(.3,1.4,.4,1)' });
+      await sleep(900, id); } },
+    { t: 'Battery', say: ['The panel turns into Battery.', 'No popover on a popover. Three rings: charge, time left and drain, with a glow that moves with the drain.'], run: async (id) => {
+      await click($('mBat'), id); go('battery'); await sleep(2600, id); } },
+    { t: 'An app', say: ['One more level: the app.', 'What it uses now, per hour and since you last charged, and what you can do about it.'], run: async (id) => {
+      await click($('app0'), id); go('app'); await sleep(2200, id);
+      await click($('back2'), id); go(null); await sleep(900, id);
+      await click($('back1'), id); go(null); await sleep(800, id);
+      await keys('⎋', 'Close', id); $('panel').classList.add('closed'); $('mbMono').classList.remove('on'); glowOn = false; await sleep(600, id); } },
+    { t: 'Overview', say: ['See every window at once.', 'Each workspace as a row. Click any window to slide straight to it.'], run: async (id) => {
+      await keys('⌃⌥O', 'Overview', id);
+      stage.classList.add('overview'); $('strip').style.transform = 'translate(90px, 104px) scale(.37)'; wins().forEach(w => w.classList.remove('focus')); await sleep(1500, id);
+      await click(wins()[2], id); stage.classList.remove('overview'); focus = 2; place(); await sleep(1200, id); } },
+    { t: 'Command palette', say: ['Everything is one search away.', 'Type a few letters: actions, settings and windows, all in one list.'], run: async (id) => {
+      await keys('⌃⌥/', 'Command palette', id); $('pal').classList.remove('closed'); await sleep(500, id); $('palPh').hidden = true;
+      for (const ch of 'battery') { $('palText').textContent += ch; await sleep(90, id); }
+      const RES = [['Battery settings', '#34C759', '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>', 'Settings'], ['Open Battery page', '#34C759', '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>', '⌃⌥B'], ['Pause battery-hungry apps', '#FF9500', '<path d="M8 5v14M16 5v14"/>', 'Action']];
+      $('palRes').innerHTML = RES.map(([n, c, p, k], i) => `<div class="r ${i ? '' : 'sel'}"><span class="badge" style="background:${c}"><svg class="i" viewBox="0 0 24 24">${p}</svg></span>${n}<span class="k t3">${k}</span></div>`).join('');
+      [...$('palRes').children].forEach((r, i) => setTimeout(() => r.classList.add('in2'), fast ? 0 : i * 70)); await sleep(1300, id);
+      await keys('↩', 'Open', id); $('pal').classList.add('closed'); await sleep(300, id); } },
+    { t: 'Settings', say: ['Settings, like System Settings.', 'A searchable sidebar, grouped sections, labels left and controls right.'], run: async (id) => {
+      $('set').classList.remove('closed'); await sleep(900, id);
+      const it = $('side').querySelector('[data-s="Battery"]'); await click(it, id);
+      $('side').querySelectorAll('.it').forEach(e => e.classList.toggle('sel', e === it)); $('cpGeneral').classList.add('hid'); $('cpBattery').classList.remove('hid'); await sleep(900, id);
+      await click($('swPause'), id); $('swPause').classList.add('on'); await sleep(1300, id);
+      $('set').classList.add('closed'); await sleep(400, id); $('end').classList.add('in'); cursor.style.left = '940px'; cursor.style.top = '580px'; await sleep(3200, id); } },
+  ];
+
+  $('chips').innerHTML = STEPS.map((s, i) => `<button class="chip" data-i="${i}">${i + 1}. ${s.t}</button>`).join('');
+  const mark = (i) => { [...$('chips').children].forEach((c, j) => c.classList.toggle('on', i === j)); const s = STEPS[i]; $('say').innerHTML = `<b>${s.say[0]}</b> <span>${s.say[1]}</span>`; };
+
+  async function playFrom(start) {
+    const id = ++run; paused = false; $('play').textContent = 'Pause';
+    reset(); stage.classList.add('instant'); fast = true;
+    try { for (let i = 0; i < start; i++) await STEPS[i].run(id); } catch (e) { if (e instanceof Stop) return; throw e; }
+    fast = false; void stage.offsetWidth; stage.classList.remove('instant');
+    try {
+      for (let i = start; i < STEPS.length; i++) { mark(i); await STEPS[i].run(id); }
+      await sleep(400, id); playFrom(0);
+    } catch (e) { if (!(e instanceof Stop)) throw e; }
+  }
+  $('chips').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (c) playFrom(+c.dataset.i); });
+  $('replay').addEventListener('click', () => playFrom(0));
+  $('play').addEventListener('click', () => { paused = !paused; $('play').textContent = paused ? 'Play' : 'Pause'; });
+  playFrom(0);
+})();
+</script>

@@ -64,7 +64,8 @@ $M awake 60             # keep the Mac awake for 60 minutes; awake off ends it
 ## Battery
 
 ```sh
-$M battery     # charge, watts, time left, health, and the apps and AI agents using the most power
+$M battery     # charge, watts, time left, health, the apps and AI agents using the most power now,
+               # and the top drainers since the last charge (sinceLastCharge)
 ```
 
 To save battery, POST `/battery` with `{"app": "Google Chrome", "do": "hide"}` (also `pause`, `resume`,

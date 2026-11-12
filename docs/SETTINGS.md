@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-230 settings.
+232 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -120,6 +120,8 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `powerMarkers` | On battery, ⚡ marks the windows of apps using the most power, and ⚡ in the popover lists them. | `true` |
 | `parkPowerHogs` | On battery, hide (never quit) power-hungry apps left alone for an hour; they come back when plugged in. | `false` |
 | `batteryMenuBar` | A battery item in the menu bar (charge or time left), opening the battery panel. | `false` |
+| `batteryCards` | The battery panel's cards, in the order you arranged them, and the ones you hid. | `BatteryCards.standard` |
+| `batteryHiddenCards` |  | `[]` |
 | `focusFlash` | A quick highlight of the focused window when focus moves by keyboard. | `false` |
 | `sliderOpacity` | The slider bar's opacity and size (0.8, 1 or 1.25). | `1.0` |
 | `sliderScale` |  | `1.0` |

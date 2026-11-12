@@ -71,7 +71,7 @@ enum MCPServer {
         Tool(name: "notify", description: "Show a short notice on screen.",
              properties: ["text": ["type": "string"]], required: ["text"]) { args in ("POST", "/notify", args) },
         Tool(name: "battery_status",
-             description: "The battery: charge, whether it's charging, watts the Mac draws, time left at the current rate, health and charge cycles, Low Power Mode, and the apps and AI agents using the most power (watts, battery % per hour, processes).",
+             description: "The battery: charge, whether it's charging, watts the Mac draws, time left at the current rate, health and charge cycles, Low Power Mode, the apps and AI agents using the most power now (watts, battery % per hour, processes), and the top drainers since the Mac was last unplugged (battery % used).",
              properties: [:], required: []) { _ in ("GET", "/battery", [:]) },
         Tool(name: "save_battery",
              description: "Act on an app that uses a lot of battery: do = hide, pause (freeze until opened or plugged in), resume or quit (the person confirms). app = its name or bundle ID.",

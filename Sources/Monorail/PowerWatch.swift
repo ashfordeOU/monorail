@@ -40,6 +40,10 @@ final class PowerWatch: ObservableObject {
     @Published private(set) var paused: [String: [pid_t]] = [:]
     /// Apps the person chose to keep (no "needs your attention" for them this session).
     @Published var kept: Set<String> = []
+    /// What each app and AI agent has used since the Mac was last unplugged.
+    @Published private(set) var session = ChargeSession()
+    /// The battery's size in watt-hours, to turn energy into battery percentage points.
+    var wattHours: Double? { batteryWattHours }
 
     var onBattery: Bool { battery.onBattery }
     var batteryPercent: Int? { battery.percent }
@@ -79,6 +83,7 @@ final class PowerWatch: ObservableObject {
     private static var folder: URL { SettingsStore.directory }
     private static var historyFile: URL { folder.appendingPathComponent("battery-history.json") }
     private static var pausedFile: URL { folder.appendingPathComponent("paused-apps.json") }
+    private static var sessionFile: URL { folder.appendingPathComponent("since-charge.json") }
 
     /// "About 6% of the battery an hour" for a hungry app's windows, or nil.
     func note(for bundleID: String?) -> String? {
@@ -91,6 +96,9 @@ final class PowerWatch: ObservableObject {
         guard observers.isEmpty else { return }
         resumeLeftovers()
         history = Self.loadHistory()
+        if let data = try? Data(contentsOf: Self.sessionFile), let saved = try? JSONDecoder().decode(ChargeSession.self, from: data) {
+            session = saved
+        }
         let center = NSWorkspace.shared.notificationCenter
         observers.append(center.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] note in
             guard let self, let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
@@ -105,6 +113,8 @@ final class PowerWatch: ObservableObject {
         })
         readBattery()
         recordHistory()
+        // On battery with no session yet (first run): count from now.
+        if battery.onBattery, session.since == nil { startSession() }
         let timer = Timer.every(300) { [weak self] _ in
             self?.readBattery()
             self?.recordHistory()
@@ -231,6 +241,7 @@ final class PowerWatch: ObservableObject {
             previousAt = nil
             watchingSince = Date()
             recordHistory()
+            if battery.onBattery { startSession() }
             if !battery.onBattery {
                 // Back on power: everything paused or hidden to save battery comes back.
                 var back: [String] = []
@@ -267,6 +278,21 @@ final class PowerWatch: ObservableObject {
                 return AgentUse(name: name, cpuPercent: use.cpuPercent, watts: Self.watts(before: before, after: entry.reading, seconds: seconds),
                                 processes: entry.processes, percentPerHour: use.percentPerHour)
             }.sorted { ($0.watts ?? $0.cpuPercent / 100) > ($1.watts ?? $1.cpuPercent / 100) }
+            // Add this interval to the totals since the last charge.
+            if battery.onBattery {
+                for (id, entry) in reading.apps {
+                    guard let before = previous[id] else { continue }
+                    session.add(id: id, name: entry.name, joules: (entry.reading.joules ?? 0) - (before.joules ?? 0),
+                                cpuSeconds: entry.reading.cpuSeconds - before.cpuSeconds)
+                }
+                for (name, entry) in reading.agents {
+                    guard let before = previousAgents[name] else { continue }
+                    session.add(id: "agent:" + name, name: name, isAgent: true,
+                                joules: (entry.reading.joules ?? 0) - (before.joules ?? 0),
+                                cpuSeconds: entry.reading.cpuSeconds - before.cpuSeconds)
+                }
+                saveSession()
+            }
         }
         previous = reading.apps.mapValues(\.reading)
         previousAgents = reading.agents.mapValues(\.reading)
@@ -293,6 +319,22 @@ final class PowerWatch: ObservableObject {
         parked += ids
         let names = ids.compactMap(Self.appName).joined(separator: ", ")
         onNotice("On battery · hid \(names), using the most power and untouched for an hour. Show them from the battery panel")
+    }
+
+    // MARK: Since the last charge
+
+    private func startSession() {
+        session.start(at: Date(), percent: battery.percent)
+        saveSession()
+    }
+
+    private func saveSession() {
+        if let data = try? JSONEncoder().encode(session) { try? data.write(to: Self.sessionFile, options: .atomic) }
+    }
+
+    /// The biggest users since the last charge, with "0.4% used" (or processor time).
+    func sinceCharge(limit: Int = 5) -> [(id: String, name: String, isAgent: Bool, used: String)] {
+        session.ranked.prefix(limit).map { ($0.id, $0.total.name, $0.total.isAgent, ChargeSession.usedText($0.total, wattHours: batteryWattHours)) }
     }
 
     // MARK: Battery
@@ -500,6 +542,12 @@ final class PowerWatch: ObservableObject {
             return row
         }
         out["paused"] = paused.keys.sorted()
+        if let since = session.since {
+            var charge: [String: Any] = ["since": ISO8601DateFormatter().string(from: since)]
+            if let p = session.startPercent { charge["startPercent"] = p }
+            charge["top"] = sinceCharge(limit: 10).map { ["name": $0.name, "kind": $0.isAgent ? "agent" : "app", "used": $0.used] }
+            out["sinceLastCharge"] = charge
+        }
         if apps.isEmpty { out["note"] = battery.onBattery ? "Measuring; ask again in a minute" : "Plugged in: per-app figures are measured on battery or while the battery panel is open" }
         return out
     }

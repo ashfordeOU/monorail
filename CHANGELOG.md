@@ -6,6 +6,10 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Top drainer since last charge.** The battery panel adds up what each app and AI agent has used since you unplugged (as battery percentage, or processor time on Intel Macs), shows the biggest one first, and keeps the totals across restarts. Assistants get it too, in `monorail battery` and the MCP tool `battery_status`.
+- **Arrange the battery panel.** Click the stack button to move cards up or down (put AI agents first, say), hide the ones you don't need, and add them back from **Add Card**. Monorail remembers your layout.
+
 ## [1.7.29] - 2026-11-11
 
 ### Added

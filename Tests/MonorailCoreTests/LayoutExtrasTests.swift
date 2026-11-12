@@ -181,3 +181,45 @@ final class BatteryModelTests: XCTestCase {
         XCTAssertNil(AgentProcesses.agent(processName: "node", arguments: ["node", "server.js"]))
     }
 }
+
+final class ChargeSessionTests: XCTestCase {
+    func testAddsUpSinceUnpluggedAndRanksByEnergy() {
+        var session = ChargeSession()
+        session.start(at: Date(), percent: 100)
+        session.add(id: "chrome", name: "Google Chrome", joules: 300, cpuSeconds: 30)
+        session.add(id: "chrome", name: "Google Chrome", joules: 420, cpuSeconds: 20)
+        session.add(id: "agent:Codex", name: "Codex", isAgent: true, joules: 100, cpuSeconds: 90)
+        session.add(id: "mail", name: "Mail", joules: -50, cpuSeconds: 1)
+        XCTAssertEqual(session.ranked.map(\.id), ["chrome", "agent:Codex"])
+        XCTAssertEqual(session.totals["chrome"]?.joules, 720)
+        // 720 J on a 50 Wh battery: 0.4 percentage points.
+        XCTAssertEqual(ChargeSession.percentUsed(joules: 720, wattHours: 50)!, 0.4, accuracy: 0.0001)
+        XCTAssertEqual(ChargeSession.usedText(session.totals["chrome"]!, wattHours: 50), "0.4% used")
+        session.start(at: Date(), percent: 80)
+        XCTAssertTrue(session.totals.isEmpty)
+        XCTAssertEqual(session.startPercent, 80)
+    }
+
+    func testWithoutEnergyUsesProcessorTime() {
+        var session = ChargeSession()
+        session.add(id: "a", name: "A", joules: 0, cpuSeconds: 720)
+        session.add(id: "b", name: "B", joules: 0, cpuSeconds: 60)
+        XCTAssertEqual(session.ranked.map(\.id), ["a", "b"])
+        XCTAssertEqual(ChargeSession.usedText(session.totals["a"]!, wattHours: nil), "12 min of processor time")
+    }
+}
+
+final class BatteryCardsTests: XCTestCase {
+    func testMovingAndKeepingASavedOrderValid() {
+        let moved = BatteryCards.moving("agents", by: -1, in: BatteryCards.standard)
+        XCTAssertEqual(moved.firstIndex(of: "agents"), BatteryCards.standard.firstIndex(of: "apps"))
+        XCTAssertEqual(BatteryCards.moving("numbers", by: -1, in: BatteryCards.standard), BatteryCards.standard)
+        // An older saved order without "sinceCharge", with a stale card and a duplicate.
+        let old = ["agents", "numbers", "gone", "numbers", "history", "apps"]
+        let fixed = BatteryCards.normalised(old)
+        XCTAssertEqual(Set(fixed), Set(BatteryCards.standard))
+        XCTAssertEqual(fixed.count, BatteryCards.standard.count)
+        XCTAssertEqual(fixed.first, "agents", "the person's order is kept")
+        XCTAssertLessThan(fixed.firstIndex(of: "sinceCharge")!, fixed.firstIndex(of: "history")!)
+    }
+}

@@ -116,6 +116,8 @@ public static class SettingKeys
     public const string PowerMarkers = "powerMarkers";
     public const string ParkPowerHogs = "parkPowerHogs";
     public const string BatteryMenuBar = "batteryMenuBar";
+    public const string BatteryCards = "batteryCards";
+    public const string BatteryHiddenCards = "batteryHiddenCards";
     public const string FocusFlash = "focusFlash";
     public const string SliderOpacity = "sliderOpacity";
     public const string SliderScale = "sliderScale";

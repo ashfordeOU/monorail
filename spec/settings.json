@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 230,
+  "count": 232,
   "settings": [
     {
       "key": "layout",
@@ -667,6 +667,18 @@
       "type": "Bool",
       "default": "false",
       "about": "A battery item in the menu bar (charge or time left), opening the battery panel."
+    },
+    {
+      "key": "batteryCards",
+      "type": "[String]",
+      "default": "BatteryCards.standard",
+      "about": "The battery panel's cards, in the order you arranged them, and the ones you hid."
+    },
+    {
+      "key": "batteryHiddenCards",
+      "type": "[String]",
+      "default": "[]",
+      "about": ""
     },
     {
       "key": "focusFlash",

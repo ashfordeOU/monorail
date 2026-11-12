@@ -118,3 +118,110 @@ public enum AgentProcesses {
         return nil
     }
 }
+
+/// What each app (and AI agent) has used since the Mac was last unplugged: energy and processor
+/// time added up from the once-a-minute readings while on battery. Kept across restarts.
+public struct ChargeSession: Codable, Equatable, Sendable {
+    public struct Total: Codable, Equatable, Sendable {
+        public var name: String
+        public var isAgent: Bool
+        public var joules: Double
+        public var cpuSeconds: Double
+        public init(name: String, isAgent: Bool = false, joules: Double = 0, cpuSeconds: Double = 0) {
+            self.name = name
+            self.isAgent = isAgent
+            self.joules = joules
+            self.cpuSeconds = cpuSeconds
+        }
+    }
+
+    /// When the Mac was unplugged, and its charge then.
+    public var since: Date?
+    public var startPercent: Int?
+    public var totals: [String: Total] = [:]
+
+    public init(since: Date? = nil, startPercent: Int? = nil) {
+        self.since = since
+        self.startPercent = startPercent
+    }
+
+    /// A fresh session when the Mac comes off power.
+    public mutating func start(at date: Date, percent: Int) {
+        self = ChargeSession(since: date, startPercent: percent)
+    }
+
+    /// Adds one interval's use for an app or agent (negative amounts, from a restart, count as nothing).
+    public mutating func add(id: String, name: String, isAgent: Bool = false, joules: Double, cpuSeconds: Double) {
+        var total = totals[id] ?? Total(name: name, isAgent: isAgent)
+        total.name = name
+        total.joules += max(0, joules)
+        total.cpuSeconds += max(0, cpuSeconds)
+        totals[id] = total
+    }
+
+    /// Biggest users first: by energy when the Mac reports it, otherwise by processor time.
+    public var ranked: [(id: String, total: Total)] {
+        let useEnergy = totals.values.contains { $0.joules > 0 }
+        return totals.map { (id: $0.key, total: $0.value) }
+            .filter { useEnergy ? $0.total.joules > 0 : $0.total.cpuSeconds > 0 }
+            .sorted { useEnergy ? $0.total.joules > $1.total.joules : $0.total.cpuSeconds > $1.total.cpuSeconds }
+    }
+
+    /// Battery percentage points this much energy is, for a battery of `wattHours`.
+    public static func percentUsed(joules: Double, wattHours: Double?) -> Double? {
+        guard let wattHours, wattHours > 0, joules > 0 else { return nil }
+        return joules / 3600 / wattHours * 100
+    }
+
+    /// "0.4% used", "<0.1% used", or "12 min of processor time" without energy figures.
+    public static func usedText(_ total: Total, wattHours: Double?) -> String {
+        if let p = percentUsed(joules: total.joules, wattHours: wattHours) {
+            return p < 0.1 ? "<0.1% used" : String(format: "%.1f%% used", p)
+        }
+        let minutes = Int((total.cpuSeconds / 60).rounded())
+        return minutes < 1 ? "<1 min of processor time" : "\(minutes) min of processor time"
+    }
+}
+
+/// The battery panel's cards: which exist, their names, and keeping a saved order valid as cards
+/// are added in later versions.
+public enum BatteryCards {
+    public static let standard = ["numbers", "lowPower", "sinceCharge", "history", "attention", "resting", "apps", "agents", "options"]
+
+    public static func title(_ id: String) -> String {
+        switch id {
+        case "numbers": return "Battery, time left and draw"
+        case "lowPower": return "Low Power Mode"
+        case "sinceCharge": return "Since last charge"
+        case "history": return "Battery history"
+        case "attention": return "Needs your attention"
+        case "resting": return "Paused and hidden apps"
+        case "apps": return "Apps"
+        case "agents": return "AI agents"
+        case "options": return "Options"
+        default: return id
+        }
+    }
+
+    /// Unknown cards dropped, duplicates removed, new cards added at their standard place.
+    public static func normalised(_ order: [String]) -> [String] {
+        var result: [String] = []
+        for id in order where standard.contains(id) && !result.contains(id) { result.append(id) }
+        for (index, id) in standard.enumerated() where !result.contains(id) {
+            let before = standard[..<index].last { result.contains($0) }
+            let at = before.flatMap { result.firstIndex(of: $0) }.map { $0 + 1 } ?? 0
+            result.insert(id, at: at)
+        }
+        return result
+    }
+
+    /// Moves a card one place up (-1) or down (+1).
+    public static func moving(_ id: String, by step: Int, in order: [String]) -> [String] {
+        guard let index = order.firstIndex(of: id) else { return order }
+        let target = index + step
+        guard order.indices.contains(target) else { return order }
+        var list = order
+        list.swapAt(index, target)
+        return list
+    }
+}

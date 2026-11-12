@@ -13,6 +13,7 @@ struct BatteryPanel: View {
     var openSettings: () -> Void = {}
     @State private var showAll = false
     @State private var search = ""
+    @State private var arranging = false
     @FocusState private var searching: Bool
 
     private static let pink = Color(red: 0.91, green: 0.33, blue: 0.60)
@@ -26,23 +27,152 @@ struct BatteryPanel: View {
             header
             ScrollView {
                 VStack(spacing: 10) {
-                    stats
-                    lowPower
-                    if PowerWatch.hasBattery { historyCard }
-                    if let app = power.attention { attentionCard(app) }
-                    if !power.paused.isEmpty || !power.parked.isEmpty { restCard }
-                    appsCard
-                    if !power.agents.isEmpty { agentsCard }
-                    settingsCard
+                    ForEach(visibleCards, id: \.self) { id in
+                        if arranging {
+                            arrangeFrame(id) { cardView(id) ?? AnyView(placeholder(id)) }
+                        } else if let view = cardView(id) {
+                            view
+                        }
+                    }
                 }
                 .padding(12)
             }
             .frame(maxHeight: 560)
-            searchBar
+            if arranging { arrangeBar } else { searchBar }
         }
         .frame(width: 370)
         .onAppear { power.setLive(true) }
         .onDisappear { power.setLive(false) }
+    }
+
+    // MARK: Cards, in your order
+
+    private var order: [String] { BatteryCards.normalised(store.settings.batteryCards) }
+    private var visibleCards: [String] { order.filter { !store.settings.batteryHiddenCards.contains($0) } }
+
+    /// A card's view, or nil when it has nothing to show right now.
+    private func cardView(_ id: String) -> AnyView? {
+        switch id {
+        case "numbers": return AnyView(stats)
+        case "lowPower": return AnyView(lowPower)
+        case "sinceCharge": return power.session.since == nil || power.session.ranked.isEmpty ? nil : AnyView(sinceChargeCard)
+        case "history": return PowerWatch.hasBattery ? AnyView(historyCard) : nil
+        case "attention": return power.attention.map { AnyView(attentionCard($0)) }
+        case "resting": return power.paused.isEmpty && power.parked.isEmpty ? nil : AnyView(restCard)
+        case "apps": return AnyView(appsCard)
+        case "agents": return power.agents.isEmpty ? nil : AnyView(agentsCard)
+        case "options": return AnyView(settingsCard)
+        default: return nil
+        }
+    }
+
+    private func placeholder(_ id: String) -> some View {
+        Text(id == "attention" ? "Shows the hungriest app while on battery"
+             : id == "agents" ? "Shows AI agents while they run"
+             : id == "sinceCharge" ? "Fills in once the Mac is on battery"
+             : "Nothing to show right now")
+            .font(.caption).foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, minHeight: 34).background(card)
+    }
+
+    private func arrangeFrame(_ id: String, content: () -> AnyView) -> some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 6) {
+                Button { hide(id) } label: { Image(systemName: "minus.circle.fill").foregroundStyle(.red).accessibilityLabel("Hide \(BatteryCards.title(id))") }
+                    .buttonStyle(.borderless).help("Hide this card")
+                Text(BatteryCards.title(id)).font(.caption.weight(.semibold))
+                Spacer()
+                Button { move(id, -1) } label: { Image(systemName: "arrow.up").accessibilityLabel("Move \(BatteryCards.title(id)) up") }
+                    .buttonStyle(.borderless).disabled(visibleCards.first == id)
+                Button { move(id, 1) } label: { Image(systemName: "arrow.down").accessibilityLabel("Move \(BatteryCards.title(id)) down") }
+                    .buttonStyle(.borderless).disabled(visibleCards.last == id)
+            }
+            .padding(.horizontal, 4)
+            content().allowsHitTesting(false).opacity(0.85).scaleEffect(0.97)
+        }
+        .padding(6)
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Self.pink.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+    }
+
+    private var arrangeBar: some View {
+        HStack {
+            let hidden = order.filter { store.settings.batteryHiddenCards.contains($0) }
+            Menu {
+                if hidden.isEmpty { Text("Every card is showing") }
+                ForEach(hidden, id: \.self) { id in Button(BatteryCards.title(id)) { show(id) } }
+            } label: { Label("Add Card", systemImage: "plus") }
+            .menuStyle(.borderlessButton).fixedSize().disabled(hidden.isEmpty)
+            Button("Reset") {
+                store.settings.batteryCards = BatteryCards.standard
+                store.settings.batteryHiddenCards = []
+            }
+            .buttonStyle(.borderless)
+            Spacer()
+            Button("Done") { withAnimation(.easeOut(duration: 0.15)) { arranging = false } }
+                .buttonStyle(.borderedProminent).tint(Self.pink).controlSize(.small)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .background(Color.primary.opacity(0.04))
+    }
+
+    /// Moves a card past the next visible one, so hidden cards don't swallow a click.
+    private func move(_ id: String, _ step: Int) {
+        let visible = visibleCards
+        guard let index = visible.firstIndex(of: id), visible.indices.contains(index + step) else { return }
+        let neighbour = visible[index + step]
+        var list = order
+        guard let a = list.firstIndex(of: id), let b = list.firstIndex(of: neighbour) else { return }
+        list.swapAt(a, b)
+        withAnimation(.easeOut(duration: 0.15)) { store.settings.batteryCards = list }
+    }
+
+    private func hide(_ id: String) {
+        guard !store.settings.batteryHiddenCards.contains(id) else { return }
+        withAnimation(.easeOut(duration: 0.15)) { store.settings.batteryHiddenCards.append(id) }
+    }
+
+    private func show(_ id: String) {
+        withAnimation(.easeOut(duration: 0.15)) { store.settings.batteryHiddenCards.removeAll { $0 == id } }
+    }
+
+    // MARK: Since the last charge
+
+    private var sinceChargeCard: some View {
+        let top = power.sinceCharge(limit: 3)
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Label("Since last charge", systemImage: "bolt.circle").font(.callout.weight(.semibold))
+                Spacer()
+                if let since = power.session.since {
+                    Text("\(since.formatted(date: .omitted, time: .shortened))\(power.session.startPercent.map { " at \($0)%" } ?? "")")
+                        .font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+            if let first = top.first {
+                HStack(spacing: 8) {
+                    if !first.isAgent { icon(first.id, size: 18) } else { Image(systemName: "sparkles").frame(width: 18) }
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Top drainer").font(.caption2).foregroundStyle(.secondary)
+                        HStack(spacing: 4) {
+                            Text(first.name).font(.callout.weight(.semibold)).lineLimit(1)
+                            Text(first.isAgent ? "AI agent" : "App").font(.caption2).foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                    Text(first.used).font(.callout.weight(.semibold)).monospacedDigit()
+                }
+            }
+            ForEach(top.dropFirst(), id: \.id) { entry in
+                HStack {
+                    Text(entry.name).lineLimit(1)
+                    if entry.isAgent { Text("AI agent").font(.caption2).foregroundStyle(.secondary) }
+                    Spacer()
+                    Text(entry.used).font(.caption).monospacedDigit().foregroundStyle(.secondary)
+                }
+                .font(.caption)
+            }
+        }
+        .padding(10).background(card)
     }
 
     // MARK: Header and numbers
@@ -59,6 +189,10 @@ struct BatteryPanel: View {
                     .background(Capsule().fill(Color.yellow.opacity(0.25)))
             }
             Spacer()
+            Button { withAnimation(.easeOut(duration: 0.15)) { arranging.toggle() } } label: {
+                Image(systemName: arranging ? "checkmark.circle.fill" : "square.stack.3d.up").accessibilityLabel(arranging ? "Done arranging" : "Arrange cards")
+            }
+            .buttonStyle(.borderless).help(arranging ? "Done" : "Arrange cards: move, hide or add them")
             Button(action: openSettings) { Image(systemName: "gearshape").accessibilityLabel("Battery settings") }
                 .buttonStyle(.borderless).help("Battery settings")
         }

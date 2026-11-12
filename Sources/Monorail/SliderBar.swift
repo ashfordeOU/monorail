@@ -1125,7 +1125,7 @@ final class SliderPopover {
                 DispatchQueue.main.async { self?.place(height: height) }
             })
 
-        let panel = NSPanel(
+        let panel = MenuBarPanel(
             contentRect: NSRect(x: 0, y: 0, width: PanelRoot.width, height: 300),
             styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         panel.isOpaque = false
@@ -1156,9 +1156,32 @@ final class SliderPopover {
             host.bottomAnchor.constraint(equalTo: glass.bottomAnchor),
         ])
         panel.contentView = glass
+        panel.onEscape = { [weak self] in
+            guard let self else { return }
+            if self.navigator.stack.count > 1 { self.navigator.pop() } else { self.close() }
+        }
+        panel.onBack = { [weak self] in self?.navigator.pop() }
         self.host = host
         peekWatcher.watch(model)
         return panel
+    }
+}
+
+/// The menu bar panel's window. Borderless windows can't take typing by default, so search fields
+/// and ⌘F did nothing; this one can, without bringing Monorail to the front (a non-activating panel,
+/// like Spotlight's). ⎋ closes it and ⌘[ goes back a page.
+final class MenuBarPanel: NSPanel {
+    var onEscape: () -> Void = {}
+    var onBack: () -> Void = {}
+
+    override var canBecomeKey: Bool { true }
+
+    override func cancelOperation(_ sender: Any?) { onEscape() }
+
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 53 { onEscape(); return }  // ⎋
+        if event.modifierFlags.contains(.command), event.charactersIgnoringModifiers == "[" { onBack(); return }
+        super.keyDown(with: event)
     }
 }
 

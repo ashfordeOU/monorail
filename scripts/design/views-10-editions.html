@@ -1,0 +1,59 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Editions</title><link rel="stylesheet" href="mac.css">
+<style>
+.head { position:absolute; left:40px; top:52px; right:40px; display:flex; align-items:flex-end; gap:24px; }
+.head h1 { font:700 26px/30px "SF Pro Display",-apple-system,sans-serif; margin:0; }
+.head p { margin:4px 0 0; color:var(--ink-2); font-size:13px; }
+.legend { margin-left:auto; display:flex; gap:14px; font-size:11px; color:var(--ink-2); }
+.legend span { display:flex; align-items:center; gap:5px; }
+.card { position:absolute; top:130px; width:690px; border-radius:14px; background:var(--tile-2); box-shadow:var(--shadow); overflow:hidden; }
+.cols { display:grid; grid-template-columns:1fr 112px 112px; align-items:center; }
+.th { padding:12px 14px 10px; border-bottom:.5px solid var(--sep); background:var(--tile); }
+.th .ed { display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; font-size:11px; font-weight:600; line-height:13px; }
+.th .ed small { font-weight:400; color:var(--ink-3); font-size:10px; }
+.eicon { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; color:#fff; }
+.group { padding:10px 14px 4px; font-size:11px; font-weight:600; color:var(--ink-2); letter-spacing:.02em; }
+.row { padding:0 14px; min-height:27px; border-top:.5px solid var(--sep); }
+.row > span:first-child { font-size:12.5px; padding:5px 0; }
+.row .t3 { font-size:11px; }
+.c { display:grid; place-items:center; font-size:11px; color:var(--ink-2); text-align:center; line-height:12px; }
+.yes, .no, .part, .maybe { width:18px; height:18px; border-radius:50%; display:grid; place-items:center; color:#fff; }
+.yes { background:var(--good); } .no { background:transparent; color:var(--ink-3); box-shadow:inset 0 0 0 1.3px var(--ink-3); }
+.part { background:var(--ok); } .maybe { background:transparent; color:var(--good); box-shadow:inset 0 0 0 1.5px var(--good); }
+.yes svg, .no svg, .part svg, .maybe svg { width:11px; height:11px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.foot { position:absolute; left:40px; right:40px; top:900px; font-size:11.5px; color:var(--ink-3); }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const ck = '<svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>', x = '<svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></svg>', half = '<svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg>';
+const mark = (m) => m === 'y' ? `<span class="yes">${ck}</span>` : m === 'n' ? `<span class="no">${x}</span>` : m === 'p' ? `<span class="part">${half}</span>` : m === 'm' ? `<span class="maybe">${ck}</span>` : `<span>${m}</span>`;
+const head = `<div class="cols th"><span class="b" style="font-size:13px">Feature</span>
+  <div class="ed"><span class="eicon" style="background:linear-gradient(140deg,#5AC8FA,#0A84FF)">${s('bolt','f')}</span>Monorail Station<small>Mac App Store</small></div>
+  <div class="ed"><span class="eicon" style="background:linear-gradient(140deg,#FF8A5B,#E8437A 60%,#C2456E)">${monoIcon.replace('width="17" height="13"','width="17" height="13"')}</span>Monorail<small>Free download</small></div></div>`;
+const table = (groups) => head + groups.map(([g, rows]) => `<div class="group">${g}</div>` + rows.map(([f, a, b, note]) =>
+  `<div class="cols row"><span>${f}${note ? ` <span class="t3">· ${note}</span>` : ''}</span><div class="c">${mark(a)}</div><div class="c">${mark(b)}</div></div>`).join('')).join('');
+
+const left = table([
+  ['ARRANGING WINDOWS', [
+    ['One endless strip, sliding', 'n', 'y'], ['Overview of every workspace', 'n', 'y'], ['Docking, tabs, splits, zones', 'n', 'y'],
+    ['Gestures and slide mode', 'n', 'y'], ['Saved layouts and snapshots', 'n', 'y'], ['Displays that remember', 'n', 'y'],
+    ['Window switcher (⌘Tab)', 'n', 'y'], ['Safe screen sharing', 'n', 'y']]],
+  ['PANEL AND BATTERY', [
+    ['The smart one-panel home', 'y', 'y'], ['Battery rings, time left, health', 'm', 'y'], ['Day of battery history', 'm', 'y'],
+    ['Which app drains it, since charge', 'n', 'y'], ['Quit, pause or hide hungry apps', 'n', 'y'], ['Low Power Mode switch', 'n', 'y']]],
+]);
+const right = table([
+  ['COMFORT', [
+    ['Stay Awake', 'y', 'y'], ['Run with the lid closed', 'n', 'y'], ['Keep me Available (Teams, Slack)', 'n', 'y'],
+    ['Evening Mode', 'm', 'y'], ['Focus timer and pomodoro', 'y', 'y'], ['Themes', 'y', 'y']]],
+  ['SMART AND AUTOMATION', [
+    ['Command palette', 'p', 'y', 'Station: its own actions'], ['Assistant (Claude, OpenAI, Gemini…)', 'p', 'y', 'answers only'],
+    ['AI agents: MCP, skill, API', 'n', 'y'], ['Scripts and Shortcuts actions', 'p', 'y'], ['Caps Lock as the Monorail key', 'n', 'y']]],
+  ['THE BASICS', [
+    ['Needs Accessibility permission', 'No', 'Yes'], ['Updates', 'App Store', 'Built in'], ['Price', 'Free', 'Free'],
+    ['Leads to the full Monorail', 'y', '—']]],
+]);
+document.getElementById('app').innerHTML = menubar(`<span>${monoIcon}</span>`)
+  + `<div class="head"><div><h1>Monorail Station and Monorail</h1><p>What each edition can do. The App Store's sandbox doesn't allow moving other apps' windows, so Station is the menu bar half.</p></div>
+     <div class="legend"><span>${mark('y')} Included</span><span>${mark('m')} Expected, to confirm in TestFlight</span><span>${mark('p')} Partly</span><span>${mark('n')} Not allowed in the App Store</span></div></div>
+     <div class="card" style="left:40px">${left}</div><div class="card" style="left:770px">${right}</div>
+     <div class="foot">Station is a full app on its own (Apple doesn't allow demos or locked features), with one card and its About page pointing to the free Monorail at monorail.ashforde.org. When both are installed, Station steps aside.</div>`;
+</script></body></html>

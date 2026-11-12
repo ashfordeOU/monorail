@@ -2,6 +2,7 @@
 import AppKit
 import MonorailCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The battery panel: charge, time left and draw, Low Power Mode, a day of history, the app that
 /// needs your attention (with what quitting it would give you back), every app and AI agent by
@@ -78,6 +79,9 @@ struct BatteryPanel: View {
     private func arrangeFrame(_ id: String, content: () -> AnyView) -> some View {
         VStack(spacing: 4) {
             HStack(spacing: 6) {
+                Image(systemName: "line.3.horizontal").foregroundStyle(.secondary)
+                    .help("Drag to move this card")
+                    .accessibilityHidden(true)
                 Button { hide(id) } label: { Image(systemName: "minus.circle.fill").foregroundStyle(.red).accessibilityLabel("Hide \(BatteryCards.title(id))") }
                     .buttonStyle(.borderless).help("Hide this card")
                 Text(BatteryCards.title(id)).font(.caption.weight(.semibold))
@@ -92,6 +96,25 @@ struct BatteryPanel: View {
         }
         .padding(6)
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Self.pink.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+        .contentShape(Rectangle())
+        .onDrag { NSItemProvider(object: id as NSString) }
+        .onDrop(of: [UTType.text], isTargeted: nil) { providers in
+            _ = providers.first?.loadObject(ofClass: NSString.self) { item, _ in
+                guard let dragged = item as? String else { return }
+                DispatchQueue.main.async { place(dragged, before: id) }
+            }
+            return true
+        }
+    }
+
+    /// Drag and drop: puts a card just before the one it was dropped on.
+    private func place(_ dragged: String, before target: String) {
+        guard dragged != target, BatteryCards.standard.contains(dragged) else { return }
+        var list = order
+        list.removeAll { $0 == dragged }
+        let at = list.firstIndex(of: target) ?? list.count
+        list.insert(dragged, at: at)
+        withAnimation(.easeOut(duration: 0.15)) { store.settings.batteryCards = list }
     }
 
     private var arrangeBar: some View {
@@ -290,7 +313,9 @@ struct BatteryPanel: View {
                 Button("Keep") { power.keep(app.id) }.buttonStyle(.borderless)
             }
             .controlSize(.small)
-            if let now, let after, after > now {
+            if let now, let after, after - now < 1 {
+                Text("Less than 1 min saved at the current rate").font(.caption2).foregroundStyle(.secondary)
+            } else if let now, let after, after > now {
                 HStack(spacing: 4) {
                     Text("If you quit").foregroundStyle(.secondary)
                     Text(BatteryState.duration(now))

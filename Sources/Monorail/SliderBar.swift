@@ -332,8 +332,8 @@ struct SliderBarView: View {
                         let name = map.workspaceNames.indices.contains(index)
                             ? map.workspaceNames[index] : "Workspace \(index + 1)"
                         Circle()
-                            .fill(index == map.workspace ? WorkspaceColor.color(index) : Color.primary.opacity(0.25))
-                            .frame(width: 8, height: 8)
+                            .fill(index == map.workspace ? Color.primary.opacity(0.8) : Color.primary.opacity(0.22))
+                            .frame(width: 6, height: 6)
                             .scaleEffect(model.hoveredWorkspace == index ? 1.35 : 1)
                             .animation(.easeOut(duration: 0.12), value: model.hoveredWorkspace)
                             .contentShape(Rectangle().inset(by: -4))
@@ -361,11 +361,12 @@ struct SliderBarView: View {
                     .onChange(of: geometry.size) { _ in model.trackFrame = geometry.frame(in: .global) }
             }
             Button(action: actions.showOverview) {
-                Image(systemName: "square.grid.3x2")
-                    .font(.system(size: 14, weight: .medium))
+                Image(systemName: "square.grid.2x2")
+                    .font(.system(size: 12, weight: .medium))
+                    .accessibilityLabel("Overview")
             }
             .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.tertiary)
             .help("Overview")
         }
         .padding(.horizontal, 14)
@@ -440,8 +441,7 @@ struct SliderBarView: View {
             let (lower, span) = bounds(map)
             let scale = Double(size.width) / span
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 7)
-                    .fill(Color.primary.opacity(0.05))
+                Color.clear
                 ForEach(map.tiles) { tile in
                     TileView(tile: tile, height: size.height - 8, showTitle: model.showTitles)
                         .frame(width: max(tile.width * scale - 3, 6), height: size.height - 8)
@@ -454,9 +454,10 @@ struct SliderBarView: View {
                             }
                         }
                 }
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.accentColor.opacity(0.14))
-                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.accentColor, lineWidth: 2))
+                // What's on screen: a soft frame, as the Dock highlights without boxing everything.
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.accentColor.opacity(0.10))
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Color.accentColor.opacity(0.75), lineWidth: 1.5))
                     .frame(width: max(map.viewportWidth * scale, 10), height: size.height)
                     .offset(x: trackX(map.viewportX, width: map.viewportWidth, lower: lower, span: span, scale: scale, map: map))
                     .allowsHitTesting(false)
@@ -539,48 +540,70 @@ private struct TileView: View {
         return seen
     }
 
+    /// Like the Dock: just the apps. One window is its icon; more windows of one app are a small
+    /// pile; two apps overlap a little. The slide on screen gets a dot under it, as a running app does.
     var body: some View {
-        let iconSize = min(max(height - 14, 10), 22)
+        let iconSize = min(max(height - 12, 12), 26)
         ZStack {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(tile.isFocused ? Color.accentColor.opacity(0.35) : Color.primary.opacity(0.10))
-            if tile.windows.count > 1 {
-                // Hint at the slide's layout with thin tile outlines.
-                TileOutlines(frames: (tile.nestedFrames.flatMap { $0.count == tile.windows.count ? $0 : nil } ?? tile.arrangement.unitFrames(count: tile.windows.count, split: tile.split, rows: tile.customRows)))
-                    .stroke(Color.primary.opacity(0.18), lineWidth: 1)
-                    .padding(3)
-            }
-            HStack(spacing: 2) {
-                ForEach(icons.prefix(showTitle ? 1 : 4), id: \.self) { pid in
-                    if let icon = AppIcons.icon(for: pid) {
-                        Image(nsImage: icon).resizable().frame(width: iconSize, height: iconSize)
-                    }
-                }
-                if showTitle || tile.name != nil {
+            Color.clear
+            if showTitle || tile.name != nil {
+                HStack(spacing: 4) {
+                    icon(icons.first, size: iconSize)
                     Text(tile.name ?? tile.windows.first.map { $0.title.isEmpty ? $0.appName : $0.title } ?? "")
                         .font(.system(size: 10, weight: .medium))
                         .lineLimit(1)
                         .truncationMode(.tail)
-                } else if tile.windows.count > 1 {
-                    Text("\(tile.windows.count)")
-                        .font(.system(size: 9, weight: .bold, design: .rounded))
-                        .foregroundStyle(.secondary)
                 }
-                if tile.isLocked {
-                    Image(systemName: "lock.fill").font(.system(size: 8)).foregroundStyle(.secondary)
-                }
+                .padding(.horizontal, 3)
+            } else {
+                pile(size: iconSize)
             }
-            .padding(.horizontal, 3)
+        }
+        .overlay(alignment: .bottom) {
+            Circle().fill(Color.primary.opacity(tile.isFocused ? 0.85 : 0)).frame(width: 4, height: 4).offset(y: 3)
         }
         .overlay(alignment: .topTrailing) {
             if tile.windows.contains(where: \.needsAttention) {
-                Circle().fill(Color.red).frame(width: 6, height: 6).padding(2)
+                Circle().fill(Color.red).frame(width: 7, height: 7)
+                    .overlay(Circle().strokeBorder(Color.white.opacity(0.8), lineWidth: 1))
+                    .padding(1)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .overlay(alignment: .topLeading) {
+            if tile.isLocked {
+                Image(systemName: "lock.fill").font(.system(size: 7)).foregroundStyle(.secondary).padding(1)
+            }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(tile.windows.map(\.appName).joined(separator: " and ")
+            + (tile.windows.count > 1 ? ", \(tile.windows.count) windows" : "")
             + (tile.windows.contains(where: \.needsAttention) ? ", needs attention" : ""))
+    }
+
+    @ViewBuilder private func pile(size: CGFloat) -> some View {
+        if icons.count > 1 {
+            // Two apps: side by side, overlapping a little.
+            HStack(spacing: -size * 0.28) {
+                ForEach(icons.prefix(2), id: \.self) { pid in icon(pid, size: size * 0.86) }
+            }
+        } else if tile.windows.count > 1 {
+            // More windows of one app: a small pile, like a stack in the Dock.
+            ZStack {
+                icon(icons.first, size: size * 0.86).opacity(0.55).offset(x: size * 0.16, y: -size * 0.1)
+                icon(icons.first, size: size * 0.92).offset(x: -size * 0.06, y: size * 0.04)
+            }
+        } else {
+            icon(icons.first, size: size)
+        }
+    }
+
+    @ViewBuilder private func icon(_ pid: pid_t?, size: CGFloat) -> some View {
+        if let pid, let image = AppIcons.icon(for: pid) {
+            Image(nsImage: image).resizable().frame(width: size, height: size)
+                .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
+        } else {
+            RoundedRectangle(cornerRadius: size * 0.23, style: .continuous).fill(Color.primary.opacity(0.15)).frame(width: size, height: size)
+        }
     }
 }
 

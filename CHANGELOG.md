@@ -11,6 +11,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **Switches you can see the options of.** On the panel's Home, Stay Awake, Evening, Focus and Low Power are tiles, as in Control Centre: the round icon turns it on or off, and the name, its state and a › open its options. No more hidden right-click.
 - **Pause, resume and smart pairs where you can see them.** The Windows card has a pause button again (it turns into play while paused, and the card says so) and a wand that puts windows of the same app back together.
 
+- **A calmer slider bar, like the Dock.** Just the apps: no boxes, outlines or numbers. Several windows of one app show as a small pile of its icon, two apps overlap a little, and the slide on screen gets a dot under it and a soft frame. Workspace dots are smaller and neutral. The panel's Windows card shows only the bar (click a slide to go there; hover for its live preview).
+
 ### Fixed
 - **The menu bar icon is easy to see again.** It's drawn white on a dark menu bar and black on a light one, like the icons next to it, and a little bolder. While paused it uses macOS's own dimmed look, which follows the theme; in 1.8.0 a paused icon came out dark grey on a dark menu bar.
 

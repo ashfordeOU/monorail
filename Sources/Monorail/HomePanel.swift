@@ -331,24 +331,7 @@ struct HomePage: View {
             }
             SliderBarView(model: model, actions: context.actions) {}
                 .frame(height: 52)
-            if let map = model.map, !map.tiles.isEmpty {
-                ScrollViewReader { proxy in
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(Array(map.tiles.enumerated()), id: \.element.id) { number, tile in
-                                Button { if let window = tile.windows.first { context.actions.focus(window.id) } } label: {
-                                    PanelSlideCard(number: number + 1, tile: tile)
-                                }
-                                .buttonStyle(PressStyle())
-                                .id(tile.id)
-                            }
-                        }
-                        .padding(.vertical, 2)
-                        .environment(\.layoutDirection, map.isRightToLeft ? .rightToLeft : .leftToRight)
-                    }
-                    .onAppear { if let focused = map.tiles.first(where: \.isFocused) { proxy.scrollTo(focused.id, anchor: .center) } }
-                }
-            } else {
+            if model.map?.tiles.isEmpty ?? true {
                 Text("No windows on this workspace yet.").font(.system(size: 11)).foregroundStyle(.secondary)
             }
         }

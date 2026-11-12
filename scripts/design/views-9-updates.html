@@ -1,0 +1,74 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Updates</title><link rel="stylesheet" href="mac.css">
+<style>
+.status { display:flex; align-items:center; gap:7px; margin:2px 2px 10px; } .status i { width:8px; height:8px; border-radius:50%; }
+.upd { display:flex; gap:11px; align-items:center; }
+.uicon { width:40px; height:40px; border-radius:10px; background:linear-gradient(140deg,#FF8A5B,#E8437A 60%,#C2456E); display:grid; place-items:center; color:#fff; flex:none; position:relative; }
+.badge { position:absolute; right:-4px; bottom:-4px; width:18px; height:18px; border-radius:50%; background:var(--blue); color:#fff; display:grid; place-items:center; box-shadow:0 0 0 2px var(--win-content); }
+.badge svg.s { width:11px; height:11px; stroke-width:2.6; }
+.feat { display:flex; gap:12px; align-items:flex-start; margin-bottom:13px; }
+.feat .fi { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; color:#fff; flex:none; } .feat .fi svg.s { width:16px; height:16px; }
+.feat b { display:block; font-size:13px; font-weight:600; } .feat span { font-size:12px; color:var(--ink-2); line-height:16px; }
+.wn { position:absolute; width:440px; border-radius:16px; background:var(--win-content); box-shadow:var(--shadow); overflow:hidden; padding:38px 40px 22px; }
+.wn h2 { font:700 26px/31px "SF Pro Display", -apple-system, sans-serif; margin:0 0 4px; text-align:center; }
+.toast { position:absolute; display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:14px; background:var(--mat); backdrop-filter:blur(40px); box-shadow:var(--shadow); }
+.bar { height:5px; border-radius:3px; background:var(--off); overflow:hidden; } .bar b { display:block; height:100%; border-radius:3px; background:var(--blue); }
+.ctrls { display:grid; grid-template-columns:repeat(4,1fr); text-align:center; padding:10px 6px; margin-top:8px; }
+.ctrls .round { margin:0 auto; width:32px; height:32px; flex-basis:32px; } .ctrls .t3 { display:block; margin-top:5px; }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const mi = (w, h) => monoIcon.replace('width="17" height="13"', `width="${w}" height="${h}"`);
+const ctrls = `<div class="tile ctrls"><div><span class="round">${s('cup')}</span><span class="t3">Stay Awake</span></div><div><span class="round warm">${s('moon','f')}</span><span class="t3">Evening</span></div><div><span class="round">${s('scope')}</span><span class="t3">Focus</span></div><div><span class="round">${s('leaf')}</span><span class="t3">Low Power</span></div></div>`;
+const strip = `<div class="tile" style="margin-top:8px"><div class="row"><span class="b">Build</span><span class="t3">· 4 slides</span><span style="margin-left:auto;display:flex;gap:4px">${['Safari','Xcode','Slack','Chrome'].map(a=>app(a,16)).join('')}</span></div></div>`;
+
+const a = `<div class="cap" style="left:40px;top:44px">1 · READY: ONE QUIET CARD AT THE TOP, NO POP-UP</div>
+<div class="panel" style="left:40px;top:70px;width:340px">
+  <div class="status"><i style="background:var(--blue)"></i><span class="b">Update ready</span></div>
+  <div class="tile" style="padding:12px;background:color-mix(in srgb,var(--blue) 9%,var(--tile))">
+    <div class="upd"><span class="uicon">${mi(22,17)}<span class="badge">${s('arrow').replace('<path d="M5 12h14M13 6l6 6-6 6"/>','<path d="M12 5v14M6 13l6 6 6-6"/>')}</span></span>
+      <div><div class="b">Monorail 1.8</div><div class="t2">One panel, smart home, battery rings</div></div></div>
+    <div class="row" style="margin-top:10px;gap:6px"><span class="btn p">Update Now</span><span class="btn">Tonight</span><span class="t3" style="margin-left:auto;color:var(--blue)">What's New ›</span></div>
+    <div class="t3" style="margin-top:8px">About 10 seconds. Your windows stay exactly where they are.</div></div>
+  ${strip}${ctrls}</div>`;
+
+const b = `<div class="cap" style="left:420px;top:44px">2 · WHAT'S NEW: A PAGE IN THE SAME PANEL</div>
+<div class="panel" style="left:420px;top:70px;width:340px">
+  <div class="row" style="margin:2px 2px 12px"><span style="color:var(--blue);font-weight:500">‹ Monorail</span><span class="b" style="margin:0 auto;transform:translateX(-36px)">What's New</span></div>
+  <div style="text-align:center;margin-bottom:14px"><span class="uicon" style="width:52px;height:52px;border-radius:12px;margin:0 auto 8px;display:grid">${mi(28,22)}</span><div class="b" style="font-size:15px">Monorail 1.8</div><div class="t3">12 November · 4 MB</div></div>
+  <div class="feat"><span class="fi" style="background:linear-gradient(140deg,#FF8A5B,#E8437A)">${s('grid')}</span><div><b>One panel</b><span>Pages slide inside it; nothing opens on top.</span></div></div>
+  <div class="feat"><span class="fi" style="background:var(--good)">${s('bolt','f')}</span><div><b>Battery rings</b><span>Charge, time left and drain at a glance.</span></div></div>
+  <div class="feat"><span class="fi" style="background:var(--blue)">${s('sparkles')}</span><div><b>It sorts itself</b><span>What needs you moves to the top.</span></div></div>
+  <div class="row" style="gap:6px;margin-top:4px"><span class="btn p" style="flex:1;text-align:center">Update Now</span><span class="t3">All changes ›</span></div></div>`;
+
+const c = `<div class="cap" style="left:800px;top:44px">3 · INSTALLING: THE CARD FILLS, THEN RELAUNCHES IN PLACE</div>
+<div class="panel" style="left:800px;top:70px;width:340px">
+  <div class="status"><i style="background:var(--blue)"></i><span class="b">Updating</span></div>
+  <div class="tile" style="padding:12px;background:color-mix(in srgb,var(--blue) 9%,var(--tile))">
+    <div class="upd"><span style="position:relative;width:40px;height:40px">${rings3([[68,'var(--blue)']],40,4)}<span style="position:absolute;inset:0;display:grid;place-items:center;color:var(--blue)">${mi(16,12)}</span></span>
+      <div style="flex:1"><div class="b">Installing Monorail 1.8</div><div class="t2 num">68% · a few seconds left</div></div></div>
+    <div class="t3" style="margin-top:9px">Monorail restarts by itself. Nothing on your screen moves.</div></div>
+  ${strip}${ctrls}</div>`;
+
+const d = `<div class="cap" style="left:1180px;top:44px">4 · AFTER: A NOTICE, ONCE</div>
+<div class="toast" style="left:1180px;top:70px;width:290px"><span class="uicon" style="width:32px;height:32px;border-radius:8px">${mi(18,14)}</span><div><div class="b">Updated to Monorail 1.8</div><div class="t2">See what's new</div></div><span class="t3" style="margin-left:auto">now</span></div>
+<div class="notes" style="left:1180px;top:150px;width:290px">
+  <b>No pop-ups while you work.</b> An update waits as one card at the top of the panel and a small blue dot on the card, never on the menu bar icon.<br><br>
+  <b>Your choice of when.</b> Update Now, or Tonight (installs while the Mac sleeps). Windows never move.<br><br>
+  <b>It tells you once.</b> After the restart, a single notice slides in from the top right and fades; clicking it opens What's New.<br><br>
+  <b>What's New, Apple-style.</b> Big title, three rows with coloured icons, one blue button. Only for releases with something to show; small fixes stay quiet.</div>`;
+
+const e = `<div class="cap" style="left:40px;top:540px">5 · WHAT'S NEW, ONCE AFTER A BIG UPDATE</div>
+<div class="wn" style="left:40px;top:562px">
+  <h2>What's New in Monorail</h2><div class="t3" style="text-align:center;margin-bottom:24px">Version 1.8</div>
+  <div class="feat"><span class="fi" style="background:linear-gradient(140deg,#FF8A5B,#E8437A)">${s('grid')}</span><div><b>One panel, pages inside it</b><span>Battery, apps and switches open in the same panel, like Control Centre.</span></div></div>
+  <div class="feat"><span class="fi" style="background:var(--good)">${s('bolt','f')}</span><div><b>Three battery rings</b><span>Charge, time left and drain against your usual, with a glow that follows the drain.</span></div></div>
+  <div class="feat"><span class="fi" style="background:var(--blue)">${s('sparkles')}</span><div><b>It sorts itself</b><span>A fast drain or a waiting update moves to the top, with the fix on it.</span></div></div>
+  <div class="btn p" style="display:block;text-align:center;padding:8px 0;font-size:13px;margin-top:20px">Continue</div></div>`;
+
+const f = `<div class="cap" style="left:540px;top:540px">6 · SETTINGS › ABOUT</div>
+<div class="panel" style="left:540px;top:562px;width:420px">
+  <div class="row" style="gap:12px"><span class="uicon" style="width:52px;height:52px;border-radius:12px">${mi(28,22)}</span><div><div class="b" style="font-size:15px">Monorail</div><div class="t2">Version 1.8 · Up to date</div></div><span class="btn" style="margin-left:auto">Check Now</span></div>
+  <div class="list" style="margin-top:12px"><div class="li">Install updates automatically<span class="switch on" style="margin-left:auto"><i></i></span></div><div class="li">When<span class="v">Tonight, while it sleeps ⌃</span></div><div class="li">Beta updates<span class="switch" style="margin-left:auto"><i></i></span></div></div>
+  <div class="row" style="margin-top:10px"><span class="t3" style="color:var(--blue)">What's New in 1.8</span><span class="t3" style="margin-left:auto">Release notes</span></div></div>`;
+
+document.getElementById('app').innerHTML = menubar(`<span class="on">${monoIcon}</span>`) + a + b + c + d + e + f;
+</script></body></html>

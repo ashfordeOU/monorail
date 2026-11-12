@@ -1,0 +1,84 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Onboarding</title><link rel="stylesheet" href="mac.css">
+<style>
+.ob { position:absolute; width:440px; height:400px; border-radius:16px; background:var(--win-content); box-shadow:var(--shadow); overflow:hidden; text-align:center; padding:40px 36px 0; }
+.ob .lights { position:absolute; left:14px; top:14px; display:flex; gap:7px; } .ob .lights i { width:12px; height:12px; border-radius:50%; background:var(--off); }
+.ob h2 { font:700 26px/31px "SF Pro Display", -apple-system, sans-serif; margin:0 0 7px; letter-spacing:.2px; }
+.ob p { color:var(--ink-2); margin:0 auto; max-width:330px; font-size:13px; line-height:18px; }
+.ob .foot { position:absolute; left:28px; right:28px; bottom:22px; display:flex; align-items:center; gap:8px; }
+.ob .wide { flex:1; text-align:center; padding:7px 0; font-size:13px; border-radius:8px; }
+.dots { display:flex; gap:6px; } .dots i { width:6px; height:6px; border-radius:50%; background:var(--off); } .dots i.on { width:16px; border-radius:3px; background:var(--ink-2); }
+.icon { width:96px; height:96px; border-radius:22px; margin:6px auto 20px; background:linear-gradient(140deg,#FF8A5B,#E8437A 60%,#C2456E); display:grid; place-items:center; color:#fff; position:relative;
+  box-shadow:0 14px 34px rgba(232,67,122,.38), inset 0 1px 0 rgba(255,255,255,.3); }
+.halo { position:absolute; inset:-36px; border-radius:50%; background:radial-gradient(circle, rgba(255,138,91,.30), rgba(232,67,122,.12) 45%, transparent 70%); z-index:-1; }
+.feat { display:flex; gap:14px; align-items:flex-start; text-align:left; margin:0 6px 15px; }
+.feat .fi { width:34px; height:34px; border-radius:9px; display:grid; place-items:center; color:#fff; flex:none; }
+.feat .fi svg.s { width:18px; height:18px; }
+.feat b { display:block; font-size:13px; font-weight:600; margin-bottom:1px; }
+.feat span { font-size:12px; color:var(--ink-2); line-height:16px; }
+.choice { text-align:left; display:flex; gap:12px; align-items:center; padding:10px 12px; border-radius:10px; background:var(--tile); margin-bottom:8px; box-shadow:0 0 0 .5px var(--sep); }
+.choice.on { box-shadow:0 0 0 2px var(--blue); background:var(--tile-2); }
+.key { display:inline-grid; place-items:center; min-width:40px; height:40px; padding:0 10px; border-radius:9px; font:500 18px "SF Pro Text",sans-serif; background:var(--tile-2); box-shadow:0 0 0 .5px var(--sep), 0 2px 0 var(--sep); }
+.key.down { transform:translateY(2px); box-shadow:0 0 0 .5px var(--sep); background:color-mix(in srgb,var(--blue) 14%,var(--tile-2)); }
+.mini { display:flex; gap:5px; justify-content:center; margin:18px 0 6px; }
+.mini div { width:70px; height:48px; border-radius:7px; background:var(--tile); display:grid; place-items:center; box-shadow:0 0 0 .5px var(--sep); }
+.mini div.on { box-shadow:0 0 0 2px var(--blue); background:var(--tile-2); }
+.prog { display:flex; gap:6px; justify-content:center; margin-top:10px; } .prog i { width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-style:normal; font-size:11px; color:#fff; background:var(--off); }
+.prog i.ok { background:var(--good); }
+.permrow { display:flex; align-items:center; gap:10px; text-align:left; padding:10px 12px; border-radius:10px; background:var(--tile-2); box-shadow:0 0 0 .5px var(--sep); margin-top:16px; }
+.arrow { position:absolute; font-size:20px; color:var(--ink-3); }
+.pointer { position:absolute; right:150px; top:30px; z-index:5; padding:8px 12px; border-radius:10px; background:var(--blue); color:#fff; font-size:12px; font-weight:500; box-shadow:0 8px 20px rgba(10,132,255,.35); }
+.pointer::before { content:""; position:absolute; right:22px; top:-6px; border:6px solid transparent; border-top:0; border-bottom-color:var(--blue); }
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const big = monoIcon.replace('width="17" height="13"', 'width="52" height="40"');
+const lights = `<div class="lights"><i></i><i></i><i></i></div>`;
+const dots = (n) => `<span class="dots">${[0,1,2,3,4].map(i => `<i class="${i === n ? 'on' : ''}"></i>`).join('')}</span>`;
+const ob = (x, y, cap, inner, foot) => `<div class="cap" style="left:${x}px;top:${y - 20}px">${cap}</div><div class="ob" style="left:${x}px;top:${y}px">${lights}${inner}<div class="foot">${foot}</div></div>`;
+
+const s1 = ob(40, 70, '1 · HELLO: THE ICON SPRINGS IN, A GLOW BREATHES', `
+  <div class="icon"><div class="halo"></div>${big}</div>
+  <h2>Welcome to Monorail</h2>
+  <p>Your windows ride one strip that runs past the edges of your screen. Nothing you're using ever shrinks.</p>
+  <div class="mini" style="margin-top:22px"><div>${app('Notes', 20)}</div><div class="on">${app('Safari', 20)}</div><div>${app('Xcode', 20)}</div><div style="opacity:.5">${app('Slack', 20)}</div></div>`,
+  `${dots(0)}<span style="flex:1"></span><span class="btn p" style="padding:6px 22px;font-size:13px">Continue</span>`);
+
+const s2 = ob(530, 70, '2 · WHAT IT DOES: ROWS RISE ONE BY ONE', `
+  <h2 style="margin-bottom:22px">Here's how it works</h2>
+  <div class="feat"><span class="fi" style="background:var(--blue)">${s('layout')}</span><div><b>One endless strip</b><span>New windows slide in beside you. ⌃⌥← and → glide along.</span></div></div>
+  <div class="feat"><span class="fi" style="background:linear-gradient(140deg,#FF8A5B,#E8437A)">${s('grid')}</span><div><b>Everything in one panel</b><span>Click the icon for your windows, battery and switches.</span></div></div>
+  <div class="feat"><span class="fi" style="background:var(--good)">${s('bolt', 'f')}</span><div><b>Knows your battery</b><span>Three rings, and the app to quit when it drains fast.</span></div></div>
+  <div class="feat"><span class="fi" style="background:#AF52DE">${s('sparkles')}</span><div><b>Just say it</b><span>“Slack and Mail side by side.” ⌃⌥/ and type.</span></div></div>`,
+  `${dots(1)}<span style="flex:1"></span><span class="btn">Back</span><span class="btn p" style="padding:6px 22px;font-size:13px">Continue</span>`);
+
+const s3 = ob(1020, 70, '3 · ONE PERMISSION, TICKED LIVE', `
+  <div class="icon" style="width:72px;height:72px;border-radius:17px;background:var(--blue);box-shadow:0 12px 28px rgba(10,132,255,.35);margin-bottom:16px">${s('hand').replace('class="s "', 'class="s" style="width:36px;height:36px"')}</div>
+  <h2>Allow Accessibility</h2>
+  <p>macOS asks for this before any app can move windows. It's the only thing Monorail needs.</p>
+  <div class="permrow">${app('Finder', 26)}<div><div class="b">Monorail</div><div class="t3">Privacy &amp; Security › Accessibility</div></div><span class="switch on" style="transform:scale(1.2);margin-right:4px"><i></i></span></div>
+  <div class="row" style="justify-content:center;margin-top:12px;color:var(--good);font-weight:600">${s('check')} Allowed</div>`,
+  `${dots(2)}<span style="flex:1"></span><span class="btn">Back</span><span class="btn p" style="padding:6px 22px;font-size:13px">Continue</span>`);
+
+const s4 = ob(40, 530, '4 · PICK A START', `
+  <h2>How do you work?</h2><p style="margin-bottom:16px">You can change anything later.</p>
+  <div class="choice on"><span class="round on">${s('sparkles')}</span><div><div class="b">Simple</div><div class="t2">The essentials, nothing to set up</div></div><span style="margin-left:auto;color:var(--blue)">${s('check')}</span></div>
+  <div class="choice"><span class="round">${s('keyboard')}</span><div><div class="b">Keyboard first</div><div class="t2">Every shortcut, every setting</div></div></div>
+  <div class="choice"><span class="round">${s('arrow')}</span><div><div class="b">Coming from another app</div><div class="t2">Bring your AeroSpace, yabai or Rectangle setup</div></div></div>`,
+  `${dots(3)}<span style="flex:1"></span><span class="btn">Back</span><span class="btn p" style="padding:6px 22px;font-size:13px">Continue</span>`);
+
+const s5 = ob(530, 530, '5 · TRY IT: EACH MOVE TICKS OFF', `
+  <h2>Give it a slide</h2><p>Press the keys. The practice windows move for real.</p>
+  <div style="display:flex;gap:6px;justify-content:center;margin-top:20px"><span class="key">⌃</span><span class="key">⌥</span><span class="key down">→</span></div>
+  <div class="mini"><div>${app('Notes', 22)}</div><div class="on">${app('Safari', 22)}</div><div>${app('Mail', 22)}</div></div>
+  <div class="prog"><i class="ok">✓</i><i class="ok">✓</i><i>3</i><i>4</i></div>
+  <div class="t3" style="margin-top:6px">Slide right ✓ · Slide left ✓ · Overview · Say it</div>`,
+  `${dots(4)}<span class="t3" style="flex:1;text-align:right;margin-right:6px">Skip</span><span class="btn p" style="padding:6px 22px;font-size:13px">Continue</span>`);
+
+const s6 = `<div class="cap" style="left:1020px;top:510px">6 · DONE: THE WINDOW SHRINKS INTO THE MENU BAR ICON</div>
+  <div class="ob" style="left:1020px;top:530px;padding-top:56px">${lights}
+  <div class="icon" style="width:72px;height:72px;border-radius:17px;background:var(--good);box-shadow:0 12px 28px rgba(40,180,99,.35)">${s('check').replace('class="s "', 'class="s" style="width:38px;height:38px;stroke-width:2.6"')}</div>
+  <h2>You're all set</h2><p>Monorail lives in the menu bar. Click its icon for everything; it turns grey when paused and orange while your Mac stays awake.</p>
+  <div class="foot"><span class="btn p wide">Start Using Monorail</span></div></div>
+  <div class="pointer">Monorail lives here</div>`;
+
+document.getElementById('app').innerHTML = menubar(`<span class="on">${monoIcon}</span>`) + s1 + s2 + s3 + s4 + s5 + s6;
+</script></body></html>

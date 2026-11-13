@@ -8,7 +8,7 @@ import SwiftUI
 // which slides across and resizes to fit. ‹ goes back. Nothing opens on top of anything else.
 
 enum PanelPage: Hashable {
-    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today, clipboard, note
+    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today, clipboard, note, focus
 }
 
 final class PanelNavigator: ObservableObject {
@@ -114,6 +114,8 @@ struct PanelRoot: View {
             ClipboardPage(onBack: nav.pop, store: store)
         case .note:
             NotePage(onBack: nav.pop)
+        case .focus:
+            FocusPage(onBack: nav.pop, store: store)
         }
     }
 
@@ -141,6 +143,7 @@ struct HomePage: View {
     @State private var tick = 0
 
     @ObservedObject private var today = TodayWatch.shared
+    @ObservedObject private var focusSession = FocusWatch.shared
     private var more: SliderPopover.MoreControls { context.more }
 
     private var layout: HomeLayout {
@@ -504,6 +507,9 @@ struct HomePage: View {
                             toggle: { more.toggleFocus(); settle() }, open: nil)
             }
             // Low Power Mode needs an administrator, which the App Store's sandbox doesn't allow.
+            ControlTile(title: "Focus Session", status: focusSession.isRunning ? "\(TimeModel.countdown(focusSession.remaining)) left" : "\(store.settings.focusMinutes) min",
+                        systemImage: "timer", isOn: focusSession.isRunning, tint: Color(nsColor: .systemIndigo),
+                        toggle: { focusSession.isRunning ? focusSession.stop() : focusSession.start() }, open: { nav.push(.focus) })
             ControlTile(title: "Film", status: moments.film ? (moments.sleepAt.map { "Sleeps at \($0.formatted(date: .omitted, time: .shortened))" } ?? "On") : "Off",
                         systemImage: "film.fill", isOn: moments.film, tint: Color(nsColor: .systemIndigo),
                         toggle: { moments.setFilm(!moments.film) }, open: { nav.push(.film) })

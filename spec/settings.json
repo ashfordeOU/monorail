@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 238,
+  "count": 242,
   "settings": [
     {
       "key": "layout",
@@ -715,6 +715,30 @@
       "type": "Int",
       "default": "50",
       "about": "How many clips to remember (pinned ones don't count)."
+    },
+    {
+      "key": "focusMinutes",
+      "type": "Int",
+      "default": "25",
+      "about": "Focus sessions: length in minutes, background sound (\"none\", \"brown\", \"pink\", \"rain\") and, in Monorail, hiding your distracting apps while one runs."
+    },
+    {
+      "key": "focusSound",
+      "type": "String",
+      "default": "\"none\"",
+      "about": ""
+    },
+    {
+      "key": "focusHidesApps",
+      "type": "Bool",
+      "default": "true",
+      "about": ""
+    },
+    {
+      "key": "eyeBreaks",
+      "type": "Bool",
+      "default": "false",
+      "about": "A reminder every 20 minutes at the screen to look into the distance for 20 seconds."
     },
     {
       "key": "focusFlash",

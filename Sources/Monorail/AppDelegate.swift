@@ -2097,6 +2097,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         MomentsWatch.shared.onFilmChange = { [weak self] on in self?.evening.pauseForFilm(on) }
         MomentsWatch.shared.start()
         BatteryLog.shared.start()
+        FocusWatch.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
+        FocusWatch.shared.onRunningChange = { [weak self] on in
+            guard let self, !Edition.isAppStore, self.store.settings.focusHidesApps else { return }
+            on ? self.deepWork.start() : self.deepWork.stop()
+        }
         store.startCloudSync()
         store.watchFile()
         startTelemetry()
@@ -2136,6 +2141,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let liveReloadWasOn = engine.settings.liveReloadSettings
         engine.settings = settings
         ClipboardWatch.shared.apply(settings)
+        FocusWatch.shared.apply(settings)
         switch settings.appAppearance {
         case .system: NSApp.appearance = nil
         case .light: NSApp.appearance = NSAppearance(named: .aqua)

@@ -124,6 +124,10 @@ public static class SettingKeys
     public const string WorldClocks = "worldClocks";
     public const string ClipboardHistory = "clipboardHistory";
     public const string ClipboardKeep = "clipboardKeep";
+    public const string FocusMinutes = "focusMinutes";
+    public const string FocusSound = "focusSound";
+    public const string FocusHidesApps = "focusHidesApps";
+    public const string EyeBreaks = "eyeBreaks";
     public const string FocusFlash = "focusFlash";
     public const string SliderOpacity = "sliderOpacity";
     public const string SliderScale = "sliderScale";
@@ -422,6 +426,12 @@ public static class SettingDefaults
     public const bool ClipboardHistory = true;
     /// <summary>How many clips to remember (pinned ones don't count).</summary>
     public const int ClipboardKeep = 50;
+    /// <summary>Focus sessions: length in minutes, background sound ("none", "brown", "pink", "rain") and, in Monorail, hiding your distracting apps while one runs.</summary>
+    public const int FocusMinutes = 25;
+    public const string FocusSound = "none";
+    public const bool FocusHidesApps = true;
+    /// <summary>A reminder every 20 minutes at the screen to look into the distance for 20 seconds.</summary>
+    public const bool EyeBreaks = false;
     /// <summary>A quick highlight of the focused window when focus moves by keyboard.</summary>
     public const bool FocusFlash = false;
     /// <summary>The slider bar's opacity and size (0.8, 1 or 1.25).</summary>

@@ -762,6 +762,13 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var clipboardHistory = true
     /// How many clips to remember (pinned ones don't count).
     public var clipboardKeep = 50
+    /// Focus sessions: length in minutes, background sound ("none", "brown", "pink", "rain") and, in Monorail,
+    /// hiding your distracting apps while one runs.
+    public var focusMinutes = 25
+    public var focusSound = "none"
+    public var focusHidesApps = true
+    /// A reminder every 20 minutes at the screen to look into the distance for 20 seconds.
+    public var eyeBreaks = false
     /// A quick highlight of the focused window when focus moves by keyboard.
     public var focusFlash = false
     /// The slider bar's opacity and size (0.8, 1 or 1.25).
@@ -1158,7 +1165,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, focusMinutes, focusSound, focusHidesApps, eyeBreaks
     }
 
     public init(from decoder: Decoder) throws {
@@ -1409,6 +1416,10 @@ public struct AppSettings: Equatable, Codable, Sendable {
         worldClocks = value(.worldClocks, d.worldClocks)
         clipboardHistory = value(.clipboardHistory, d.clipboardHistory)
         clipboardKeep = value(.clipboardKeep, d.clipboardKeep)
+        focusMinutes = value(.focusMinutes, d.focusMinutes)
+        focusSound = value(.focusSound, d.focusSound)
+        focusHidesApps = value(.focusHidesApps, d.focusHidesApps)
+        eyeBreaks = value(.eyeBreaks, d.eyeBreaks)
         // Settings from before 1.1 get the narrow menu bar once.
         compactMenuBarApplied = (try? c.decodeIfPresent(Bool.self, forKey: .compactMenuBarApplied)) ?? false
         if !compactMenuBarApplied {

@@ -4,7 +4,7 @@ import Darwin
 import MonorailCore
 
 /// Reads the processor (per core), memory and network for the System page, only while it's on
-/// screen. Everything here is allowed in Station's sandbox too.
+/// screen. Everything here is allowed in Signalbox's sandbox too.
 final class SystemWatch: ObservableObject {
     static let shared = SystemWatch()
 

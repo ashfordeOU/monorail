@@ -67,7 +67,7 @@ final class ClipboardWatch: ObservableObject {
     func remove(_ clip: ClipHistory.Clip) { history.remove(clip.id); save() }
     func clear() { history.clear(); save() }
 
-    /// Copies text back. Monorail also pastes it into the app you were in; Station can't type for
+    /// Copies text back. Monorail also pastes it into the app you were in; Signalbox can't type for
     /// you inside the App Store's sandbox, so it copies and you press ⌘V.
     func use(_ text: String, plain: Bool = false) {
         let board = NSPasteboard.general

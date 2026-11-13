@@ -1,6 +1,6 @@
 import Foundation
 
-/// When Station suggests Monorail, and what it says. Only at a moment Monorail would help (lots
+/// When Signalbox suggests Monorail, and what it says. Only at a moment Monorail would help (lots
 /// of windows, or lots of switching between apps), never in the first two days, at most once a
 /// week, and never again after it's been dismissed three times.
 public enum MonorailNudge {
@@ -54,9 +54,9 @@ public enum MonorailNudge {
     }
 }
 
-/// Release notes for both apps: Station's update window shows what's new in Station, and a section
+/// Release notes for both apps: Signalbox's update window shows what's new in Signalbox, and a section
 /// for what's new in Monorail. A bullet ending in `<!-- monorail -->` is Monorail's alone, and one
-/// ending in `<!-- station -->` is Station's alone; the rest belong to both. (The markers are
+/// ending in `<!-- station -->` is Signalbox's alone; the rest belong to both. (The markers are
 /// invisible on the site.)
 public enum EditionNotes {
     public enum Edition: Sendable { case monorail, station }
@@ -74,7 +74,7 @@ public enum EditionNotes {
         section.filter { $0.hasPrefix("#") || belongs($0, to: edition) }.map(strip)
     }
 
-    /// Only the bullets marked as Monorail's: what Station people are missing.
+    /// Only the bullets marked as Monorail's: what Signalbox people are missing.
     public static func monorailOnly(_ section: [String]) -> [String] {
         section.filter { $0.hasPrefix("#") || $0.contains("<!-- monorail -->") }.map(strip)
     }

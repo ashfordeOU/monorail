@@ -133,8 +133,8 @@ struct SettingsView: View {
     /// The sidebar's groups, without the advanced sections while "Show all settings" is off.
     /// The section you're on always stays (search can open any of them).
     private var visibleGroups: [(String, [SettingsTab])] {
-        // Station shows only what Station does.
-        if Edition.isAppStore { return [("Station", [.general, .awake, .evening, .appearance]), ("About", [.about])] }
+        // Signalbox shows only what Signalbox does.
+        if Edition.isAppStore { return [("Signalbox", [.general, .awake, .evening, .appearance]), ("About", [.about])] }
         return Self.groups.compactMap { group in
             let tabs = group.1.filter {
                 SettingsVisibility.isShown($0.rawValue, showAll: store.settings.showAllSettings) || $0 == navigation.tab
@@ -237,9 +237,9 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - Station's General
+// MARK: - Signalbox's General
 
-/// Station's own short General page: starting at login, the battery in the menu bar, and the way
+/// Signalbox's own short General page: starting at login, the battery in the menu bar, and the way
 /// to the full Monorail.
 private struct StationGeneralPane: View {
     @ObservedObject var store: SettingsStore
@@ -249,7 +249,7 @@ private struct StationGeneralPane: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Open Station when I log in", isOn: $launchAtLogin)
+                Toggle("Open Signalbox when I log in", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { LoginItem.setEnabled($0) }
                 Toggle("Show the battery in the menu bar", isOn: $store.settings.batteryMenuBar)
                 Picker("Menu bar icon", selection: $store.settings.menuBarIconStyle) {
@@ -260,11 +260,11 @@ private struct StationGeneralPane: View {
             Section {
                 LabeledContent("Privacy", value: "Nothing leaves your Mac")
             } footer: {
-                Text("Station only reads your Mac's battery and its own settings.")
+                Text("Signalbox only reads your Mac's battery and its own settings.")
             }
             Section("Arrange your windows too") {
                 HStack {
-                    Text("Monorail, Station's free big sibling, puts your windows on one endless strip.")
+                    Text("Monorail, Signalbox's free big sibling, puts your windows on one endless strip.")
                     Spacer()
                     Button(NSWorkspace.shared.urlForApplication(withBundleIdentifier: SuiteRole.monorailID) == nil ? "Get Monorail" : "Open Monorail") {
                         if let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: SuiteRole.monorailID) {
@@ -277,7 +277,7 @@ private struct StationGeneralPane: View {
                 Toggle(isOn: $store.settings.stationStepsBack) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Let Monorail take over while it runs")
-                        Text("Monorail does everything Station does. While it's open, Station hides its icon and hands Stay Awake to it, so nothing runs twice; when Monorail quits, Station takes over again.")
+                        Text("Monorail does everything Signalbox does. While it's open, Signalbox hides its icon and hands Stay Awake to it, so nothing runs twice; when Monorail quits, Signalbox takes over again.")
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }

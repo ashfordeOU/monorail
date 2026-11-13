@@ -15,7 +15,7 @@ final class TextGrab: ObservableObject {
     @Published private(set) var working = false
 
     /// Monorail: select an area with macOS's own screenshot tool, then read it.
-    /// Station reads screenshots you copy (⌃⇧⌘4) instead; the App Store keeps screen capture for recording.
+    /// Signalbox reads screenshots you copy (⌃⇧⌘4) instead; the App Store keeps screen capture for recording.
     var canSelectArea: Bool { !Edition.isAppStore }
 
     func fromScreen() {

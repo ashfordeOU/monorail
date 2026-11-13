@@ -8,7 +8,7 @@ import UserNotifications
 
 /// Calls, films and heat: notices when the microphone or camera is in use (a call), keeps the Mac
 /// awake through it, runs Film mode and its sleep timer, follows the Mac's heat, and nudges you to
-/// unplug at the charge you chose. Everything here works in Station's sandbox too.
+/// unplug at the charge you chose. Everything here works in Signalbox's sandbox too.
 final class MomentsWatch: ObservableObject {
     static let shared = MomentsWatch()
 

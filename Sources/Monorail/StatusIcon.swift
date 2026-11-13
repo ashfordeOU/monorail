@@ -8,15 +8,26 @@ enum StatusIcon {
     enum Style: String { case colour, white }
 
     /// `badge` adds a dot in the corner (an update is waiting). `tint` overrides the style's colour.
-    static func image(paused: Bool, badge: Bool = false, style: Style = .colour, tint: NSColor? = nil) -> NSImage {
+    /// `pulse` draws Signalbox's glyph: the same two windows with a pulse through them instead of the middle one.
+    static func image(paused: Bool, badge: Bool = false, style: Style = .colour, tint: NSColor? = nil, pulse: Bool = false) -> NSImage {
         let image = NSImage(size: NSSize(width: badge ? 22 : 18, height: 16), flipped: false) { rect in
             // The M: two outlined windows standing tall…
             let sides = NSBezierPath(roundedRect: NSRect(x: 1.5, y: 1.5, width: 4.5, height: 13), xRadius: 1.6, yRadius: 1.6)
             sides.append(NSBezierPath(roundedRect: NSRect(x: 12, y: 1.5, width: 4.5, height: 13), xRadius: 1.6, yRadius: 1.6))
             sides.lineWidth = 1.5
-            // …and the middle one, slid down: solid while running, an outline while paused.
+            // …and the middle one, slid down: solid while running, an outline while paused. Signalbox
+            // has a pulse there instead.
             let middle: NSBezierPath
-            if paused {
+            if pulse {
+                middle = NSBezierPath()
+                middle.move(to: NSPoint(x: 0.6, y: 7.4))
+                for point in [(6.2, 7.4), (7.4, 11.2), (9, 3.8), (10.4, 9.2), (11.4, 7.4), (17.4, 7.4)] {
+                    middle.line(to: NSPoint(x: point.0, y: point.1))
+                }
+                middle.lineWidth = 1.4
+                middle.lineCapStyle = .round
+                middle.lineJoinStyle = .round
+            } else if paused {
                 middle = NSBezierPath(roundedRect: NSRect(x: 7.6, y: 2.6, width: 2.8, height: 7.3), xRadius: 1.1, yRadius: 1.1)
                 middle.lineWidth = 1.3
             } else {
@@ -30,8 +41,8 @@ enum StatusIcon {
             NSGraphicsContext.saveGraphicsState()
             NSColor.white.set()
             sides.stroke()
-            if paused { middle.stroke() } else { middle.fill() }
-            notch.fill()
+            if paused || pulse { middle.stroke() } else { middle.fill() }
+            if !pulse { notch.fill() }
             dot?.fill()
             if let tint {
                 tint.set()
@@ -47,7 +58,7 @@ enum StatusIcon {
         }
         // Not a template: it keeps its own colour on every menu bar, light or dark.
         image.isTemplate = false
-        image.accessibilityDescription = paused ? "Monorail (paused)" : "Monorail"
+        image.accessibilityDescription = pulse ? "Signalbox" : paused ? "Monorail (paused)" : "Monorail"
         return image
     }
 

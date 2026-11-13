@@ -232,7 +232,7 @@ export interface Settings {
   focusHidesApps: boolean;
   /** A reminder every 20 minutes at the screen to look into the distance for 20 seconds. */
   eyeBreaks: boolean;
-  /** Station: while Monorail runs, let Monorail lead (Station hides its icon and pauses its jobs). */
+  /** Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs). */
   stationStepsBack: boolean;
   /** The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black. */
   menuBarIconStyle: string;

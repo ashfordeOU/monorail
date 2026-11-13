@@ -13,7 +13,7 @@ import ScreenCaptureKit
 import Vision
 import CoreImage
 
-/// `Monorail --probe-sandbox`: tries, for real, each thing Monorail Station (the App Store edition)
+/// `Monorail --probe-sandbox`: tries, for real, each thing Signalbox (the App Store edition)
 /// would need, and prints one line per check: `PROBE <name> ok|denied <detail>`. Run on GitHub's Mac
 /// by `appstore.yml` with the sandbox on, so what the App Store allows is measured, not guessed.
 /// Every check undoes what it changes.

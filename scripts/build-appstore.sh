@@ -1,27 +1,27 @@
 #!/bin/bash
-# Builds Station (the Mac App Store edition) and the installer package App Store Connect takes.
+# Builds Signalbox (the Mac App Store edition) and the installer package App Store Connect takes.
 #
 #   APP_SIGN_IDENTITY="Apple Distribution: Ashforde OU (D69G45342Y)" \
 #   INSTALLER_SIGN_IDENTITY="3rd Party Mac Developer Installer: Ashforde OU (D69G45342Y)" \
 #   PROVISIONING_PROFILE=~/Downloads/Monorail_App_Store.provisionprofile \
 #   scripts/build-appstore.sh
 #
-# Then upload dist/AppStore/Station-<version>.pkg with Transporter or:
-#   xcrun altool --upload-app -f dist/AppStore/Station-<version>.pkg -t macos --apiKey … --apiIssuer …
+# Then upload dist/AppStore/Signalbox-<version>.pkg with Transporter or:
+#   xcrun altool --upload-app -f dist/AppStore/Signalbox-<version>.pkg -t macos --apiKey … --apiIssuer …
 # Without the identities it still builds (signed ad hoc), to check that the edition compiles.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 VERSION="$(tr -d '[:space:]' < VERSION)"
 APPSTORE=1 SIGN_IDENTITY="${APP_SIGN_IDENTITY:-}" scripts/build-app.sh
-PKG="dist/AppStore/Station-${VERSION}.pkg"
+PKG="dist/AppStore/Signalbox-${VERSION}.pkg"
 if [ -n "${INSTALLER_SIGN_IDENTITY:-}" ]; then
     # Point it at the keychain with the installer key (CI sets APPSTORE_KEYCHAIN). App Store packages
     # need no timestamp, and asking Apple's timestamp server can stall.
     KEYCHAIN_ARGS=(); [ -n "${APPSTORE_KEYCHAIN:-}" ] && KEYCHAIN_ARGS=(--keychain "$APPSTORE_KEYCHAIN")
-    productbuild --component dist/AppStore/Station.app /Applications \
+    productbuild --component dist/AppStore/Signalbox.app /Applications \
         --sign "$INSTALLER_SIGN_IDENTITY" ${KEYCHAIN_ARGS[@]+"${KEYCHAIN_ARGS[@]}"} --timestamp=none "$PKG"
     pkgutil --check-signature "$PKG"
     echo "==> Ready to upload: $PKG"
 else
-    echo "==> Built dist/AppStore/Station.app (set INSTALLER_SIGN_IDENTITY to make the upload package)"
+    echo "==> Built dist/AppStore/Signalbox.app (set INSTALLER_SIGN_IDENTITY to make the upload package)"
 fi

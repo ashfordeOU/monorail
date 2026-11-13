@@ -30,7 +30,7 @@ final class StorageWatch: ObservableObject {
 
     var level: Storage.Level { Storage.level(free: free, total: total) }
     var used: Int64 { max(total - free, 0) }
-    /// Station looks at your home folder only after you choose it once in the Open dialog
+    /// Signalbox looks at your home folder only after you choose it once in the Open dialog
     /// (the App Store's rule); it remembers that choice with a security-scoped bookmark.
     @Published private(set) var granted: URL?
     var canClean: Bool { !Edition.isAppStore || granted != nil }
@@ -56,7 +56,7 @@ final class StorageWatch: ObservableObject {
         }
     }
 
-    /// Station: ask once for the home folder, so clean-ups and the full scan can see it.
+    /// Signalbox: ask once for the home folder, so clean-ups and the full scan can see it.
     func grantHome() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
@@ -144,7 +144,7 @@ final class StorageWatch: ObservableObject {
 
     // MARK: Largest items
 
-    /// Monorail looks in your home folder; Station looks only in a folder you choose.
+    /// Monorail looks in your home folder; Signalbox looks only in a folder you choose.
     func findLargest(in folder: URL? = nil) {
         if folder == nil, Edition.isAppStore, granted == nil {
             let panel = NSOpenPanel()

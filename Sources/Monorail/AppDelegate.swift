@@ -172,7 +172,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Everything that doesn't move other apps' windows starts now, with or without Accessibility.
         startEssentials()
         if Edition.isAppStore {
-            // Station: the App Store's sandbox doesn't let apps move other apps' windows, so no
+            // Signalbox: the App Store's sandbox doesn't let apps move other apps' windows, so no
             // window engine and no Accessibility request. Everything else starts as usual.
         } else if Accessibility.isTrusted(prompt: false) {
             startEngine()
@@ -762,7 +762,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Keeper owns staying awake while it runs and says so: a session started here goes to it.
         awake.forwardToPeer = { [weak self] session in
             guard let self else { return false }
-            // Station resting: Monorail keeps the Mac awake instead.
+            // Signalbox resting: Monorail keeps the Mac awake instead.
             if Edition.isAppStore, SuiteRole.shared.isResting {
                 var args = ["for": "0"]  // 0: until turned off
                 if case .until(let end) = session, let minutes = SuiteRoles.handoffMinutes(endsAt: end) { args["for"] = "\(minutes)m" }
@@ -2100,7 +2100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Evening Mode and the display controls are wired up in `wireUp`. Runs once, at launch.
     private func startEssentials() {
         apply(store.settings)
-        // Calls, films and heat (works in Station's sandbox too).
+        // Calls, films and heat (works in Signalbox's sandbox too).
         MomentsWatch.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         MomentsWatch.shared.onFilmChange = { [weak self] on in self?.evening.pauseForFilm(on) }
         MomentsWatch.shared.start()
@@ -2714,14 +2714,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// This app's name on the shared channel.
     private static var suiteName: String { Edition.isAppStore ? "station" : "monorail" }
 
-    /// Station, resting: asks Monorail to do something (Stay Awake), through the shared channel.
+    /// Signalbox, resting: asks Monorail to do something (Stay Awake), through the shared channel.
     private func askMonorail(_ op: String, _ args: [String: String] = [:]) {
         guard let suite else { return }
         suite.send(to: "monorail", from: Self.suiteName, op: op, args: args)
         ringSuiteDoorbell()
     }
 
-    /// Station steps back while Monorail runs and takes over again when it quits (SuiteRoles).
+    /// Signalbox steps back while Monorail runs and takes over again when it quits (SuiteRoles).
     private func roleChanged(_ role: SuiteRoles.Role) {
         guard Edition.isAppStore else { return }
         if role == .resting {
@@ -3231,7 +3231,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let paused = engine.isPaused && !Edition.isAppStore
         // Its own colours, never black: the chosen style, orange while Stay Awake is on, red while recording.
         let tint: NSColor? = engine.isRecording ? .systemRed : (awake.isOn && !paused) ? .systemOrange : nil
-        button.image = StatusIcon.image(paused: paused, style: StatusIcon.Style(rawValue: store.settings.menuBarIconStyle) ?? .colour, tint: tint)
+        button.image = StatusIcon.image(paused: paused, style: StatusIcon.Style(rawValue: store.settings.menuBarIconStyle) ?? .colour, tint: tint,
+                                         pulse: Edition.isAppStore)
         button.title = ""
         button.imagePosition = .imageOnly
         button.appearsDisabled = false
@@ -3456,10 +3457,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func addFooter(to menu: NSMenu) {
         menu.addItem(.separator())
         if SuiteRole.shared.stationAlongside {
-            // Both apps here: Monorail leads, Station rests until Monorail quits.
-            let note = NSMenuItem(title: "Station is resting while Monorail runs", action: nil, keyEquivalent: "")
+            // Both apps here: Monorail leads, Signalbox rests until Monorail quits.
+            let note = NSMenuItem(title: "Signalbox is resting while Monorail runs", action: nil, keyEquivalent: "")
             note.isEnabled = false
-            note.toolTip = "Monorail does everything Station does. Quit Monorail and Station takes over again by itself."
+            note.toolTip = "Monorail does everything Signalbox does. Quit Monorail and Signalbox takes over again by itself."
             menu.addItem(note)
         }
         menu.addItem(item(L("Settings…"), #selector(showSettingsFromMenu), key: ","))
@@ -3747,7 +3748,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func showWelcomeFromMenu() { showWelcome() }
     @objc private func quit() { NSApp.terminate(nil) }
 
-    /// Station's menu: only what Station does, and the way to the full Monorail.
+    /// Signalbox's menu: only what Signalbox does, and the way to the full Monorail.
     private func stationMenu(_ menu: NSMenu) {
         let header = NSMenuItem(title: Brand.full, action: nil, keyEquivalent: "")
         header.isEnabled = false

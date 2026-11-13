@@ -133,7 +133,7 @@ struct WelcomeView: View {
     @State private var breathe = false
     @State private var finished = false
     /// The pages shown. Both: hello, how it works, a day with it, knowing your Mac, make it yours, done.
-    /// Monorail adds its one permission, how you work and practice; Station adds meeting Monorail.
+    /// Monorail adds its one permission, how you work and practice; Signalbox adds meeting Monorail.
     private static let pages: [Int] = Edition.isAppStore ? [0, 1, 6, 7, 8, 9, 5] : [0, 1, 2, 3, 6, 7, 8, 4, 5]
     private static var pageCount: Int { pages.count }
 
@@ -224,7 +224,7 @@ struct WelcomeView: View {
                 FeatureRow(symbol: "moon.fill", tint: Color(nsColor: .systemIndigo), title: "Evening Mode",
                            text: "A warmer screen at night, on a schedule or by hand.", delay: 0.16)
                 FeatureRow(symbol: "rectangle.split.3x1.fill", tint: Color(red: 0.91, green: 0.33, blue: 0.45), title: "Want your windows arranged too?",
-                           text: "Monorail, Station’s free big sibling, puts them on one endless strip.", delay: 0.24)
+                           text: "Monorail, Signalbox’s free big sibling, puts them on one endless strip.", delay: 0.24)
             } else {
                 FeatureRow(symbol: "rectangle.split.3x1", tint: Tone.blue, title: "One endless strip",
                            text: "New windows slide in beside you. \(shortcut(.focusLeft)) and \(shortcut(.focusRight)) glide along it.", delay: 0)
@@ -331,10 +331,10 @@ struct WelcomeView: View {
         .padding(.horizontal, 24)
     }
 
-    /// Station only: the free sibling that arranges windows, shown once, honestly.
+    /// Signalbox only: the free sibling that arranges windows, shown once, honestly.
     private var meetMonorail: some View {
         VStack(spacing: 14) {
-            pageTitle("Meet Monorail", "Station's free big sibling, from the same people.")
+            pageTitle("Meet Monorail", "Signalbox's free big sibling, from the same people.")
             HStack(spacing: 8) {
                 ForEach(0..<4, id: \.self) { i in
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
@@ -348,12 +348,12 @@ struct WelcomeView: View {
             VStack(alignment: .leading, spacing: 12) {
                 FeatureRow(symbol: "rectangle.split.3x1.fill", tint: Color(red: 0.91, green: 0.33, blue: 0.45), title: "Windows on one endless strip",
                            text: "New windows slide in beside you, never on top. Nothing you're using ever shrinks.", delay: 0)
-                FeatureRow(symbol: "sparkles", tint: Color(nsColor: .systemPurple), title: "Everything Station does, and more",
+                FeatureRow(symbol: "sparkles", tint: Color(nsColor: .systemPurple), title: "Everything Signalbox does, and more",
                            text: "The same panel, plus what the App Store doesn't allow: the battery cost of every app, and quitting the hungry ones.", delay: 0.08)
             }
             .padding(.horizontal, 24)
             Button("Learn About Monorail") { NSWorkspace.shared.open(Brand.monorailURL) }.controlSize(.large)
-            Text("Free, outside the App Store. Station keeps working either way.").font(.system(size: 11)).foregroundStyle(.tertiary)
+            Text("Free, outside the App Store. Signalbox keeps working either way.").font(.system(size: 11)).foregroundStyle(.tertiary)
             Spacer()
         }
     }
@@ -369,7 +369,7 @@ struct WelcomeView: View {
                 .accessibilityHidden(true)
             Text("You’re all set").font(.system(size: 28, weight: .bold))
             Text(Edition.isAppStore
-                 ? "Station lives in the menu bar. Click its icon for everything; it turns orange while your Mac stays awake."
+                 ? "Signalbox lives in the menu bar. Click its icon for everything; it turns orange while your Mac stays awake."
                  : "Monorail lives in the menu bar. Click its icon for everything; its middle window turns to an outline while paused, and it turns orange while your Mac stays awake.")
                 .font(.system(size: 13)).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).frame(maxWidth: 380)
@@ -381,7 +381,7 @@ struct WelcomeView: View {
             .padding(.top, 8)
             Spacer()
             Button { onFinish() } label: {
-                Text(Edition.isAppStore ? "Start Using Station" : trusted ? "Start Using Monorail" : L("Continue without permission")).frame(maxWidth: .infinity)
+                Text(Edition.isAppStore ? "Start Using Signalbox" : trusted ? "Start Using Monorail" : L("Continue without permission")).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent).controlSize(.large)
             .keyboardShortcut(.defaultAction)

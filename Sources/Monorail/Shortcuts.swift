@@ -12,7 +12,7 @@ enum ShortcutsBridge {
 }
 
 /// Shortcuts and Spotlight actions. They run inside the app (which is already in the menu bar), so
-/// nothing opens. Station has the same ones except arranging windows.
+/// nothing opens. Signalbox has the same ones except arranging windows.
 struct StayAwakeIntent: AppIntent {
     static var title: LocalizedStringResource = "Keep Mac Awake"
     static var description = IntentDescription("Keeps your Mac and its screen awake for a while, or until you turn it off.")

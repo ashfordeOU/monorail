@@ -22,13 +22,13 @@ is the same.
 The code for this is `Edition.isAppStore` (`Sources/Monorail/Edition.swift`), set by building with
 `-DAPPSTORE`. CI checks that the edition compiles on every change.
 
-## Plan: Monorail Station (November 2026)
+## Plan: Signalbox (November 2026)
 
-Since the sandbox can't arrange windows (below), the App Store edition becomes **Station**: the
+Since the sandbox can't arrange windows (below), the App Store edition becomes **Signalbox**: the
 menu bar half of Monorail, complete on its own, with one card and its About page pointing to the
 free Monorail. It isn't called "Lite" and has no locked features: Apple doesn't allow demos.
 
-What Station may do is measured, not guessed: `Monorail --probe-sandbox` tries each capability
+What Signalbox may do is measured, not guessed: `Monorail --probe-sandbox` tries each capability
 (battery and health, other apps' energy, Stay Awake, Keep me Available, Evening Mode, window frames,
 hiding, quitting and opening apps, the clipboard, calendar, microphone in use, Bluetooth batteries,
 Low Power Mode, a local server, and moving windows) and undoes what it changes. **App Store** in the
@@ -40,7 +40,7 @@ TestFlight is a separate tick box.
 The probe ran on GitHub's Mac with the sandbox on and Screen Recording and Bluetooth recorded as
 allowed in the permission database, as a person would allow them. 22 of 32 checks were allowed.
 
-| Feature | Sandbox says | In Station |
+| Feature | Sandbox says | In Signalbox |
 |---|---|---|
 | Mouse, keyboard and trackpad batteries | ✅ IORegistry lookup allowed | Built |
 | AirPods battery (left, right, case) | ❌ the Bluetooth file is closed; the paired-device list waits on a Bluetooth prompt, and the levels themselves aren't public API | Monorail only (it reads macOS's Bluetooth report) |
@@ -106,7 +106,7 @@ where it appears in TestFlight. What to paste into App Store Connect is in
    PROVISIONING_PROFILE=~/Downloads/Monorail_App_Store.provisionprofile \
    scripts/build-appstore.sh
    ```
-4. **Upload** `dist/AppStore/Station-<version>.pkg` with Apple's **Transporter** app.
+4. **Upload** `dist/AppStore/Signalbox-<version>.pkg` with Apple's **Transporter** app.
 5. **TestFlight**: add yourself as a tester and try it for a day: this is also how to run App Store
    betas later.
 6. **Listing**: use the Product Hunt kit (`assets/launch/v17`) for screenshots (App Store sizes are

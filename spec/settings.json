@@ -744,7 +744,7 @@
       "key": "stationStepsBack",
       "type": "Bool",
       "default": "true",
-      "about": "Station: while Monorail runs, let Monorail lead (Station hides its icon and pauses its jobs)."
+      "about": "Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs)."
     },
     {
       "key": "menuBarIconStyle",

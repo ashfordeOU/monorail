@@ -1,9 +1,9 @@
 import Foundation
 
 /// Who does what when more than one of Ashforde's apps is on the Mac. One app alone does all it's
-/// designed for. With Monorail running, Station steps back: Monorail is the superset, so it leads,
-/// and Station stops the jobs that would clash (two apps writing the screen's colours) or double up
-/// (two clipboard watchers, two "unplug now" notifications). When Monorail quits, Station takes over
+/// designed for. With Monorail running, Signalbox steps back: Monorail is the superset, so it leads,
+/// and Signalbox stops the jobs that would clash (two apps writing the screen's colours) or double up
+/// (two clipboard watchers, two "unplug now" notifications). When Monorail quits, Signalbox takes over
 /// again by itself. (Keeper's own handover for Stay Awake is separate: see PeerHello.)
 public enum SuiteRoles {
     public enum Role: String, Sendable {
@@ -28,7 +28,7 @@ public enum SuiteRoles {
         role == .resting ? Set(Job.allCases) : []
     }
 
-    /// A Stay Awake session handed from Station to Monorail as it steps back: the minutes left
+    /// A Stay Awake session handed from Signalbox to Monorail as it steps back: the minutes left
     /// (rounded up), or nil for "until turned off".
     public static func handoffMinutes(endsAt: Date?, now: Date = Date()) -> Int? {
         guard let endsAt else { return nil }

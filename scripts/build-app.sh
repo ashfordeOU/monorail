@@ -14,8 +14,8 @@ APP="dist/Monorail.app"
 SWIFT_FLAGS=()
 ENTITLEMENTS="Resources/Monorail.entitlements"
 if [ "${APPSTORE:-0}" = "1" ]; then
-    # The App Store edition is Station (docs/APP-STORE.md).
-    APP="dist/AppStore/Station.app"
+    # The App Store edition is Signalbox (docs/APP-STORE.md).
+    APP="dist/AppStore/Signalbox.app"
     SWIFT_FLAGS=(-Xswiftc -DAPPSTORE --scratch-path .build-appstore)
     ENTITLEMENTS="Resources/MonorailAppStore.entitlements"
 fi
@@ -45,10 +45,10 @@ sed -e "s/__VERSION__/${VERSION}/" -e "s/__BUILD__/${BUILD}/" Resources/Info.pli
 if [ "${APPSTORE:-0}" = "1" ]; then
     # Its own identifier: the App Store edition and the direct download are separate apps.
     /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier org.ashforde.monorail.appstore" "$APP/Contents/Info.plist"
-    # Named Station wherever it shows: Finder, the Dock, the menu bar and the App Store.
-    /usr/libexec/PlistBuddy -c "Set :CFBundleName Station" "$APP/Contents/Info.plist"
-    /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Station" "$APP/Contents/Info.plist" 2>/dev/null \
-        || /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Station" "$APP/Contents/Info.plist"
+    # Named Signalbox wherever it shows: Finder, the Dock, the menu bar and the App Store.
+    /usr/libexec/PlistBuddy -c "Set :CFBundleName Signalbox" "$APP/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Signalbox" "$APP/Contents/Info.plist" 2>/dev/null \
+        || /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Signalbox" "$APP/Contents/Info.plist"
     /usr/libexec/PlistBuddy -c "Add :LSApplicationCategoryType string public.app-category.productivity" "$APP/Contents/Info.plist" 2>/dev/null \
         || /usr/libexec/PlistBuddy -c "Set :LSApplicationCategoryType public.app-category.productivity" "$APP/Contents/Info.plist"
     # Only standard HTTPS: no export compliance paperwork for each upload.
@@ -68,10 +68,10 @@ fi
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
 echo "==> Icon"
-# assets/icon.png is the 1024px master (re-render with scripts/render-icon.py); Station's is
-# assets/station/icon.png (scripts/render-station-icon.py).
+# assets/icon.png is the 1024px master (re-render with scripts/render-icon.py); Signalbox's is
+# assets/signalbox/icon.png (scripts/render-signalbox-icon.cjs).
 ICON_MASTER="assets/icon.png"
-[ "${APPSTORE:-0}" = "1" ] && ICON_MASTER="assets/station/icon.png"
+[ "${APPSTORE:-0}" = "1" ] && ICON_MASTER="assets/signalbox/icon.png"
 ICONSET="$(mktemp -d)/AppIcon.iconset"
 mkdir -p "$ICONSET"
 for size in 16 32 128 256 512; do
@@ -86,8 +86,8 @@ iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 # keep using AppIcon.icns. Without it (older Xcode, or actool refuses), the build goes on
 # with the classic icon only.
 if [ "${APPSTORE:-0}" = "1" ] && xcrun --find actool > /dev/null 2>&1; then
-    # Station: the App Store wants the icon in an asset catalog (Assets.car), built from the PNGs.
-    CATALOG="$(mktemp -d)/Station.xcassets"
+    # Signalbox: the App Store wants the icon in an asset catalog (Assets.car), built from the PNGs.
+    CATALOG="$(mktemp -d)/Signalbox.xcassets"
     mkdir -p "$CATALOG/AppIcon.appiconset"
     cp "$ICONSET"/*.png "$CATALOG/AppIcon.appiconset/"
     python3 - "$CATALOG/AppIcon.appiconset/Contents.json" <<'PY'
@@ -108,9 +108,9 @@ PY
         cp "$ICON_OUT/Assets.car" "$APP/Contents/Resources/Assets.car"
         /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$APP/Contents/Info.plist" > /dev/null 2>&1 || true
         /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$APP/Contents/Info.plist"
-        echo "    Station icon compiled (Assets.car)"
+        echo "    Signalbox icon compiled (Assets.car)"
     else
-        echo "::error::Station's icon catalog didn't compile"; cat "$ICON_OUT/actool.log"; exit 1
+        echo "::error::Signalbox's icon catalog didn't compile"; cat "$ICON_OUT/actool.log"; exit 1
     fi
 elif [ -d assets/AppIcon.icon ] && xcrun --find actool > /dev/null 2>&1; then
     ICON_OUT="$(mktemp -d)"

@@ -132,7 +132,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `focusSound` |  | `"none"` |
 | `focusHidesApps` |  | `true` |
 | `eyeBreaks` | A reminder every 20 minutes at the screen to look into the distance for 20 seconds. | `false` |
-| `stationStepsBack` | Station: while Monorail runs, let Monorail lead (Station hides its icon and pauses its jobs). | `true` |
+| `stationStepsBack` | Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs). | `true` |
 | `menuBarIconStyle` | The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black. | `"colour"` |
 | `focusFlash` | A quick highlight of the focused window when focus moves by keyboard. | `false` |
 | `sliderOpacity` | The slider bar's opacity and size (0.8, 1 or 1.25). | `1.0` |

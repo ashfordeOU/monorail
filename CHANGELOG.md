@@ -8,6 +8,9 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **The App Store edition is now Signalbox.** A new name, a new icon (mostly navy with a band of Monorail's pink, two white rings and a pink pulse through the M) and a matching menu bar glyph: the M's two windows with a pulse running through them. Same app, same settings. <!-- station -->
+
 ### Added
 - **Calendar, Reminders and Notes.** The Today card opens one page with three tabs. Calendar: a month you can click through, with dots on busy days, the chosen day's agenda (all-day events, times, places and a Join button) and New Event in a line, with world clocks and timers below. Reminders: overdue, today, coming up and no date, each with its list's colour; tick to complete and add one in a line, for today or whenever. Notes: the quick note, and in Monorail your Apple Notes too, newest first, searchable, opening in Notes with a click, and Save to Notes turns the quick note into a real one (Station sends it with macOS's Share to Notes, since the App Store doesn't let apps read Notes). Home's Today card says when reminders are due.
 

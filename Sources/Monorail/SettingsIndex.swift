@@ -117,6 +117,7 @@ enum SettingsIndex {
         ("Flash the focused window when focus moves", "appearance"),
         ("Overview, menu bar and notices", "appearance"),
         ("Monorail’s windows", "appearance"),
+        ("Menu bar icon", "appearance"),
         ("App icons in the overview instead of live previews", "appearance"),
         ("Notices appear", "appearance"),
         ("Notices stay for", "appearance"),

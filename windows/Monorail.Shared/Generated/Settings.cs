@@ -434,7 +434,7 @@ public static class SettingDefaults
     public const bool FocusHidesApps = true;
     /// <summary>A reminder every 20 minutes at the screen to look into the distance for 20 seconds.</summary>
     public const bool EyeBreaks = false;
-    /// <summary>Station: while Monorail runs, let Monorail lead (Station hides its icon and pauses its jobs).</summary>
+    /// <summary>Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs).</summary>
     public const bool StationStepsBack = true;
     /// <summary>The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black.</summary>
     public const string MenuBarIconStyle = "colour";

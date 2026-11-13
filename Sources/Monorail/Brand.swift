@@ -6,13 +6,13 @@ import ServiceManagement
 #if os(macOS)
 /// How the app is named wherever people see it.
 enum Brand {
-    /// The app's own name (its bundle, menus like "Quit Monorail"). The App Store edition is Station.
+    /// The app's own name (its bundle, menus like "Quit Monorail"). The App Store edition is Signalbox.
     #if APPSTORE
-    static let name = "Station"
+    static let name = "Signalbox"
     #else
     static let name = "Monorail"
     #endif
-    /// The full window manager, which Station points to.
+    /// The full window manager, which Signalbox points to.
     static let monorailURL = URL(string: "https://monorail.ashforde.org")!
     /// The maker, with the registered mark.
     static let maker = "by Ashforde®"

@@ -769,7 +769,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var focusHidesApps = true
     /// A reminder every 20 minutes at the screen to look into the distance for 20 seconds.
     public var eyeBreaks = false
-    /// Station: while Monorail runs, let Monorail lead (Station hides its icon and pauses its jobs).
+    /// Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs).
     public var stationStepsBack = true
     /// The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black.
     public var menuBarIconStyle = "colour"

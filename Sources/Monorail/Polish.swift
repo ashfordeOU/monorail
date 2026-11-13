@@ -70,7 +70,7 @@ final class WhatsNew {
             let changelog = try? String(contentsOf: url, encoding: .utf8)
         else { return }
         let notes = Self.section(for: version, in: changelog)
-        // Station also opens it when only Monorail gained something, to say so.
+        // Signalbox also opens it when only Monorail gained something, to say so.
         guard ReleaseNotes.isNotable(EditionNotes.lines(notes, for: Edition.isAppStore ? .station : .monorail))
             || (Edition.isAppStore && ReleaseNotes.isNotable(EditionNotes.monorailOnly(notes))) else { return }
         showNotes(notes, version: version)
@@ -199,7 +199,7 @@ struct WhatsNewView: View {
     }
 }
 
-/// In Station's update notes: what's new in Monorail this time, the part Station can't do.
+/// In Signalbox's update notes: what's new in Monorail this time, the part Signalbox can't do.
 struct NewInMonorail: View {
     let section: [String]
 
@@ -224,7 +224,7 @@ struct NewInMonorail: View {
                         Text(row.text).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                Text("Monorail is free, from the same people, and does everything Station does too.")
+                Text("Monorail is free, from the same people, and does everything Signalbox does too.")
                     .font(.system(size: 10.5)).foregroundStyle(.tertiary)
             }
             .padding(12)

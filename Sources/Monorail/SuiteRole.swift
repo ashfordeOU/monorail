@@ -2,7 +2,7 @@
 import AppKit
 import MonorailCore
 
-/// This app's role among Ashforde's apps right now (SuiteRoles decides). Station watches for
+/// This app's role among Ashforde's apps right now (SuiteRoles decides). Signalbox watches for
 /// Monorail starting and quitting; Monorail is always primary.
 final class SuiteRole: ObservableObject {
     static let shared = SuiteRole()
@@ -10,7 +10,7 @@ final class SuiteRole: ObservableObject {
     static let stationID = "org.ashforde.monorail.appstore"
 
     @Published private(set) var role: SuiteRoles.Role = .primary
-    /// Monorail: Station is installed and running alongside, resting.
+    /// Monorail: Signalbox is installed and running alongside, resting.
     @Published private(set) var stationAlongside = false
 
     var settings: () -> AppSettings = { AppSettings() }

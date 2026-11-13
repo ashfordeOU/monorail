@@ -121,7 +121,7 @@ final class RemindersWatch: ObservableObject {
     }
 }
 
-// MARK: - Apple Notes (Monorail: through the Notes app's scripting; Station can't reach it)
+// MARK: - Apple Notes (Monorail: through the Notes app's scripting; Signalbox can't reach it)
 
 final class AppleNotes: ObservableObject {
     static let shared = AppleNotes()
@@ -465,7 +465,7 @@ struct NotesTab: View {
                 if AppleNotes.available {
                     Button("Save to Notes") { notes.create(clips.note) { clips.note = "" } }
                 } else {
-                    // Station: macOS's own Share to Notes, which the App Store allows.
+                    // Signalbox: macOS's own Share to Notes, which the App Store allows.
                     Button("Send to Notes…") {
                         NSSharingService(named: NSSharingService.Name("com.apple.Notes.SharingExtension"))?.perform(withItems: [clips.note])
                     }

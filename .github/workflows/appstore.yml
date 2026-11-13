@@ -2,7 +2,7 @@ name: App Store
 
 # The Mac App Store edition (docs/APP-STORE.md). Run by hand from the Actions tab.
 #   sandbox-check: builds the edition with Apple's sandbox on and runs `Monorail --probe-sandbox`, which
-#     tries each capability Monorail Station would use (battery, Stay Awake, Evening Mode, other apps,
+#     tries each capability Signalbox would use (battery, Stay Awake, Evening Mode, other apps,
 #     clipboard, calendar…) and reports which the sandbox allows, in the run's summary.
 #   upload: when the App Store secrets are set, signs it for the App Store and uploads it to App Store
 #     Connect, where it appears in TestFlight. Nothing is submitted for review: that's done by hand.
@@ -49,7 +49,7 @@ jobs:
       - name: The sandbox is on and the updater is left out
         run: |
           set -euo pipefail
-          app="dist/AppStore/Station.app"
+          app="dist/AppStore/Signalbox.app"
           codesign -d --entitlements - "$app" 2>/dev/null | tee entitlements.txt
           grep -q "com.apple.security.app-sandbox" entitlements.txt || { echo "::error::No sandbox entitlement"; exit 1; }
           id="$(defaults read "$PWD/$app/Contents/Info" CFBundleIdentifier)"
@@ -65,20 +65,20 @@ jobs:
           sudo sqlite3 "$db" "SELECT service, client, auth_value FROM access WHERE client='org.ashforde.monorail.appstore';" || true
       - name: Measure what the sandbox allows (Monorail --probe-sandbox)
         timeout-minutes: 12
-        # Each capability Monorail Station would use is tried for real and undone (docs/APP-STORE.md).
+        # Each capability Signalbox would use is tried for real and undone (docs/APP-STORE.md).
         run: |
           set -uo pipefail
-          app="$PWD/dist/AppStore/Station.app"
+          app="$PWD/dist/AppStore/Signalbox.app"
           mkdir -p "$RUNNER_TEMP/docs"; echo "Probe" > "$RUNNER_TEMP/docs/probe.txt"
           open -a TextEdit "$RUNNER_TEMP/docs/probe.txt"; sleep 3
-          echo "Monorail Station clipboard check" | pbcopy
+          echo "Signalbox clipboard check" | pbcopy
           : > probe.log
           # Opened through Launch Services, as a person would, so the sandbox applies as in real use.
           open -n -W --stdout "$PWD/probe.log" --stderr "$PWD/probe.log" "$app" --args --probe-sandbox || true
           cat probe.log
           grep -q "^PROBE summary" probe.log || { echo "::error::The probe didn't finish"; exit 1; }
           {
-            echo "### What Monorail Station may do in the App Store sandbox"
+            echo "### What Signalbox may do in the App Store sandbox"
             echo "| Check | Allowed | Detail |"
             echo "|---|---|---|"
             grep "^PROBE " probe.log | grep -v "^PROBE summary" | while read -r _ name result detail; do
@@ -183,7 +183,7 @@ jobs:
         if: steps.secrets.outputs.ready == 'true'
         run: |
           set -euo pipefail
-          pkg="$(ls dist/AppStore/Station-*.pkg | head -n1)"
+          pkg="$(ls dist/AppStore/Signalbox-*.pkg | head -n1)"
           if [ -n "$ASC_KEY_ID" ]; then
             mkdir -p ~/.appstoreconnect/private_keys
             printf '%s\n' "$ASC_KEY" > ~/.appstoreconnect/private_keys/AuthKey_"$ASC_KEY_ID".p8

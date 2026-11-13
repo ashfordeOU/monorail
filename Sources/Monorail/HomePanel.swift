@@ -628,8 +628,8 @@ struct ControlTile: View {
     }
 }
 
-/// Station's card for the full Monorail: always there, in its place on Home, never a pop-up.
-/// Station's suggestions of Monorail: watches for the moments it would help (lots of windows,
+/// Signalbox's card for the full Monorail: always there, in its place on Home, never a pop-up.
+/// Signalbox's suggestions of Monorail: watches for the moments it would help (lots of windows,
 /// lots of switching), and keeps to MonorailNudge's manners.
 final class MonorailNudgeWatch: ObservableObject {
     static let shared = MonorailNudgeWatch()
@@ -687,7 +687,7 @@ final class MonorailNudgeWatch: ObservableObject {
     }
 }
 
-/// Station's Monorail card: quiet most of the time, specific when Monorail would really help.
+/// Signalbox's Monorail card: quiet most of the time, specific when Monorail would really help.
 struct MonorailCard: View {
     @ObservedObject private var nudge = MonorailNudgeWatch.shared
 
@@ -706,7 +706,7 @@ struct MonorailCard: View {
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(nudge.reason?.headline ?? "Monorail").font(.system(size: 13, weight: .semibold))
-                    Text(nudge.monorailRunning ? "Running: it does everything Station does, and more"
+                    Text(nudge.monorailRunning ? "Running: it does everything Signalbox does, and more"
                          : nudge.monorailInstalled ? "Installed. Open it to arrange your windows" : "Your windows on one endless strip")
                         .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
@@ -720,7 +720,7 @@ struct MonorailCard: View {
                 }
             }
             if !nudge.monorailRunning {
-                Text(nudge.reason?.pitch ?? "Station's big sibling arranges your windows: new ones slide in beside you, nothing shrinks, and an overview shows them all. Free, from Ashforde.")
+                Text(nudge.reason?.pitch ?? "Signalbox's big sibling arranges your windows: new ones slide in beside you, nothing shrinks, and an overview shows them all. Free, from Ashforde.")
                     .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 HStack {
                     if nudge.monorailInstalled {

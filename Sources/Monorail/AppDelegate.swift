@@ -2137,6 +2137,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         SuiteRole.shared.onChange = { [weak self] role in self?.roleChanged(role) }
         SuiteRole.shared.start()
         DashboardContext.store = store
+        DeskContext.focus = { [weak self] id in self?.engine.focusAndReveal(WindowID(id)) }
+        DeskContext.save = { [weak self] in self?.engine.perform(.takeSnapshot) }
         SystemAlerts.shared.enabled = { [weak self] in self?.store.settings.systemAlerts ?? true }
         SystemRecorder.shared.start()
         // Shortcuts and Spotlight actions.

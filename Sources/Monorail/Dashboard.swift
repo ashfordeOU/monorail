@@ -15,12 +15,13 @@ enum DashboardTab: String, CaseIterable, Identifiable {
 }
 
 enum DashboardSection: String, CaseIterable, Identifiable {
-    case overview = "Overview", apps = "Apps", cpu = "CPU", memory = "Memory", gpu = "GPU", disk = "Disk", network = "Network",
+    case overview = "Overview", desk = "Desk", apps = "Apps", cpu = "CPU", memory = "Memory", gpu = "GPU", disk = "Disk", network = "Network",
          battery = "Battery", devices = "Devices", sound = "Sound", ports = "Ports", agents = "Agents", today = "Today", trends = "Trends"
     var id: String { rawValue }
     var symbol: String {
         switch self {
         case .overview: return "square.grid.2x2"
+        case .desk: return "display.2"
         case .apps: return "list.bullet.rectangle"
         case .cpu: return "cpu"
         case .memory: return "memorychip"
@@ -109,6 +110,7 @@ struct SidebarDashboard: View {
             Group {
                 switch section {
                 case .overview: OverviewSection(go: { sectionName = $0.rawValue })
+                case .desk: DeskView()
                 case .apps: AppsSection()
                 case .cpu: CPUSection()
                 case .memory: MemorySection()

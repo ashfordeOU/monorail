@@ -118,6 +118,9 @@ public static class SettingKeys
     public const string BatteryMenuBar = "batteryMenuBar";
     public const string BatteryCards = "batteryCards";
     public const string BatteryHiddenCards = "batteryHiddenCards";
+    public const string AwakeDuringCalls = "awakeDuringCalls";
+    public const string MovieAuto = "movieAuto";
+    public const string ChargeLimit = "chargeLimit";
     public const string FocusFlash = "focusFlash";
     public const string SliderOpacity = "sliderOpacity";
     public const string SliderScale = "sliderScale";
@@ -406,6 +409,12 @@ public static class SettingDefaults
     public const bool ParkPowerHogs = false;
     /// <summary>A battery item in the menu bar (charge or time left), opening the battery panel.</summary>
     public const bool BatteryMenuBar = false;
+    /// <summary>Keep the Mac and its display awake while the microphone or camera is in use.</summary>
+    public const bool AwakeDuringCalls = true;
+    /// <summary>Movie mode turns on by itself when a video plays full screen.</summary>
+    public const bool MovieAuto = false;
+    /// <summary>While charging, a notice once the battery reaches `chargeLimit` (100 = off).</summary>
+    public const int ChargeLimit = 100;
     /// <summary>A quick highlight of the focused window when focus moves by keyboard.</summary>
     public const bool FocusFlash = false;
     /// <summary>The slider bar's opacity and size (0.8, 1 or 1.25).</summary>

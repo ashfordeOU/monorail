@@ -8,6 +8,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-11-13
+
 ### Added
 - **Calls.** When the microphone or camera is in use, the panel's top card says you're on a call, keeps the Mac and its screen awake until it ends, has a Mute button for your microphone, and says whether the battery will last the call ("About 32 min of battery for this call. Plug in to be safe.").
 - **Film mode.** A switch on Home (and its own page) that keeps the screen on, pauses Evening Mode for true colours and quiets notices, with a sleep timer: 30 minutes to 2 hours, then Film mode ends and the Mac sleeps (Station lets it sleep on its own). It can also turn on by itself when a video plays, and says how much watching the battery has left.
@@ -27,7 +29,6 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **What's new in both.** After Station updates, its What's New shows Station's changes and a short "Also new in Monorail" section with what Monorail gained, and Monorail's notes leave out Station-only changes. <!-- station -->
 - **Station and Monorail together.** With both on the Mac, Monorail leads: while it runs, Station hides its menu bar icon, hands any Stay Awake session over to Monorail so it carries on, and pauses everything that would clash or happen twice (the screen's evening colours, the clipboard watcher, eye breaks, notifications). When Monorail quits, Station takes over again by itself, and with only one of them installed, that one does everything it's made for. Monorail's menu says when Station is resting, and Station's Settings has a switch to keep it running alongside instead.
 - **AirPods batteries.** Monorail's Accessories card shows each AirPod and the case, from macOS's own Bluetooth report, and warns once when one runs low. <!-- monorail -->
-- **Shortcuts and Spotlight.** Actions for Apple's Shortcuts app, Spotlight and Siri: Keep Mac Awake (for some minutes or until you stop it), Let Mac Sleep, Set Evening Mode, Set Film Mode, Start Focus Session, Get Battery Report (as text, to save or send) and Make Clipboard Plain Text, with ready-made phrases like "Keep my Mac awake with Monorail". Monorail adds Arrange Windows, which takes a saved layout's name or a sentence like "Slack and Mail side by side".
 - **Station, the App Store edition.** Built from the same code as the menu bar half of Monorail: the panel with battery rings, Stay Awake and Evening Mode, without the window strip (the App Store's sandbox doesn't let apps move other apps' windows) and without asking for Accessibility. Its own name, icon, menu, first run and Settings, and a permanent card that points to the free Monorail. Builds as `dist/AppStore/Station.app`. <!-- station -->
 
 ### Fixed

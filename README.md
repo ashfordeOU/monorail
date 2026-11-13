@@ -157,7 +157,6 @@ Monorail pauses by itself while Stage Manager is on.
 - **Through your day:** your next meeting with a Join button (it moves to the top a few minutes before), a month calendar, world clocks and timers. Calls keep the Mac awake with Mute on the card. **Film mode** keeps the screen on with true colours and a sleep timer. **Focus sessions** count down with brown noise, pink noise or rain made on your Mac, with a streak, a weekly chart and optional 20-20-20 eye breaks.
 - **Know your Mac:** processor, memory and heat as rings, your chip drawn core by core, network with a speed test, IP and VPN, and a **Live** window that watches it all work. Battery health over months with when it reaches 80%, overnight drain, a battery report to save or send, and the batteries of your AirPods, mouse, keyboard and trackpad. **Storage** warns before the disk fills and clears Xcode build files, caches and old downloads to the Trash.
 - **Handy tools:** clipboard history with search, pins and plain-text paste (passwords never kept), a colour picker with hex, RGB and HSL, text and QR codes from any part of the screen, and a quick note.
-- **Shortcuts and Spotlight:** Keep Mac Awake, Evening Mode, Film Mode, Focus Session, Battery Report, plain clipboard and Arrange Windows, with phrases for Siri.
 
 <p align="center"><img src="assets/readme/focus.svg" alt="Focus mode: the current slide bright, the windows on either side dimmed" width="100%"></p>
 

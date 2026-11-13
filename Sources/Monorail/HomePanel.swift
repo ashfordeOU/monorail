@@ -8,7 +8,7 @@ import SwiftUI
 // which slides across and resizes to fit. ‹ goes back. Nothing opens on top of anything else.
 
 enum PanelPage: Hashable {
-    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today, clipboard, note, focus
+    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today, clipboard, note, focus, storage
 }
 
 final class PanelNavigator: ObservableObject {
@@ -116,6 +116,8 @@ struct PanelRoot: View {
             NotePage(onBack: nav.pop)
         case .focus:
             FocusPage(onBack: nav.pop, store: store)
+        case .storage:
+            StoragePage(onBack: nav.pop)
         }
     }
 
@@ -144,6 +146,7 @@ struct HomePage: View {
 
     @ObservedObject private var today = TodayWatch.shared
     @ObservedObject private var focusSession = FocusWatch.shared
+    @ObservedObject private var storage = StorageWatch.shared
     private var more: SliderPopover.MoreControls { context.more }
 
     private var layout: HomeLayout {
@@ -154,7 +157,8 @@ struct HomePage: View {
             agentsRunning: Edition.isAppStore ? 0 : power.agents.count, clashes: Edition.isAppStore ? 0 : more.clashCount(),
             updateAvailable: updater.available != nil, paused: paused.value,
             heat: moments.heat, onCall: moments.call.isOnCall, movie: moments.film,
-            meetingSoon: today.next.map { TimeModel.isImminent($0.start, end: $0.end, now: today.now) } ?? false))
+            meetingSoon: today.next.map { TimeModel.isImminent($0.start, end: $0.end, now: today.now) } ?? false,
+            diskLow: storage.level == .critical))
     }
 
     var body: some View {
@@ -182,7 +186,7 @@ struct HomePage: View {
         var index = 0
         while index < cards.count {
             let card = cards[index]
-            let pairable: (HomeCard) -> Bool = { [.battery, .system, .agents].contains($0) && !plan.raised.contains($0) }
+            let pairable: (HomeCard) -> Bool = { [.battery, .system, .storage, .agents].contains($0) && !plan.raised.contains($0) }
             if pairable(card), index + 1 < cards.count, pairable(cards[index + 1]) {
                 rows.append([card, cards[index + 1]])
                 index += 2
@@ -233,6 +237,7 @@ struct HomePage: View {
         case .agents: agentsWidget
         case .system: SystemWidget { nav.push(.system) }
         case .today: TodayWidget { nav.push(.today) }
+        case .storage: StorageWidget { nav.push(.storage) }
         case .controls: controls
         case .tools: ToolsRow(openClipboard: { nav.push(.clipboard) }, openNote: { nav.push(.note) })
         case .layouts: if !Edition.isAppStore { layoutsRow }

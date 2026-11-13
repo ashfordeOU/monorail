@@ -2097,6 +2097,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         MomentsWatch.shared.onFilmChange = { [weak self] on in self?.evening.pauseForFilm(on) }
         MomentsWatch.shared.start()
         BatteryLog.shared.start()
+        StorageWatch.shared.start()
         FocusWatch.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         FocusWatch.shared.onRunningChange = { [weak self] on in
             guard let self, !Edition.isAppStore, self.store.settings.focusHidesApps else { return }

@@ -4,7 +4,7 @@ import XCTest
 final class HomeModelTests: XCTestCase {
     func testCalmKeepsTheFixedOrder() {
         let plan = HomePlanner.plan(HomeSignals(onBattery: true, percent: 64, minutesLeft: 352, drainRatio: 1.1))
-        XCTAssertEqual(plan.cards, [.windows, .today, .battery, .system, .controls, .tools, .layouts])
+        XCTAssertEqual(plan.cards, [.windows, .today, .battery, .system, .storage, .controls, .tools, .layouts])
         XCTAssertEqual(plan.raised, [])
         XCTAssertEqual(plan.tone, .calm)
         XCTAssertEqual(plan.title, "All calm")
@@ -88,5 +88,12 @@ final class HomeModelTests: XCTestCase {
         XCTAssertEqual(plan.tone, .calm)
         XCTAssertEqual(plan.title, "Meeting soon")
         XCTAssertEqual(HomePlanner.plan(HomeSignals(onCall: true, meetingSoon: true)).cards.first, .call)
+    }
+
+    func testAFullDiskMovesStorageUp() {
+        let plan = HomePlanner.plan(HomeSignals(diskLow: true))
+        XCTAssertEqual(plan.cards.first, .storage)
+        XCTAssertEqual(plan.title, "Disk almost full")
+        XCTAssertEqual(plan.tone, .attention)
     }
 }

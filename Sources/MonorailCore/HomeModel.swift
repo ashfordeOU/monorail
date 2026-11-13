@@ -2,7 +2,7 @@ import Foundation
 
 /// The cards on the home page of the menu bar panel.
 public enum HomeCard: String, CaseIterable, Sendable, Equatable {
-    case notices, heat, call, movie, battery, windows, today, system, storage, network, agents, controls, tools, layouts
+    case notices, heat, call, movie, battery, windows, today, pinned, system, storage, network, agents, controls, tools, layouts
 }
 
 /// What the home page knows when it opens: enough to decide what matters most.
@@ -57,7 +57,7 @@ public struct HomeLayout: Equatable, Sendable {
 /// Decides the home page. Calm, it keeps one fixed order so things are where you left them;
 /// when something needs you, that card moves to the top. Like a Smart Stack, without the guessing.
 public enum HomePlanner {
-    public static let calmOrder: [HomeCard] = [.windows, .today, .battery, .system, .storage, .network, .agents, .controls, .tools, .layouts]
+    public static let calmOrder: [HomeCard] = [.windows, .today, .pinned, .battery, .system, .storage, .network, .agents, .controls, .tools, .layouts]
 
     public static func batteryIsLow(_ s: HomeSignals) -> Bool {
         guard s.onBattery else { return false }

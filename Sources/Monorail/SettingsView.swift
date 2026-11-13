@@ -252,6 +252,8 @@ private struct StationGeneralPane: View {
                 Toggle("Open Signalbox when I log in", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { LoginItem.setEnabled($0) }
                 Toggle("Show the battery in the menu bar", isOn: $store.settings.batteryMenuBar)
+                MenuBarReadingsPicker(store: store)
+                Toggle("Alert me when the Mac strains (memory, swap, a runaway app)", isOn: $store.settings.systemAlerts)
                 Picker("Menu bar icon", selection: $store.settings.menuBarIconStyle) {
                     Text("Colour").tag("colour")
                     Text("White").tag("white")
@@ -895,6 +897,8 @@ private struct AppearancePane: View {
                 Picker("Monorail’s windows", selection: $store.settings.appAppearance) {
                     ForEach(AppAppearance.allCases, id: \.self) { Text($0.title).tag($0) }
                 }
+                MenuBarReadingsPicker(store: store)
+                Toggle("Alert me when the Mac strains (memory, swap, a runaway app)", isOn: $store.settings.systemAlerts)
                 Picker("Menu bar icon", selection: $store.settings.menuBarIconStyle) {
                     Text("Colour").tag("colour")
                     Text("White").tag("white")
@@ -2514,6 +2518,29 @@ private struct ThemeGrid: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("\(theme.title) theme")
                     .accessibilityAddTraits(selection == theme ? .isSelected : [])
+                }
+            }
+        }
+    }
+}
+
+/// Which live readings sit in the menu bar beside the icon.
+struct MenuBarReadingsPicker: View {
+    @ObservedObject var store: SettingsStore
+
+    var body: some View {
+        LabeledContent("Readings in the menu bar") {
+            HStack(spacing: 10) {
+                ForEach(MenuBarReadings.all, id: \.id) { reading in
+                    Toggle(reading.title, isOn: Binding(
+                        get: { store.settings.menuBarReadings.contains(reading.id) },
+                        set: { on in
+                            var list = store.settings.menuBarReadings.filter { $0 != reading.id }
+                            if on { list.append(reading.id) }
+                            // Keep them in the standard order.
+                            store.settings.menuBarReadings = MenuBarReadings.all.map(\.id).filter { list.contains($0) }
+                        }))
+                        .toggleStyle(.checkbox)
                 }
             }
         }

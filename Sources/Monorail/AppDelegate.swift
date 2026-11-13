@@ -2137,6 +2137,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         SuiteRole.shared.onChange = { [weak self] role in self?.roleChanged(role) }
         SuiteRole.shared.start()
         DashboardContext.store = store
+        SystemAlerts.shared.enabled = { [weak self] in self?.store.settings.systemAlerts ?? true }
         SystemRecorder.shared.start()
         // Shortcuts and Spotlight actions.
         ShortcutsBridge.stayAwake = { [weak self] minutes in self?.awake.start(minutes: minutes) }
@@ -2216,6 +2217,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         engine.settings = settings
         ClipboardWatch.shared.apply(settings)
         FocusWatch.shared.apply(settings)
+        MenuBarReadings.shared.apply(settings.menuBarReadings)
         // The theme goes on Monorail's own windows only. Set on the whole app, it also reached the
         // menu bar icon, which then came out black on a dark menu bar (or white on a light one).
         chosenAppearance = {

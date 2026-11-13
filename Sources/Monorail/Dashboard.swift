@@ -162,6 +162,7 @@ struct BatteryDashboard: View {
                                     if let w = b.watts { stat("Draw", String(format: "%.1f W", w)) }
                                     if let c = b.capacityPercent { stat("Health", "\(c)%") }
                                     if let n = b.cycleCount { stat("Cycles", "\(n)") }
+                                    if let w = MenuBarReadings.chargerWatts() { stat("Charger", "\(w) W") }
                                 }
                                 .padding(.top, 4)
                             }

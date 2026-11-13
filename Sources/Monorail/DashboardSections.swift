@@ -9,6 +9,8 @@ import SwiftUI
 struct DashCard<Content: View>: View {
     let title: String
     var trailing: String? = nil
+    /// A reading that can be pinned to Home ("cpu", "memory", …).
+    var pin: String? = nil
     @ViewBuilder var content: Content
 
     var body: some View {
@@ -17,6 +19,7 @@ struct DashCard<Content: View>: View {
                 Text(title.uppercased()).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
                 Spacer()
                 if let trailing { Text(trailing).font(.system(size: 11)).foregroundStyle(.tertiary) }
+                if let pin { PinButton(id: pin) }
             }
             content
         }
@@ -45,7 +48,7 @@ struct RangeButtons: View {
 }
 
 /// A reading over time: a filled line with a faint grid, and the range's low, average and high.
-struct HistoryChart: View {
+struct TrendChart: View {
     let values: [Double]
     var maximum: Double? = nil
     var colour: Color = Color(nsColor: .systemOrange)
@@ -183,7 +186,7 @@ struct OverviewSection: View {
                 }
                 Text(value).font(.figure(24, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.6)
                 Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
-                HistoryChart(values: spark, colour: Color(nsColor: colour), height: 34).allowsHitTesting(false)
+                TrendChart(values: spark, colour: Color(nsColor: colour), height: 34).allowsHitTesting(false)
             }
             .padding(14)
             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(0.07)))
@@ -322,8 +325,8 @@ struct CPUSection: View {
         let load = SystemWatch.loadAverage()
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "CPU", subtitle: "\(Int(system.total.rounded()))% now · \(system.chipName)", range: range)
-            DashCard(title: "Load over time", trailing: load.count == 3 ? String(format: "load %.1f · %.1f · %.1f", load[0], load[1], load[2]) : nil) {
-                HistoryChart(values: recorder.history.samples(range.wrappedValue).map(\.cpu), maximum: 100, height: 130)
+            DashCard(title: "Load over time", trailing: load.count == 3 ? String(format: "load %.1f · %.1f · %.1f", load[0], load[1], load[2]) : nil, pin: "cpu") {
+                TrendChart(values: recorder.history.samples(range.wrappedValue).map(\.cpu), maximum: 100, height: 130)
             }
             DashCard(title: "Your chip, core by core") {
                 ChipView(name: system.chipName, performance: system.performance, efficiency: system.efficiency)
@@ -346,8 +349,8 @@ struct MemorySection: View {
         let samples = recorder.history.samples(range.wrappedValue)
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "Memory", subtitle: "\(SystemStats.gigabytes(m.used)) of \(SystemStats.gigabytes(m.total)) in use · pressure \(m.level.rawValue)", range: range)
-            DashCard(title: "Pressure over time") {
-                HistoryChart(values: samples.map(\.memory), maximum: 100, colour: Color(nsColor: .systemBlue), height: 120)
+            DashCard(title: "Pressure over time", pin: "memory") {
+                TrendChart(values: samples.map(\.memory), maximum: 100, colour: Color(nsColor: .systemBlue), height: 120)
             }
             HStack(alignment: .top, spacing: 14) {
                 DashCard(title: "Where it went") {
@@ -370,10 +373,10 @@ struct MemorySection: View {
                     }
                     .font(.system(size: 12.5)).monospacedDigit()
                 }
-                DashCard(title: "Swap") {
+                DashCard(title: "Swap", pin: "swap") {
                     Text(SystemStats.gigabytes(swap)).font(.figure(24, weight: .semibold))
                     Text("Pages swapped in \(paging.ins) · out \(paging.outs) since start-up").font(.system(size: 11.5)).foregroundStyle(.secondary)
-                    HistoryChart(values: samples.map(\.swapGB), colour: Color(nsColor: .systemOrange), format: { String(format: "%.1f GB", $0) }, height: 60)
+                    TrendChart(values: samples.map(\.swapGB), colour: Color(nsColor: .systemOrange), format: { String(format: "%.1f GB", $0) }, height: 60)
                 }
             }
         }
@@ -393,8 +396,8 @@ struct GPUSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "GPU", subtitle: now.map { "\(Int($0.rounded()))% in use now" } ?? "This Mac's graphics driver doesn't report its load", range: range)
-            DashCard(title: "Graphics load over time") {
-                HistoryChart(values: recorder.history.samples(range.wrappedValue).compactMap(\.gpu), maximum: 100, colour: Color(nsColor: .systemPurple), height: 140)
+            DashCard(title: "Graphics load over time", pin: "gpu") {
+                TrendChart(values: recorder.history.samples(range.wrappedValue).compactMap(\.gpu), maximum: 100, colour: Color(nsColor: .systemPurple), height: 140)
             }
         }
         .sectionScroll()
@@ -417,8 +420,8 @@ struct DiskSection: View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "Disk", subtitle: "Today: \(Storage.size(Int64(read))) read · \(Storage.size(Int64(written))) written", range: range)
             HStack(alignment: .top, spacing: 14) {
-                DashCard(title: "Reading") { HistoryChart(values: samples.map(\.readBytes), colour: Color(nsColor: .systemTeal), format: bytesRate, height: 90) }
-                DashCard(title: "Writing") { HistoryChart(values: samples.map(\.writeBytes), colour: Color(nsColor: .systemPink), format: bytesRate, height: 90) }
+                DashCard(title: "Reading") { TrendChart(values: samples.map(\.readBytes), colour: Color(nsColor: .systemTeal), format: bytesRate, height: 90) }
+                DashCard(title: "Writing", pin: "write") { TrendChart(values: samples.map(\.writeBytes), colour: Color(nsColor: .systemPink), format: bytesRate, height: 90) }
             }
             StoragePage(onBack: {}, embedded: true)
         }
@@ -438,8 +441,8 @@ struct NetworkSection: View {
         let down = today.reduce(0) { $0 + $1.downBytes * 60 }, up = today.reduce(0) { $0 + $1.upBytes * 60 }
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "Network", subtitle: "↓ \(bytesRate(system.down))  ↑ \(bytesRate(system.up)) · today \(Storage.size(Int64(down))) down, \(Storage.size(Int64(up))) up", range: range)
-            DashCard(title: "Download") { HistoryChart(values: samples.map(\.downBytes), colour: Color(nsColor: .systemTeal), format: bytesRate, height: 100) }
-            DashCard(title: "Upload") { HistoryChart(values: samples.map(\.upBytes), colour: Color(nsColor: .systemIndigo), format: bytesRate, height: 70) }
+            DashCard(title: "Download", pin: "down") { TrendChart(values: samples.map(\.downBytes), colour: Color(nsColor: .systemTeal), format: bytesRate, height: 100) }
+            DashCard(title: "Upload") { TrendChart(values: samples.map(\.upBytes), colour: Color(nsColor: .systemIndigo), format: bytesRate, height: 70) }
             DashCard(title: "Connection") {
                 HStack(spacing: 24) {
                     VStack(alignment: .leading) { Text("IP ADDRESS").font(.system(size: 9.5, weight: .semibold)).foregroundStyle(.tertiary); Text(system.localIP ?? "–").textSelection(.enabled) }
@@ -572,14 +575,14 @@ struct TrendsSection: View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "Trends", subtitle: "Everything \(Brand.name) has seen, kept on this Mac for 30 days", range: range)
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible())], spacing: 14) {
-                DashCard(title: "CPU") { HistoryChart(values: s.map(\.cpu), maximum: 100) }
-                DashCard(title: "Memory pressure") { HistoryChart(values: s.map(\.memory), maximum: 100, colour: Color(nsColor: .systemBlue)) }
-                DashCard(title: "Swap") { HistoryChart(values: s.map(\.swapGB), colour: Color(nsColor: .systemOrange), format: { String(format: "%.1f GB", $0) }) }
-                DashCard(title: "GPU") { HistoryChart(values: s.compactMap(\.gpu), maximum: 100, colour: Color(nsColor: .systemPurple)) }
-                DashCard(title: "Download") { HistoryChart(values: s.map(\.downBytes), colour: Color(nsColor: .systemTeal), format: bytesRate) }
-                DashCard(title: "Disk writes") { HistoryChart(values: s.map(\.writeBytes), colour: Color(nsColor: .systemPink), format: bytesRate) }
+                DashCard(title: "CPU") { TrendChart(values: s.map(\.cpu), maximum: 100) }
+                DashCard(title: "Memory pressure") { TrendChart(values: s.map(\.memory), maximum: 100, colour: Color(nsColor: .systemBlue)) }
+                DashCard(title: "Swap") { TrendChart(values: s.map(\.swapGB), colour: Color(nsColor: .systemOrange), format: { String(format: "%.1f GB", $0) }) }
+                DashCard(title: "GPU") { TrendChart(values: s.compactMap(\.gpu), maximum: 100, colour: Color(nsColor: .systemPurple)) }
+                DashCard(title: "Download") { TrendChart(values: s.map(\.downBytes), colour: Color(nsColor: .systemTeal), format: bytesRate) }
+                DashCard(title: "Disk writes") { TrendChart(values: s.map(\.writeBytes), colour: Color(nsColor: .systemPink), format: bytesRate) }
                 if PowerWatch.hasBattery {
-                    DashCard(title: "Battery") { HistoryChart(values: s.compactMap { $0.battery.map(Double.init) }, maximum: 100, colour: Color(nsColor: .systemGreen)) }
+                    DashCard(title: "Battery") { TrendChart(values: s.compactMap { $0.battery.map(Double.init) }, maximum: 100, colour: Color(nsColor: .systemGreen)) }
                 }
             }
         }

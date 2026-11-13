@@ -285,6 +285,7 @@ final class SystemRecorder: ObservableObject {
             gpu: SystemWatch.gpuUtilisation(),
             battery: PowerWatch.hasBattery ? PowerWatch.shared.battery.percent : nil)
         history.add(sample)
+        SystemAlerts.shared.check(sample)
         unsaved += 1
         if unsaved >= 10 { save() }
     }

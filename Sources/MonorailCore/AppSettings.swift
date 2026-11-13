@@ -773,6 +773,12 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var stationStepsBack = true
     /// The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black.
     public var menuBarIconStyle = "colour"
+    /// Live readings next to the icon, in this order: "cpu", "memory", "gpu", "network", "disk", "battery".
+    public var menuBarReadings: [String] = []
+    /// Notifications when the Mac strains: a runaway app, memory pressure, heavy swap.
+    public var systemAlerts = true
+    /// Readings pinned to the panel's Home, from the Dashboard: "cpu", "memory", "swap", "gpu", "down", "write", "battery".
+    public var homePins: [String] = []
     /// A quick highlight of the focused window when focus moves by keyboard.
     public var focusFlash = false
     /// The slider bar's opacity and size (0.8, 1 or 1.25).
@@ -1169,7 +1175,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins
     }
 
     public init(from decoder: Decoder) throws {
@@ -1426,6 +1432,9 @@ public struct AppSettings: Equatable, Codable, Sendable {
         eyeBreaks = value(.eyeBreaks, d.eyeBreaks)
         stationStepsBack = value(.stationStepsBack, d.stationStepsBack)
         menuBarIconStyle = value(.menuBarIconStyle, d.menuBarIconStyle)
+        menuBarReadings = value(.menuBarReadings, d.menuBarReadings)
+        systemAlerts = value(.systemAlerts, d.systemAlerts)
+        homePins = value(.homePins, d.homePins)
         // Settings from before 1.1 get the narrow menu bar once.
         compactMenuBarApplied = (try? c.decodeIfPresent(Bool.self, forKey: .compactMenuBarApplied)) ?? false
         if !compactMenuBarApplied {

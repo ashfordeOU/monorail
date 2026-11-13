@@ -1,6 +1,7 @@
 #if os(macOS)
 import AppKit
 import CoreAudio
+import MonorailCore
 
 /// The Mac's sound: output devices, the chosen one's volume and mute. Public Core Audio, allowed in
 /// the App Store's sandbox too. (Volume per app would need an audio driver, which neither app installs.)

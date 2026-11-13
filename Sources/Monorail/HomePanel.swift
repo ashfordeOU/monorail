@@ -247,6 +247,7 @@ struct HomePage: View {
         case .today: TodayWidget { nav.push(.today) }
         case .storage: StorageWidget { nav.push(.storage) }
         case .network: NetworkWidget { nav.push(.system) }
+        case .pinned: PinnedReadings(store: store)
         case .controls: controls
         case .tools: ToolsRow(openClipboard: { nav.push(.clipboard) }, openNote: { nav.push(.note) }, openText: { nav.push(.text) })
         case .layouts: if !Edition.isAppStore { layoutsRow }

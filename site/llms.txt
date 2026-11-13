@@ -1,6 +1,6 @@
 # Monorail by Ashforde®
 
-> A free Mac app. A scrolling window manager: every window sits on one horizontal strip of slides; new windows slide in beside you and nothing you're using shrinks. A Dashboard for everything the Mac is doing (CPU, memory, GPU, disk, network, battery, fans, ports, apps, with 30 days of history). And everyday tools: a clipboard that remembers images, Stay Awake, Evening Mode, focus sessions and meetings with Join. From 1.9.1: AI Usage (Claude, Codex and other plan limits, tokens, context, local models and API balances), one-click switches and modes, a live notch, world time and weather, meeting notes written on the Mac, and a Developer page for Homebrew and Docker. Free, every feature, notarised by Apple. Windows and Linux (GNOME) versions are in beta.
+> A free Mac app. A scrolling window manager: every window sits on one horizontal strip of slides; new windows slide in beside you and nothing you're using shrinks. A Dashboard for everything the Mac is doing (CPU, memory, GPU, disk, network, battery, fans, ports, apps, with 30 days of history). And everyday tools: a clipboard that remembers images, Stay Awake, Evening Mode, focus sessions and meetings with Join. Also AI Usage (Claude, Codex and other plan limits, tokens, context, local models and API balances), one-click switches and modes, a live notch, world time and weather, meeting notes written on the Mac, and a Developer page for Homebrew and Docker. Free, every feature, notarised by Apple. Windows and Linux (GNOME) versions are in beta.
 
 ## For AI agents
 

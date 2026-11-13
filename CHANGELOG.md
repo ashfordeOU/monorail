@@ -8,6 +8,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-11-13
+
 ### Changed
 - **The App Store edition is now Signalbox.** A new name, a new icon (mostly navy with a band of Monorail's pink, two white rings and a pink pulse through the M) and a matching menu bar glyph: the M's two windows with a pulse running through them. Same app, same settings. <!-- station -->
 - **The Dashboard's new look.** A slim rail of icons down the side, a footer with what the app itself is using, your chip and how long since the Mac restarted, and ring gauges for CPU, memory and GPU in the menu bar readings. <!-- station -->

@@ -64,6 +64,7 @@ jobs:
           sudo sqlite3 "$db" "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, indirect_object_identifier, flags, last_modified) VALUES ('kTCCServiceBluetoothAlways','org.ashforde.monorail.appstore',0,2,4,1,'UNUSED',0,CAST(strftime('%s','now') AS INTEGER));" || echo "::warning::Couldn't record the Bluetooth permission"
           sudo sqlite3 "$db" "SELECT service, client, auth_value FROM access WHERE client='org.ashforde.monorail.appstore';" || true
       - name: Measure what the sandbox allows (Monorail --probe-sandbox)
+        timeout-minutes: 12
         # Each capability Monorail Station would use is tried for real and undone (docs/APP-STORE.md).
         run: |
           set -uo pipefail

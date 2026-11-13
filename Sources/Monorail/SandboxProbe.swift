@@ -64,8 +64,30 @@ enum SandboxProbe {
         exit(0)
     }
 
+    private static var current: (name: String, started: Date)?
+    private static let lock = NSLock()
+
+    /// If a check sits on a permission prompt no one can click on a CI Mac, the watchdog reports it
+    /// after 25 seconds and ends the probe with the results so far (the riskiest checks run last).
+    private static func startWatchdog() {
+        Thread.detachNewThread {
+            while true {
+                Thread.sleep(forTimeInterval: 1)
+                lock.lock(); let now = current; lock.unlock()
+                guard let now, Date().timeIntervalSince(now.started) > 25 else { continue }
+                print("PROBE \(now.name) denied no answer in 25 s (stuck on a permission prompt)")
+                print("PROBE summary ok \(results.filter(\.1).count) of \(results.count + 1) allowed (stopped at \(now.name))")
+                fflush(stdout)
+                exit(0)
+            }
+        }
+    }
+
     private static func check(_ name: String, _ test: () -> (Bool, String)) {
+        if current == nil && results.isEmpty { startWatchdog() }
+        lock.lock(); current = (name, Date()); lock.unlock()
         let (ok, detail) = test()
+        lock.lock(); current = nil; lock.unlock()
         results.append((name, ok, detail))
         print("PROBE \(name) \(ok ? "ok" : "denied") \(detail)")
         fflush(stdout)

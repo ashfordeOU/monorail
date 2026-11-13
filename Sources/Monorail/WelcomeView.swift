@@ -3,6 +3,7 @@ import AppKit
 import Combine
 import MonorailCore
 import SwiftUI
+import UserNotifications
 
 /// First-run tour: grant Accessibility, then learn the easy ways to get around.
 /// Remembers which core moves the user has tried, for the practice pad.
@@ -131,8 +132,9 @@ struct WelcomeView: View {
     @State private var appeared = false
     @State private var breathe = false
     @State private var finished = false
-    /// The pages shown: Station (the App Store edition) has no window permission or practice to do.
-    private static let pages: [Int] = Edition.isAppStore ? [0, 1, 5] : [0, 1, 2, 3, 4, 5]
+    /// The pages shown. Both: hello, how it works, a day with it, knowing your Mac, make it yours, done.
+    /// Monorail adds its one permission, how you work and practice; Station adds meeting Monorail.
+    private static let pages: [Int] = Edition.isAppStore ? [0, 1, 6, 7, 8, 9, 5] : [0, 1, 2, 3, 6, 7, 8, 4, 5]
     private static var pageCount: Int { pages.count }
 
     private func go(_ target: Int) {
@@ -167,6 +169,10 @@ struct WelcomeView: View {
         case 2: permissionSection
         case 3: ScrollView { VStack(alignment: .leading, spacing: 14) { startSection; extrasStep } }
         case 4: ScrollView { VStack(alignment: .leading, spacing: 14) { aroundSection; practiceSection; keeperSection } }
+        case 6: everyDay
+        case 7: knowYourMac
+        case 8: makeItYours
+        case 9: meetMonorail
         default: done
         }
     }
@@ -234,6 +240,124 @@ struct WelcomeView: View {
         .padding(.horizontal, 24)
     }
 
+    private func pageTitle(_ title: String, _ subtitle: String) -> some View {
+        VStack(spacing: 6) {
+            Text(title).font(.system(size: 26, weight: .bold))
+            Text(subtitle).font(.system(size: 13)).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 400)
+        }
+        .frame(maxWidth: .infinity).padding(.bottom, 6)
+    }
+
+    /// The things it does for you through the day, without being asked.
+    private var everyDay: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            pageTitle("Through your day", "It notices what you're doing and helps, then gets out of the way.")
+            FeatureRow(symbol: "calendar", tint: Color(nsColor: .systemRed), title: "Your next meeting, with Join",
+                       text: "It moves to the top a few minutes before. One click joins Zoom, Meet, Teams or Webex.", delay: 0)
+            FeatureRow(symbol: "phone.fill", tint: Tone.good, title: "Calls keep your Mac awake",
+                       text: "While the camera or microphone is on, with Mute on the card and how long the battery will last.", delay: 0.08)
+            FeatureRow(symbol: "film.fill", tint: Color(nsColor: .systemIndigo), title: "Film mode",
+                       text: "True colours, the screen kept on and a sleep timer for falling asleep to something.", delay: 0.16)
+            FeatureRow(symbol: "timer", tint: Color(nsColor: .systemPurple), title: "Focus sessions",
+                       text: "A countdown with rain or brown noise, a streak, and a gentle reminder to rest your eyes.", delay: 0.24)
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+    }
+
+    /// What it tells you about the Mac itself.
+    private var knowYourMac: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            pageTitle("Know your Mac", "Everything at a glance in the menu bar. Nothing leaves your Mac.")
+            FeatureRow(symbol: "cpu", tint: Tone.blue, title: "Your chip, core by core",
+                       text: "Processor, memory, heat and network, and a Live window to watch it all work.", delay: 0)
+            FeatureRow(symbol: "battery.100.bolt", tint: Tone.good, title: "Battery that lasts for years",
+                       text: "Health over months, what each night asleep cost, and your mouse and keyboard batteries.", delay: 0.08)
+            FeatureRow(symbol: "internaldrive.fill", tint: Color(nsColor: .systemOrange), title: "Space when you need it",
+                       text: "A warning before the disk fills, and safe clean-ups that go to the Trash first.", delay: 0.16)
+            FeatureRow(symbol: "doc.on.clipboard.fill", tint: Color(nsColor: .systemTeal), title: "Handy tools",
+                       text: "Clipboard history, a colour picker, text from any picture and a quick note.", delay: 0.24)
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+    }
+
+    @State private var notificationsAsked = false
+
+    /// The few choices worth making now, each a switch you can change later in Settings.
+    private var makeItYours: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            pageTitle("Make it yours", "A few choices now; everything else is in Settings.")
+            GroupBox {
+                VStack(alignment: .leading, spacing: 10) {
+                    Toggle("Remember what I copy (never passwords)", isOn: $store.settings.clipboardHistory)
+                    Toggle("Keep my Mac awake during calls", isOn: $store.settings.awakeDuringCalls)
+                    Toggle("Film mode when a video plays full screen", isOn: $store.settings.movieAuto)
+                    Toggle("Remind me to rest my eyes every 20 minutes", isOn: $store.settings.eyeBreaks)
+                    Toggle("Warm the screen in the evening", isOn: $store.settings.eveningOn)
+                }
+                .font(.system(size: 12.5))
+                .padding(6)
+            }
+            GroupBox {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Calendar").font(.system(size: 12.5, weight: .medium))
+                            Text("For your next meeting and its Join button.").font(.system(size: 11)).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button("Allow…") { TodayWatch.shared.requestAccess() }
+                    }
+                    HStack {
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Notifications").font(.system(size: 12.5, weight: .medium))
+                            Text("For timers, low accessory batteries and a nearly full disk.").font(.system(size: 11)).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button(notificationsAsked ? "Asked" : "Allow…") {
+                            notificationsAsked = true
+                            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+                        }
+                        .disabled(notificationsAsked)
+                    }
+                }
+                .padding(6)
+            }
+            Text("Both are optional; macOS asks you once, and you can change them in System Settings.")
+                .font(.system(size: 11)).foregroundStyle(.tertiary).frame(maxWidth: .infinity)
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+    }
+
+    /// Station only: the free sibling that arranges windows, shown once, honestly.
+    private var meetMonorail: some View {
+        VStack(spacing: 14) {
+            pageTitle("Meet Monorail", "Station's free big sibling, from the same people.")
+            HStack(spacing: 8) {
+                ForEach(0..<4, id: \.self) { i in
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(LinearGradient(colors: [Color(red: 1, green: 0.54, blue: 0.36), Color(red: 0.91, green: 0.26, blue: 0.48)],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing).opacity(i == 1 || i == 2 ? 1 : 0.35))
+                        .frame(width: i == 1 || i == 2 ? 110 : 60, height: 120)
+                }
+            }
+            .frame(height: 140)
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 12) {
+                FeatureRow(symbol: "rectangle.split.3x1.fill", tint: Color(red: 0.91, green: 0.33, blue: 0.45), title: "Windows on one endless strip",
+                           text: "New windows slide in beside you, never on top. Nothing you're using ever shrinks.", delay: 0)
+                FeatureRow(symbol: "sparkles", tint: Color(nsColor: .systemPurple), title: "Everything Station does, and more",
+                           text: "The same panel, plus what the App Store doesn't allow: the battery cost of every app, and quitting the hungry ones.", delay: 0.08)
+            }
+            .padding(.horizontal, 24)
+            Button("Learn About Monorail") { NSWorkspace.shared.open(Brand.monorailURL) }.controlSize(.large)
+            Text("Free, outside the App Store. Station keeps working either way.").font(.system(size: 11)).foregroundStyle(.tertiary)
+            Spacer()
+        }
+    }
+
     private var done: some View {
         VStack(spacing: 12) {
             Spacer(minLength: 40)
@@ -249,6 +373,12 @@ struct WelcomeView: View {
                  : "Monorail lives in the menu bar. Click its icon for everything; it turns grey while paused and orange while your Mac stays awake.")
                 .font(.system(size: 13)).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).frame(maxWidth: 380)
+            VStack(alignment: .leading, spacing: 6) {
+                tipLine("cursorarrow.click", "Click a card to open its page; ‹ or ⌘[ goes back.")
+                tipLine("square.grid.2x2", "Home sorts itself: what needs you moves to the top.")
+                tipLine("escape", "⎋ closes the panel. Settings are at the bottom of it.")
+            }
+            .padding(.top, 8)
             Spacer()
             Button { onFinish() } label: {
                 Text(Edition.isAppStore ? "Start Using Station" : trusted ? "Start Using Monorail" : L("Continue without permission")).frame(maxWidth: .infinity)
@@ -260,6 +390,13 @@ struct WelcomeView: View {
         .onAppear {
             finished = false
             withAnimation(Motion.reduced ? .easeOut(duration: 0.1) : .spring(response: 0.5, dampingFraction: 0.6).delay(0.1)) { finished = true }
+        }
+    }
+
+    private func tipLine(_ symbol: String, _ text: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: symbol).font(.system(size: 12)).foregroundStyle(.secondary).frame(width: 18).accessibilityHidden(true)
+            Text(text).font(.system(size: 12)).foregroundStyle(.secondary)
         }
     }
 

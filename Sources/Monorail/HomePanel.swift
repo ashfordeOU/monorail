@@ -627,9 +627,71 @@ struct ControlTile: View {
 }
 
 /// Station's card for the full Monorail: always there, in its place on Home, never a pop-up.
-struct MonorailCard: View {
-    private var monorailRunning: Bool {
+/// Station's suggestions of Monorail: watches for the moments it would help (lots of windows,
+/// lots of switching), and keeps to MonorailNudge's manners.
+final class MonorailNudgeWatch: ObservableObject {
+    static let shared = MonorailNudgeWatch()
+
+    @Published private(set) var reason: MonorailNudge.Reason?
+    private var switches: [Date] = []
+    private var observer: NSObjectProtocol?
+    private var timer: Timer?
+    private let defaults = UserDefaults.standard
+
+    var monorailInstalled: Bool {
+        NSWorkspace.shared.urlForApplication(withBundleIdentifier: "org.ashforde.monorail") != nil
+    }
+    var monorailRunning: Bool {
         !NSRunningApplication.runningApplications(withBundleIdentifier: "org.ashforde.monorail").isEmpty
+    }
+
+    func start() {
+        guard Edition.isAppStore, observer == nil else { return }
+        if defaults.object(forKey: "NudgeInstalled") == nil { defaults.set(Date(), forKey: "NudgeInstalled") }
+        observer = NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.switches.append(Date())
+        }
+        timer = Timer.every(300) { [weak self] _ in self?.evaluate() }
+        timer?.tolerance = 60
+    }
+
+    private func days(since key: String) -> Int? {
+        (defaults.object(forKey: key) as? Date).map { Int(Date().timeIntervalSince($0) / 86400) }
+    }
+
+    /// Windows of ordinary apps on screen now (the window list is allowed in the sandbox).
+    private var windowsOnScreen: Int {
+        let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+        return list.filter {
+            ($0[kCGWindowLayer as String] as? Int) == 0 && ($0[kCGWindowOwnerPID as String] as? pid_t) != getpid()
+                && (($0[kCGWindowBounds as String] as? [String: CGFloat])?["Width"] ?? 0) > 200
+        }.count
+    }
+
+    func evaluate() {
+        let hourAgo = Date().addingTimeInterval(-3600)
+        switches.removeAll { $0 < hourAgo }
+        let signals = MonorailNudge.Signals(windowsOnScreen: windowsOnScreen, appSwitchesLastHour: switches.count,
+                                            daysSinceInstall: days(since: "NudgeInstalled") ?? 0, daysSinceShown: days(since: "NudgeShown"),
+                                            dismissals: defaults.integer(forKey: "NudgeDismissals"), monorailInstalled: monorailInstalled)
+        let found = MonorailNudge.reason(signals)
+        if found != nil, reason == nil { defaults.set(Date(), forKey: "NudgeShown") }
+        reason = found
+    }
+
+    func dismiss() {
+        defaults.set(defaults.integer(forKey: "NudgeDismissals") + 1, forKey: "NudgeDismissals")
+        reason = nil
+    }
+}
+
+/// Station's Monorail card: quiet most of the time, specific when Monorail would really help.
+struct MonorailCard: View {
+    @ObservedObject private var nudge = MonorailNudgeWatch.shared
+
+    private var gradient: LinearGradient {
+        LinearGradient(colors: [Color(red: 1, green: 0.54, blue: 0.36), Color(red: 0.91, green: 0.26, blue: 0.48)],
+                       startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 
     var body: some View {
@@ -638,24 +700,42 @@ struct MonorailCard: View {
                 Image(systemName: "rectangle.split.3x1.fill")
                     .font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
                     .frame(width: 34, height: 34)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(LinearGradient(colors: [Color(red: 1, green: 0.54, blue: 0.36), Color(red: 0.91, green: 0.26, blue: 0.48)],
-                                             startPoint: .topLeading, endPoint: .bottomTrailing)))
+                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(gradient))
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Monorail").font(.system(size: 13, weight: .semibold))
-                    Text(monorailRunning ? "Running: it does everything Station does, and more" : "Your windows on one endless strip")
+                    Text(nudge.reason?.headline ?? "Monorail").font(.system(size: 13, weight: .semibold))
+                    Text(nudge.monorailRunning ? "Running: it does everything Station does, and more"
+                         : nudge.monorailInstalled ? "Installed. Open it to arrange your windows" : "Your windows on one endless strip")
                         .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
+                Spacer(minLength: 0)
+                if nudge.reason != nil {
+                    Button { withAnimation(Motion.pop) { nudge.dismiss() } } label: {
+                        Image(systemName: "xmark").font(.system(size: 10, weight: .semibold)).foregroundStyle(.tertiary)
+                            .accessibilityLabel("Not now")
+                    }
+                    .buttonStyle(.plain).help("Not now")
+                }
             }
-            if !monorailRunning {
-                Text("Station's big sibling arranges your windows: new ones slide in beside you, nothing shrinks, and an overview shows them all. Free, from Ashforde.")
+            if !nudge.monorailRunning {
+                Text(nudge.reason?.pitch ?? "Station's big sibling arranges your windows: new ones slide in beside you, nothing shrinks, and an overview shows them all. Free, from Ashforde.")
                     .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                Button("Get Monorail") { NSWorkspace.shared.open(Brand.monorailURL) }
-                    .buttonStyle(.borderedProminent).controlSize(.small)
+                HStack {
+                    if nudge.monorailInstalled {
+                        Button("Open Monorail") {
+                            if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "org.ashforde.monorail") {
+                                NSWorkspace.shared.openApplication(at: url, configuration: .init())
+                            }
+                        }
+                    } else {
+                        Button("Get Monorail") { NSWorkspace.shared.open(Brand.monorailURL) }
+                    }
+                }
+                .buttonStyle(.borderedProminent).controlSize(.small)
             }
         }
-        .tile()
+        .tile(tint: nudge.reason != nil ? Color(red: 0.91, green: 0.26, blue: 0.48) : nil)
+        .onAppear { nudge.evaluate() }
     }
 }
 
@@ -766,7 +846,7 @@ struct UpdateCard: View {
 
     private var subtitle: String {
         if updater.isInstalling { return (updater.stage ?? "Installing") + "…" }
-        let titles = ReleaseNotes.highlights(updater.notes, limit: 3).map(\.title)
+        let titles = ReleaseNotes.highlights(EditionNotes.lines(updater.notes, for: .monorail), limit: 3).map(\.title)
         return titles.isEmpty ? "A new version is ready" : titles.joined(separator: " · ")
     }
 }
@@ -777,12 +857,12 @@ struct UpdatePage: View {
     let onBack: () -> Void
 
     var body: some View {
-        let rows = ReleaseNotes.highlights(updater.notes, limit: 4)
+        let rows = ReleaseNotes.highlights(EditionNotes.lines(updater.notes, for: .monorail), limit: 4)
         VStack(alignment: .leading, spacing: 12) {
             PageHeader(back: Brand.name, title: "What's New", onBack: onBack)
             VStack(spacing: 4) {
                 Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 52, height: 52).accessibilityHidden(true)
-                Text("Monorail \(updater.available?.version ?? updater.currentVersion)").font(.system(size: 15, weight: .semibold))
+                Text("\(Brand.name) \(updater.available?.version ?? updater.currentVersion)").font(.system(size: 15, weight: .semibold))
             }
             .frame(maxWidth: .infinity)
             if rows.isEmpty {

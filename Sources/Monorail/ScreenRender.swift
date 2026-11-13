@@ -23,7 +23,7 @@ enum ScreenRender {
             if save(AnyView(welcome), width: 640, appearance: appearance, to: folder.appendingPathComponent("welcome-\(name).png")) {
                 written += 1
             }
-            let whatsNew = WhatsNewView(version: Bundle.main.shortVersion, lines: notes, store: store, offersSwitches: true,
+            let whatsNew = WhatsNewView(version: Bundle.main.shortVersion, section: notes, store: store, offersSwitches: true,
                                         tryAction: { _ in }, close: {})
             if save(AnyView(whatsNew), width: 620, appearance: appearance, to: folder.appendingPathComponent("whats-new-\(name).png")) {
                 written += 1

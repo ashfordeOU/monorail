@@ -2098,6 +2098,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         MomentsWatch.shared.start()
         BatteryLog.shared.start()
         StorageWatch.shared.start()
+        MonorailNudgeWatch.shared.start()
         FocusWatch.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         FocusWatch.shared.onRunningChange = { [weak self] on in
             guard let self, !Edition.isAppStore, self.store.settings.focusHidesApps else { return }
@@ -3665,7 +3666,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(awakeMenu())
         menu.addItem(eveningMenu())
         menu.addItem(.separator())
-        let monorail = item("Get Monorail: Arrange Your Windows…", #selector(openMonorailSite))
+        // Said specifically when Monorail would help right now ("11 windows open"), plainly otherwise.
+        let reason = MonorailNudgeWatch.shared.reason
+        let monorail = item(MonorailNudgeWatch.shared.monorailInstalled ? "Open Monorail"
+                            : reason.map { "\($0.headline): Try Monorail…" } ?? "Get Monorail: Arrange Your Windows…", #selector(openMonorailSite))
+        if let reason { monorail.toolTip = reason.pitch }
         monorail.image = NSImage(systemSymbolName: "rectangle.split.3x1", accessibilityDescription: nil)
         menu.addItem(monorail)
         menu.addItem(.separator())
@@ -3674,7 +3679,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(item("Quit \(Brand.name)", #selector(quit), key: "q"))
     }
 
-    @objc private func openMonorailSite() { NSWorkspace.shared.open(Brand.monorailURL) }
+    @objc private func openMonorailSite() {
+        if let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "org.ashforde.monorail") {
+            NSWorkspace.shared.openApplication(at: app, configuration: .init())
+        } else {
+            NSWorkspace.shared.open(Brand.monorailURL)
+        }
+    }
 
     @objc private func focusWindowFromMenu(_ sender: NSMenuItem) {
         let id = WindowID(sender.tag)

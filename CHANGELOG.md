@@ -4,6 +4,8 @@ All notable changes to Monorail by Ashforde® are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+<!-- Edition markers: a bullet ending in the comment 'monorail' is Monorail's alone, one ending in 'station' is Station's alone, the rest are both. Station's What's New lists Monorail's under "Also new in Monorail". -->
+
 ## [Unreleased]
 
 ### Added
@@ -19,8 +21,11 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **Focus sessions and eye breaks.** A Focus Session switch on Home starts a 15, 25, 50 or 90-minute countdown, with brown noise, pink noise or rain made on the Mac if you like (no recordings, no internet), and in Monorail it hides your distracting apps until it ends. Its page shows a ring counting down, this week's minutes, your streak, a one-line review of the day and the hour you focus best. Eye breaks (off unless you turn them on) remind you every 20 minutes at the screen to look 6 metres away for 20 seconds; stepping away counts as a break.
 - **Storage.** A card on Home with free space, and a page with the disk bar, a warning when it's getting low (and a notification, once, when it does), and the largest items in your home folder with Show in Finder. Monorail also finds space you can safely get back (Xcode build files, old device support, simulator and package caches, app caches older than a month, downloads untouched for 90 days) and clears each with one click, to the Trash first. Station looks inside a folder you choose. When the disk is almost full the card moves to the top of Home.
 - **Text and codes from a picture.** A fourth tool on Home reads the text and any QR code in a picture, on your Mac with Apple's Vision, and copies the text ready to paste (QR links get an Open button). In Monorail you select an area of the screen; in Station you copy a screenshot (⌃⇧⌘4) or choose a picture.
-- **Station can free up space too.** Choose your home folder once in the Open dialog and Station finds the same clean-ups as Monorail and the largest items in your home folder; it remembers the choice.
-- **Station, the App Store edition.** Built from the same code as the menu bar half of Monorail: the panel with battery rings, Stay Awake and Evening Mode, without the window strip (the App Store's sandbox doesn't let apps move other apps' windows) and without asking for Accessibility. Its own name, icon, menu, first run and Settings, and a permanent card that points to the free Monorail. Builds as `dist/AppStore/Station.app`.
+- **Station can free up space too.** Choose your home folder once in the Open dialog and Station finds the same clean-ups as Monorail and the largest items in your home folder; it remembers the choice. <!-- station -->
+- **A proper welcome.** The first run now walks through the whole app, one idea a page: how it works, what it does through your day (meetings, calls, Film mode, focus), what it shows about your Mac (chip, battery health, storage, tools), and a page to make it yours, with the switches worth choosing now and Calendar and notifications asked for only if you want them. The last page has three tips for getting around the panel.
+- **Monorail, when it would help.** Station's Monorail card stays quiet until a moment Monorail would really help, like eleven windows open or fifty app switches in an hour, then says so specifically. Never in the first two days, at most once a week, never again after three "Not now"s, and it becomes Open Monorail once it's installed. Station's menu says the same. The first run has a page introducing Monorail. <!-- station -->
+- **What's new in both.** After Station updates, its What's New shows Station's changes and a short "Also new in Monorail" section with what Monorail gained, and Monorail's notes leave out Station-only changes. <!-- station -->
+- **Station, the App Store edition.** Built from the same code as the menu bar half of Monorail: the panel with battery rings, Stay Awake and Evening Mode, without the window strip (the App Store's sandbox doesn't let apps move other apps' windows) and without asking for Accessibility. Its own name, icon, menu, first run and Settings, and a permanent card that points to the free Monorail. Builds as `dist/AppStore/Station.app`. <!-- station -->
 
 ## [1.8.1] - 2026-11-13
 

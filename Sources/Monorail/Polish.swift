@@ -70,13 +70,15 @@ final class WhatsNew {
             let changelog = try? String(contentsOf: url, encoding: .utf8)
         else { return }
         let notes = Self.section(for: version, in: changelog)
-        guard ReleaseNotes.isNotable(notes) else { return }
+        // Station also opens it when only Monorail gained something, to say so.
+        guard ReleaseNotes.isNotable(EditionNotes.lines(notes, for: Edition.isAppStore ? .station : .monorail))
+            || (Edition.isAppStore && ReleaseNotes.isNotable(EditionNotes.monorailOnly(notes))) else { return }
         showNotes(notes, version: version)
     }
 
     private func showNotes(_ notes: [String], version: String) {
         guard let store else { return }
-        let view = WhatsNewView(version: version, lines: notes, store: store, offersSwitches: true,
+        let view = WhatsNewView(version: version, section: notes, store: store, offersSwitches: true,
                                 tryAction: { [weak self] action in
             self?.window?.close()
             self?.tryAction(action)
@@ -113,7 +115,9 @@ final class WhatsNew {
 
 struct WhatsNewView: View {
     let version: String
-    let lines: [String]
+    /// The whole section from the changelog; each edition shows its own part.
+    let section: [String]
+    private var lines: [String] { EditionNotes.lines(section, for: Edition.isAppStore ? .station : .monorail) }
     @ObservedObject var store: SettingsStore
     let offersSwitches: Bool
     let tryAction: (Action) -> Void
@@ -163,6 +167,7 @@ struct WhatsNewView: View {
                 .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.05)))
                 .padding(.top, 18)
             }
+            if Edition.isAppStore { NewInMonorail(section: section).padding(.top, 18) }
             DisclosureGroup("All changes in \(version)") {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 6) {
@@ -191,6 +196,41 @@ struct WhatsNewView: View {
         }
         .padding(.horizontal, 44).padding(.top, 40).padding(.bottom, 20)
         .frame(width: 500)
+    }
+}
+
+/// In Station's update notes: what's new in Monorail this time, the part Station can't do.
+struct NewInMonorail: View {
+    let section: [String]
+
+    var body: some View {
+        let rows = ReleaseNotes.highlights(EditionNotes.monorailOnly(section), limit: 3)
+        if !rows.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "rectangle.split.3x1.fill").font(.system(size: 11, weight: .semibold)).foregroundStyle(.white)
+                        .frame(width: 22, height: 22)
+                        .background(RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(LinearGradient(colors: [Color(red: 1, green: 0.54, blue: 0.36), Color(red: 0.91, green: 0.26, blue: 0.48)],
+                                                 startPoint: .topLeading, endPoint: .bottomTrailing)))
+                        .accessibilityHidden(true)
+                    Text("Also new in Monorail").font(.system(size: 13, weight: .semibold))
+                    Spacer()
+                    Button("Get Monorail") { NSWorkspace.shared.open(Brand.monorailURL) }.controlSize(.small)
+                }
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(row.title).font(.system(size: 12, weight: .medium))
+                        Text(row.text).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Text("Monorail is free, from the same people, and does everything Station does too.")
+                    .font(.system(size: 10.5)).foregroundStyle(.tertiary)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.05)))
+        }
     }
 }
 

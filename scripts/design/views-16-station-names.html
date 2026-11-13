@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Station names and icons</title><link rel="stylesheet" href="mac.css">
+<style>
+body{background:#f5f5f7}
+h1 { position:absolute; left:40px; top:34px; margin:0; font:700 26px "SF Pro Display",sans-serif; }
+.sub { position:absolute; left:40px; top:70px; color:var(--ink-2); font-size:13px; }
+.grid { position:absolute; left:40px; top:104px; right:40px; display:grid; grid-template-columns:repeat(6, 1fr); gap:30px 18px; }
+.cell { text-align:center; }
+.cell svg { width:150px; height:150px; filter:drop-shadow(0 10px 18px rgba(0,0,0,.22)); }
+.cell b { display:block; font-size:14px; margin-top:6px; }
+.cell .n { font-size:11px; color:var(--blue); font-weight:600; letter-spacing:.3px; }
+.cell span { display:block; font-size:11.5px; color:var(--ink-2); line-height:1.35; margin:3px auto 0; max-width:200px; }
+.dock { position:absolute; left:40px; right:40px; top:720px; height:96px; border-radius:24px; background:rgba(255,255,255,.55); box-shadow:0 10px 30px rgba(0,0,0,.12); display:flex; align-items:center; justify-content:center; gap:14px; }
+.dock svg{width:70px;height:70px}
+.dock .lab{font-size:11px;color:var(--ink-2);margin-right:10px}
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const sq = (fill, inner = '') => `<svg viewBox="0 0 100 100"><defs>
+  <linearGradient id="mono" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".6" stop-color="#E8437A"/><stop offset="1" stop-color="#C2456E"/></linearGradient>
+  <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#263E78"/><stop offset="1" stop-color="#0A102A"/></linearGradient>
+  <linearGradient id="dusk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".45" stop-color="#E8437A"/><stop offset="1" stop-color="#2B3F86"/></linearGradient>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5AC8FA"/><stop offset="1" stop-color="#1E5BD8"/></linearGradient>
+  <linearGradient id="white" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E9E9EE"/></linearGradient>
+  </defs><rect x="10" y="10" width="80" height="80" rx="18" fill="${fill}"/>${inner}</svg>`;
+// Monorail's M: two tall windows and the middle one slid down. (cx, cy, scale)
+const M = (cx, cy, k = 1, col = '#fff', mid = null) => {
+  const x = (v) => cx + (v - 9) * k * 2.6, y = (v) => cy + (v - 7) * k * 2.6, w = (v) => v * k * 2.6;
+  return `<rect x="${x(1)}" y="${y(1)}" width="${w(4)}" height="${w(12)}" rx="${w(1.5)}" fill="none" stroke="${col}" stroke-width="${w(1.15)}"/>
+    <rect x="${x(13)}" y="${y(1)}" width="${w(4)}" height="${w(12)}" rx="${w(1.5)}" fill="none" stroke="${col}" stroke-width="${w(1.15)}"/>
+    ${mid ?? `<rect x="${x(7)}" y="${y(3.5)}" width="${w(4)}" height="${w(7)}" rx="${w(1.2)}" fill="${col}"/>`}`;
+};
+const arc = (cx, cy, r, w, share, col, track = .2) => { const c = 2 * Math.PI * r;
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-opacity="${track}" stroke-width="${w}"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${c * share} ${c}" transform="rotate(-90 ${cx} ${cy})"/>`; };
+const bolt = (cx, cy, s, col) => `<path transform="translate(${cx - 12 * s} ${cy - 12 * s}) scale(${s})" d="M13 2 4 14h7l-1 8 9-12h-7z" fill="${col}"/>`;
+
+
+const grad = (id, a, b, c) => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/>${c ? `<stop offset=".55" stop-color="${b}"/><stop offset="1" stop-color="${c}"/>` : `<stop offset="1" stop-color="${b}"/>`}</linearGradient>`;
+const tile = (defs, fill, inner) => `<svg viewBox="0 0 100 100"><defs>${defs}</defs><rect x="10" y="10" width="80" height="80" rx="18" fill="${fill}"/>${inner}</svg>`;
+const ideas = [
+  ['Monorail Station', 'Same family, unmistakably', tile('', '#14204A', M(50, 50, 1, '#fff', `<rect x="44.8" y="40.9" width="10.4" height="18.2" rx="3.1" fill="#30D158"/>`) + `<rect x="10" y="80" width="80" height="10" fill="#FF8A5B" opacity=".0"/>`)],
+  ['MonoStation', 'One word, Monorail\u2019s dusk', tile(grad('d1','#FF8A5B','#E8437A','#2B3F86'), 'url(#d1)', arc(50,50,31,3.4,.78,'#fff',.25) + M(50,50,.82))],
+  ['Depot', 'Where your Mac checks in', tile(grad('d2','#2A3B73','#121A3A'), 'url(#d2)', `<path d="M24 76 V44 Q50 22 76 44 V76" fill="none" stroke="#FFB648" stroke-width="5" stroke-linejoin="round"/>` + M(50,60,.62,'#fff'))],
+  ['Platform', 'Everything waiting for you', tile(grad('d3','#5AC8FA','#1E5BD8'), 'url(#d3)', `<path d="M24 36 Q50 20 76 36" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>${M(50,54,.74)}<rect x="22" y="73" width="56" height="3.5" rx="1.7" fill="#fff" opacity=".9"/>`)],
+  ['Signal', 'Green means all good', tile(grad('d4','#1C1C22','#2C2C34'), 'url(#d4)', `<rect x="38" y="20" width="24" height="60" rx="12" fill="#0E0E12" stroke="#3A3A44" stroke-width="2"/><circle cx="50" cy="34" r="7" fill="#FF453A" opacity=".25"/><circle cx="50" cy="50" r="7" fill="#FFD60A" opacity=".25"/><circle cx="50" cy="66" r="7.5" fill="#30D158"/><circle cx="50" cy="66" r="12" fill="#30D158" opacity=".22"/>`)],
+  ['Junction', 'Where your Mac\u2019s lines meet', tile(grad('d5','#232B45','#0F1428'), 'url(#d5)', `<path d="M26 80 C26 56 50 52 50 34 M74 80 C74 56 50 52 50 34" fill="none" stroke="url(#mono)" stroke-width="5.5" stroke-linecap="round"/><circle cx="50" cy="28" r="6" fill="#fff"/>`)],
+  ['Gauge', 'Your Mac\u2019s dials, one glance', tile('', 'url(#navy)', arc(50,50,30,6,.8,'#30D158') + arc(50,50,22,6,.62,'#5AC8FA') + arc(50,50,14,6,.9,'#FFD60A'))],
+  ['Concourse', 'The station clock', tile('', 'url(#navy)', `<circle cx="50" cy="50" r="30" fill="#F5F5F7"/>${arc(50,50,26,4,.7,'#30D158',.15)}<path d="M50 50 L50 32 M50 50 L62 56" stroke="#1C1C20" stroke-width="3.4" stroke-linecap="round"/><circle cx="50" cy="50" r="3" fill="#E8437A"/>`)],
+  ['Lantern', 'A warm light in the menu bar', tile(grad('d6','#1B2140','#0B0F22'), 'url(#d6)', `<circle cx="50" cy="52" r="24" fill="#FFB648" opacity=".18"/><rect x="40" y="36" width="20" height="30" rx="7" fill="#FFB648"/><rect x="43" y="28" width="14" height="6" rx="3" fill="#E8E8EE"/><rect x="42" y="68" width="16" height="5" rx="2.5" fill="#E8E8EE"/>`)],
+  ['Railyard', 'Monorail\u2019s M, parked', tile('url(#mono)', 'url(#mono)', M(50,46,.9) + `<rect x="22" y="74" width="56" height="3" rx="1.5" fill="#fff" opacity=".9"/><rect x="22" y="79" width="56" height="2" rx="1" fill="#fff" opacity=".5"/>`)],
+  ['Halt', 'A station sign, Monorail colours', tile('', '#F5F5F7', `<rect x="22" y="34" width="56" height="30" rx="15" fill="url(#mono)"/>${M(50,49,.5,'#fff')}<rect x="47.5" y="64" width="5" height="16" rx="2" fill="#B7B7C0"/>`)],
+  ['Dispatch', 'Sends you on your way', tile('url(#mono)', 'url(#mono)', M(50,50,1,'#fff', bolt(50,51,.95,'#fff')))],
+];
+document.getElementById('app').innerHTML = `<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="mono" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".6" stop-color="#E8437A"/><stop offset="1" stop-color="#C2456E"/></linearGradient><linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#263E78"/><stop offset="1" stop-color="#0A102A"/></linearGradient></defs></svg>` + menubar(`<span>${monoIcon}</span>`)
+  + `<h1>Station: names and icons</h1><div class="sub">Each name with an icon made for it. All use Monorail's shapes (the rounded tile, the M of three windows) or its colours, so they read as one family.</div>`
+  + `<div class="grid">${ideas.map(([t, d, svg], i) => `<div class="cell">${svg}<div class="n">${i + 1}</div><b>${t}</b><span>${d}</span></div>`).join('')}</div>`
+  + `<div class="dock"><span class="lab">In the Dock, next to Monorail:</span>${['url(#mono)'].map(()=>tile('', 'url(#mono)', M(50,50,1))).join('')}${ideas.slice(0,6).map(i=>i[2]).join('')}</div>`;
+</script></body></html>

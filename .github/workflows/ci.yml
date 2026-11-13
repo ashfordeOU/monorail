@@ -98,7 +98,7 @@ jobs:
           after="$(cpu)"
           kill "$pid" || true
           used="$(echo "$after - $before" | bc -l)"
-          wakeups="$(awk '{print $3}' idle.txt)"
+          wakeups="$(awk '{gsub(/[^0-9.]/, "", $3); print $3}' idle.txt)"
           echo "CPU over 60 s idle: ${used} s · idle wake-ups/s: ${wakeups} · $(awk '{print $4}' idle.txt) memory"
           echo "### Idle cost: ${used} s CPU per minute, ${wakeups} wake-ups/s, $(awk '{print $4}' idle.txt)" >> "$GITHUB_STEP_SUMMARY"
           awk -v u="$used" -v w="${wakeups:-0}" 'BEGIN { if (u > 1.5 || w > 30) { print "Idle cost is too high"; exit 1 } }'

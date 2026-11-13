@@ -123,7 +123,7 @@ defaults write "$appr" "/Applications/Monorail.app/Contents/MacOS/Monorail" -dat
 log "Settings: no usage counts, no update checks, welcome done, local API on"
 mkdir -p "$HOME/Library/Application Support/Monorail"
 cat > "$HOME/Library/Application Support/Monorail/settings.json" <<'JSON'
-{"shareUsageStats":false,"checkForUpdates":false,"usageNoticeShown":true,"hasCompletedOnboarding":true,"localAPI":true,"lastSeenVersion":"__VERSION__"}
+{"shareUsageStats":false,"checkForUpdates":false,"usageNoticeShown":true,"hasCompletedOnboarding":true,"localAPI":true,"lastSeenVersion":"__VERSION__","notchLive":true}
 JSON
 sed -i '' "s/__VERSION__/$(cat "$work/VERSION" | tr -d '[:space:]')/" "$HOME/Library/Application Support/Monorail/settings.json"
 cat "$HOME/Library/Application Support/Monorail/settings.json"
@@ -136,6 +136,9 @@ open -a TextEdit "$docs/Launch plan.txt"; sleep 2
 open -a Preview "$work/assets/launch/v17/07-themes.png"; sleep 2
 open -a "Activity Monitor"; sleep 4
 screencapture -x "$out/00-before-monorail.png"
+
+log "A few files on the notch shelf"
+defaults write org.ashforde.monorail NotchShelf -array "$docs/Launch plan.txt" "$docs/Design/Monorail icon.png" "$docs/Launch/Roadmap.md" "$docs/Launch/Press list.csv"
 
 log "Start Monorail"
 open /Applications/Monorail.app
@@ -176,9 +179,23 @@ for page in system network storage; do open -g monorail://panel; sleep 0.8; open
 open -g monorail://panel; sleep 1
 
 log "The Dashboard"
-for page in time ai-usage switches apps battery; do open -g "monorail://dashboard/$page"; shot "09-dashboard-$page" 2.5; done
+for page in overview cpu memory gpu disk network time ai-usage switches apps battery; do open -g "monorail://dashboard/$page"; shot "09-dashboard-$page" 2.5; done
 osascript -e 'tell application "System Events" to keystroke "w" using command down' >/dev/null 2>&1 || true
 sleep 1
+
+log "The island, opened by resting the pointer on it"
+cat > /tmp/point.swift <<'SWIFT'
+import CoreGraphics
+import Foundation
+let b = CGDisplayBounds(CGMainDisplayID())
+let x = Double(CommandLine.arguments.dropFirst().first ?? "") ?? Double(b.midX)
+let y = Double(CommandLine.arguments.dropFirst(2).first ?? "") ?? 10
+CGWarpMouseCursorPosition(CGPoint(x: x, y: y))
+// A real move event too, so hover tracking notices.
+CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: CGPoint(x: x, y: y), mouseButton: .left)?.post(tap: .cghidEventTap)
+SWIFT
+swift /tmp/point.swift 2>/dev/null; shot 11-island-open 2.0
+swift /tmp/point.swift 400 600 2>/dev/null; shot 11-island-closed 1.5
 
 log "The command palette"
 open -g monorail://palette; shot 10-palette 1.6

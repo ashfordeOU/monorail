@@ -353,7 +353,7 @@ struct SwitchesSection: View {
                 let items = board.catalogue.filter { $0.group == group }
                 if !items.isEmpty {
                     DashCard(title: group.rawValue) {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 10)], spacing: 10) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 205), spacing: 10)], spacing: 10) {
                             ForEach(items) { item in tile(item, store: store) }
                         }
                     }
@@ -429,7 +429,7 @@ struct SwitchesSection: View {
                     .frame(width: 30, height: 30)
                     .background(Circle().fill(on ? Color(nsColor: .systemOrange) : Color.white.opacity(0.08)))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(item.title).font(.system(size: 12.5, weight: .medium)).lineLimit(1)
+                    Text(item.title).font(.system(size: 12.5, weight: .medium)).lineLimit(1).minimumScaleFactor(0.85)
                     Text(item.isAction ? "Run" : (on ? "On" : "Off")).font(.system(size: 10.5)).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)

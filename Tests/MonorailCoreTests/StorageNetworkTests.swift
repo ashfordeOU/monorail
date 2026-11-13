@@ -77,3 +77,44 @@ final class NetworkDetailsTests: XCTestCase {
         XCTAssertEqual(NetworkDetails.latencyWord(12), "Snappy")
     }
 }
+
+final class SystemHistoryExtrasTests: XCTestCase {
+    func testDailyTotalsAndWeekHours() {
+        var cal = Calendar(identifier: .gregorian); cal.timeZone = TimeZone(identifier: "UTC")!
+        let now = Date(timeIntervalSince1970: 1_700_000_000) // a Tuesday afternoon (UTC)
+        var history = SystemHistory()
+        for minute in 0..<30 { history.add(.init(at: now.addingTimeInterval(Double(minute - 30) * 60), cpu: 50, memory: 40, downBytes: 1000)) }
+        let totals = history.dailyTotals({ $0.downBytes }, days: 3, now: now, calendar: cal)
+        XCTAssertEqual(totals.count, 3)
+        XCTAssertEqual(totals.last?.total ?? 0, 30 * 60 * 1000, accuracy: 1)
+        XCTAssertEqual(totals.first?.total, 0)
+        let grid = history.weekHours({ $0.cpu }, calendar: cal)
+        XCTAssertEqual(grid.count, 7); XCTAssertEqual(grid[0].count, 24)
+        let filled = grid.flatMap { $0 }.compactMap { $0 }
+        XCTAssertFalse(filled.isEmpty)
+        XCTAssertEqual(filled.first ?? 0, 50, accuracy: 0.001)
+    }
+}
+
+final class NotchShelfTests: XCTestCase {
+    func testShelfKeepsNewestFirstWithoutDuplicates() {
+        var shelf = NotchShelf(limit: 3)
+        shelf.add(["/a", "/b"])
+        XCTAssertEqual(shelf.paths, ["/a", "/b"])
+        shelf.add(["/c", "/a"])
+        XCTAssertEqual(shelf.paths, ["/c", "/a", "/b"])
+        shelf.add(["/d"])
+        XCTAssertEqual(shelf.paths, ["/d", "/c", "/a"])
+        shelf.remove("/c")
+        XCTAssertEqual(shelf.paths, ["/d", "/a"])
+        shelf.clear()
+        XCTAssertTrue(shelf.isEmpty)
+    }
+
+    func testRankedActivities() {
+        let list = [NotchActivity(.charging, symbol: "bolt", text: "80%", tint: "green"),
+                    NotchActivity(.sharing, symbol: "rec", text: "Sharing", tint: "red"),
+                    NotchActivity(.timer, symbol: "timer", text: "24:00", tint: "purple")]
+        XCTAssertEqual(NotchActivity.ranked(list).map(\.kind), [.sharing, .timer, .charging])
+    }
+}

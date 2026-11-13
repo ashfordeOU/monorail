@@ -229,7 +229,7 @@ struct StorageWidget: View {
             VStack(alignment: .leading, spacing: 6) {
                 CardTitle(title: "STORAGE", symbol: "internaldrive.fill", tint: levelColour(storage.level))
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(Storage.size(storage.free)).font(.figure(20))
+                    Text(Storage.size(storage.free)).font(.figure(20)).rolling(Storage.size(storage.free))
                     Text("free").font(.system(size: 11)).foregroundStyle(.tertiary)
                 }
                 if mapper.segments.isEmpty {

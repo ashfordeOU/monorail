@@ -36,7 +36,9 @@ enum Tone {
 }
 
 enum Motion {
-    static var reduced: Bool { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
+    /// Set while drawing screens for a picture: nothing waits to animate in.
+    static var still = false
+    static var reduced: Bool { still || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
     /// Pages sliding in the panel: quick, with the faintest overshoot.
     static var page: Animation { reduced ? .easeOut(duration: 0.12) : .spring(response: 0.42, dampingFraction: 0.86) }
     /// A toggle filling in, a button pressed.
@@ -72,7 +74,49 @@ struct TileBackground: ViewModifier {
 
 extension View {
     func tile(tint: Color? = nil, padding: CGFloat = 10) -> some View {
-        modifier(TileBackground(tint: tint, padding: padding))
+        modifier(TileBackground(tint: tint, padding: padding)).entrance()
+    }
+
+    /// Rises and fades in when it appears, a moment after the cards above it, so a page cascades open.
+    func entrance() -> some View { modifier(Entrance()) }
+
+    /// Numbers that roll from one value to the next, like the Lock Screen's clock.
+    @ViewBuilder func rolling<V: Equatable>(_ value: V) -> some View {
+        if #available(macOS 14, *), !Motion.reduced {
+            self.contentTransition(.numericText()).animation(.snappy(duration: 0.35), value: value)
+        } else {
+            self
+        }
+    }
+
+    /// A symbol that gives a little bounce when the value changes (a toggle turning on, say).
+    @ViewBuilder func bounces<V: Equatable>(on value: V) -> some View {
+        if #available(macOS 14, *), !Motion.reduced {
+            self.symbolEffect(.bounce, value: value)
+        } else {
+            self
+        }
+    }
+}
+
+/// The page cascade: each card waits a little longer the further down it sits, then springs into place.
+struct Entrance: ViewModifier {
+    @State private var shown = Motion.reduced
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown ? 0 : 12)
+            .scaleEffect(shown ? 1 : 0.97, anchor: .top)
+            .background(GeometryReader { geo in
+                Color.clear.onAppear {
+                    guard !shown else { return }
+                    // Lower down, a touch later: about 60 ms for every 100 points, at most 0.4 s.
+                    let top = geo.frame(in: .global).minY
+                    let delay = min(max(top, 0) / 1600, 0.4)
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.84).delay(delay)) { shown = true }
+                }
+            })
     }
 }
 

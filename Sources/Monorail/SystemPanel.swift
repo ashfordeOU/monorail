@@ -180,7 +180,7 @@ struct SystemWidget: View {
             VStack(alignment: .leading, spacing: 6) {
                 CardTitle(title: "SYSTEM", symbol: "cpu", tint: Tone.blue)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("\(Int(system.total.rounded()))%").font(.figure(22))
+                    Text("\(Int(system.total.rounded()))%").font(.figure(22)).rolling(Int(system.total.rounded()))
                     Text("processor").font(.system(size: 11)).foregroundStyle(.tertiary)
                 }
                 Text("Memory \(system.memory.level.rawValue)").font(.system(size: 11)).foregroundStyle(.secondary)
@@ -204,7 +204,7 @@ struct NetworkWidget: View {
                 CardTitle(title: "NETWORK", symbol: "network", tint: Color(nsColor: .systemTeal))
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Image(systemName: "arrow.down").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
-                    Text(SystemStats.speed(system.down)).font(.figure(17))
+                    Text(SystemStats.speed(system.down)).font(.figure(17)).rolling(SystemStats.speed(system.down))
                 }
                 HStack(spacing: 6) {
                     Text("↑ \(SystemStats.speed(system.up))")

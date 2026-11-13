@@ -339,7 +339,7 @@ public enum QuickCalc {
 public struct NotchActivity: Equatable, Sendable {
     public enum Kind: Int, Sendable, Comparable {
         // Lower comes first.
-        case sharing = 0, call, recording, timer, batteryLow, aiLimit, charging, awake, mode
+        case sharing = 0, call, recording, timer, batteryLow, aiLimit, charging, awake, mode, music
         public static func < (a: Kind, b: Kind) -> Bool { a.rawValue < b.rawValue }
     }
 
@@ -368,4 +368,36 @@ public struct NotchActivity: Equatable, Sendable {
         let s = max(0, Int(seconds.rounded()))
         return s >= 3600 ? String(format: "%d:%02d:%02d", s / 3600, s % 3600 / 60, s % 60) : String(format: "%d:%02d", s / 60, s % 60)
     }
+}
+
+extension NotchActivity {
+    /// Every activity, most important first (for the island's expanded card).
+    public static func ranked(_ list: [NotchActivity]) -> [NotchActivity] {
+        list.enumerated().sorted { $0.element.kind == $1.element.kind ? $0.offset < $1.offset : $0.element.kind < $1.element.kind }.map(\.element)
+    }
+}
+
+/// The notch shelf: files dropped on the notch, kept until you take them somewhere. Newest first, no
+/// duplicates, at most `limit`.
+public struct NotchShelf: Equatable, Sendable {
+    public private(set) var paths: [String]
+    public var limit: Int
+
+    public init(paths: [String] = [], limit: Int = 24) {
+        self.limit = limit
+        self.paths = []
+        add(paths)
+    }
+
+    public mutating func add(_ new: [String]) {
+        for path in new.reversed() where !path.isEmpty {
+            paths.removeAll { $0 == path }
+            paths.insert(path, at: 0)
+        }
+        if paths.count > limit { paths.removeLast(paths.count - limit) }
+    }
+
+    public mutating func remove(_ path: String) { paths.removeAll { $0 == path } }
+    public mutating func clear() { paths.removeAll() }
+    public var isEmpty: Bool { paths.isEmpty }
 }

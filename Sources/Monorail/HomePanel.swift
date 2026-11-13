@@ -695,6 +695,7 @@ struct ControlTile: View {
                     .frame(width: 42, height: 42)
                     .background(Circle().fill(isOn ? tint : Color.primary.opacity(0.1)))
                     .animation(Motion.pop, value: isOn)
+                    .bounces(on: isOn)
             }
             .buttonStyle(PressStyle())
             .accessibilityLabel(Text("\(title), \(status)"))

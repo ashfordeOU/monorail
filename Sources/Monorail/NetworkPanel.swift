@@ -208,16 +208,35 @@ final class NetworkWatch: ObservableObject {
 /// are using the network, latency and a speed test.
 struct NetworkPage: View {
     let onBack: () -> Void
+    /// Inside the Dashboard: no back button and no scrolling of its own.
+    var embedded = false
     @ObservedObject private var system = SystemWatch.shared
     @ObservedObject private var net = NetworkWatch.shared
     @State private var contentHeight: CGFloat = 480
     @State private var copied = false
 
     var body: some View {
-        ScrollView {
+        if embedded {
+            cards.onAppear { net.setLive(true) }
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 8) {
+                    PageHeader(back: Brand.name, title: "Network", onBack: onBack)
+                    cards
+                }
+                .padding(12)
+                .background(GeometryReader { proxy in Color.clear.preference(key: NetworkPageHeight.self, value: proxy.size.height) })
+            }
+            .onPreferenceChange(NetworkPageHeight.self) { contentHeight = $0 }
+            .frame(height: min(max(contentHeight, 200), 640))
+            .onAppear { system.setLive(true); net.setLive(true) }
+            .onDisappear { system.setLive(false); net.setLive(false) }
+        }
+    }
+
+    private var cards: some View {
             VStack(alignment: .leading, spacing: 8) {
-                PageHeader(back: Brand.name, title: "Network", onBack: onBack)
-                speedCard
+                if !embedded { speedCard }
                 connectionCard
                 if let wifi = net.wifi { wifiCard(wifi) }
                 if !Edition.isAppStore { appsCard }
@@ -232,13 +251,6 @@ struct NetworkPage: View {
                     .controlSize(.small)
                 }
             }
-            .padding(12)
-            .background(GeometryReader { proxy in Color.clear.preference(key: NetworkPageHeight.self, value: proxy.size.height) })
-        }
-        .onPreferenceChange(NetworkPageHeight.self) { contentHeight = $0 }
-        .frame(height: min(max(contentHeight, 200), 640))
-        .onAppear { system.setLive(true); net.setLive(true) }
-        .onDisappear { system.setLive(false); net.setLive(false) }
     }
 
     private var speedCard: some View {
@@ -246,11 +258,11 @@ struct NetworkPage: View {
             HStack(alignment: .firstTextBaseline, spacing: 18) {
                 VStack(alignment: .leading, spacing: 1) {
                     Label("Download", systemImage: "arrow.down.circle.fill").font(.system(size: 10.5, weight: .semibold)).foregroundStyle(Color(nsColor: .systemTeal))
-                    Text(SystemStats.speed(system.down)).font(.figure(22))
+                    Text(SystemStats.speed(system.down)).font(.figure(22)).rolling(SystemStats.speed(system.down))
                 }
                 VStack(alignment: .leading, spacing: 1) {
                     Label("Upload", systemImage: "arrow.up.circle.fill").font(.system(size: 10.5, weight: .semibold)).foregroundStyle(Color(nsColor: .systemOrange))
-                    Text(SystemStats.speed(system.up)).font(.figure(22))
+                    Text(SystemStats.speed(system.up)).font(.figure(22)).rolling(SystemStats.speed(system.up))
                 }
                 Spacer()
                 if system.vpn { Label("VPN", systemImage: "lock.shield.fill").font(.system(size: 11, weight: .semibold)).foregroundStyle(Tone.good) }

@@ -156,13 +156,15 @@ struct StorageBar: View {
     let free: Int64
     var height: CGFloat = 20
     @State private var hovered: StorageMap.Category?
+    /// The segments grow in from the left when the bar appears.
+    @State private var grown: CGFloat = Motion.reduced ? 1 : 0
 
     var body: some View {
         GeometryReader { g in
             let width = g.size.width
             HStack(spacing: 1.5) {
                 ForEach(segments) { segment in
-                    let w = max(width * CGFloat(Double(segment.bytes) / Double(max(total, 1))) - 1.5, 2)
+                    let w = max(width * grown * CGFloat(Double(segment.bytes) / Double(max(total, 1))) - 1.5, 2)
                     Rectangle().fill(segment.category.colour.opacity(hovered == nil || hovered == segment.category ? 1 : 0.45))
                         .frame(width: w)
                         .onHover { hovered = $0 ? segment.category : nil }
@@ -188,6 +190,7 @@ struct StorageBar: View {
         }
         .frame(height: height)
         .clipShape(RoundedRectangle(cornerRadius: height >= 16 ? 5 : 3, style: .continuous))
+        .onAppear { guard grown < 1 else { return }; withAnimation(.spring(response: 0.9, dampingFraction: 0.85).delay(0.15)) { grown = 1 } }
         .animation(.easeOut(duration: 0.3), value: segments)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(segments.map { "\($0.category.rawValue) \(Storage.size($0.bytes))" }.joined(separator: ", ") + ", \(Storage.size(free)) free"))

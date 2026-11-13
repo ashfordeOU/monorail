@@ -2174,6 +2174,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         Switchboard.shared.start()
         MeetingRecorder.shared.store = store
         MomentsWatch.shared.onCallChange = { started in MeetingRecorder.shared.callChanged(started) }
+        NowPlaying.shared.start()
         NotchLive.shared.open = { [weak self] in
             guard let self, let button = self.statusItem?.button, !self.popover.isShown else { return }
             self.popover.toggle(relativeTo: button)
@@ -2205,6 +2206,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 list.append(NotchActivity(.aiLimit, symbol: "brain", text: "\(Int(top.window.usedPercent))%", tint: "orange"))
             }
             if self.awake.isOn { list.append(NotchActivity(.awake, symbol: "cup.and.saucer.fill", text: "Awake", tint: "blue")) }
+            if let music = NowPlaying.shared.activity { list.append(music) }
             return list
         }
         NotchOpener.shared.open = { [weak self] in

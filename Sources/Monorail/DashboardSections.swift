@@ -26,6 +26,7 @@ struct DashCard<Content: View>: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(0.07)))
+        .entrance()
     }
 }
 
@@ -54,6 +55,8 @@ struct TrendChart: View {
     var colour: Color = Color(nsColor: .systemOrange)
     var format: (Double) -> String = { String(format: "%.0f%%", $0) }
     var height: CGFloat = 90
+    /// The line draws itself in from the left when the chart appears.
+    @State private var drawn: CGFloat = Motion.reduced ? 1 : 0
 
     var body: some View {
         let top = max(maximum ?? (values.max() ?? 1) * 1.1, 0.0001)
@@ -74,7 +77,9 @@ struct TrendChart: View {
                             p.closeSubpath()
                         }
                         .fill(LinearGradient(colors: [colour.opacity(0.35), colour.opacity(0.02)], startPoint: .top, endPoint: .bottom))
+                        .mask(alignment: .leading) { Rectangle().frame(width: geo.size.width * drawn) }
                         Path { p in for (i, v) in values.enumerated() { i == 0 ? p.move(to: point(i, v)) : p.addLine(to: point(i, v)) } }
+                            .trim(from: 0, to: drawn)
                             .stroke(colour, style: StrokeStyle(lineWidth: 1.6, lineJoin: .round))
                         if let last = values.last {
                             Circle().fill(colour).frame(width: 6, height: 6).position(point(values.count - 1, last))
@@ -85,6 +90,7 @@ struct TrendChart: View {
                 }
             }
             .frame(height: height)
+            .onAppear { guard drawn < 1 else { return }; withAnimation(.easeOut(duration: 0.9).delay(0.1)) { drawn = 1 } }
             if let s = SystemHistory.summary(values) {
                 HStack(spacing: 14) {
                     Text("Low \(format(s.low))"); Text("Average \(format(s.average))"); Text("High \(format(s.high))")
@@ -154,6 +160,36 @@ struct OverviewSection: View {
                      power.battery.isCharging ? "charging" : power.battery.onBattery ? "\(HomePage.clock(power.battery.minutesAtCurrentRate)) left" : "on power",
                      hour.compactMap { $0.battery.map(Double.init) }, .systemGreen)
             }
+            HStack(alignment: .top, spacing: 14) {
+                DashCard(title: "Storage") {
+                    let mapper = StorageMapper.shared
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(Storage.size(storage.free)).font(.figure(20, weight: .semibold)).rolling(Storage.size(storage.free))
+                        Text("free of \(Storage.size(storage.total))").font(.system(size: 11.5)).foregroundStyle(.secondary)
+                    }
+                    StorageBar(segments: mapper.segments.isEmpty ? [StorageMap.Segment(category: .systemData, bytes: storage.used)] : mapper.segments,
+                               total: storage.total, free: storage.free, height: 12)
+                    Text(mapper.segments.prefix(3).map { "\($0.category.rawValue) \(Storage.size($0.bytes))" }.joined(separator: " · "))
+                        .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                    Button("Details") { go(.disk) }.buttonStyle(.link).font(.system(size: 12))
+                }
+                DashCard(title: "Connection") {
+                    let net = NetworkWatch.shared
+                    Label(net.kind, systemImage: net.symbol).font(.system(size: 14, weight: .semibold))
+                    if let wifi = net.wifi {
+                        let q = NetworkDetails.quality(rssi: wifi.rssi, noise: wifi.noise)
+                        Text("\(q.quality.rawValue) signal · \(wifi.band) · \(Int(wifi.transmitRate)) Mbit/s").font(.system(size: 11.5)).foregroundStyle(.secondary)
+                    }
+                    Text([system.localIP, system.vpn ? "VPN on" : nil].compactMap { $0 }.joined(separator: " · ")).font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.secondary)
+                    Button("Details") { go(.network) }.buttonStyle(.link).font(.system(size: 12))
+                }
+                DashCard(title: "This Mac") {
+                    let d = SystemDetails.shared
+                    Text(d.model).font(.system(size: 14, weight: .semibold)).lineLimit(1)
+                    Text("\(d.chip.replacingOccurrences(of: "Apple ", with: "")) · \(SystemStats.gigabytes(d.memory)) memory").font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
+                    Text("\(d.macOS) · up \(SystemStats.uptime(system.uptime))").font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
+                }
+            }
             if !Edition.isAppStore {
                 DashCard(title: "Busiest apps") {
                     let top = power.apps.prefix(6)
@@ -172,7 +208,7 @@ struct OverviewSection: View {
             }
         }
         .sectionScroll()
-        .onAppear { system.setLive(true); power.setLive(true); storage.refresh() }
+        .onAppear { system.setLive(true); power.setLive(true); storage.refresh(); NetworkWatch.shared.refresh() }
         .onDisappear { system.setLive(false); power.setLive(false) }
     }
 
@@ -185,7 +221,7 @@ struct OverviewSection: View {
                     Spacer()
                     Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold)).foregroundStyle(.tertiary)
                 }
-                Text(value).font(.figure(24, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.6)
+                Text(value).font(.figure(24, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.6).rolling(value)
                 Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
                 TrendChart(values: spark, colour: Color(nsColor: colour), format: format, height: 34).allowsHitTesting(false)
             }
@@ -315,151 +351,6 @@ private struct AppDrawer: View {
 }
 
 // MARK: - CPU, Memory, GPU
-
-struct CPUSection: View {
-    @ObservedObject private var system = SystemWatch.shared
-    @ObservedObject private var recorder = SystemRecorder.shared
-    @AppStorage("DashboardRange") private var rangeName = SystemHistory.Range.hours24.rawValue
-    private var range: Binding<SystemHistory.Range> { Binding(get: { SystemHistory.Range(rawValue: rangeName) ?? .hours24 }, set: { rangeName = $0.rawValue }) }
-
-    var body: some View {
-        let load = SystemWatch.loadAverage()
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "CPU", subtitle: "\(Int(system.total.rounded()))% now · \(system.chipName)", range: range)
-            DashCard(title: "Load over time", trailing: load.count == 3 ? String(format: "load %.1f · %.1f · %.1f", load[0], load[1], load[2]) : nil, pin: "cpu") {
-                TrendChart(values: recorder.history.samples(range.wrappedValue).map(\.cpu), maximum: 100, height: 130)
-            }
-            DashCard(title: "Your chip, core by core") {
-                ChipView(name: system.chipName, performance: system.performance, efficiency: system.efficiency)
-            }
-        }
-        .sectionScroll()
-        .onAppear { system.setLive(true) }
-        .onDisappear { system.setLive(false) }
-    }
-}
-
-struct MemorySection: View {
-    @ObservedObject private var system = SystemWatch.shared
-    @ObservedObject private var recorder = SystemRecorder.shared
-    @AppStorage("DashboardRange") private var rangeName = SystemHistory.Range.hours24.rawValue
-    private var range: Binding<SystemHistory.Range> { Binding(get: { SystemHistory.Range(rawValue: rangeName) ?? .hours24 }, set: { rangeName = $0.rawValue }) }
-
-    var body: some View {
-        let m = system.memory, swap = SystemWatch.swapUsed(), paging = SystemWatch.paging()
-        let samples = recorder.history.samples(range.wrappedValue)
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "Memory", subtitle: "\(SystemStats.gigabytes(m.used)) of \(SystemStats.gigabytes(m.total)) in use · pressure \(m.level.rawValue)", range: range)
-            DashCard(title: "Pressure over time", pin: "memory") {
-                TrendChart(values: samples.map(\.memory), maximum: 100, colour: Color(nsColor: .systemBlue), height: 120)
-            }
-            HStack(alignment: .top, spacing: 14) {
-                DashCard(title: "Where it went") {
-                    let total = Double(max(m.total, 1))
-                    GeometryReader { geo in
-                        HStack(spacing: 2) {
-                            ForEach(Array([(m.app, NSColor.systemBlue), (m.wired, .systemPurple), (m.compressed, .systemOrange), (m.cached, .systemGray)].enumerated()), id: \.offset) { _, part in
-                                Rectangle().fill(Color(nsColor: part.1)).frame(width: max(0, geo.size.width * Double(part.0) / total))
-                            }
-                            Spacer(minLength: 0)
-                        }
-                    }
-                    .frame(height: 14).clipShape(RoundedRectangle(cornerRadius: 5))
-                    .background(RoundedRectangle(cornerRadius: 5).fill(Color.white.opacity(0.08)))
-                    Grid(alignment: .leading, horizontalSpacing: 18, verticalSpacing: 4) {
-                        GridRow { Text("Apps").foregroundStyle(.secondary); Text(SystemStats.gigabytes(m.app)) }
-                        GridRow { Text("Wired").foregroundStyle(.secondary); Text(SystemStats.gigabytes(m.wired)) }
-                        GridRow { Text("Compressed").foregroundStyle(.secondary); Text(SystemStats.gigabytes(m.compressed)) }
-                        GridRow { Text("Cached").foregroundStyle(.secondary); Text(SystemStats.gigabytes(m.cached)) }
-                    }
-                    .font(.system(size: 12.5)).monospacedDigit()
-                }
-                DashCard(title: "Swap", pin: "swap") {
-                    Text(SystemStats.gigabytes(swap)).font(.figure(24, weight: .semibold))
-                    Text("Pages swapped in \(paging.ins) · out \(paging.outs) since start-up").font(.system(size: 11.5)).foregroundStyle(.secondary)
-                    TrendChart(values: samples.map(\.swapGB), colour: Color(nsColor: .systemOrange), format: { String(format: "%.1f GB", $0) }, height: 60)
-                }
-            }
-        }
-        .sectionScroll()
-        .onAppear { system.setLive(true) }
-        .onDisappear { system.setLive(false) }
-    }
-}
-
-struct GPUSection: View {
-    @ObservedObject private var recorder = SystemRecorder.shared
-    @State private var now: Double?
-    @AppStorage("DashboardRange") private var rangeName = SystemHistory.Range.hours24.rawValue
-    private var range: Binding<SystemHistory.Range> { Binding(get: { SystemHistory.Range(rawValue: rangeName) ?? .hours24 }, set: { rangeName = $0.rawValue }) }
-    private let tick = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "GPU", subtitle: now.map { "\(Int($0.rounded()))% in use now" } ?? "This Mac's graphics driver doesn't report its load", range: range)
-            DashCard(title: "Graphics load over time", pin: "gpu") {
-                TrendChart(values: recorder.history.samples(range.wrappedValue).compactMap(\.gpu), maximum: 100, colour: Color(nsColor: .systemPurple), height: 140)
-            }
-        }
-        .sectionScroll()
-        .onAppear { now = SystemWatch.gpuUtilisation() }
-        .onReceive(tick) { _ in now = SystemWatch.gpuUtilisation() }
-    }
-}
-
-// MARK: - Disk and Network
-
-struct DiskSection: View {
-    @ObservedObject private var recorder = SystemRecorder.shared
-    @AppStorage("DashboardRange") private var rangeName = SystemHistory.Range.hours24.rawValue
-    private var range: Binding<SystemHistory.Range> { Binding(get: { SystemHistory.Range(rawValue: rangeName) ?? .hours24 }, set: { rangeName = $0.rawValue }) }
-
-    var body: some View {
-        let samples = recorder.history.samples(range.wrappedValue)
-        let today = recorder.history.samples(.hours24).filter { Calendar.current.isDateInToday($0.at) }
-        let written = today.reduce(0) { $0 + $1.writeBytes * 60 }, read = today.reduce(0) { $0 + $1.readBytes * 60 }
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "Disk", subtitle: "Today: \(Storage.size(Int64(read))) read · \(Storage.size(Int64(written))) written", range: range)
-            HStack(alignment: .top, spacing: 14) {
-                DashCard(title: "Reading") { TrendChart(values: samples.map(\.readBytes), colour: Color(nsColor: .systemTeal), format: bytesRate, height: 90) }
-                DashCard(title: "Writing", pin: "write") { TrendChart(values: samples.map(\.writeBytes), colour: Color(nsColor: .systemPink), format: bytesRate, height: 90) }
-            }
-            StoragePage(onBack: {}, embedded: true)
-        }
-        .sectionScroll()
-    }
-}
-
-struct NetworkSection: View {
-    @ObservedObject private var system = SystemWatch.shared
-    @ObservedObject private var recorder = SystemRecorder.shared
-    @AppStorage("DashboardRange") private var rangeName = SystemHistory.Range.hours24.rawValue
-    private var range: Binding<SystemHistory.Range> { Binding(get: { SystemHistory.Range(rawValue: rangeName) ?? .hours24 }, set: { rangeName = $0.rawValue }) }
-
-    var body: some View {
-        let samples = recorder.history.samples(range.wrappedValue)
-        let today = recorder.history.samples(.hours24).filter { Calendar.current.isDateInToday($0.at) }
-        let down = today.reduce(0) { $0 + $1.downBytes * 60 }, up = today.reduce(0) { $0 + $1.upBytes * 60 }
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "Network", subtitle: "↓ \(bytesRate(system.down))  ↑ \(bytesRate(system.up)) · today \(Storage.size(Int64(down))) down, \(Storage.size(Int64(up))) up", range: range)
-            DashCard(title: "Download", pin: "down") { TrendChart(values: samples.map(\.downBytes), colour: Color(nsColor: .systemTeal), format: bytesRate, height: 100) }
-            DashCard(title: "Upload") { TrendChart(values: samples.map(\.upBytes), colour: Color(nsColor: .systemIndigo), format: bytesRate, height: 70) }
-            DashCard(title: "Connection") {
-                HStack(spacing: 24) {
-                    VStack(alignment: .leading) { Text("IP ADDRESS").font(.system(size: 9.5, weight: .semibold)).foregroundStyle(.tertiary); Text(system.localIP ?? "–").textSelection(.enabled) }
-                    VStack(alignment: .leading) { Text("VPN").font(.system(size: 9.5, weight: .semibold)).foregroundStyle(.tertiary); Text(system.vpn ? "On" : "Off") }
-                    VStack(alignment: .leading) { Text("SPEED TEST").font(.system(size: 9.5, weight: .semibold)).foregroundStyle(.tertiary); Text(system.speedTest ?? "Not run") }
-                    Spacer()
-                    Button(system.testing ? "Testing…" : "Test Speed") { system.runSpeedTest() }.disabled(system.testing)
-                }
-                .font(.system(size: 13))
-            }
-        }
-        .sectionScroll()
-        .onAppear { system.setLive(true) }
-        .onDisappear { system.setLive(false) }
-    }
-}
 
 // MARK: - Sound, Ports, Agents, Trends
 

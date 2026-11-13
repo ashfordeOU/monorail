@@ -79,6 +79,32 @@ public struct SystemHistory: Codable, Equatable, Sendable {
                       battery: last.battery)
     }
 
+    /// Totals per day for a rate reading (bytes a second): each sample counts for the time it stands for
+    /// (a minute recently, 15 minutes further back). Oldest day first, `days` long, ending today.
+    public func dailyTotals(_ value: (Sample) -> Double, days: Int, now: Date = Date(), calendar: Calendar = .current) -> [(day: Date, total: Double)] {
+        let today = calendar.startOfDay(for: now)
+        var totals: [Date: Double] = [:]
+        for s in older { totals[calendar.startOfDay(for: s.at), default: 0] += value(s) * 900 }
+        for s in recent { totals[calendar.startOfDay(for: s.at), default: 0] += value(s) * 60 }
+        return (0..<days).reversed().compactMap { back in
+            guard let day = calendar.date(byAdding: .day, value: -back, to: today) else { return nil }
+            return (day, totals[day] ?? 0)
+        }
+    }
+
+    /// The average of a reading by weekday (0 = Sunday) and hour, over everything kept: when the Mac is busiest.
+    /// Cells with no samples are nil.
+    public func weekHours(_ value: (Sample) -> Double, calendar: Calendar = .current) -> [[Double?]] {
+        var sums = Array(repeating: Array(repeating: 0.0, count: 24), count: 7)
+        var counts = Array(repeating: Array(repeating: 0, count: 24), count: 7)
+        for s in older + recent {
+            let c = calendar.dateComponents([.weekday, .hour], from: s.at)
+            guard let w = c.weekday, let h = c.hour else { continue }
+            sums[w - 1][h] += value(s); counts[w - 1][h] += 1
+        }
+        return (0..<7).map { w in (0..<24).map { h in counts[w][h] > 0 ? sums[w][h] / Double(counts[w][h]) : nil } }
+    }
+
     /// When a restart would help: up for two weeks, or a week with a lot of swap.
     public static func restartAdvice(uptime: TimeInterval, swapGB: Double) -> String? {
         let days = Int(uptime / 86400)

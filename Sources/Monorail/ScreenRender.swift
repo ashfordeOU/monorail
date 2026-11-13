@@ -7,6 +7,7 @@ import SwiftUI
 /// files, light and dark, so a new version's first-run screens can be checked before release (CI).
 enum ScreenRender {
     static func run(into folder: URL) -> Int32 {
+        Motion.still = true
         _ = NSApplication.shared
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let store = SettingsStore()

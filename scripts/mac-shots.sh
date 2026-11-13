@@ -129,7 +129,7 @@ open -a Finder "$docs"; sleep 2
 open -a Terminal /tmp/term.command; sleep 3
 open -a TextEdit "$docs/Launch plan.txt"; sleep 2
 open -a Preview "$work/assets/launch/v17/07-themes.png"; sleep 2
-open -a "System Settings"; sleep 4
+open -a "Activity Monitor"; sleep 4
 screencapture -x "$out/00-before-monorail.png"
 
 log "Start Monorail"
@@ -138,10 +138,14 @@ for i in $(seq 1 30); do [ -f "$HOME/Library/Application Support/Monorail/api-po
 sleep 6
 dir="$HOME/Library/Application Support/Monorail"
 if [ ! -f "$dir/api-port" ]; then echo "The local API didn't start"; ls -la "$dir"; fi
-port=$(cat "$dir/api-port" 2>/dev/null); token=$(cat "$dir/api-token" 2>/dev/null)
-api() { curl -fsS -m 5 -X POST -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d "{\"action\":\"$1\"}" "http://127.0.0.1:$port/action" >/dev/null 2>&1 || echo "  (action $1 failed)"; }
+port=$(cat "$dir/api-port" 2>/dev/null)
+# The token file is written on the API's first request, so ask once, then read it fresh every time.
+curl -s -m 5 "http://127.0.0.1:$port/windows" >/dev/null 2>&1 || true
+sleep 1
+token() { cat "$dir/api-token" 2>/dev/null; }
+api() { curl -fsS -m 5 -X POST -H "Authorization: Bearer $(token)" -H "Content-Type: application/json" -d "{\"action\":\"$1\"}" "http://127.0.0.1:$port/action" >/dev/null 2>&1 || echo "  (action $1 failed)"; }
 log "What Monorail sees"
-curl -fsS -m 5 -H "Authorization: Bearer $token" "http://127.0.0.1:$port/windows" | python3 -m json.tool | head -60 || echo "no window list"
+curl -fsS -m 5 -H "Authorization: Bearer $(token)" "http://127.0.0.1:$port/windows" | python3 -m json.tool | head -60 || echo "no window list"
 
 shot() { sleep "${2:-1.6}"; screencapture -x "$out/$1.png"; echo "  $1"; }
 esc() { osascript -e 'tell application "System Events" to key code 53' >/dev/null 2>&1 || true; }
@@ -158,6 +162,7 @@ api overview; shot 06-overview 2.2; api overview; sleep 1.5
 log "The menu bar panel"
 open -g monorail://panel; shot 07-panel 2.2
 open -g monorail://panel/battery; shot 08-panel-battery 2.0
+for page in system network storage; do open -g monorail://panel; sleep 0.8; open -g "monorail://panel/$page"; shot "08-panel-$page" 3.5; done
 open -g monorail://panel; sleep 1
 
 log "The Dashboard"

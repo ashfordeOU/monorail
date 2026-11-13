@@ -239,11 +239,13 @@ struct StorageWidget: View {
 /// The Storage page.
 struct StoragePage: View {
     let onBack: () -> Void
+    /// Inside the dashboard: no back button.
+    var embedded = false
     @ObservedObject private var storage = StorageWatch.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            PageHeader(back: Brand.name, title: "Storage", onBack: onBack)
+            if !embedded { PageHeader(back: Brand.name, title: "Storage", onBack: onBack) }
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(Storage.size(storage.free)).font(.figure(22, weight: .semibold))

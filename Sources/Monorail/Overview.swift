@@ -19,6 +19,8 @@ final class OverviewModel: ObservableObject {
     @Published var heading = "Overview"
     /// Type to narrow the overview to matching windows.
     @Published var query = ""
+    /// Windows, or one of the dashboard's views (System, Battery, Storage, Today).
+    @Published var tab: DashboardTab = .windows
     /// The height of each slide card (a slider in the header).
     @Published var cardHeight: CGFloat = 190
     /// Windows picked with ⌘-click, for doing something to all of them.
@@ -197,13 +199,18 @@ struct OverviewView: View {
                 .onTapGesture { actions.close() }
             VStack(alignment: .leading, spacing: 22) {
                 header
-                ScrollView(.vertical) {
-                    VStack(alignment: .leading, spacing: 22) {
-                        ForEach(Array(model.visibleStrips.enumerated()), id: \.element.id) { row, strip in
-                            StripRow(row: row, strip: strip, model: model, actions: actions)
+                if model.tab == .windows {
+                    ScrollView(.vertical) {
+                        VStack(alignment: .leading, spacing: 22) {
+                            ForEach(Array(model.visibleStrips.enumerated()), id: \.element.id) { row, strip in
+                                StripRow(row: row, strip: strip, model: model, actions: actions)
+                            }
                         }
+                        .padding(.bottom, 24)
                     }
-                    .padding(.bottom, 24)
+                } else {
+                    DashboardContent(tab: model.tab)
+                        .transition(.opacity)
                 }
             }
             .padding(.horizontal, 44)
@@ -228,11 +235,21 @@ struct OverviewView: View {
                     Text(Brand.full).font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.55))
                 }
-                Text("Click or use the arrow keys and return to jump · drag a window onto a slide to pair it, between slides for its own, or onto the bin to close it · drag ≡ to reorder · esc closes")
-                    .font(.callout).foregroundStyle(.white.opacity(0.65))
-                    .lineLimit(2)
+                DashboardTabs(tab: $model.tab)
+                if model.tab == .windows {
+                    Text("Click or use the arrow keys and return to jump · drag a window onto a slide to pair it, between slides for its own, or onto the bin to close it · drag ≡ to reorder · esc closes")
+                        .font(.callout).foregroundStyle(.white.opacity(0.65))
+                        .lineLimit(2)
+                }
             }
             Spacer(minLength: 24)
+            if model.tab == .windows { windowControls }
+            closeButton
+        }
+    }
+
+    private var windowControls: some View {
+        HStack(spacing: 12) {
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass").foregroundStyle(.white.opacity(0.6))
                 TextField("Search windows", text: $model.query)
@@ -260,6 +277,10 @@ struct OverviewView: View {
             if !model.previewsAllowed {
                 LivePreviewsButton { model.loadThumbnails() }
             }
+        }
+    }
+
+    private var closeButton: some View {
             Button(action: actions.close) {
                 HStack(spacing: 6) {
                     Text("esc")
@@ -277,7 +298,6 @@ struct OverviewView: View {
             .keyboardShortcut(.cancelAction)
             .help("Close the overview (esc)")
             .accessibilityLabel("Close the overview")
-        }
     }
 }
 

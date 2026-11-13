@@ -42,6 +42,8 @@ final class PowerWatch: ObservableObject {
     @Published var kept: Set<String> = []
     /// What each app and AI agent has used since the Mac was last unplugged.
     @Published private(set) var session = ChargeSession()
+    /// What used the battery, day by day, for the last 30 days.
+    @Published private(set) var energy = EnergyLog()
     /// The battery's size in watt-hours, to turn energy into battery percentage points.
     var wattHours: Double? { batteryWattHours }
 
@@ -96,6 +98,7 @@ final class PowerWatch: ObservableObject {
         guard observers.isEmpty else { return }
         resumeLeftovers()
         history = Self.loadHistory()
+        if let data = try? Data(contentsOf: Self.energyFile), let saved = try? JSONDecoder().decode(EnergyLog.self, from: data) { energy = saved }
         if let data = try? Data(contentsOf: Self.sessionFile), let saved = try? JSONDecoder().decode(ChargeSession.self, from: data) {
             session = saved
         }
@@ -284,14 +287,19 @@ final class PowerWatch: ObservableObject {
                     guard let before = previous[id] else { continue }
                     session.add(id: id, name: entry.name, joules: (entry.reading.joules ?? 0) - (before.joules ?? 0),
                                 cpuSeconds: entry.reading.cpuSeconds - before.cpuSeconds)
+                    energy.add(id: id, name: entry.name, joules: (entry.reading.joules ?? 0) - (before.joules ?? 0),
+                               cpuSeconds: entry.reading.cpuSeconds - before.cpuSeconds)
                 }
                 for (name, entry) in reading.agents {
                     guard let before = previousAgents[name] else { continue }
                     session.add(id: "agent:" + name, name: name, isAgent: true,
                                 joules: (entry.reading.joules ?? 0) - (before.joules ?? 0),
                                 cpuSeconds: entry.reading.cpuSeconds - before.cpuSeconds)
+                    energy.add(id: "agent:" + name, name: name, isAgent: true, joules: (entry.reading.joules ?? 0) - (before.joules ?? 0),
+                               cpuSeconds: entry.reading.cpuSeconds - before.cpuSeconds)
                 }
                 saveSession()
+                saveEnergy()
             }
         }
         previous = reading.apps.mapValues(\.reading)
@@ -326,6 +334,12 @@ final class PowerWatch: ObservableObject {
     private func startSession() {
         session.start(at: Date(), percent: battery.percent)
         saveSession()
+    }
+
+    private static var energyFile: URL { folder.appendingPathComponent("energy-log.json") }
+
+    private func saveEnergy() {
+        if let data = try? JSONEncoder().encode(energy) { try? data.write(to: Self.energyFile, options: .atomic) }
     }
 
     private func saveSession() {

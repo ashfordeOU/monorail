@@ -211,8 +211,12 @@ struct HomePage: View {
             Text(detail(plan)).font(.system(size: 11)).foregroundStyle(.tertiary).lineLimit(1)
             Spacer(minLength: 4)
             Group {
-                Button(action: context.actions.showOverview) { Image(systemName: "square.grid.3x2") }
-                    .help("Overview").accessibilityLabel("Overview")
+                // Monorail: the Overview (windows, plus System, Battery, Storage and Today tabs).
+                // Signalbox: its Dashboard window with the same views.
+                Button(action: Edition.isAppStore ? { DashboardWindow.shared.show() } : context.actions.showOverview) {
+                    Image(systemName: Edition.isAppStore ? "gauge.with.dots.needle.67percent" : "square.grid.3x2")
+                }
+                .help(Edition.isAppStore ? "Dashboard" : "Overview and dashboard").accessibilityLabel(Edition.isAppStore ? "Dashboard" : "Overview")
                 Button(action: context.openSettings) { Image(systemName: "gearshape") }
                     .help("Settings").accessibilityLabel("Settings")
             }

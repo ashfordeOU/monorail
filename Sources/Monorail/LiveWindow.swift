@@ -31,7 +31,7 @@ final class LiveWindow {
     }
 }
 
-private struct LiveView: View {
+struct LiveView: View {
     @ObservedObject private var system = SystemWatch.shared
     @ObservedObject private var power = PowerWatch.shared
 
@@ -159,7 +159,7 @@ private struct LiveView: View {
 }
 
 /// A filled line over the last few minutes, newest on the right.
-private struct AreaChart: View {
+struct AreaChart: View {
     let values: [Double]
     let maximum: Double
     let colour: Color

@@ -87,6 +87,13 @@ enum ScreenRender {
             if save(AnyView(page), width: 1240, height: 980, appearance: .darkAqua, to: folder.appendingPathComponent("\(file).png")) { written += 1 }
         }
 
+        // The menu bar panel as it opens from the icon, at its real size.
+        for (name, appearance) in [("light", NSAppearance.Name.aqua), ("dark", NSAppearance.Name.darkAqua)] {
+            let popover = SliderPopover()
+            popover.store = store
+            if let content = popover.contentForScreenshot(), saveView(content, width: 360, appearance: appearance, to: folder.appendingPathComponent("panel-\(name).png")) { written += 1 }
+        }
+
         // The Clipboard window with a few of everything.
         ClipboardWatch.shared.preview(sampleClips())
         for (name, appearance) in [("light", NSAppearance.Name.aqua), ("dark", NSAppearance.Name.darkAqua)] {
@@ -188,6 +195,24 @@ enum ScreenRender {
                            LocalModel(name: "mistral-small-3.2", loaded: false, contextLength: 131_072)]
 
         return ["claude": claude, "codex": codex, "ollama": ollama, "openrouter": openrouter, "hermes": hermes, "lmstudio": lmstudio]
+    }
+
+    /// An AppKit view at its fitting height, over the window colour of that appearance.
+    private static func saveView(_ view: NSView, width: CGFloat, appearance: NSAppearance.Name, to url: URL) -> Bool {
+        view.appearance = NSAppearance(named: appearance)
+        view.frame = NSRect(x: 0, y: 0, width: width, height: 200)
+        view.layoutSubtreeIfNeeded()
+        let height = max(view.fittingSize.height, 200)
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: width, height: height), styleMask: [.borderless], backing: .buffered, defer: false)
+        window.appearance = NSAppearance(named: appearance)
+        window.backgroundColor = .windowBackgroundColor
+        window.contentView = view
+        view.frame = NSRect(x: 0, y: 0, width: width, height: height)
+        view.layoutSubtreeIfNeeded()
+        guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return false }
+        view.cacheDisplay(in: view.bounds, to: rep)
+        guard let data = rep.representation(using: .png, properties: [:]) else { return false }
+        return (try? data.write(to: url)) != nil
     }
 
     private static func save(_ view: AnyView, width: CGFloat, height: CGFloat? = nil, appearance: NSAppearance.Name, to url: URL) -> Bool {

@@ -1033,6 +1033,12 @@ final class SliderPopover {
 
     var isShown: Bool { panel?.isVisible ?? false }
 
+    /// The panel's content as it would open, for the screenshots CI draws (`--render-screens`).
+    func contentForScreenshot() -> NSView? {
+        _ = makePanel()
+        return host
+    }
+
     /// Opens the panel under `button` at a page (Home from the Monorail icon, Battery from ⚡),
     /// or closes it. Clicking ⚡ while it's open at another page turns it to Battery instead.
     func toggle(relativeTo button: NSStatusBarButton, page: PanelPage = .home) {

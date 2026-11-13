@@ -71,7 +71,49 @@ enum ScreenRender {
             }
         }
         ToolsPreview.on = false
+
+        // The Clipboard window with a few of everything.
+        ClipboardWatch.shared.preview(sampleClips())
+        for (name, appearance) in [("light", NSAppearance.Name.aqua), ("dark", NSAppearance.Name.darkAqua)] {
+            if save(AnyView(ClipboardWindowRoot()), width: 1000, height: 680, appearance: appearance, to: folder.appendingPathComponent("clipboard-\(name).png")) { written += 1 }
+        }
         return written
+    }
+
+    private static func sampleClips() -> ClipHistory {
+        var h = ClipHistory(keep: 100)
+        let now = Date()
+        try? FileManager.default.createDirectory(at: ClipboardWatch.imagesFolder, withIntermediateDirectories: true)
+        func picture(_ name: String, _ colours: [NSColor], _ size: NSSize) {
+            let image = NSImage(size: size)
+            image.lockFocus()
+            NSGradient(colors: colours)?.draw(in: NSRect(origin: .zero, size: size), angle: 35)
+            NSColor.white.withAlphaComponent(0.85).setFill()
+            NSBezierPath(ovalIn: NSRect(x: size.width * 0.3, y: size.height * 0.25, width: size.width * 0.4, height: size.height * 0.5)).fill()
+            image.unlockFocus()
+            if let tiff = image.tiffRepresentation, let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+                try? png.write(to: ClipboardWatch.imagesFolder.appendingPathComponent(name))
+            }
+        }
+        picture("sample-a.png", [.systemPink, .systemOrange], NSSize(width: 800, height: 500))
+        picture("sample-b.png", [.systemTeal, .systemBlue], NSSize(width: 600, height: 600))
+        let items: [(String, String?, Double)] = [
+            ("https://monorail.ashforde.org/docs/clipboard", "Safari", 60),
+            ("#FF5A7A", "Figma", 300),
+            ("func paste(_ clip: Clip) {\n    board.write(clip)\n}", "Xcode", 900),
+            ("Lunch with Sam on Thursday at the Barbican, 1pm", "Messages", 1800),
+            ("hello@ashforde.org", "Mail", 4000),
+            ("+44 20 7946 0958", "Contacts", 7000),
+        ]
+        for (text, app, ago) in items.reversed() { h.add(text, app: app, at: now.addingTimeInterval(-ago)) }
+        h.add("sk-ant-api03-abcdefghijklmnopqrstuvwxyz0123", app: "Terminal", at: now.addingTimeInterval(-120), sensitive: "Anthropic key")
+        h.addImage(file: "sample-b.png", digest: "b", width: 600, height: 600, app: "Preview", at: now.addingTimeInterval(-200))
+        h.addImage(file: "sample-a.png", digest: "a", width: 800, height: 500, app: "Safari", at: now.addingTimeInterval(-30))
+        h.addFiles(["/Applications/Safari.app", "/System/Applications/Notes.app"], app: "Finder", at: now.addingTimeInterval(-2500))
+        if let link = h.clips.first(where: { $0.kind == .link }) { h.addToBoard(link.id, board: "Lisbon trip"); h.setTags(link.id, ["docs"]) }
+        if let image = h.clips.first(where: { $0.kind == .image }) { h.addToBoard(image.id, board: "Lisbon trip") }
+        if let colour = h.clips.first(where: { $0.kind == .colour }) { h.togglePin(colour.id); h.addToBoard(colour.id, board: "Brand") }
+        return h
     }
 
     private static func sampleReports() -> [String: AIReport] {

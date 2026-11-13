@@ -13,7 +13,7 @@ import Vision
 /// The Tools window: small jobs done on this Mac, nothing uploaded. Files, images, PDFs, text and
 /// developer tools, with a search field. Monorail adds the ones the App Store's sandbox doesn't allow.
 enum ToolKind: String, CaseIterable, Identifiable {
-    case screenshotNames = "Screenshot Names", batchRename = "Batch Rename", images = "Convert Images", pdf = "PDF"
+    case screenshotNames = "Screenshot Names", batchRename = "Batch Rename", images = "Convert Images", removeBackground = "Remove Background", pdf = "PDF"
     case qr = "QR Code", wordCount = "Word Count", caseConvert = "Change Case", speak = "Read Aloud"
     case json = "JSON", base64 = "Base64", hash = "Hashes", timestamp = "Timestamps", jwt = "JWT", cleanLink = "Clean Link"
     case password = "Password", uuid = "UUID", deadPixel = "Dead Pixel Test", ejectAll = "Eject All", cleanKeyboard = "Clean Keyboard"
@@ -22,7 +22,7 @@ enum ToolKind: String, CaseIterable, Identifiable {
 
     var group: String {
         switch self {
-        case .screenshotNames, .batchRename, .images, .pdf, .qr: return "Files"
+        case .screenshotNames, .batchRename, .images, .removeBackground, .pdf, .qr: return "Files"
         case .wordCount, .caseConvert, .speak: return "Text"
         case .json, .base64, .hash, .timestamp, .jwt, .cleanLink, .password, .uuid: return "Developer"
         case .deadPixel, .ejectAll, .cleanKeyboard: return "Mac"
@@ -34,6 +34,7 @@ enum ToolKind: String, CaseIterable, Identifiable {
         case .screenshotNames: return "text.viewfinder"
         case .batchRename: return "pencil.and.list.clipboard"
         case .images: return "photo.on.rectangle.angled"
+        case .removeBackground: return "person.crop.rectangle"
         case .pdf: return "doc.richtext"
         case .qr: return "qrcode"
         case .wordCount: return "textformat.123"
@@ -58,6 +59,7 @@ enum ToolKind: String, CaseIterable, Identifiable {
         case .screenshotNames: return "Names screenshots from the words in them, so \"Screenshot 2026-11-13 at 09.41.22\" becomes \"Quarterly revenue by region\"."
         case .batchRename: return "Rename many files at once with a pattern, numbers and dates, and find and replace."
         case .images: return "Convert, resize and compress images, and strip their location and camera details."
+        case .removeBackground: return "Cut the subject out of a photo, leaving a transparent background."
         case .pdf: return "Merge PDFs and images into one PDF, or split a PDF into pages."
         case .qr: return "Make a QR code from a link or any text."
         case .wordCount: return "Words, characters, sentences and reading time."
@@ -78,7 +80,10 @@ enum ToolKind: String, CaseIterable, Identifiable {
     }
 
     /// Tools the App Store's sandbox can't do: ejecting other disks and holding the keyboard.
-    static var available: [ToolKind] { Edition.isAppStore ? allCases.filter { ![.ejectAll, .cleanKeyboard].contains($0) } : allCases }
+    static var available: [ToolKind] {
+        let all = BackgroundRemover.available ? allCases : allCases.filter { $0 != .removeBackground }
+        return Edition.isAppStore ? all.filter { ![.ejectAll, .cleanKeyboard].contains($0) } : all
+    }
 }
 
 final class ToolsWindow {
@@ -157,6 +162,7 @@ struct ToolsRoot: View {
             }
             .padding(.horizontal, 24).padding(.top, 34).padding(.bottom, 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Color(nsColor: .windowBackgroundColor))
         }
     }
 
@@ -185,6 +191,7 @@ private struct ToolBody: View {
         case .screenshotNames: ScreenshotNamesTool()
         case .batchRename: BatchRenameTool()
         case .images: ImagesTool()
+        case .removeBackground: RemoveBackgroundTool()
         case .pdf: PDFTool()
         case .qr: QRTool()
         case .wordCount: WordCountTool()
@@ -622,6 +629,48 @@ private struct ImagesTool: View {
         }
         let size = { (n: Int64) in ByteCountFormatter.string(fromByteCount: n, countStyle: .file) }
         note = "Saved \(saved) images: \(size(before)) → \(size(after))."
+    }
+}
+
+private struct RemoveBackgroundTool: View {
+    @State private var files: [URL] = []
+    @State private var note = ""
+    @State private var working = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Button("Choose Images…") { files = chooseFiles([.image]) }
+                Text(files.isEmpty ? "None chosen" : "\(files.count) images").foregroundStyle(.secondary)
+                if working { ProgressView().controlSize(.small) }
+            }
+            Text("Each picture is saved as a PNG with a transparent background, next to the folder you choose. Done on this Mac with Apple's Vision.")
+                .font(.system(size: 12)).foregroundStyle(.secondary)
+            HStack {
+                if !note.isEmpty { Text(note).font(.system(size: 12)).foregroundStyle(.secondary) }
+                Spacer()
+                Button("Save \(files.count)…") { save() }.disabled(files.isEmpty || working).keyboardShortcut(.defaultAction)
+            }
+        }
+    }
+
+    private func save() {
+        guard let folder = chooseFolder("Choose where to save the cut-out images") else { return }
+        working = true
+        let chosen = files
+        DispatchQueue.global(qos: .userInitiated).async {
+            var saved = 0
+            for file in chosen {
+                guard let cg = NSImage(contentsOf: file)?.cgImage(forProposedRect: nil, context: nil, hints: nil), let cut = BackgroundRemover.remove(cg),
+                      let png = NSBitmapImageRep(cgImage: cut).representation(using: .png, properties: [:]) else { continue }
+                let target = folder.appendingPathComponent(file.deletingPathExtension().lastPathComponent + " (cut out).png")
+                if (try? png.write(to: target)) != nil { saved += 1 }
+            }
+            DispatchQueue.main.async {
+                working = false
+                note = saved == chosen.count ? "Saved \(saved)." : "Saved \(saved) of \(chosen.count); no clear subject in the others."
+            }
+        }
     }
 }
 

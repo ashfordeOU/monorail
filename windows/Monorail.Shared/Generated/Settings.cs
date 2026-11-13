@@ -133,6 +133,11 @@ public static class SettingKeys
     public const string MenuBarReadings = "menuBarReadings";
     public const string SystemAlerts = "systemAlerts";
     public const string HomePins = "homePins";
+    public const string ClipboardImages = "clipboardImages";
+    public const string ClipboardHideSensitive = "clipboardHideSensitive";
+    public const string ClipboardQuickPaste = "clipboardQuickPaste";
+    public const string ClipboardIgnoredApps = "clipboardIgnoredApps";
+    public const string ClipboardNotch = "clipboardNotch";
     public const string AiAccounts = "aiAccounts";
     public const string AiLiveLimits = "aiLiveLimits";
     public const string AiThresholds = "aiThresholds";
@@ -449,6 +454,14 @@ public static class SettingDefaults
     public const string MenuBarIconStyle = "colour";
     /// <summary>Notifications when the Mac strains: a runaway app, memory pressure, heavy swap.</summary>
     public const bool SystemAlerts = true;
+    /// <summary>Clipboard: keep copied images and files too (images are read for text so you can search them).</summary>
+    public const bool ClipboardImages = true;
+    /// <summary>Clipboard: hide copies that look like secrets (API keys, card numbers, private keys) until you reveal them.</summary>
+    public const bool ClipboardHideSensitive = true;
+    /// <summary>Clipboard: ⌘⌃1 to ⌘⌃0 paste the last ten things you copied.</summary>
+    public const bool ClipboardQuickPaste = true;
+    /// <summary>Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch).</summary>
+    public const bool ClipboardNotch = false;
     /// <summary>AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access).</summary>
     public const bool AiLiveLimits = false;
     /// <summary>AI Usage: notify when a plan limit resets.</summary>

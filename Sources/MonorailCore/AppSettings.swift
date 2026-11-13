@@ -779,6 +779,16 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var systemAlerts = true
     /// Readings pinned to the panel's Home, from the Dashboard: "cpu", "memory", "swap", "gpu", "down", "write", "battery".
     public var homePins: [String] = []
+    /// Clipboard: keep copied images and files too (images are read for text so you can search them).
+    public var clipboardImages = true
+    /// Clipboard: hide copies that look like secrets (API keys, card numbers, private keys) until you reveal them.
+    public var clipboardHideSensitive = true
+    /// Clipboard: ⌘⌃1 to ⌘⌃0 paste the last ten things you copied.
+    public var clipboardQuickPaste = true
+    /// Clipboard: apps whose copies are never kept (bundle identifiers).
+    public var clipboardIgnoredApps: [String] = []
+    /// Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch).
+    public var clipboardNotch = false
     /// AI Usage: the AI accounts to watch (Claude, Codex, OpenClaw, Hermes, Ollama, LM Studio, API keys). Keys stay in the Keychain.
     public var aiAccounts: [AIAccount] = []
     /// AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access).
@@ -1187,7 +1197,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
     }
 
     public init(from decoder: Decoder) throws {
@@ -1447,6 +1457,11 @@ public struct AppSettings: Equatable, Codable, Sendable {
         menuBarReadings = value(.menuBarReadings, d.menuBarReadings)
         systemAlerts = value(.systemAlerts, d.systemAlerts)
         homePins = value(.homePins, d.homePins)
+        clipboardImages = value(.clipboardImages, d.clipboardImages)
+        clipboardHideSensitive = value(.clipboardHideSensitive, d.clipboardHideSensitive)
+        clipboardQuickPaste = value(.clipboardQuickPaste, d.clipboardQuickPaste)
+        clipboardIgnoredApps = value(.clipboardIgnoredApps, d.clipboardIgnoredApps)
+        clipboardNotch = value(.clipboardNotch, d.clipboardNotch)
         aiAccounts = value(.aiAccounts, d.aiAccounts)
         aiLiveLimits = value(.aiLiveLimits, d.aiLiveLimits)
         aiThresholds = value(.aiThresholds, d.aiThresholds)

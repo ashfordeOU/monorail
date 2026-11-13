@@ -1509,8 +1509,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let q = query.trimmingCharacters(in: .whitespaces)
         if q.count >= 2 {
             for clip in ClipboardWatch.shared.history.shown(matching: q).prefix(4) {
-                list.append(PaletteCommand(id: "clip-\(clip.id)", title: clip.preview(60), subtitle: "Clipboard · paste it", symbol: "doc.on.clipboard",
-                                           keywords: q) { ClipboardWatch.shared.use(clip.text) })
+                list.append(PaletteCommand(id: "clip-\(clip.id)", title: clip.preview(60), subtitle: "Clipboard · paste it", symbol: clip.kind.symbol,
+                                           keywords: q) { ClipboardWatch.shared.use(clip) })
             }
             for event in TodayWatch.shared.meetings where event.title.localizedCaseInsensitiveContains(q) {
                 list.append(PaletteCommand(id: "event-\(event.id)", title: event.title,
@@ -2143,6 +2143,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         SystemRecorder.shared.start()
         AIUsageWatch.shared.store = store
         AIUsageWatch.shared.start()
+        NotchOpener.shared.open = { [weak self] in
+            guard let self, let button = self.statusItem?.button, !self.popover.isShown else { return }
+            self.popover.toggle(relativeTo: button, page: .clipboard)
+        }
         // Shortcuts and Spotlight actions.
         ShortcutsBridge.stayAwake = { [weak self] minutes in self?.awake.start(minutes: minutes) }
         ShortcutsBridge.endStayAwake = { [weak self] in self?.awake.end() }
@@ -2869,6 +2873,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return object
         case ("GET", "windows"):
             return engine.windowList()
+        case ("POST", "clipboard"):
+            // For AI apps over MCP: what you copied, newest first. Secrets stay hidden.
+            let kind = text("kind").flatMap { ClipKind(rawValue: $0) }
+            let found = ClipboardWatch.shared.history.shown(matching: text("query") ?? "", kind: kind).prefix(min(int("limit") ?? 20, 100))
+            return found.map { clip -> [String: Any] in
+                var item: [String: Any] = ["id": clip.id.uuidString, "kind": clip.kind.rawValue, "copied": ISO8601DateFormatter().string(from: clip.copied),
+                                           "pinned": clip.pinned, "boards": clip.boards, "tags": clip.tags]
+                if let sensitive = clip.sensitive { item["text"] = "(hidden: \(sensitive))" }
+                else if clip.kind == .image { item["text"] = clip.imageText ?? ""; item["image"] = ClipboardWatch.shared.imageURL(clip)?.path ?? "" }
+                else { item["text"] = String(clip.text.prefix(5000)) }
+                if let app = clip.app { item["app"] = app }
+                if let files = clip.files { item["files"] = files }
+                return item
+            }
         case ("GET", "workspaces"):
             let windows = engine.windowList()
             return (0..<engine.workspaceCount).map { index -> [String: Any] in
@@ -3248,6 +3266,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 UserDefaults.standard.set(DashboardSection.ai.rawValue, forKey: "DashboardSection")
                 DashboardWindow.shared.show()
             })
+            list.append(PaletteCommand(id: "clipboard-window", title: "Clipboard", subtitle: "Everything you copied: text, images, files, boards and tags", symbol: "doc.on.clipboard",
+                                       keywords: "clipboard history copied paste boards tags moodboard images") { ClipboardWindow.shared.show() })
             list.append(PaletteCommand(id: "tools", title: "Tools", subtitle: "Screenshot names, images, PDFs, text and developer tools", symbol: "wrench.and.screwdriver",
                                        keywords: "tools utilities toolbox convert rename") { ToolsWindow.shared.show() })
             for tool in ToolKind.available {

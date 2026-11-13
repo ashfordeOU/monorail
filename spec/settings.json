@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 253,
+  "count": 258,
   "settings": [
     {
       "key": "layout",
@@ -769,6 +769,36 @@
       "type": "[String]",
       "default": "[]",
       "about": "Readings pinned to the panel's Home, from the Dashboard: \"cpu\", \"memory\", \"swap\", \"gpu\", \"down\", \"write\", \"battery\"."
+    },
+    {
+      "key": "clipboardImages",
+      "type": "Bool",
+      "default": "true",
+      "about": "Clipboard: keep copied images and files too (images are read for text so you can search them)."
+    },
+    {
+      "key": "clipboardHideSensitive",
+      "type": "Bool",
+      "default": "true",
+      "about": "Clipboard: hide copies that look like secrets (API keys, card numbers, private keys) until you reveal them."
+    },
+    {
+      "key": "clipboardQuickPaste",
+      "type": "Bool",
+      "default": "true",
+      "about": "Clipboard: ⌘⌃1 to ⌘⌃0 paste the last ten things you copied."
+    },
+    {
+      "key": "clipboardIgnoredApps",
+      "type": "[String]",
+      "default": "[]",
+      "about": "Clipboard: apps whose copies are never kept (bundle identifiers)."
+    },
+    {
+      "key": "clipboardNotch",
+      "type": "Bool",
+      "default": "false",
+      "about": "Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch)."
     },
     {
       "key": "aiAccounts",

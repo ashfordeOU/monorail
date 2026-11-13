@@ -81,7 +81,7 @@ struct AIAccountCard: View {
     let edit: () -> Void
 
     var body: some View {
-        DashCard(title: account.label, trailing: report?.plan ?? account.provider.name) {
+        DashCard(title: account.label, trailing: report?.plan ?? (account.label == account.provider.name ? nil : account.provider.name)) {
             if let incident = report?.incident {
                 Label(incident, systemImage: "exclamationmark.triangle.fill").font(.system(size: 12)).foregroundStyle(Color(nsColor: .systemYellow))
             }
@@ -236,7 +236,7 @@ private struct UsageBars: View {
         HStack(alignment: .bottom, spacing: 3) {
             ForEach(Array(days.enumerated()), id: \.offset) { index, day in
                 RoundedRectangle(cornerRadius: 2.5)
-                    .fill(Color(nsColor: .systemOrange).opacity(index == days.count - 1 ? 1 : 0.55))
+                    .fill(Color(nsColor: .systemOrange).opacity(index == days.count - 1 ? 1 : 0.8))
                     .frame(height: max(2, 36 * values[index] / top))
                     .frame(maxWidth: .infinity)
                     .help("\(day): \(AIFormat.tokens(Int(values[index]))) tokens")
@@ -257,12 +257,20 @@ private struct AIAlertsCard: View {
                 Text("Tell me when a limit passes")
                 Spacer()
                 ForEach([50.0, 80, 90, 95], id: \.self) { t in
-                    Toggle("\(Int(t))%", isOn: Binding(get: { store.settings.aiThresholds.contains(t) }, set: { on in
+                    let on = store.settings.aiThresholds.contains(t)
+                    Button {
                         var list = store.settings.aiThresholds.filter { $0 != t }
-                        if on { list.append(t) }
+                        if !on { list.append(t) }
                         store.settings.aiThresholds = list.sorted()
-                    }))
-                    .toggleStyle(.button)
+                    } label: {
+                        Label("\(Int(t))%", systemImage: on ? "checkmark" : "plus").labelStyle(.titleAndIcon)
+                            .font(.system(size: 11.5, weight: on ? .semibold : .regular))
+                            .padding(.horizontal, 10).padding(.vertical, 4)
+                            .background(Capsule().fill(on ? Color(nsColor: .systemOrange).opacity(0.85) : Color.white.opacity(0.08)))
+                            .foregroundStyle(on ? Color.white : Color.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(on ? .isSelected : [])
                 }
             }
             Toggle("When a limit resets", isOn: $store.settings.aiNotifyResets)

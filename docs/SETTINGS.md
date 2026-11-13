@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-253 settings.
+258 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -137,6 +137,11 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `menuBarReadings` | Live readings next to the icon, in this order: "cpu", "memory", "gpu", "network", "disk", "battery", "ai" (the fullest AI plan limit). | `[]` |
 | `systemAlerts` | Notifications when the Mac strains: a runaway app, memory pressure, heavy swap. | `true` |
 | `homePins` | Readings pinned to the panel's Home, from the Dashboard: "cpu", "memory", "swap", "gpu", "down", "write", "battery". | `[]` |
+| `clipboardImages` | Clipboard: keep copied images and files too (images are read for text so you can search them). | `true` |
+| `clipboardHideSensitive` | Clipboard: hide copies that look like secrets (API keys, card numbers, private keys) until you reveal them. | `true` |
+| `clipboardQuickPaste` | Clipboard: ⌘⌃1 to ⌘⌃0 paste the last ten things you copied. | `true` |
+| `clipboardIgnoredApps` | Clipboard: apps whose copies are never kept (bundle identifiers). | `[]` |
+| `clipboardNotch` | Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch). | `false` |
 | `aiAccounts` | AI Usage: the AI accounts to watch (Claude, Codex, OpenClaw, Hermes, Ollama, LM Studio, API keys). Keys stay in the Keychain. | `[]` |
 | `aiLiveLimits` | AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access). | `false` |
 | `aiThresholds` | AI Usage: notify when a plan limit passes these percentages. | `[80, 95]` |

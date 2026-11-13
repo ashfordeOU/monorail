@@ -94,6 +94,26 @@ jobs:
               kept = " ".join(p for p in parts if "Signalbox" not in p)
               return kept if kept.lstrip().startswith("- ") or not line.lstrip().startswith("- ") else "- " + kept
           lines = [unsignal(l) for l in lines]
+          # Edition markers: bullets for the App Store edition alone go, the comments themselves go, and so does
+          # any sentence or bracket that names that edition (its working name was Station).
+          text = "\n".join(lines)
+          text = re.sub(r"(?m)^\s*- .*<!--\s*station\s*-->\s*\n?", "", text)
+          text = re.sub(r"\s*<!--.*?-->", "", text, flags=re.S)
+          lines = text.splitlines()
+          HIDDEN = re.compile(r"\b(Station|Signalbox|App Store|Keeper)\b")
+          def unedition(line):
+              if not HIDDEN.search(line):
+                  return line
+              line = re.sub(r"\s*\([^()]*\b(Station|Signalbox|App Store|Keeper)\b[^()]*\)", "", line)
+              if not HIDDEN.search(line):
+                  return line
+              bullet = line.lstrip().startswith("- ")
+              parts = re.split(r"(?<=[.!?])\s+", line)
+              kept = [x for x in parts if not HIDDEN.search(x)]
+              if not kept or (bullet and not kept[0].lstrip().startswith("- ")):
+                  return ""
+              return " ".join(kept)
+          lines = [unedition(l) for l in lines]
           REPO = "https://github.com/ashfordeOU/monorail"
 
           def inline(text):

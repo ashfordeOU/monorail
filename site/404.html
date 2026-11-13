@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Not found · Monorail</title>
+<meta name="robots" content="noindex">
+<!--#head-->
+<style>
+.nf { min-height: calc(100vh - 80px); display: grid; place-items: center; text-align: center; padding: 60px 0 90px; }
+.nf .num { font: 800 clamp(120px, 26vw, 260px)/.85 var(--display); letter-spacing: -.07em; color: transparent; -webkit-text-stroke: 1.5px var(--outline); background: linear-gradient(180deg, color-mix(in srgb, var(--l2) 30%, transparent), transparent 80%); -webkit-background-clip: text; background-clip: text; }
+.nf h1 { font-size: clamp(30px, 5vw, 48px); margin-top: 10px; }
+.nf .lede { margin-top: 12px; }
+.nf .acts { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+</style>
+</head>
+<body>
+<!--#header-->
+<main id="main" class="wrap nf">
+  <div>
+    <div class="num" aria-hidden="true">404</div>
+    <h1>This slide doesn’t exist.</h1>
+    <p class="lede">The page you were looking for has moved or never was. Slide back to somewhere familiar.</p>
+    <div class="acts"><a class="btn primary" href="/">Monorail home</a><a class="btn glassy" href="/support/">Support</a><a class="btn text" href="/changelog/">What’s new</a></div>
+  </div>
+</main>
+<!--#footer-->
+</body>
+</html>

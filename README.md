@@ -297,6 +297,8 @@ Some take a name or a number:
 | `monorail://profile/Work` · `monorail://workspace/2` | Switch profile or workspace |
 | `monorail://focus-mode/on` · `monorail://presentation-mode/off` | Focus or presentation mode on or off |
 | `monorail://focus-app/Safari` | Go to an app's window, or open the app |
+| `monorail://panel` · `panel/battery` | Open the menu bar panel, or one of its pages |
+| `monorail://dashboard` · `dashboard/ai-usage` | Open the Dashboard, or one of its pages (time, switches, apps…) |
 | `monorail://awake` · `awake/60` · `awake/off` · `awake/downloading` | Stay Awake: toggle, minutes, off, while downloading |
 | `monorail://notify/Hello` | Show a notice |
 

@@ -2,74 +2,70 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Monorail Privacy</title>
-<meta name="description" content="How Monorail by Ashforde handles your data: no account, anonymous usage counts you can turn off, nothing from your screen.">
-<link rel="icon" href="../favicon.ico" sizes="48x48">
-<link rel="apple-touch-icon" href="../apple-touch-icon.png">
-<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<title>Privacy · Monorail</title>
+<meta name="description" content="Monorail has no account, and nothing about your windows, files or what you do leaves your Mac. Exactly what is and isn't sent.">
+<link rel="canonical" href="https://monorail.ashforde.org/privacy/">
+<!--#head-->
 <style>
-:root { --ink:#1D1D1F; --muted:#6E6E73; --line:rgba(0,0,0,.09); --bg:#FBFBFD; --card:#FFFFFF; --soft:#F2F2F5; --plum:#D63A80; color-scheme:light; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; } }
-:root[data-theme="dark"] { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; }
-* { box-sizing:border-box; }
-body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
-main { max-width:1040px; margin:0 auto; padding:32px 16px 72px; }
-a { color:var(--plum); }
-.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
-.brand img { width:30px; height:30px; border-radius:8px; }
-.top nav { display:flex; gap:16px; font-size:15px; }
-.top nav a { color:var(--muted); text-decoration:none; }
-h1 { font-size:clamp(32px, 6vw, 52px); line-height:1.05; letter-spacing:-.025em; margin:48px 0 10px; }
-h2 { font-size:24px; letter-spacing:-.01em; margin:56px 0 14px; }
-.lede { font-size:19px; color:var(--muted); max-width:720px; margin:0; }
-.pair { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:32px; }
-.card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:24px; }
-.card img { width:64px; height:64px; border-radius:15px; }
-.card h3 { margin:12px 0 6px; font-size:22px; }
-.card p { margin:0 0 14px; color:var(--muted); }
-.btn { display:inline-block; padding:10px 18px; border-radius:999px; background:var(--plum); color:#fff; text-decoration:none; font-weight:600; font-size:15px; }
-.btn.ghost { background:var(--soft); color:var(--ink); border:1px solid var(--line); }
-.together { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; }
-.together .card h4 { margin:0 0 6px; font-size:17px; }
-.together .card p { margin:0; font-size:15px; }
-code { font:14px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--soft); padding:2px 6px; border-radius:6px; }
-footer { margin-top:64px; font-size:14px; color:var(--muted); }
+.sent { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 760px) { .sent { grid-template-columns: minmax(0, 1fr); } }
+.sent ul { margin: 12px 0 0; padding-left: 20px; color: var(--ink2); font-size: 15.5px; }
+.sent li { margin: 6px 0; }
+.sent .yes h3::before { content: "↑ "; color: var(--l2); }
+.sent .no h3::before { content: "✕ "; color: var(--ok); }
+.prose { margin-top: 56px; }
 </style>
 </head>
 <body>
-<main>
-  <div class="top">
-    <a class="brand" href="../"><img src="../assets/icon.png" alt="">Monorail</a>
-    <nav><a href="../">Monorail</a><a href="../support/">Support</a><a href="../privacy/">Privacy</a></nav>
+<!--#header-->
+<main id="main" class="wrap">
+  <section class="page-hero">
+    <span class="eyebrow"><i></i>Privacy</span>
+    <h1><span class="sheen">Your Mac’s business</span> <span class="light-text">stays on your Mac.</span></h1>
+    <p class="lede">Monorail has no account, and nothing about your windows, files or what you do leaves your Mac. Last updated 13 November 2026.</p>
+  </section>
+
+  <div class="sent">
+    <div class="card glass no"><h3>Never leaves your Mac</h3>
+      <ul><li>Window titles, app names and what’s on your screen</li><li>Your clipboard, including images and the text in them</li><li>Meeting Notes: what was said, the transcript and the summary</li><li>Files, file names and paths</li><li>What you type or say to Monorail</li><li>Battery, app and system history</li></ul></div>
+    <div class="card glass yes"><h3>Sent, and only this</h3>
+      <ul><li>Anonymous usage counts, once a day, which you can turn off</li><li>A daily update check, which you can turn off</li><li>A small list of known app quirks</li><li>What you turn on yourself: AI Usage, Weather, the assistant, webhooks, sync, the phone remote</li></ul></div>
   </div>
-  <h1>Privacy</h1>
-  <p class="lede">Monorail has no account, and nothing about your windows, files or what you do leaves your Mac. Last updated 11 November 2026.</p>
 
-  <h2>Permissions</h2>
-  <p>Monorail needs one permission, <b>Accessibility</b>, which macOS requires before any app can move other apps' windows. You can revoke it at any time in System Settings → Privacy &amp; Security → Accessibility. macOS asks for others only when you turn on the feature that needs one: Screen Recording (live previews and sharing one slide), Calendars (opening video calls), Microphone and Speech Recognition (voice commands, recognised on your Mac), Camera (the camera tile), Local Network (the phone remote and layout sync).</p>
-  <p>Window pictures and text are read on your Mac and never stored or sent anywhere.</p>
+  <div class="prose narrow">
+    <h2>Permissions</h2>
+    <p>Monorail needs one permission, <strong>Accessibility</strong>, which macOS requires before any app can move other apps’ windows. You can revoke it at any time in System Settings → Privacy &amp; Security → Accessibility.</p>
+    <p>macOS asks for others only when you turn on the feature that needs one: Screen Recording (live previews, sharing one slide, and hearing the other people in Meeting Notes), Calendars (your day and opening video calls), Microphone and Speech Recognition (voice commands and Meeting Notes, recognised on your Mac), Camera (the camera tile), Local Network (the phone remote and layout sync). Window pictures and text are read on your Mac and never stored or sent anywhere.</p>
 
-  <h2>What Monorail sends</h2>
-  <ul>
-    <li><b>Anonymous usage counts</b>, on from the start and once a day, so we know how many Macs run Monorail and what to improve: a random install ID (not tied to you, your Apple ID or your Mac's serial number), the Monorail and macOS versions, the Mac model, chip type and core count, a memory range, the number of displays, the system language, how Monorail was installed and which features are on. Never window titles, app names, file names, what you type or say, or anything from your screen. The server doesn't store IP addresses. Turn it off in Settings → Devices &amp; Sharing → Trust → Share anonymous usage counts. The app shows exactly what's sent under <b>What's Sent…</b>.</li>
-    <li><b>The list of known app quirks</b>, a small file that helps Monorail handle apps that behave unusually.</li>
-    <li><b>Update checks</b>, once a day, to monorail.ashforde.org. They can be turned off in Settings → General.</li>
-  </ul>
-  <p>Anything else happens only if you turn it on: webhooks, the phone remote, layout sync, iCloud sync and the optional assistant. The assistant works only with your own API key for the provider you choose (Anthropic, OpenAI, Google, xAI or OpenRouter), and sends just the sentence it didn't understand, the names of open apps and Monorail's list of commands, straight to that provider. With Ollama on your Mac, nothing leaves the Mac.</p>
-  <p>Battery measurements (charge, history and which apps use the most power) are worked out on your Mac from figures macOS already keeps, kept on the Mac for a day, and never sent anywhere.</p>
+    <h2>Anonymous usage counts</h2>
+    <p>On from the start and sent once a day, so we know how many Macs run Monorail and what to improve: a random install ID (not tied to you, your Apple ID or your Mac’s serial number), the Monorail and macOS versions, the Mac model, chip type and core count, a memory range, the number of displays, the system language, how Monorail was installed and which features are on. Never window titles, app names, file names, what you type or say, or anything from your screen. The server doesn’t store IP addresses.</p>
+    <p>Turn it off in Settings → Devices &amp; Sharing → Trust → Share anonymous usage counts. The app shows exactly what’s sent under <strong>What’s Sent…</strong>.</p>
 
-  <h2>This website</h2>
-  <p>The site sets no cookies and stores nothing on your computer. It counts each page view and each download (which file and version), with the site you came from, such as Product Hunt, and your country. It keeps no IP addresses and nothing that identifies you or links one visit to another. Browsers that send Do Not Track or Global Privacy Control aren't counted at all. The install script counts its downloads the same way; set <code>MONORAIL_NO_COUNT=1</code> to skip it.</p>
+    <h2>Update checks and app quirks</h2>
+    <p>Monorail checks monorail.ashforde.org for updates once a day; turn it off in Settings → General. It also fetches a small file of known app quirks that helps it handle apps that behave unusually.</p>
 
-  <h2>Crash reports</h2>
-  <p>Crash and hang reports stay on your Mac unless you choose to send them. After an unexpected quit, Monorail may ask what happened and start an email to contact@ashforde.org for you to review: it contains the Monorail and macOS versions and where it crashed, never window titles, files, paths or names, and nothing is sent until you submit it.</p>
+    <h2>Features that talk to other services, only when you turn them on</h2>
+    <ul>
+      <li><strong>AI Usage</strong> asks the services you add (such as Claude, Codex, OpenRouter or DeepSeek) for your limits and balances, using your own sign-in or key, straight from your Mac. Keys stay in your Keychain. Logs from tools like Codex, Gemini, OpenClaw and Hermes, and models in Ollama and LM Studio, are read on your Mac.</li>
+      <li><strong>Weather</strong> asks Open-Meteo for the forecast at the places you add, by their coordinates. It never asks for your location.</li>
+      <li><strong>The assistant</strong> works only with your own API key for the provider you choose (Anthropic, OpenAI, Google, xAI or OpenRouter), and sends just the sentence it didn’t understand, the names of open apps and Monorail’s list of commands, straight to that provider. With Ollama on your Mac, nothing leaves the Mac.</li>
+      <li><strong>Webhooks, the phone remote, layout sync and iCloud sync</strong> send what they say, where you point them.</li>
+    </ul>
 
-  <h2>Contact</h2>
-  <p>Ashforde OÜ. Questions about privacy: write to <a href="mailto:contact@ashforde.org">contact@ashforde.org</a>.</p>
+    <h2>On your Mac only</h2>
+    <p><strong>Meeting Notes</strong> turns speech into text on your Mac with Apple’s speech recognition, keeps no audio, and writes summaries with Apple’s on-device model on macOS 26. Notes are kept on your Mac as Markdown. <strong>The clipboard</strong> keeps its history on your Mac, never keeps copies from password managers, and hides anything that looks like a key, token or card number until you click to show it. <strong>Battery measurements</strong> are worked out on your Mac from figures macOS already keeps, and never sent anywhere.</p>
 
-  <footer>Monorail is made by Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ; Monorail is a trademark of Ashforde OÜ.</footer>
+    <h2>Crash reports</h2>
+    <p>Crash and hang reports stay on your Mac unless you choose to send them. After an unexpected quit, Monorail may ask what happened and start an email to contact@ashforde.org for you to review: it contains the Monorail and macOS versions and where it crashed, never window titles, files, paths or names, and nothing is sent until you submit it.</p>
+
+    <h2>This website</h2>
+    <p>The site sets no cookies. It counts each page view and each download (which file and version), with the site you came from, such as Product Hunt, and your country. It keeps no IP addresses and nothing that identifies you or links one visit to another. Browsers that send Do Not Track or Global Privacy Control aren’t counted at all. The install script counts its downloads the same way; set <code>MONORAIL_NO_COUNT=1</code> to skip it.</p>
+    <p>If you choose an appearance or colour with the palette button, that choice (and whether you closed the Product Hunt welcome) is kept in your browser’s local storage on this device only, so the site looks the same next time. It is never sent anywhere; clear it by choosing Automatic and the Monorail colour, or by clearing the site’s data.</p>
+
+    <h2>Contact</h2>
+    <p>Ashforde OÜ, a company in the European Union. Questions about privacy: <a href="mailto:contact@ashforde.org">contact@ashforde.org</a>.</p>
+  </div>
 </main>
+<!--#footer-->
 </body>
 </html>

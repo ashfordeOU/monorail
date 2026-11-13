@@ -8,6 +8,9 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Links to the panel and the Dashboard.** `monorail://panel` opens the menu bar panel (`panel/battery`, `panel/clipboard` and other pages too), and `monorail://dashboard/ai-usage` opens the Dashboard on any page, for scripts, Shortcuts and launchers.
+
 ## [1.9.1] - 2026-11-13
 
 ### Changed

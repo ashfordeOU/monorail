@@ -219,6 +219,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             case "settings": showSettings()
             case "welcome": showWelcome()
             case "palette": palette.show()
+            case "panel":
+                // monorail://panel opens (or closes) the menu bar panel; monorail://panel/battery opens a page of it.
+                if let button = statusItem?.button {
+                    let pages: [String: PanelPage] = ["battery": .battery, "clipboard": .clipboard, "system": .system, "storage": .storage,
+                                                      "today": .today, "focus": .focus, "awake": .awake, "evening": .evening, "film": .film]
+                    popover.toggle(relativeTo: button, page: pages[argument.lowercased()] ?? .home)
+                }
+            case "dashboard":
+                // monorail://dashboard opens the Dashboard; monorail://dashboard/ai-usage (or time, switches…) opens that page.
+                let wanted = argument.lowercased().replacingOccurrences(of: "-", with: " ")
+                if let section = DashboardSection.allCases.first(where: { $0.rawValue.lowercased() == wanted || "\($0)".lowercased() == wanted }) {
+                    UserDefaults.standard.set(section.rawValue, forKey: "DashboardSection")
+                }
+                DashboardWindow.shared.show()
             case "layout": engine.applyLayout(named: argument)
             case "snapshot": engine.restoreSnapshot(named: argument)
             case "save-snapshot": engine.saveSnapshot(named: argument.isEmpty ? Self.snapshotName() : argument)

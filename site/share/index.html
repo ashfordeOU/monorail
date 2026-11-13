@@ -2,56 +2,46 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Shared Monorail layout</title>
-<meta name="description" content="A window layout shared from Monorail by Ashforde®, the scrolling window manager for Mac.">
+<title>A shared layout · Monorail</title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="../favicon.ico" sizes="48x48">
-<link rel="icon" type="image/png" sizes="32x32" href="../icons/icon-32.png">
-<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<!--#head-->
 <style>
-:root { --ink:#1D1D1F; --muted:#6E6E73; --line:rgba(0,0,0,.09); --bg:#FBFBFD; --card:#FFFFFF; --soft:#F2F2F5; --accent:#FF6B4A; --accent2:#B455E0; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; } }
-:root[data-theme="dark"] { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; }
-* { box-sizing:border-box; }
-body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
-main { max-width:860px; margin:0 auto; padding:40px 16px 64px; }
-.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
-.brand img { width:30px; height:30px; border-radius:8px; }
-h1 { font-size:clamp(28px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; margin:40px 0 8px; }
-.muted { color:var(--muted); }
-.card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; margin:24px 0; }
-.ws { margin-bottom:16px; } .ws:last-child { margin-bottom:0; }
-.ws h3 { font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:0 0 8px; }
-.rail { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
-.slide { flex:0 0 auto; height:110px; background:var(--soft); border-radius:12px; padding:6px; display:flex; gap:6px; }
-.win { flex:1; min-width:64px; border-radius:8px; background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; font-size:12px; font-weight:600; padding:8px; overflow:hidden; text-overflow:ellipsis; }
-.actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; }
-.btn { display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:999px; font-weight:600; text-decoration:none; border:1px solid var(--line); color:var(--ink); background:var(--card); }
-.btn.primary { background:var(--ink); color:var(--bg); border-color:transparent; }
-code { background:var(--soft); padding:2px 6px; border-radius:6px; font-size:14px; }
-.error { display:none; }
+.sharepage { min-height: calc(100vh - 80px); padding: clamp(50px, 8vw, 90px) 0 80px; }
+.sharecard { width: min(860px, 100%); margin: 0 auto; padding: clamp(26px, 4vw, 44px); border-radius: var(--r-xl); }
+.sharecard h1 { font-size: clamp(32px, 5vw, 52px); letter-spacing: -.045em; margin-top: 18px; }
+.sharecard .lede { margin-top: 10px; }
+#preview { margin-top: 26px; display: grid; gap: 14px; }
+#preview:empty { display: none; }
+.ws { padding: 16px; border-radius: var(--r-m); background: var(--glass); border: 1px solid var(--hair); }
+.ws h3 { font: 600 12px var(--font); letter-spacing: .05em; text-transform: uppercase; color: var(--ink3); margin-bottom: 10px; }
+.rail { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+.slide { flex: none; display: flex; gap: 6px; padding: 6px; border-radius: 12px; background: linear-gradient(140deg, var(--g1), var(--g2) 55%, var(--g3)); min-height: 84px; }
+.win { flex: 1; min-width: 0; padding: 10px; border-radius: 8px; background: rgba(250,250,252,.95); color: #1d1d1f; font: 600 13px var(--font); box-shadow: inset 0 3px 0 var(--l2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acts { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
+#bad { display: none; }
 </style>
 </head>
 <body>
-<main>
-  <a class="brand" href="../"><img src="../assets/icon.png" alt="">Monorail <span class="muted" style="font-weight:500">by Ashforde®</span></a>
-  <div id="ok">
+<!--#header-->
+<main id="main" class="wrap sharepage">
+  <div class="sharecard glass rim" id="ok">
+    <span class="eyebrow"><i></i>Shared layout</span>
     <h1 id="title">A shared layout</h1>
-    <p class="muted" id="summary">Someone shared a Monorail window layout with you.</p>
-    <div class="card" id="preview"></div>
-    <div class="actions">
+    <p class="lede" id="summary">Someone shared a Monorail window layout with you.</p>
+    <div id="preview"></div>
+    <div class="acts">
       <a class="btn primary" id="open" href="#">Open in Monorail</a>
-      <a class="btn" href="../">Get Monorail (free)</a>
+      <a class="btn glassy" href="/">Get Monorail, free</a>
     </div>
-    <p class="muted" style="font-size:14px;margin-top:20px">Monorail asks before adding it. A layout only arranges windows you already have open; it never contains window titles or tabs.</p>
+    <p class="faint" style="font-size:14px;margin-top:20px">Monorail asks before adding it. A layout only arranges windows you already have open; it never contains window titles or tabs.</p>
   </div>
-  <div class="error" id="bad">
+  <div class="sharecard glass" id="bad">
     <h1>This link is incomplete</h1>
-    <p class="muted">Ask for the link again, or copy it in full. In Monorail, links come from <code>Layouts → Copy Share Link</code>.</p>
-    <a class="btn" href="../">About Monorail</a>
+    <p class="lede">Ask for the link again, or copy it in full. In Monorail, links come from <code>Layouts → Copy Share Link</code>.</p>
+    <div class="acts"><a class="btn glassy" href="/">About Monorail</a></div>
   </div>
 </main>
+<!--#footer-->
 <script>
 (function () {
   var data = location.hash.slice(1);

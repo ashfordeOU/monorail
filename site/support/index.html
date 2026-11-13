@@ -2,68 +2,80 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Monorail Support</title>
-<meta name="description" content="Help with Monorail, the scrolling window manager for Mac: getting started, common fixes and how to report a problem.">
-<link rel="icon" href="../favicon.ico" sizes="48x48">
-<link rel="apple-touch-icon" href="../apple-touch-icon.png">
-<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<title>Support · Monorail</title>
+<meta name="description" content="Help with Monorail for Mac: getting started, common questions, and how to reach us.">
+<link rel="canonical" href="https://monorail.ashforde.org/support/">
+<!--#head-->
 <style>
-:root { --ink:#1D1D1F; --muted:#6E6E73; --line:rgba(0,0,0,.09); --bg:#FBFBFD; --card:#FFFFFF; --soft:#F2F2F5; --plum:#D63A80; color-scheme:light; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; } }
-:root[data-theme="dark"] { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; }
-* { box-sizing:border-box; }
-body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
-main { max-width:1040px; margin:0 auto; padding:32px 16px 72px; }
-a { color:var(--plum); }
-.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
-.brand img { width:30px; height:30px; border-radius:8px; }
-.top nav { display:flex; gap:16px; font-size:15px; }
-.top nav a { color:var(--muted); text-decoration:none; }
-h1 { font-size:clamp(32px, 6vw, 52px); line-height:1.05; letter-spacing:-.025em; margin:48px 0 10px; }
-h2 { font-size:24px; letter-spacing:-.01em; margin:56px 0 14px; }
-.lede { font-size:19px; color:var(--muted); max-width:720px; margin:0; }
-.pair { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:32px; }
-.card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:24px; }
-.card img { width:64px; height:64px; border-radius:15px; }
-.card h3 { margin:12px 0 6px; font-size:22px; }
-.card p { margin:0 0 14px; color:var(--muted); }
-.btn { display:inline-block; padding:10px 18px; border-radius:999px; background:var(--plum); color:#fff; text-decoration:none; font-weight:600; font-size:15px; }
-.btn.ghost { background:var(--soft); color:var(--ink); border:1px solid var(--line); }
-.together { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; }
-.together .card h4 { margin:0 0 6px; font-size:17px; }
-.together .card p { margin:0; font-size:15px; }
-code { font:14px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--soft); padding:2px 6px; border-radius:6px; }
-footer { margin-top:64px; font-size:14px; color:var(--muted); }
+.qs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+@media (max-width: 860px) { .qs { grid-template-columns: minmax(0, 1fr); } }
+.qs details { background: var(--glass); border: 1px solid var(--hair); border-radius: var(--r-m); }
+.qs summary { list-style: none; cursor: pointer; padding: 18px 20px; font: 600 16.5px/1.35 var(--display); letter-spacing: -.02em; }
+.qs summary::-webkit-details-marker { display: none; }
+.qs details p { padding: 0 20px 18px; color: var(--ink2); font-size: 15.5px; }
+.group { margin-top: 56px; }
+.group h2 { font-size: clamp(26px, 3.4vw, 36px); margin-bottom: 18px; }
 </style>
 </head>
 <body>
-<main>
-  <div class="top">
-    <a class="brand" href="../"><img src="../assets/icon.png" alt="">Monorail</a>
-    <nav><a href="../">Monorail</a><a href="../support/">Support</a><a href="../privacy/">Privacy</a></nav>
-  </div>
-  <h1>Support</h1>
-  <p class="lede">Help with Monorail, the scrolling window manager for Mac.</p>
-  <h2>Getting started</h2>
-  <p>Open Monorail and allow <b>Accessibility</b> when asked: the welcome tour walks you through the rest. Choose <b>Simple</b> for the essentials, <b>Power user</b> for every setting, or <b>Coming from another app</b> to import your AeroSpace, yabai or Rectangle setup.</p>
-  <p>Settings shows the essentials at first. To see every section, turn on <b>Show all settings</b> at the bottom of the sidebar; the search field finds every setting either way.</p>
-  <h2>Common questions</h2>
-  <ul>
-    <li><b>A window ended up off screen:</b> choose <b>Rescue Windows</b> from the menu bar icon.</li>
-    <li><b>Monorail doesn't move windows:</b> check that Monorail is switched on in System Settings → Privacy &amp; Security → Accessibility. If it is, switch it off and on again. After updating to 1.7.16 or later, macOS asks once more because the signature changed: remove Monorail from the list, then open it again.</li>
-    <li><b>I don't like the bar at the bottom:</b> Settings → Appearance → Slider bar. Show it always, only while sliding, at the top of the screen, or turn it off.</li>
-    <li><b>Which app is draining my battery?</b> Click the Monorail icon: the battery rings show it, and a draining app moves to the top with Quit on it. Click the rings for the full Battery page, or turn on Settings → Apps → Show the battery in the menu bar. Windows of power-hungry apps also show ⚡ in the overview.</li>
-    <li><b>Connect an AI agent:</b> Settings → Automation → Local API, then Copy MCP Server Config, Save Agent Skill… or Copy Agent Instructions. The <a href="../docs/agents/">agents guide</a> has the details.</li>
-    <li><b>Find any setting:</b> type in the search field at the top of Settings, or ask in the command palette (⌃⌥/).</li>
-  </ul>
-  <h2>Report a problem or ask a question</h2>
-  <p>In the app, Settings → Devices &amp; Sharing → <b>Report a Problem…</b> starts an email to us with your Mac and Monorail version filled in. For ideas, choose <b>Send Feedback…</b> from the menu bar icon. Or write to <a href="mailto:contact@ashforde.org">contact@ashforde.org</a> yourself. We reply by email.</p>
-  <h2>More</h2>
-  <p><a href="../docs/actions/">Every action</a> · <a href="../docs/settings/">Every setting</a> · <a href="../docs/it/">For IT</a> · <a href="../changelog/">What's new</a> · <a href="../privacy/">Privacy</a></p>
+<!--#header-->
+<main id="main" class="wrap">
+  <section class="page-hero">
+    <span class="eyebrow"><i></i>Support</span>
+    <h1><span class="sheen">How can we</span> <span class="light-text">help?</span></h1>
+    <p class="lede">Answers to the questions people ask most, and a person at the other end of <a href="mailto:contact@ashforde.org">contact@ashforde.org</a> when you need one.</p>
+  </section>
 
-  <footer>Monorail is made by Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ; Monorail is a trademark of Ashforde OÜ.</footer>
+  <div class="grid g3">
+    <div class="card glass"><span class="k">Start here</span><h3>Getting started</h3><p>Open Monorail and allow <b>Accessibility</b> when asked: the welcome tour does the rest. Choose <b>Simple</b> for the essentials, <b>Power user</b> for every setting, or <b>Coming from another app</b> to import your AeroSpace, yabai or Rectangle setup.</p></div>
+    <div class="card glass"><span class="k">Find anything</span><h3>Every setting, searchable</h3><p>Settings shows the essentials first; turn on <b>Show all settings</b> at the bottom of the sidebar for the rest. The search field, and the command palette (⌃⌥/), find any setting either way.</p></div>
+    <div class="card glass"><span class="k">Talk to us</span><h3>Report a problem</h3><p>Settings → Devices &amp; Sharing → <b>Report a Problem…</b> starts an email with your Mac and Monorail version filled in. For ideas, choose <b>Send Feedback…</b> from the menu bar icon. We reply by email.</p></div>
+  </div>
+
+  <section class="group">
+    <h2>Windows</h2>
+    <div class="qs">
+      <details><summary>A window ended up off screen.</summary><p>Choose <b>Rescue Windows</b> from the Monorail menu. Every window comes back onto the screen you’re looking at.</p></details>
+      <details><summary>Monorail doesn’t move windows.</summary><p>Check that Monorail is switched on in System Settings → Privacy &amp; Security → Accessibility. If it is, switch it off and on again. If you updated from a version before 1.7.16, macOS asks once more because the signature changed: remove Monorail from the list, then open it again.</p></details>
+      <details><summary>I don’t like the bar above the Dock.</summary><p>Settings → Appearance → Slider bar: show it always, only while sliding, at the top of the screen, as one app icon per slide, or turn it off.</p></details>
+      <details><summary>Can I slide with my mouse?</summary><p>Yes. Hold ⌥ and turn the wheel, or turn on Settings → Motion &amp; Input → “A mouse’s thumb wheel slides the strip” for mice with a sideways wheel, such as the MX Master. The back and forward buttons step through where you’ve been.</p></details>
+      <details><summary>Another window manager is fighting Monorail.</summary><p>Quit other window managers first; Settings checks for them and says which. Stage Manager is fine to keep: Monorail pauses while it’s on.</p></details>
+      <details><summary>Can I bring my AeroSpace, yabai or Rectangle setup?</summary><p>Yes. Settings → Basics → Import Settings… brings over your shortcuts, gaps, floating apps and workspace rules.</p></details>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Dashboard and AI</h2>
+    <div class="qs">
+      <details><summary>How do I add my Claude, Codex or API accounts?</summary><p>Open the Dashboard, choose AI Usage, then <b>Add Account</b>. Add as many as you like. Keys are kept in your Keychain. Turn on live plan limits to ask Claude and Codex for them with their own sign-in.</p></details>
+      <details><summary>When do AI limit notifications arrive?</summary><p>When a plan limit passes 80% and 95%, and when it resets. Change the levels in AI Usage’s settings.</p></details>
+      <details><summary>Which app is draining my battery?</summary><p>Click the Monorail icon: a draining app moves to the top with Quit on it. The Battery page in the Dashboard shows use by app over 30 days.</p></details>
+      <details><summary>How do I connect an AI agent?</summary><p>Settings → Automation → Local API, then Copy MCP Server Config, Save Agent Skill… or Copy Agent Instructions. The <a href="/docs/agents/">agents guide</a> has the details.</p></details>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Everyday tools</h2>
+    <div class="qs">
+      <details><summary>Does the clipboard keep passwords?</summary><p>No. Copies from password managers are never kept, and anything that looks like a key, token or card number stays hidden until you click to show it. You can also choose apps whose copies are never kept.</p></details>
+      <details><summary>Meeting Notes only hears me, not the others.</summary><p>To hear everyone else too, Meeting Notes listens to your Mac’s sound, which needs the Screen Recording permission. Allow it in System Settings → Privacy &amp; Security → Screen Recording. Without it, only your microphone is written down.</p></details>
+      <details><summary>Where are the summaries in Meeting Notes?</summary><p>Summaries come from Apple’s on-device model, on macOS 26 with Apple Intelligence turned on. On earlier versions you still get the full transcript and the action items.</p></details>
+      <details><summary>How do I turn on the live notch?</summary><p>On a MacBook with a notch, open the Dashboard’s Switches page and turn on “Show what’s happening beside the notch”. Sharing, a meeting, a timer, charging or an AI limit running low then shows beside it while it’s happening.</p></details>
+      <details><summary>The menu bar panel is hard to read over my wallpaper.</summary><p>Settings → Appearance → Panel background: Automatic, Frosted or Solid. Reduce Transparency in System Settings always makes it solid, and Increase Contrast gives it a firmer edge.</p></details>
+      <details><summary>Can Monorail start with my Mac?</summary><p>Yes: Settings → General → Launch Monorail at login.</p></details>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>More help</h2>
+    <div class="grid g4">
+      <a class="card glass" href="/docs/actions/"><h3>Every action</h3><p>All 300+ things Monorail can do, with their shortcuts.</p></a>
+      <a class="card glass" href="/docs/settings/"><h3>Every setting</h3><p>What each one does and its default.</p></a>
+      <a class="card glass" href="/docs/it/"><h3>For IT</h3><p>Deploying and managing Monorail.</p></a>
+      <a class="card glass" href="/changelog/"><h3>What’s new</h3><p>Every release, newest first.</p></a>
+    </div>
+  </section>
 </main>
+<!--#footer-->
 </body>
 </html>

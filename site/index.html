@@ -2,795 +2,796 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Monorail by Ashforde® · your whole Mac, on one rail</title>
-<meta name="description" content="Monorail is a free Mac app that does the work of many paid ones: a scrolling window manager where nothing shrinks, a Dashboard for everything your Mac is doing, AI plan limits, a clipboard that remembers images, one-click switches, meeting notes written on your Mac, Stay Awake and Evening Mode. Notarised by Apple.">
+<meta name="description" content="Monorail is a free Mac app: a scrolling window manager where nothing shrinks, a Dashboard for everything your Mac is doing, AI plan limits, a clipboard that remembers images, one-click switches, meeting notes written on your Mac, Stay Awake and Evening Mode. Notarised by Apple.">
 <meta property="og:title" content="Monorail by Ashforde® · your whole Mac, on one rail">
-<meta property="og:description" content="Windows that slide into place. A Dashboard for everything your Mac is doing. And the tools you reach for all day. One free Mac app instead of a dozen paid ones.">
+<meta property="og:description" content="Windows that slide into place and never shrink. A Dashboard for everything your Mac is doing. The tools you reach for all day. One free Mac app instead of a dozen paid ones.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Monorail by Ashforde">
-<meta property="og:image" content="https://monorail.ashforde.org/assets/launch/v17/01-hero.png">
-<meta property="og:image:alt" content="Monorail on a Mac: windows side by side on one scrolling strip">
+<meta property="og:image" content="https://monorail.ashforde.org/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Monorail: your whole Mac, on one rail">
 <meta property="og:url" content="https://monorail.ashforde.org/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://monorail.ashforde.org/">
-<link rel="icon" href="favicon.ico" sizes="48x48">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="manifest" href="site.webmanifest">
-<meta name="theme-color" content="#FBFBFD" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-<script>
-(() => { try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {} })();
-</script>
+<!--#head-->
 <style>
-/* Apple-style: quiet white and black bands, one product shot per idea, a bento grid for the rest.
-   Monorail's coral → pink is kept for headline accents, buttons and the notch. */
-:root {
-  --bg: #FBFBFD; --band: #F2F2F5; --ink: #1D1D1F; --muted: #6E6E73; --line: rgba(0,0,0,.09); --tile: #FFFFFF;
-  --night: #000000; --night-tile: #161617; --night-ink: #F5F5F7; --night-muted: #A1A1A6;
-  --coral: #FF9E62; --pink: #F66270; --plum: #D63A80; --link: #C2316F; --ok: #1E8E3E;
-  --shadow: 0 40px 90px -40px rgba(29,29,31,.42), 0 10px 30px -14px rgba(29,29,31,.22);
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
-  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #000000; --band: #0C0C0E; --ink: #F5F5F7; --muted: #A1A1A6; --line: rgba(255,255,255,.11); --tile: #161617;
-  --link: #FF8FB1; --ok: #5DD27A; --shadow: 0 40px 90px -40px rgba(0,0,0,.85), 0 10px 30px -14px rgba(0,0,0,.6); color-scheme: dark; } }
-:root[data-theme="dark"] {
-  --bg: #000000; --band: #0C0C0E; --ink: #F5F5F7; --muted: #A1A1A6; --line: rgba(255,255,255,.11); --tile: #161617;
-  --link: #FF8FB1; --ok: #5DD27A; --shadow: 0 40px 90px -40px rgba(0,0,0,.85), 0 10px 30px -14px rgba(0,0,0,.6); color-scheme: dark; }
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 64px; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.47 var(--font); letter-spacing: -.01em; -webkit-font-smoothing: antialiased; }
-img, video { display: block; max-width: 100%; height: auto; }
-a { color: var(--link); text-decoration: none; }
-a:hover { text-decoration: underline; }
-a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--pink); outline-offset: 3px; border-radius: 6px; }
-h1, h2, h3 { font-family: var(--display); letter-spacing: -.03em; text-wrap: balance; margin: 0; }
-p { margin: 0; }
-code { font: 13.5px var(--mono); background: var(--band); border: 1px solid var(--line); border-radius: 7px; padding: 2px 6px; word-break: break-word; }
-.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(22px, env(safe-area-inset-left, 0px)); padding-right: max(22px, env(safe-area-inset-right, 0px)); }
-.grad { background: linear-gradient(100deg, var(--coral), var(--pink) 55%, var(--plum)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.eyebrow { font-weight: 600; font-size: 15px; color: var(--muted); }
-.soon { display: inline-block; font: 600 11.5px var(--font); color: var(--plum); border: 1px solid color-mix(in srgb, var(--plum) 40%, transparent); border-radius: 980px; padding: 2px 9px; margin-left: 8px; vertical-align: middle; letter-spacing: 0; }
-.btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 980px; padding: 12px 22px; font: 500 17px var(--font); border: 0; cursor: pointer; text-decoration: none !important; }
-.btn.primary { background: linear-gradient(100deg, var(--coral), var(--pink) 60%, var(--plum)); color: #fff; }
-.btn.small { padding: 6px 14px; font-size: 13px; }
-.btn.ghost { background: transparent; color: var(--link); border: 1px solid var(--line); }
-.btn.link { background: none; color: var(--link); padding-inline: 4px; }
+/* ---------- Homepage only ---------- */
+.hero { padding: clamp(56px, 9vw, 110px) 0 0; text-align: center; }
+.hero .display { margin-top: 22px; }
+.hero .lede { max-width: 690px; margin: 24px auto 0; }
+.ctas { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 34px; }
+.release { font-size: 13.5px; color: var(--ink3); margin-top: 16px; }
 
-/* Product Hunt welcome */
-.phbar { display: none; background: var(--night); color: var(--night-ink); font-size: 14px; text-align: center; padding: 10px 44px; position: relative; }
-.phbar.show { display: block; }
-.phbar a { color: #FFB3C8; margin-left: 6px; }
-.phbar button { position: absolute; right: 12px; top: 6px; background: none; border: 0; color: var(--night-muted); font-size: 20px; cursor: pointer; }
+/* The desktop: the theme's backdrop, a menu bar, the strip and the slider bar */
+.desk { position: relative; margin: clamp(48px, 7vw, 80px) auto 0; width: min(1120px, 100%); aspect-ratio: 16 / 9; border-radius: clamp(16px, 2.4vw, 28px); overflow: hidden; outline: none;
+  background: radial-gradient(60% 70% at 18% 20%, color-mix(in srgb, var(--l1) 55%, transparent), transparent 70%), radial-gradient(55% 60% at 85% 75%, color-mix(in srgb, var(--l2) 50%, transparent), transparent 70%),
+              radial-gradient(50% 50% at 60% 10%, color-mix(in srgb, var(--l3) 40%, transparent), transparent 70%), linear-gradient(140deg, var(--g1), var(--g2) 55%, var(--g3));
+  box-shadow: 0 0 0 1px var(--hair2), 0 60px 160px -50px color-mix(in srgb, var(--l2) 55%, transparent), var(--shadow); }
+.desk:focus-visible { box-shadow: 0 0 0 3px var(--l2), var(--shadow); }
+.desk .mb { position: absolute; inset: 0 0 auto; height: 4.2%; min-height: 18px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.6%; font: 600 clamp(8px, 1.05vw, 12.5px) var(--font); color: rgba(255,255,255,.88); background: rgba(0,0,0,.22); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+.desk .mb span { display: flex; gap: 1.4em; align-items: center; }
+.desk .mb img { width: 1.25em; height: 1.25em; border-radius: 3px; }
+.desk .row { position: absolute; top: 9%; bottom: 17%; left: 0; display: flex; gap: 1.3%; padding-left: 6%; width: 100%; transition: transform .7s var(--ease); }
+.w { flex: 0 0 auto; width: 31%; height: 100%; border-radius: clamp(6px, .9vw, 12px); background: rgba(250,250,252,.96); overflow: hidden; box-shadow: 0 18px 40px -18px rgba(0,0,0,.6); transition: width .55s var(--ease), box-shadow .3s, opacity .4s, transform .55s var(--ease); display: flex; flex-direction: column; }
+.w.new { opacity: 0; transform: translateY(14px) scale(.96); }
+.w.focus { box-shadow: 0 0 0 2px #fff, 0 0 0 5px color-mix(in srgb, var(--wc) 70%, transparent), 0 24px 50px -16px rgba(0,0,0,.65); }
+.w .t { height: clamp(14px, 2.2vw, 26px); flex: none; display: flex; align-items: center; gap: .45em; padding: 0 .8em; background: #ECECEF; font: 600 clamp(6.5px, .9vw, 11px) var(--font); color: #3a3a40; white-space: nowrap; overflow: hidden; }
+.w .t i { width: .75em; height: .75em; border-radius: 50%; background: #FF5F57; flex: none; } .w .t i:nth-child(2) { background: #FEBC2E; } .w .t i:nth-child(3) { background: #28C840; margin-right: .3em; }
+.w .c { flex: 1; padding: 6%; display: grid; gap: 7%; align-content: start; }
+.w .c u { display: block; height: clamp(4px, .6vw, 8px); border-radius: 4px; background: #E3E3E8; text-decoration: none; }
+.w .c u.h { background: var(--wc); width: 46%; height: clamp(6px, .9vw, 11px); }
+.w.term { background: #15161C; } .w.term .t { background: #23242C; color: #ccc; } .w.term .c u { background: #2E3140; } .w.term .c u.h { background: var(--wc); }
+.w .c .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6%; } .w .c .tiles s { aspect-ratio: 1.3; border-radius: 4px; background: color-mix(in srgb, var(--wc) 30%, #EEE); }
+.desk .rail { position: absolute; left: 50%; bottom: 4.5%; transform: translateX(-50%); display: flex; gap: clamp(4px, .6vw, 8px); padding: clamp(5px, .7vw, 9px); border-radius: 999px;
+  background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 10px 30px -10px rgba(0,0,0,.5); }
+.desk .rail b { width: clamp(18px, 3vw, 38px); height: clamp(11px, 1.7vw, 22px); border-radius: 999px; background: rgba(255,255,255,.3); transition: background .3s, width .4s var(--ease); }
+.desk .rail b.on { background: #fff; width: clamp(26px, 4.4vw, 54px); }
+.desk .tip { position: absolute; top: 5.5%; left: 50%; transform: translateX(-50%); font: 600 clamp(9px, 1.1vw, 13px) var(--font); color: #fff; padding: .5em 1.1em; border-radius: 999px; background: rgba(0,0,0,.35); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.18); white-space: nowrap; transition: opacity .3s; z-index: 2; }
+.deskhint { margin-top: 18px; font-size: 14px; color: var(--ink3); }
+@media (max-width: 600px) { .deskhint { display: none; } }
 
-/* Navigation */
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
-nav.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 80%, transparent);
-  backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
-nav.top .wrap { display: flex; align-items: center; gap: 24px; height: 52px; }
-.brand { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink); font-size: 15px; white-space: nowrap; }
-.brand:hover { text-decoration: none; }
-.brand img { width: 22px; height: 22px; border-radius: 5px; }
-nav.top .links { display: flex; gap: 22px; flex: 1; font-size: 13px; overflow-x: auto; scrollbar-width: none; }
-nav.top .links a { color: var(--muted); white-space: nowrap; }
-nav.top .links a:hover { color: var(--ink); text-decoration: none; }
-.icon-btn { background: none; border: 0; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 8px; display: inline-flex; }
-.icon-btn:hover { color: var(--ink); }
-@media (max-width: 760px) { nav.top .links { display: none; } nav.top .wrap { justify-content: space-between; } }
+/* Proof ribbon */
+.ribbon { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: clamp(40px, 6vw, 64px); }
+.ribbon span { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink2); padding: 9px 15px; border-radius: 999px; background: var(--glass); border: 1px solid var(--hair); }
+.ribbon svg { width: 15px; height: 15px; color: var(--ok); }
 
-/* Hero */
-.hero { text-align: center; padding-block: 76px 0; overflow: hidden; }
-.hero .eyebrow { color: var(--pink); }
-.hero h1 { font-size: clamp(46px, 8.4vw, 96px); font-weight: 800; line-height: 1.0; margin-top: 12px; }
-.hero .sub { font-size: clamp(19px, 2.4vw, 25px); color: var(--muted); max-width: 700px; margin: 20px auto 0; line-height: 1.35; letter-spacing: -.015em; }
-.ctas { display: flex; gap: 14px 18px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 30px; }
-.meta { font-size: 13px; color: var(--muted); margin-top: 12px; }
-.trustline { display: flex; gap: 8px 22px; justify-content: center; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-top: 20px; }
-.trustline span::before { content: "✓ "; color: var(--ok); font-weight: 700; }
-.mac { margin: 60px auto 0; max-width: 1040px; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--line); background: #0b0f22; }
-.mac .bar { height: 30px; display: flex; align-items: center; gap: 8px; padding-left: 14px; background: #1c2038; }
-.mac .bar i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; display: block; }
-.mac .bar i:nth-child(2) { background: #febc2e; } .mac .bar i:nth-child(3) { background: #28c840; }
-
-/* Statement */
-.statement { padding-block: 130px; text-align: center; }
-.statement h2 { font-size: clamp(32px, 5.2vw, 60px); font-weight: 700; line-height: 1.07; max-width: 860px; margin: 0 auto; }
-.statement h2 span { color: var(--muted); }
-
-/* Sections */
-.section { padding-block: 110px; }
-.section.alt { background: var(--band); }
-.section.night { background: var(--night); color: var(--night-ink); }
-.section.night .head p, .section.night .eyebrow { color: var(--night-muted); }
-.head { text-align: center; max-width: 760px; margin: 0 auto 52px; }
-.head h2 { font-size: clamp(36px, 5.6vw, 64px); font-weight: 700; line-height: 1.04; margin-top: 8px; }
-.head p { font-size: 20px; color: var(--muted); margin-top: 16px; }
-
-/* The strip demo */
-.strip { position: relative; height: 300px; border-radius: 24px; overflow: hidden; background: linear-gradient(160deg, #2b1640, #6b2a59 55%, #d1555d); outline: none; }
-.strip:focus-visible { box-shadow: 0 0 0 3px var(--pink); }
-.strip .menubar { position: absolute; inset: 0 0 auto; height: 24px; background: rgba(0,0,0,.25); display: flex; justify-content: space-between; align-items: center; padding: 0 14px; font: 600 11px var(--font); color: rgba(255,255,255,.85); }
-.strip .row { position: absolute; top: 44px; bottom: 70px; left: 0; display: flex; gap: 14px; padding-left: 7%; transition: transform .55s cubic-bezier(.32,1.12,.4,1); }
-.strip .win { flex: 0 0 auto; width: 300px; border-radius: 12px; background: rgba(255,255,255,.94); padding: 12px; box-shadow: 0 12px 30px -12px rgba(0,0,0,.5); transition: width .45s cubic-bezier(.32,1.12,.4,1), outline-color .2s; outline: 3px solid transparent; outline-offset: 0; }
-.strip .win.focus { outline-color: #fff; }
-.strip .win b { display: block; font: 600 12px var(--font); color: #1d1d1f; }
-.strip .win i { display: block; height: 8px; border-radius: 4px; background: #e6e6ea; margin-top: 10px; width: 80%; }
-.strip .win i.c { width: 50%; }
-.strip .rail { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px; border-radius: 14px; background: rgba(255,255,255,.2); backdrop-filter: blur(10px); }
-.strip .rail b { width: 26px; height: 18px; border-radius: 6px; background: rgba(255,255,255,.35); transition: background .2s; }
-.strip .rail b.on { background: #fff; }
-.demohint { text-align: center; font-size: 14px; color: var(--muted); margin-top: 16px; }
-kbd { font: 600 12px var(--font); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; background: var(--tile); color: var(--ink); }
-@media (prefers-reduced-motion: reduce) { .strip .row, .strip .win { transition: none; } }
-
-/* Steps */
-.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 46px; }
-.steps div { min-width: 0; }
-.steps b { font: 700 21px var(--display); letter-spacing: -.02em; }
-.steps p { color: var(--muted); margin-top: 6px; }
-@media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+/* Nothing shrinks */
+.versus { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 760px) { .versus { grid-template-columns: minmax(0, 1fr); } }
+.vs { padding: 20px; border-radius: var(--r-l); }
+.vs h3 { font-size: 19px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.vs h3 small { font: 500 13px var(--font); color: var(--ink3); letter-spacing: 0; }
+.mini { position: relative; margin-top: 16px; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: linear-gradient(140deg, var(--g1), var(--g2) 55%, var(--g3)); }
+.mini .row { position: absolute; inset: 9% 0 9% 0; display: flex; gap: 2%; padding: 0 4%; transition: transform .6s var(--ease); }
+.mini .w { width: 44%; }
+.mini.grid .w { flex: 1 1 0; width: auto; min-width: 0; }
+.mini .w .c { padding: 8%; }
+.vs p { margin-top: 14px; color: var(--ink2); font-size: 15px; min-height: 3em; }
+.vsbar { display: flex; justify-content: center; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
 
 /* Bento */
-.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px; }
-.card { background: var(--tile); border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--line); min-width: 0; }
-.card .copy { padding: 32px 32px 0; }
-.card .k { font-size: 13px; font-weight: 600; color: var(--pink); }
-.card h3 { font-size: 30px; font-weight: 700; line-height: 1.08; margin-top: 6px; }
-.card p { color: var(--muted); font-size: 16.5px; margin-top: 10px; max-width: 52ch; }
-.card .pic { margin: 26px 0 0 32px; border-top-left-radius: 14px; overflow: hidden; border: 1px solid var(--line); border-right: 0; border-bottom: 0; flex: 1; min-height: 230px; }
-.card .pic img { width: 100%; height: 100%; object-fit: cover; object-position: left top; }
-.card .pad { padding: 0 32px 32px; }
-.card.dark { background: var(--night-tile); color: var(--night-ink); border-color: rgba(255,255,255,.07); }
-.card.dark p { color: var(--night-muted); }
-.card.text { padding-bottom: 32px; }
-.card.wide { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: start; }
-.card.wide .copy { padding: 44px 8px 44px 40px; }
-.card.wide h3 { font-size: 36px; }
-.card.wide .pic { margin: 44px 0 0; max-height: 470px; min-height: 0; }
-@media (max-width: 880px) { .card.wide { display: flex; } .card.wide .copy { padding: 32px 32px 0; } .card.wide .pic { margin: 26px 0 0 32px; max-height: 420px; } }
-.s6 { grid-column: span 6; } .s4 { grid-column: span 4; } .s3 { grid-column: span 3; } .s2 { grid-column: span 2; }
-@media (max-width: 880px) { .s4, .s3, .s2 { grid-column: span 6; } }
-.only-dark { display: none; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .only-light { display: none; } :root:not([data-theme="light"]) .only-dark { display: block; } }
-:root[data-theme="dark"] .only-light { display: none; } :root[data-theme="dark"] .only-dark { display: block; }
+.bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+.b12 { grid-column: span 12; } .b7 { grid-column: span 7; } .b5 { grid-column: span 5; } .b3 { grid-column: span 3; }
+@media (max-width: 980px) { .b7, .b5 { grid-column: span 12; } .b3 { grid-column: span 6; } }
+@media (max-width: 600px) { .b3 { grid-column: span 12; } }
+.tile { border-radius: var(--r-xl); padding: clamp(24px, 3vw, 36px); overflow: hidden; min-width: 0; display: flex; flex-direction: column; }
+.tile h3 { font-size: clamp(24px, 2.6vw, 32px); letter-spacing: -.035em; line-height: 1.08; }
+.tile > p, .tile .tcopy p { color: var(--ink2); margin-top: 10px; font-size: 16px; }
+.tile .k { font: 600 13px var(--font); color: var(--l2); margin-bottom: 10px; letter-spacing: 0; }
+:root[data-scheme="light"] .tile .k { color: color-mix(in srgb, var(--l3) 75%, #000); }
+.shot { margin-top: 24px; border-radius: 16px; overflow: hidden; border: 1px solid var(--hair2); box-shadow: var(--shadow); background: #0c0e1c; }
+.shot img { width: 100%; }
+.only-dark { display: none !important; }
+:root[data-scheme="dark"] .only-dark { display: block !important; } :root[data-scheme="dark"] .only-light { display: none !important; }
 
-/* Notch */
-.notch { position: relative; height: 170px; margin-top: 26px; background: linear-gradient(180deg, #1b1b22, #0b0b0f); flex: 1; }
-.section.night code { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.12); color: var(--night-ink); }
-.notch .menu { position: absolute; inset: 0 0 auto; height: 34px; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; font-size: 12px; color: rgba(255,255,255,.7); }
-.notch .pill { position: absolute; top: 0; left: 50%; transform: translateX(-50%); height: 34px; width: min(300px, 84%); background: #000; border-radius: 0 0 16px 16px; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font: 600 13px var(--display); color: #fff; }
-.notch .rec { display: flex; align-items: center; gap: 6px; color: #ff6b6b; }
-.notch .rec::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #ff453a; animation: blink 1.6s infinite; }
-@keyframes blink { 50% { opacity: .35; } }
-.notch .chips { position: absolute; bottom: 20px; inset-inline: 0; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 0 16px; }
-.notch .chips span { font-size: 12px; color: rgba(255,255,255,.78); border: 1px solid rgba(255,255,255,.15); border-radius: 980px; padding: 4px 11px; }
-@media (prefers-reduced-motion: reduce) { .notch .rec::before { animation: none; } }
+/* Ways to move */
+.ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 900px) { .ways { grid-template-columns: repeat(2, minmax(0, 1fr)); } } @media (max-width: 560px) { .ways { grid-template-columns: minmax(0, 1fr); } }
+.ways .card { display: flex; flex-direction: column; gap: 4px; }
+.ways .keys { margin-top: auto; padding-top: 16px; display: flex; gap: 6px; flex-wrap: wrap; }
 
-/* Transcript card */
-.transcript { margin: 26px 32px 32px; border-radius: 18px; padding: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); display: grid; gap: 10px; font-size: 14.5px; }
+/* Video frames and splits */
+.film-frame { border-radius: clamp(14px, 2vw, 24px); overflow: hidden; border: 1px solid var(--hair2); box-shadow: var(--shadow); background: #1a0f24; }
+.film-frame video { width: 100%; aspect-ratio: 1440 / 980; object-fit: cover; }
+.split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
+.split.rev { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+@media (max-width: 900px) { .split, .split.rev { grid-template-columns: minmax(0, 1fr); } .split.rev > :first-child { order: 2; } }
+.steps { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 4px; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--hair); }
+.steps li::before { content: counter(s); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 700 13px var(--font); background: var(--glass2); border: 1px solid var(--hair); }
+.steps b { display: block; font: 600 17px var(--display); letter-spacing: -.02em; }
+.steps span { color: var(--ink2); font-size: 15.5px; }
+
+/* Dashboard showcase */
+.dials { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+@media (max-width: 900px) { .dials { grid-template-columns: repeat(3, minmax(0, 1fr)); } } @media (max-width: 520px) { .dials { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dials .glass { padding: 18px; border-radius: var(--r-l); }
+.dials .dial { max-width: 150px; }
+.dials .dial .val b { font-size: clamp(22px, 2.6vw, 30px); }
+.showcase { padding: 14px; border-radius: var(--r-xl); }
+.showcase .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 4px 4px 14px; }
+.showcase .bar p { font-size: 15px; color: var(--ink2); max-width: 60ch; }
+.showcase .win img { width: 100%; }
+.example { font-size: 12.5px; color: var(--ink3); text-align: center; margin-top: 14px; }
+
+/* AI */
+.limits { padding: 26px; border-radius: var(--r-xl); display: grid; gap: 18px; }
+.lim { display: grid; gap: 7px; }
+.lim .row2 { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; }
+.lim .row2 b { font-weight: 600; }
+.lim .row2 span { color: var(--ink3); font-variant-numeric: tabular-nums; text-align: right; }
+.track { position: relative; height: 12px; border-radius: 999px; background: var(--glass2); border: 1px solid var(--hair); }
+.track i { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, var(--l1), var(--l2)); box-shadow: 0 0 16px -2px color-mix(in srgb, var(--l2) 70%, transparent); width: 0; transition: width 1.4s var(--ease); }
+.track em { position: absolute; top: -5px; bottom: -5px; width: 2px; border-radius: 2px; background: var(--ink); opacity: .7; }
+.lim small { font-size: 13px; color: var(--ink3); }
+.lim small b { color: var(--ok); font-weight: 600; }
+.terminal { border-radius: var(--r-l); overflow: hidden; border: 1px solid var(--hair2); background: rgba(8,8,12,.88); box-shadow: var(--shadow); min-width: 0; }
+.terminal .tb { height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid rgba(255,255,255,.07); }
+.terminal .tb i { width: 11px; height: 11px; border-radius: 50%; background: #FF5F57; } .terminal .tb i:nth-child(2) { background: #FEBC2E; } .terminal .tb i:nth-child(3) { background: #28C840; }
+.terminal pre { margin: 0; padding: 18px 20px; font: 13.5px/1.7 var(--mono); color: #E6E6EA; white-space: pre-wrap; overflow-wrap: anywhere; }
+.terminal .p { color: #7FD3E6; } .terminal .o { color: #9A9AA6; } .terminal .ok { color: #5DD27A; }
+
+/* Panel and liquid-glass controls */
+.panelshot { width: min(360px, 100%); margin: 0 auto; border-radius: 22px; overflow: hidden; border: 1px solid var(--hair2); box-shadow: var(--shadow); }
+.controls { display: grid; gap: 22px; padding: clamp(22px, 3vw, 32px); border-radius: var(--r-xl); }
+.toggles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.tg { display: grid; justify-items: center; gap: 8px; background: none; border: 0; color: var(--ink2); font: 500 13px var(--font); cursor: pointer; padding: 0; }
+.tg span:first-child { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; background: var(--glass2); border: 1px solid var(--hair); color: var(--ink); transition: background .25s, color .25s, transform .2s var(--ease); }
+.tg svg { width: 24px; height: 24px; }
+.tg[aria-pressed="true"] span:first-child { background: var(--btn-bg); color: var(--btn-ink); box-shadow: 0 0 24px -4px color-mix(in srgb, var(--l2) 80%, transparent); }
+.tg:active span:first-child { transform: scale(.94); }
+.liquid { position: relative; height: 64px; border-radius: 999px; background: linear-gradient(110deg, var(--glass2), var(--glass) 60%); border: 1px solid var(--hair); box-shadow: inset 0 1px 0 var(--edge); }
+.liquid .fill { position: absolute; inset: 5px auto 5px 5px; border-radius: 999px; display: flex; align-items: center; gap: 10px; padding-left: 18px; overflow: hidden;
+  background: linear-gradient(110deg, color-mix(in srgb, var(--ink) 16%, transparent), color-mix(in srgb, var(--ink) 7%, transparent)); border: 1px solid var(--hair2); box-shadow: inset 0 1px 0 var(--edge), 0 6px 20px -8px rgba(0,0,0,.4); pointer-events: none; font: 600 20px var(--display); font-variant-numeric: tabular-nums; }
+.liquid .fill svg { width: 22px; height: 22px; flex: none; }
+.liquid input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.liquid:focus-within { box-shadow: inset 0 1px 0 var(--edge), 0 0 0 3px color-mix(in srgb, var(--l2) 60%, transparent); }
+.controls small { color: var(--ink3); font-size: 13px; }
+
+/* Live notch */
+.notchband { position: relative; height: clamp(240px, 30vw, 330px); border-radius: var(--r-xl); overflow: hidden; background: radial-gradient(70% 90% at 50% -10%, color-mix(in srgb, var(--l2) 35%, transparent), transparent 70%), #07070A; border: 1px solid var(--hair); }
+.notchband .menu { position: absolute; inset: 0 0 auto; height: 38px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; color: rgba(255,255,255,.6); font-size: 13px; }
+.notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); height: 38px; width: 190px; background: #000; border-radius: 0 0 18px 18px; color: #fff;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0 18px; font: 600 14px var(--display); overflow: hidden; white-space: nowrap; transition: width .6s var(--ease), height .6s var(--ease), border-radius .6s var(--ease); box-shadow: 0 0 0 1px rgba(255,255,255,.05); }
+.notch.open { width: min(440px, 92%); height: 64px; border-radius: 0 0 26px 26px; }
+.notch .l { display: flex; align-items: center; gap: 9px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.notch .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--dot, #FF453A); box-shadow: 0 0 10px var(--dot, #FF453A); }
+.notch .r { color: rgba(255,255,255,.7); font-variant-numeric: tabular-nums; flex: none; }
+.notchband .chips { position: absolute; bottom: 22px; inset-inline: 0; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 0 16px; }
+.notchband .chips button { font: 500 13px var(--font); color: rgba(255,255,255,.75); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 7px 13px; cursor: pointer; min-height: 36px; }
+.notchband .chips button[aria-pressed="true"] { color: #000; background: #fff; }
+
+/* Meeting Notes transcript */
+.transcript { margin-top: 22px; display: grid; gap: 10px; align-content: start; font-size: 15px; padding: 18px; border-radius: var(--r-m); background: var(--glass); border: 1px solid var(--hair); min-height: 210px; flex: 1; }
 .transcript .who { font-weight: 600; margin-right: 6px; }
-.transcript .you { color: #FFB27A; } .transcript .them { color: #7FD3E6; }
-.transcript .todo { border-top: 1px solid rgba(255,255,255,.1); padding-top: 10px; color: var(--night-muted); font-size: 13.5px; }
+.transcript .you { color: var(--l1); } .transcript .them { color: #4FB8D2; }
+:root[data-scheme="light"] .transcript .you { color: color-mix(in srgb, var(--l3) 75%, #000); } :root[data-scheme="light"] .transcript .them { color: #1F7A93; }
+.transcript .todo { border-top: 1px solid var(--hair); padding-top: 10px; color: var(--ink2); font-size: 14px; }
+.rec { display: inline-flex; align-items: center; gap: 7px; font: 600 12.5px var(--font); color: #FF6B6B; }
+.rec::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #FF453A; animation: blink 1.6s infinite; }
+@keyframes blink { 50% { opacity: .3; } }
 
-/* World clocks card */
-.clocks { margin: 22px 32px 32px; display: grid; gap: 8px; }
-.clocks div { display: flex; justify-content: space-between; align-items: center; background: var(--band); border-radius: 14px; padding: 10px 14px; font-size: 15px; }
-.clocks b { font: 600 20px var(--display); font-variant-numeric: tabular-nums; }
-.tag { font-size: 11px; font-weight: 600; border-radius: 980px; padding: 2px 8px; margin-left: 8px; }
-.tag.work { color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); }
-.tag.sleep { color: #6E6BE8; background: rgba(110,107,232,.15); }
-
-/* Panel figure */
-.panelfig { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 56px; align-items: center; }
-.panelfig .shot { border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--line); max-width: 360px; justify-self: center; }
-.panelfig ul { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 16px; }
-.panelfig li b { display: block; font: 600 18px var(--display); letter-spacing: -.02em; }
-.panelfig li span { color: var(--muted); }
-@media (max-width: 880px) { .panelfig { grid-template-columns: 1fr; } }
-
-/* Everything grid */
-.everything { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 30px 34px; }
-.everything div { border-top: 1px solid var(--line); padding-top: 16px; min-width: 0; }
-.everything b { font: 600 17px var(--display); letter-spacing: -.015em; }
-.everything p { color: var(--muted); font-size: 15px; margin-top: 4px; }
-
-/* Shortcuts */
-.keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; max-width: 900px; margin: 0 auto; }
-.keys div { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--tile); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
-.keys span { color: var(--muted); }
+.mini-card { border-radius: var(--r-l); padding: 24px; }
+.mini-card h3 { font-size: 20px; letter-spacing: -.025em; }
+.mini-card p { color: var(--ink2); font-size: 15px; margin-top: 6px; }
 
 /* Themes */
-.swatches { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-.swatches i { width: 54px; height: 54px; border-radius: 16px; display: block; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.themes { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 20px; align-items: start; }
+@media (max-width: 960px) { .themes { grid-template-columns: minmax(0, 1fr); } }
+.overview { position: relative; aspect-ratio: 16 / 10; border-radius: var(--r-xl); overflow: hidden; border: 1px solid var(--hair2); box-shadow: var(--shadow);
+  background: radial-gradient(50% 60% at 20% 25%, color-mix(in srgb, var(--l1) 60%, transparent), transparent 70%), radial-gradient(45% 55% at 80% 70%, color-mix(in srgb, var(--l2) 55%, transparent), transparent 70%),
+              radial-gradient(40% 40% at 55% 95%, color-mix(in srgb, var(--l3) 50%, transparent), transparent 70%), linear-gradient(140deg, var(--g1), var(--g2) 55%, var(--g3)); }
+.overview .ws { position: absolute; inset: 15% 6% 22%; display: grid; grid-template-rows: repeat(3, 1fr); gap: 6%; }
+.overview .lane { display: flex; gap: 2.4%; align-items: stretch; }
+.overview .lane > b { flex: 0 0 auto; width: 9px; border-radius: 9px; }
+.overview .lane > i { flex: 1; border-radius: 8px; background: rgba(255,255,255,.88); box-shadow: inset 0 4px 0 0 var(--c); }
+.overview .dots { position: absolute; bottom: 7%; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.22); }
+.overview .dots i { width: 14px; height: 14px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px -1px var(--c); }
+@media (max-width: 520px) { .overview .dots i { width: 9px; height: 9px; } .overview .dots { gap: 5px; } }
+.overview .name { position: absolute; top: 5%; left: 6%; font: 700 clamp(15px, 1.8vw, 20px) var(--display); color: #fff; letter-spacing: -.02em; text-shadow: 0 2px 12px rgba(0,0,0,.4); }
+.picker { padding: 22px; border-radius: var(--r-xl); }
+.picker h2 { font: 600 12px var(--font); letter-spacing: .05em; text-transform: uppercase; color: var(--ink3); margin: 0 0 10px; }
+.picker .swatches { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+.picker .swatches + h2 { margin-top: 16px; }
+@media (max-width: 520px) { .picker .swatches { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 
-/* Numbers */
-.numbers { display: flex; gap: 48px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
-.numbers div { text-align: center; color: var(--night-muted); font-size: 15px; }
-.numbers b { display: block; font: 700 clamp(44px, 7vw, 72px)/1 var(--display); letter-spacing: -.04em; color: var(--night-ink); font-variant-numeric: tabular-nums; margin-bottom: 8px; }
-
-/* Facts (trust, privacy, install) */
-.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
-.facts > div { background: var(--tile); border: 1px solid var(--line); border-radius: 22px; padding: 26px; min-width: 0; }
-.facts b { display: block; font: 600 19px var(--display); letter-spacing: -.02em; margin-bottom: 8px; }
-.facts p { color: var(--muted); font-size: 15.5px; }
-.note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 26px; }
+/* Performance dials */
+.perf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 760px) { .perf { grid-template-columns: minmax(0, 1fr); } }
+.perf .glass { padding: 28px; border-radius: var(--r-xl); text-align: center; }
+.perf p { color: var(--ink2); font-size: 15px; margin-top: 14px; }
 
 /* Compare */
-.tablewrap { overflow-x: auto; border-radius: 22px; border: 1px solid var(--line); background: var(--tile); }
-table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 15px; }
-th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-weight: 600; font-size: 13px; color: var(--muted); }
-th:nth-child(2), td:nth-child(2) { background: color-mix(in srgb, var(--pink) 6%, transparent); }
-tr:last-child td { border-bottom: 0; }
-.y { color: var(--ok); font-weight: 600; } .n { color: var(--muted); }
-
-/* Replaces */
-.replaces { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
-.replaces div { display: flex; justify-content: space-between; gap: 14px; background: var(--tile); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; min-width: 0; }
+.tablewrap { overflow-x: auto; border-radius: var(--r-l); }
+table.cmp { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 15px; }
+.cmp th, .cmp td { padding: 15px 18px; text-align: left; border-bottom: 1px solid var(--hair); }
+.cmp th { font-size: 13px; color: var(--ink3); font-weight: 600; }
+.cmp tr:last-child td { border-bottom: 0; }
+.cmp td:nth-child(2), .cmp th:nth-child(2) { background: color-mix(in srgb, var(--l2) 9%, transparent); }
+.cmp .y { color: var(--ok); font-weight: 600; } .cmp .n { color: var(--ink3); }
+.replaces { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .replaces { grid-template-columns: minmax(0, 1fr); } }
+.replaces div { display: flex; justify-content: space-between; gap: 14px; padding: 16px 20px; border-radius: var(--r-m); }
 .replaces b { display: block; font-weight: 600; }
-.replaces small { color: var(--muted); font-size: 13.5px; }
-.replaces em { font-style: normal; color: var(--muted); white-space: nowrap; font-size: 14px; }
+.replaces small { color: var(--ink3); font-size: 13.5px; }
+.replaces em { font-style: normal; color: var(--ink2); white-space: nowrap; font-size: 14px; }
 
-/* Platforms */
-.platforms { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
-.platforms > div { background: var(--tile); border: 1px solid var(--line); border-radius: 22px; padding: 26px; }
-.platforms h3 { font-size: 24px; }
-.badge { font-size: 12px; font-weight: 600; border-radius: 980px; padding: 3px 9px; margin-left: 8px; vertical-align: middle; }
-.badge.go { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
-.badge.beta { color: var(--plum); background: color-mix(in srgb, var(--plum) 12%, transparent); }
-.platforms p { color: var(--muted); margin-top: 8px; }
+/* Get it */
+.getgrid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 16px; }
+@media (max-width: 900px) { .getgrid { grid-template-columns: minmax(0, 1fr); } }
+.get { padding: clamp(22px, 3vw, 34px); border-radius: var(--r-xl); }
+.get .panel { margin-top: 22px; display: grid; gap: 14px; }
+.get .panel p { color: var(--ink2); }
+.badge { font: 600 12px var(--font); border-radius: 999px; padding: 3px 9px; margin-left: 8px; vertical-align: middle; letter-spacing: 0; }
+.badge.go { color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); }
+.badge.beta { color: var(--l2); background: color-mix(in srgb, var(--l2) 14%, transparent); }
 
-/* FAQ */
-.faq { max-width: 820px; margin: 0 auto; }
-details { border-bottom: 1px solid var(--line); padding: 20px 0; }
-summary { cursor: pointer; font: 600 19px var(--display); letter-spacing: -.02em; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
-summary::-webkit-details-marker { display: none; }
-summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 24px; line-height: 1; transition: transform .2s; }
-details[open] summary::after { transform: rotate(45deg); }
-details p { color: var(--muted); margin-top: 10px; }
-.ask { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+.faq details { background: var(--glass); border: 1px solid var(--hair); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+.ask { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
 
-/* Download */
-.download { text-align: center; padding-block: 120px; }
-.download img.icon { width: 104px; height: 104px; margin: 0 auto; border-radius: 24px; box-shadow: var(--shadow); }
-.download h2 { font-size: clamp(38px, 6vw, 68px); font-weight: 800; margin-top: 28px; }
-.download p { color: var(--muted); margin-top: 12px; font-size: 19px; }
-.download code { display: inline-block; margin-top: 22px; }
-
-footer { border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); background: var(--band); }
-footer .cols { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 28px; padding-block: 40px 20px; }
-footer h2 { font: 600 12.5px var(--font); color: var(--ink); margin: 0 0 10px; letter-spacing: 0; }
-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-footer a { color: var(--muted); }
-footer .legal { padding-block: 0 32px; line-height: 1.6; }
-@media (max-width: 760px) { footer .cols { grid-template-columns: 1fr 1fr; } }
-
-/* After a download */
-.afterdl { position: fixed; z-index: 50; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); width: min(380px, calc(100vw - 32px));
-  background: var(--tile); border: 1px solid var(--line); border-radius: 20px; padding: 20px 22px; box-shadow: var(--shadow); font-size: 15px; }
-.afterdl ol { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; color: var(--muted); }
-.afterdl .x { position: absolute; right: 10px; top: 8px; background: none; border: 0; font-size: 20px; color: var(--muted); cursor: pointer; }
-.afterdl .hint { margin-top: 10px; font-size: 13px; color: var(--muted); }
-
-#film { padding: 0; border: 0; border-radius: 20px; background: #000; width: min(1100px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: visible; }
-#film::backdrop { background: rgba(0,0,0,.78); backdrop-filter: blur(6px); }
-#film video { display: block; width: 100%; border-radius: 20px; aspect-ratio: 16/9; background: #000; }
-#film .film-x { position: absolute; right: -10px; top: -10px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: #fff; color: #000; font-size: 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+.final { text-align: center; padding-block: clamp(90px, 12vw, 150px) 20px; }
+.final img { width: 112px; height: 112px; margin: 0 auto; border-radius: 26px; box-shadow: 0 30px 80px -20px color-mix(in srgb, var(--l2) 70%, transparent); }
+.final h2 { margin-top: 34px; }
+.final .cmd { max-width: 720px; margin: 26px auto 0; text-align: left; }
 </style>
 </head>
 <body>
-<div class="phbar" id="phbar" role="region" aria-label="Welcome">👋 Hello, Product Hunt! Monorail is free, every feature, no account. <a href="download/" id="phdl" class="dl">Download for Mac</a><button type="button" id="phclose" aria-label="Close">×</button></div>
+<div class="phbar" id="phbar" role="region" aria-label="Welcome">👋 Hello, Product Hunt! Monorail is free, every feature, no account. <a href="/download/" class="dl">Download for Mac</a><button type="button" id="phclose" aria-label="Close">×</button></div>
+<!--#header-->
 
-<nav class="top" aria-label="Main">
+<main id="main">
+
+<!-- 1 · Hero: the one idea, live -->
+<section class="hero">
   <div class="wrap">
-    <a class="brand" href="#"><img src="assets/icon.png" alt="">Monorail</a>
-    <div class="links"><a href="#windows">Windows</a><a href="#dashboard">Dashboard</a><a href="#everyday">Everyday</a><a href="#ai">AI</a><a href="#trust">Safety</a><a href="#compare">Compare</a><a href="#faq">FAQ</a><a href="changelog/">Changelog</a></div>
-    <button type="button" class="icon-btn" id="themebtn" aria-label="Theme"></button>
-    <a class="btn primary small dl" href="download/" data-smartdl><span data-dl-label>Download</span></a>
+    <span class="eyebrow"><i></i>Free for every Mac · version <span data-version>1.9.1</span></span>
+    <h1 class="display"><span class="sheen">Your whole Mac.</span><br><span class="light-text">On one rail.</span></h1>
+    <p class="lede">Windows that slide into place and never shrink. A Dashboard for everything your Mac is doing. The tools you reach for all day. One calm, free app instead of a dozen paid ones.</p>
+    <div class="ctas">
+      <a class="btn primary dl" href="/download/" data-smartdl><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg><span data-dl-label>Download for Mac</span></a>
+      <button type="button" class="btn glassy" data-film><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Watch the film · 85 s</button>
+    </div>
+    <p class="release" data-release-line>macOS 13 or later · Apple silicon and Intel · notarised by Apple</p>
+
+    <div class="desk" id="desk" tabindex="0" role="application" aria-label="Try Monorail: left and right arrows slide along the strip, N opens a window, F makes the focused window full width">
+      <div class="mb"><span><img src="/assets/icon.png" alt="">Finder File Edit View Go</span><span id="clock">9:41</span></div>
+      <div class="tip" id="desktip">A new window slides in beside you</div>
+      <div class="row" id="deskrow"></div>
+      <div class="rail" id="deskrail" aria-hidden="true"></div>
+    </div>
+    <p class="deskhint">Click the desktop, then <kbd>←</kbd> <kbd>→</kbd> to slide, <kbd>N</kbd> for a new window, <kbd>F</kbd> for full width.</p>
+
+    <div class="ribbon">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Notarised by Apple</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Every feature free</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>No account</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>0.15% of one core when idle</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>9 languages</span>
+    </div>
   </div>
-</nav>
+</section>
 
-<main>
-  <section class="hero">
-    <div class="wrap">
-      <div class="eyebrow">Free for every Mac · no account</div>
-      <h1>Your whole Mac,<br><span class="grad">on one rail.</span></h1>
-      <p class="sub">Windows that slide into place and never shrink. A Dashboard for everything your Mac is doing. And the tools you reach for all day. One calm, free app instead of a dozen paid ones.</p>
-      <div class="ctas">
-        <a class="btn primary dl" href="download/" data-smartdl><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-dl-label>Download for Mac</span></a>
-        <button type="button" class="btn link" id="film-open">Watch the film · 85 s ›</button>
-      </div>
-      <p class="meta" id="dlmeta">macOS 13 or later · Apple silicon and Intel · notarised by Apple</p>
-      <div class="trustline"><span>Notarised by Apple</span><span>Every feature free</span><span>No account</span><span>SIP stays on</span></div>
-      <div class="mac"><div class="bar"><i></i><i></i><i></i></div><img src="img/time.webp" width="1240" height="912" alt="Monorail's Dashboard on the Time page: a dotted world map with day and night, clocks for New York, Tokyo and Berlin with who's at work, and the sun and moon"></div>
+<!-- 3 · Nothing shrinks -->
+<section class="s" id="windows">
+  <div class="wrap">
+    <div class="head center"><span class="eyebrow"><i></i>Windows</span><h2 class="h2">Nothing you’re using <span class="light-text">ever shrinks.</span></h2>
+      <p class="lede">Grid tilers squeeze every window to fit one more. Monorail puts the new one beside you, on a strip that runs past the edge of your screen. Try both.</p></div>
+    <div class="versus">
+      <div class="vs glass"><h3>A grid tiler <small id="gridcount">4 windows</small></h3><div class="mini grid" id="gridmini"><div class="row"></div></div><p id="gridtext">Four windows, each already a quarter of the screen.</p></div>
+      <div class="vs glass rim"><h3>Monorail <small id="railcount">4 windows</small></h3><div class="mini" id="railmini"><div class="row"></div></div><p id="railtext">Four windows, each as wide as you left it.</p></div>
     </div>
-  </section>
+    <div class="vsbar"><button type="button" class="btn primary" id="vsadd">Open another window</button><button type="button" class="btn glassy" id="vsreset">Start again</button></div>
+  </div>
+</section>
 
-  <section class="statement" aria-label="Monorail in short">
-    <div class="wrap"><h2>Most window managers make you think about windows. <span>Monorail makes you forget them.</span></h2></div>
-  </section>
-
-  <section class="section alt" id="windows">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Windows</div><h2>A strip that runs past your screen.</h2>
-        <p>Grid tilers squeeze every new window into the space that's already there. Monorail does the opposite: a new window slides in beside the one you're using, and nothing you're using ever shrinks.</p></div>
-      <div class="strip" id="demo" tabindex="0" role="application" aria-label="Try it: press the left and right arrows to slide, N for a new window, F for full width">
-        <div class="menubar"><span>Finder &nbsp; File &nbsp; Edit &nbsp; View</span><span id="clock">9:41</span></div>
-        <div class="row" id="track"></div>
-        <div class="rail" id="pips" aria-hidden="true"></div>
-      </div>
-      <p class="demohint">Click the strip, then <kbd>←</kbd> <kbd>→</kbd> to slide, <kbd>N</kbd> for a new window, <kbd>F</kbd> for full width.</p>
-      <div class="steps">
-        <div><b>Open a window</b><p>It slides in beside the one you're using. Everything else keeps its size.</p></div>
-        <div><b>Move along</b><p>⌃⌥← →, the trackpad, the mouse wheel or its thumb wheel, the back and forward buttons, or the slider above the Dock.</p></div>
-        <div><b>See it all</b><p>⌃⌥O zooms out to every workspace and slide. Drag windows anywhere, pair them, close them.</p></div>
-      </div>
+<!-- 4 · Move your way -->
+<section class="s" style="padding-top:0">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow"><i></i>Getting around</span><h2 class="h2">Move along the way you like.</h2><p class="lede">Every shortcut starts with ⌃⌥, or Caps Lock if you prefer. Settings shows any that macOS already uses and swaps it for a free one in a click.</p></div>
+    <div class="ways">
+      <div class="card glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h1M10.5 10h1M14.5 10h1M8 14h8"/></svg></div><h3>The keyboard</h3><p>Slide, move the window along, cycle its width, make it full width.</p><div class="keys"><kbd>⌃⌥← →</kbd><kbd>⌃⌥⇧← →</kbd><kbd>⌃⌥R</kbd><kbd>⌃⌥F</kbd></div></div>
+      <div class="card glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M9 12h6M13 10l2 2-2 2"/></svg></div><h3>The trackpad</h3><p>Swipe with three fingers to slide, the way you move between Spaces.</p></div>
+      <div class="card glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="5.5"/><path d="M12 6.5v3"/></svg></div><h3>The mouse</h3><p>Hold ⌥ and turn the wheel, use a thumb wheel like the MX Master’s, or the back and forward buttons.</p></div>
+      <div class="card glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="15" width="18" height="5" rx="2.5"/><path d="M7 17.5h3"/><rect x="5" y="4" width="14" height="8" rx="2"/></svg></div><h3>The slider bar</h3><p>A slim pill above the Dock, one segment per slide, or one app icon per slide. Hover for a preview, click to go.</p></div>
+      <div class="card glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="7" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/></svg></div><h3>The overview</h3><p>Every workspace and slide at once. Drag windows anywhere, pair them, close them.</p><div class="keys"><kbd>⌃⌥O</kbd></div></div>
+      <div class="card glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7"/><path d="m17 15 3 3-3 3"/></svg></div><h3>Your own words</h3><p>“Slack and Mail side by side on 3.” The command palette understands it, on your Mac.</p><div class="keys"><kbd>⌃⌥/</kbd></div></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section" id="docking">
-    <div class="wrap">
-      <div class="panelfig">
-        <div>
-          <div class="eyebrow">Docking</div>
-          <h2 style="font-size:clamp(34px,5vw,56px);font-weight:700;line-height:1.05;margin-top:8px">Drop a window where you want it.</h2>
-          <ul>
-            <li><b>Dock to an edge</b><span>Drag a window onto another: a highlight shows the half it will take. Dock onto a docked window and that half splits again, as deep as you like.</span></li>
-            <li><b>Tab anything</b><span>Drop in the middle for a tab group, even across apps. Drag a tab out to tear it off.</span></li>
-            <li><b>Resize two at once</b><span>Drag the gap between two windows. Undock with ⌃⌥⇧], float with ⌃⌥T, undo with ⌃⌥Z.</span></li>
-          </ul>
+<!-- 5 · Docking -->
+<section class="s" style="padding-top:0">
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <span class="eyebrow"><i></i>Docking</span>
+        <h2 class="h2" style="margin-top:18px">Drop a window where you want it.</h2>
+        <ol class="steps">
+          <li><span><b>Dock to an edge</b>Drag a window onto another: a highlight shows the half it will take. Dock onto a docked window and that half splits again, as deep as you like.</span></li>
+          <li><span><b>Tab anything</b>Drop in the middle for a tab group, even across apps. Drag a tab out to tear it off.</span></li>
+          <li><span><b>Resize two at once</b>Drag the gap between them. Float with <kbd>⌃⌥T</kbd>, undo anything with <kbd>⌃⌥Z</kbd>.</span></li>
+        </ol>
+      </div>
+      <div class="film-frame"><video src="/media/docking.mp4" poster="/media/docking.webp" autoplay muted loop playsinline preload="metadata" aria-label="A window dragged onto another docks beside it, splits again, then joins a tab group"></video></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · Dashboard -->
+<section class="s" id="dashboard">
+  <div class="wrap">
+    <div class="head center"><span class="eyebrow"><i></i>Dashboard</span><h2 class="h2">Everything your Mac is doing. <span class="light-text">At a glance.</span></h2>
+      <p class="lede">Processor, memory, graphics, disk, network, battery, fans and heat, sound, ports and every app, with 30 days of history, in one window with a slim rail of pages. Pin any reading to the menu bar as a ring.</p></div>
+    <div class="dials">
+      <div class="glass"><div class="dial" data-value="18" data-text="18%" data-label="Processor"></div></div>
+      <div class="glass"><div class="dial" data-value="61" data-text="61%" data-label="Memory"></div></div>
+      <div class="glass"><div class="dial" data-value="9" data-text="9%" data-label="Graphics"></div></div>
+      <div class="glass"><div class="dial" data-value="52" data-text="52°" data-label="Chip heat"></div></div>
+      <div class="glass"><div class="dial" data-value="86" data-text="86%" data-label="Battery"></div></div>
+    </div>
+    <div class="showcase glass">
+      <div class="bar">
+        <div class="seg" role="tablist" aria-label="Dashboard pages" id="dashtabs">
+          <button role="tab" aria-selected="true" aria-controls="dp-time" id="dt-time">Time</button>
+          <button role="tab" aria-selected="false" aria-controls="dp-ai" id="dt-ai" tabindex="-1">AI Usage</button>
+          <button role="tab" aria-selected="false" aria-controls="dp-sw" id="dt-sw" tabindex="-1">Switches</button>
         </div>
-        <div class="shot" style="max-width:520px"><img src="assets/launch/v17/docking.gif" alt="A window dragged onto another docks beside it, then into a tab group" loading="lazy"></div>
+        <p id="dpcap">A dotted map of day and night, who’s at work where, the hours you all overlap, and ten days of weather with no location access.</p>
+      </div>
+      <div class="win" role="tabpanel" id="dp-time" aria-labelledby="dt-time"><img src="/img/time.webp" width="1240" height="980" alt="The Dashboard’s Time page: a dotted world map with day and night, clocks for New York, Tokyo and Berlin showing who is at work, and the sun and moon"></div>
+      <div class="win" role="tabpanel" id="dp-ai" aria-labelledby="dt-ai" hidden><img src="/img/ai-usage.webp" width="1240" height="1320" loading="lazy" alt="The Dashboard’s AI Usage page: Claude and Codex limits with pace, tokens by day, context in use, local models and an API balance"></div>
+      <div class="win" role="tabpanel" id="dp-sw" aria-labelledby="dt-sw" hidden><img src="/img/switches.webp" width="1240" height="980" loading="lazy" alt="The Dashboard’s Switches page: Recording, Call, Presentation and Deep Work modes above one-click switches"></div>
+    </div>
+    <p class="example">The dials show example readings. The pictures are Monorail’s real screens.</p>
+    <div class="grid g3" style="margin-top:16px">
+      <div class="card glass"><span class="k">Apps</span><h3>See what’s slowing you down.</h3><p>Every app with its helpers grouped, its processor, memory and energy, and Quit or Force Quit with a check first. An alert when one runs away.</p></div>
+      <div class="card glass"><span class="k">Battery</span><h3>Know what the battery is doing.</h3><p>Use by app over 30 days, health over months, what each night asleep cost, charger watts, and your AirPods, mouse and keyboard.</p></div>
+      <div class="card glass"><span class="k">Developer</span><h3>Homebrew, Docker and ports.</h3><p>Packages that can be updated, services to start and stop, containers with their processor and memory, and every listening port.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · AI -->
+<section class="s" id="ai">
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <span class="eyebrow"><i></i>AI</span>
+        <h2 class="h2" style="margin-top:18px">Every plan, limit and token. <span class="light-text">Before it runs out.</span></h2>
+        <p class="lede" style="margin-top:18px">Claude and Codex limits with a countdown to each reset and a pace line that says whether they’ll last. Tokens and what they’d cost, how full each conversation’s context is, Gemini, OpenClaw and Hermes from their logs, Ollama and LM Studio models, and your API balances. As many accounts as you like, with keys kept in your Keychain.</p>
+      </div>
+      <div class="limits glass rim" id="limits" aria-label="Example AI limits">
+        <div class="lim"><div class="row2"><b>Claude · session</b><span>resets in 2 h 10 min</span></div><div class="track"><i data-w="64"></i><em style="left:71%"></em></div><small><b>On pace</b> · 64% used, 71% of the time gone</small></div>
+        <div class="lim"><div class="row2"><b>Claude · this week</b><span>resets Mon 09:00</span></div><div class="track"><i data-w="41"></i><em style="left:52%"></em></div><small><b>On pace</b> · 41% used</small></div>
+        <div class="lim"><div class="row2"><b>Codex · 5 hours</b><span>resets in 3 h 48 min</span></div><div class="track"><i data-w="22"></i><em style="left:24%"></em></div><small><b>On pace</b> · 22% used</small></div>
+        <div class="lim"><div class="row2"><b>Context in this conversation</b><span>118k of 200k</span></div><div class="track"><i data-w="59"></i></div><small>A notification at 80%, and another when a limit resets.</small></div>
       </div>
     </div>
-  </section>
-
-  <section class="section alt" id="dashboard">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Dashboard</div><h2>Everything your Mac is doing. <span class="grad">Beautifully.</span></h2>
-        <p>CPU, memory, GPU, disk, network, battery, fans, ports and every app, with 30 days of history, in one window with a slim rail of pages down the side. Pin any reading to the menu bar or the panel.</p></div>
-      <div class="bento">
-        <article class="card s6 dark wide">
-          <div class="copy"><div class="k">AI Usage</div><h3>Every AI plan, limit and token. At a glance.</h3>
-            <p>Claude and Codex limits with a countdown to each reset and a pace line that says whether they'll last. Tokens and what they would cost, how full each conversation's context is, Gemini, OpenClaw and Hermes from their logs, Ollama and LM Studio models, and the balance of your API keys. A notification before a limit runs out.</p></div>
-          <div class="pic"><img src="img/ai-usage.webp" width="1240" height="1252" alt="AI Usage: Claude and Codex limits with pace, tokens by day, context in use, local models and an OpenRouter balance" loading="lazy"></div>
-        </article>
-        <article class="card s4">
-          <div class="copy"><div class="k">Switches and modes</div><h3>Your Mac's settings, one click each.</h3>
-            <p>Dark Mode, the Dock, desktop icons, hidden files, file extensions, Do Not Disturb, Empty Trash, flush DNS, and your own switches from Shortcuts. Modes set several at once, start by themselves when you share your screen or join a meeting, and put everything back after.</p></div>
-          <div class="pic"><img src="img/switches.webp" width="1240" height="912" alt="Switches: Recording, Call, Presentation and Deep Work modes above switches for the screen, Finder, keyboard and sound" loading="lazy"></div>
-        </article>
-        <article class="card s2 dark">
-          <div class="copy"><div class="k">Live notch</div><h3>What's happening, beside the notch.</h3><p>Only while it's happening.</p></div>
-          <div class="notch" aria-hidden="true">
-                        <div class="pill"><span class="rec">Notes</span><span>12:04</span></div>
-            <div class="chips"><span>Sharing</span><span>Meeting</span><span>Timer</span><span>Charging</span></div>
-          </div>
-        </article>
-        <article class="card s3">
-          <div class="copy"><div class="k">Time and Weather</div><h3>The whole world, at work or asleep.</h3>
-            <p>A dotted map of day and night, a slider to look ahead, who's working where, the hours you all overlap, and ten days of weather with no location access.</p></div>
-          <div class="clocks" aria-hidden="true">
-            <div><span>New York<span class="tag work">Working</span></span><b>11:40</b></div>
-            <div><span>Tokyo<span class="tag sleep">Asleep</span></span><b>01:40</b></div>
-            <div><span>Berlin<span class="tag work">Working</span></span><b>17:40</b></div>
-          </div>
-        </article>
-        <article class="card s3 text">
-          <div class="copy"><div class="k">Apps, battery and heat</div><h3>See what's slowing you down.</h3>
-            <p>Every app with its helpers grouped, its processor, memory and energy, and Quit or Force Quit with a check first. Battery use by app over 30 days, charger watts, fan speeds and temperatures, restart advice when swap piles up, and an alert when an app runs away.</p></div>
-        </article>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="terminal"><div class="tb"><i></i><i></i><i></i></div><pre><span class="p">$</span> monorail say "Slack and Mail side by side on 3"
+<span class="ok">✓</span> <span class="o">Workspace 3: Slack | Mail</span>
+<span class="p">$</span> monorail state --json | jq '.focused.app'
+<span class="o">"Xcode"</span>
+<span class="p">$</span> monorail events
+<span class="o">focus  Terminal — claude    (waiting for you)</span></pre></div>
+      <div class="grid g2">
+        <div class="card glass"><h3>Agents drive it</h3><p>MCP, a ready-made skill, the <code>monorail</code> command and a local API. It asks before an agent closes a window or quits an app.</p></div>
+        <div class="card glass"><h3>A chime when they wait</h3><p>Monorail notices when your coding agent needs you and brings its window into view.</p></div>
+        <div class="card glass"><h3>Your choice of model</h3><p>Commands are understood on your Mac. Add an assistant from Claude, OpenAI, Gemini, Grok or a model on your Mac if you like.</p></div>
+        <div class="card glass"><h3>On-device first</h3><p>Speech, text in images and summaries run on your Mac. Keys stay in your Keychain.</p></div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section" id="panel">
-    <div class="wrap">
-      <div class="panelfig">
-        <div>
-          <div class="eyebrow">One click away</div>
-          <h2 style="font-size:clamp(34px,5vw,56px);font-weight:700;line-height:1.05;margin-top:8px">Your Mac, in one panel.</h2>
-          <p style="color:var(--muted);font-size:19px;margin-top:16px">Click the Monorail icon in the menu bar. Whatever needs you rises to the top with the fix on it; everything else waits, calm.</p>
-          <ul>
-            <li><b>Cards that open in place</b><span>Windows, today's meetings, battery, system, storage and network. Each opens its page in the same panel, like Control Centre.</span></li>
-            <li><b>Controls and sliders</b><span>Stay Awake, Evening Mode, Focus, a focus session, Keep Available, the microphone and Film as round toggles, with volume and warmth sliders below. The panel never takes more than about 70% of the screen.</span></li>
-            <li><b>Made for macOS 26</b><span>Liquid Glass, and it follows Reduce Transparency and Increase Contrast. Choose the cards and their order in Customise Home.</span></li>
-          </ul>
+<!-- 8 · The menu bar panel -->
+<section class="s">
+  <div class="wrap">
+    <div class="split rev">
+      <div class="grid g2" style="align-items:center">
+        <div><img class="panelshot" src="/img/panel-light.webp" width="360" height="629" loading="lazy" alt="Monorail’s menu bar panel: windows, today, system, storage and network cards above round toggles"></div>
+        <div class="controls glass">
+          <div class="toggles">
+            <button type="button" class="tg" aria-pressed="true"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h12v3a6 6 0 0 1-12 0z"/><path d="M17 12h1.5a2.5 2.5 0 0 1 0 5H16M8 4c0 1.5 1.5 1.5 1.5 3M12 4c0 1.5 1.5 1.5 1.5 3"/></svg></span><span>Stay Awake</span></button>
+            <button type="button" class="tg" aria-pressed="false" id="tg-evening"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></span><span>Evening</span></button>
+            <button type="button" class="tg" aria-pressed="false"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></span><span>Focus</span></button>
+            <button type="button" class="tg" aria-pressed="false"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M3 15h18M8 5v14M16 5v14"/></svg></span><span>Film</span></button>
+          </div>
+          <div class="liquid rim"><div class="fill" id="volfill"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span id="volv">52</span></div><input type="range" min="0" max="100" value="52" id="vol" aria-label="Volume"></div>
+          <div class="liquid rim"><div class="fill" id="warmfill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg><span id="warmv">0</span></div><input type="range" min="0" max="100" value="0" id="warm" aria-label="Warmth: tints this page like Evening Mode"></div>
+          <small>Drag the warmth slider: it tints this page the way Evening Mode warms your screen.</small>
         </div>
-        <div class="shot"><img src="img/panel-light.webp" width="360" height="629" alt="Monorail's menu bar panel: windows, today, system, storage and network cards above round toggles for Stay Awake, Evening, Focus, Keep Available, Microphone and Film" loading="lazy"></div>
+      </div>
+      <div>
+        <span class="eyebrow"><i></i>One click away</span>
+        <h2 class="h2" style="margin-top:18px">Your Mac, in one panel.</h2>
+        <p class="lede" style="margin-top:18px">Click Monorail in the menu bar. Whatever needs you rises to the top with the fix on it. Everything else waits, calm.</p>
+        <ol class="steps">
+          <li><span><b>Cards that open in place</b>Windows, today’s meetings, battery, system, storage and network, each opening its page in the same panel, like Control Centre.</span></li>
+          <li><span><b>Round toggles and liquid sliders</b>Stay Awake, Evening Mode, Focus, a focus session, Keep Available, the microphone and Film, with volume and warmth below.</span></li>
+          <li><span><b>Made for macOS 26</b>Liquid Glass, frosted or solid, your choice, and it follows Reduce Transparency and Increase Contrast. It never takes more than about 70% of the screen.</span></li>
+        </ol>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section alt" id="everyday">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Everyday</div><h2>The little things, done properly.</h2><p>Tools you'd otherwise download one by one, made to feel like part of the Mac.</p></div>
-      <div class="bento">
-        <article class="card s3">
-          <div class="copy"><div class="k">Clipboard</div><h3>Everything you copied. Even images.</h3>
-            <p>Search the words inside screenshots, sort by kind, keep clips on boards, and paste the last ten with ⌘⌃1 to 0. Passwords are never kept, and keys and card numbers stay hidden until you look.</p></div>
-          <div class="pic"><img class="only-light" src="img/clipboard-light.webp" width="1000" height="680" alt="The Clipboard window: colours, files, images, code, links and a hidden key as cards, sorted by kind" loading="lazy"><img class="only-dark" src="img/clipboard-dark.webp" width="1000" height="680" alt="" loading="lazy"></div>
-        </article>
-        <article class="card s3">
-          <div class="copy"><div class="k">Tools</div><h3>Screenshots that name themselves.</h3>
-            <p>Plus batch rename, image conversion, background removal, PDFs, QR codes, word counts, read aloud, and JSON, Base64, hashes, timestamps and tokens for developers.</p></div>
-          <div class="pic"><img src="img/tools-screenshot-names-light.webp" width="920" height="600" alt="Screenshot Names renaming five screenshots from the words in them" loading="lazy"></div>
-        </article>
-        <article class="card s4 dark">
-          <div class="copy"><div class="k">Meeting Notes</div><h3>Every meeting, written down. Nothing uploaded.</h3>
-            <p>What you and everyone else said, turned into text on your Mac, with the action items picked out and, on macOS 26, a summary from Apple's on-device model. It offers when a call starts and shows clearly while it listens.</p></div>
-          <div class="transcript" aria-hidden="true">
-            <div><span class="who you">You</span>I'll send the deck to everyone tonight.</div>
-            <div><span class="who them">Others</span>Can you book the room for Thursday?</div>
-            <div class="todo">☐ Send the deck &nbsp; ☐ Book the room for Thursday</div>
+<!-- 9 · Live notch -->
+<section class="s" style="padding-top:0">
+  <div class="wrap">
+    <div class="head center"><span class="eyebrow"><i></i>Live notch</span><h2 class="h2">The notch, put to work.</h2><p class="lede">What’s happening shows beside the notch while it’s happening, then gets out of the way. Click it to open the panel.</p></div>
+    <div class="notchband">
+      <div class="menu"><span>Monorail</span><span>Fri 16:40</span></div>
+      <div class="notch" id="notch"><span class="l"><span class="dot"></span><span id="notchl">Taking notes</span></span><span class="r" id="notchr">12:04</span></div>
+      <div class="chips" id="notchchips" role="group" aria-label="Choose what the notch shows"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · Everyday -->
+<section class="s" id="everyday">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow"><i></i>Everyday</span><h2 class="h2">The little things, done properly.</h2><p class="lede">Tools you’d otherwise download one by one, made to feel like part of the Mac.</p></div>
+    <div class="bento">
+      <article class="tile glass b7">
+        <span class="k">Clipboard</span><h3>Everything you copied. Even images.</h3>
+        <p>Search the words inside screenshots, sort by kind, keep clips on boards, and paste the last ten with ⌘⌃1 to 0. Passwords are never kept, and keys and card numbers stay hidden until you look.</p>
+        <div class="shot"><img class="only-light" src="/img/clipboard-light.webp" width="1000" height="680" loading="lazy" alt="The Clipboard window: colours, files, images, code, links and a hidden key as cards, sorted by kind"><img class="only-dark" src="/img/clipboard-dark.webp" width="1000" height="680" loading="lazy" alt="The Clipboard window in dark mode"></div>
+      </article>
+      <article class="tile glass b5">
+        <span class="k">Meeting Notes</span><h3>Every meeting, written down. Nothing uploaded.</h3>
+        <p>What you and everyone else said, turned into text on your Mac, with the action items picked out and, on macOS 26, a summary from Apple’s on-device model.</p>
+        <div class="transcript" id="transcript" aria-label="An example transcript"><span class="rec">Taking notes · 12:04</span></div>
+      </article>
+      <article class="tile glass b12">
+        <div class="split" style="align-items:start">
+          <div class="tcopy"><span class="k">Tools</span><h3>A toolbox that names your screenshots.</h3>
+            <p>Screenshot Names renames screenshots from the words in them. Plus batch rename, image conversion, background removal, PDFs, QR codes, word counts, read aloud, passwords, and JSON, Base64, hashes, timestamps and tokens for developers.</p>
+            <div class="seg wrap-ok" role="tablist" aria-label="Tools" style="margin-top:22px">
+              <button role="tab" aria-selected="true" aria-controls="tp-names" id="tt-names">Screenshot Names</button>
+              <button role="tab" aria-selected="false" aria-controls="tp-img" id="tt-img" tabindex="-1">Images</button>
+              <button role="tab" aria-selected="false" aria-controls="tp-qr" id="tt-qr" tabindex="-1">QR codes</button>
+              <button role="tab" aria-selected="false" aria-controls="tp-pw" id="tt-pw" tabindex="-1">Passwords</button>
+            </div></div>
+          <div>
+            <div class="shot" role="tabpanel" id="tp-names" aria-labelledby="tt-names" style="margin-top:0"><img class="only-light" src="/img/tools-screenshot-names-light.webp" width="920" height="600" loading="lazy" alt="Screenshot Names renaming five screenshots from the words in them"><img class="only-dark" src="/img/tools-screenshot-names-dark.webp" width="920" height="600" loading="lazy" alt=""></div>
+            <div class="shot" role="tabpanel" id="tp-img" aria-labelledby="tt-img" style="margin-top:0" hidden><img class="only-light" src="/img/tools-images-light.webp" width="920" height="600" loading="lazy" alt="Converting and resizing images"><img class="only-dark" src="/img/tools-images-dark.webp" width="920" height="600" loading="lazy" alt=""></div>
+            <div class="shot" role="tabpanel" id="tp-qr" aria-labelledby="tt-qr" style="margin-top:0" hidden><img class="only-light" src="/img/tools-qr-light.webp" width="920" height="600" loading="lazy" alt="Making a QR code"><img class="only-dark" src="/img/tools-qr-dark.webp" width="920" height="600" loading="lazy" alt=""></div>
+            <div class="shot" role="tabpanel" id="tp-pw" aria-labelledby="tt-pw" style="margin-top:0" hidden><img class="only-light" src="/img/tools-password-light.webp" width="920" height="600" loading="lazy" alt="Making a strong password"><img class="only-dark" src="/img/tools-password-dark.webp" width="920" height="600" loading="lazy" alt=""></div>
           </div>
-        </article>
-        <article class="card s2 text">
-          <div class="copy"><div class="k">Stay Awake</div><h3>Awake when it matters.</h3>
-            <p>For an hour, until a time, while something downloads, during calls, or with the lid closed while plugged in. Keeps Teams and Slack showing you as Available.</p></div>
-        </article>
-        <article class="card s2 text">
-          <div class="copy"><div class="k">Evening Mode</div><h3>Warmer at night.</h3><p>Less blue light on every display, on a schedule, fading in over 20 minutes.</p></div>
-        </article>
-        <article class="card s2 text">
-          <div class="copy"><div class="k">Focus</div><h3>Room to think.</h3><p>Focus sessions with rain or brown noise, a streak, eye breaks, and deep work that hides distracting apps.</p></div>
-        </article>
-        <article class="card s2 text">
-          <div class="copy"><div class="k">Your day</div><h3>Meetings, with Join.</h3><p>Your next meeting rises to the top with a Join button for Zoom, Meet, Teams and Webex, plus reminders and notes.</p></div>
-        </article>
+        </div>
+      </article>
+      <article class="mini-card glass b3"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h12v3a6 6 0 0 1-12 0z"/><path d="M17 12h1.5a2.5 2.5 0 0 1 0 5H16"/></svg></div><h3>Stay Awake</h3><p>For an hour, until a time, while something downloads, during calls, or with the lid closed. Keeps Teams and Slack showing Available.</p></article>
+      <article class="mini-card glass b3"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></div><h3>Evening Mode</h3><p>Less blue light on every display, on a schedule, fading in over 20 minutes.</p></article>
+      <article class="mini-card glass b3"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div><h3>Focus</h3><p>Sessions with rain or brown noise, a streak, eye breaks, and deep work that hides distracting apps.</p></article>
+      <article class="mini-card glass b3"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></div><h3>Your day</h3><p>Your next meeting rises to the top with Join for Zoom, Meet, Teams and Webex, plus reminders and notes.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · Make it yours -->
+<section class="s" id="themes">
+  <div class="wrap">
+    <div class="head center"><span class="eyebrow"><i></i>Make it yours</span><h2 class="h2">27 themes. <span class="light-text">Try them here.</span></h2>
+      <p class="lede">The overview, the slider bar and every workspace dot take on the theme you choose, and so does this site. Pick one: the page relights, and your choice is remembered on this browser.</p></div>
+    <div class="themes">
+      <div class="overview" id="overview" aria-hidden="true"><span class="name" data-theme-name>Monorail</span><div class="ws" id="ovws"></div><div class="dots" id="ovdots"></div></div>
+      <div class="picker glass">
+        <h2>Appearance</h2>
+        <div class="seg" data-mode-pick role="group" aria-label="Appearance" style="width:100%;margin-bottom:18px"><button type="button" data-mode="auto" style="flex:1">Automatic</button><button type="button" data-mode="light" style="flex:1">Light</button><button type="button" data-mode="dark" style="flex:1">Dark</button></div>
+        <div data-theme-picker></div>
+        <p class="faint" style="font-size:13px;margin-top:16px">The 27th, Seasons, is in the app: it changes through spring, summer, autumn and winter, with Festive in December. The same choice is in the header on every page of this site.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section night" id="ai">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">AI</div><h2>Made for the way you work with AI.</h2>
-        <p>Claude, Codex, Cursor, OpenClaw, Hermes and other agents can arrange your windows, read your Mac's state and search your clipboard through MCP, a ready-made skill or one command. You see their limits, their context and when they're waiting for you.</p></div>
-      <div class="facts">
-        <div style="background:var(--night-tile);border-color:rgba(255,255,255,.08)"><b>Agents drive it</b><p style="color:var(--night-muted)">An MCP server, a SKILL.md, the <code>monorail</code> command and a local API. Monorail asks before an agent closes a window or quits an app.</p></div>
-        <div style="background:var(--night-tile);border-color:rgba(255,255,255,.08)"><b>A chime when they wait</b><p style="color:var(--night-muted)">Monorail notices when your coding agent needs you and brings its window into view.</p></div>
-        <div style="background:var(--night-tile);border-color:rgba(255,255,255,.08)"><b>Say it ⌃⌥/</b><p style="color:var(--night-muted)">"Slack and Mail side by side on 3." Understood on your Mac, with an optional assistant from Claude, OpenAI, Gemini, Grok or a model on your Mac.</p></div>
-        <div style="background:var(--night-tile);border-color:rgba(255,255,255,.08)"><b>On-device first</b><p style="color:var(--night-muted)">Speech, text in images and summaries run on your Mac. Keys for AI services stay in your Keychain.</p></div>
+<!-- 12 · Light on your battery -->
+<section class="s" style="padding-top:0">
+  <div class="wrap">
+    <div class="head center"><span class="eyebrow"><i></i>Light on your battery</span><h2 class="h2">So light, the dials barely move.</h2>
+      <p class="lede">Measured on a 14-inch MacBook Pro with M4 Pro, on battery, managing real windows, idle for five minutes. Every build is checked the same way. <a href="/performance/">How we measure</a>.</p></div>
+    <div class="perf">
+      <div class="glass"><div class="dial" data-value="0.15" data-max="100" data-text="0.15%" data-label="of one core"></div><p>Native Swift, no Electron, no polling loops.</p></div>
+      <div class="glass"><div class="dial" data-value="0" data-max="100" data-text="0" data-label="wake-ups a second"></div><p>It sleeps until something on screen changes.</p></div>
+      <div class="glass"><div class="dial" data-value="55" data-max="1024" data-text="55 MB" data-label="of memory"></div><p>Less than a single browser tab.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 · Safe and private -->
+<section class="s" id="trust">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow"><i></i>Safe and private</span><h2 class="h2">Signed, notarised, and it keeps to itself.</h2><p class="lede">Window titles, your clipboard, your meetings and your files never leave your Mac. You can check every claim here yourself.</p></div>
+    <div class="grid g3">
+      <div class="card glass"><h3>Notarised by Apple</h3><p>Every release is checked by Apple’s notary service, so macOS opens it without the “can’t verify the developer” warning.</p></div>
+      <div class="card glass"><h3>Signed by Ashforde OÜ</h3><p>Signed with Ashforde’s Apple Developer ID (Team D69G45342Y), and updates install only if they carry the same signature.</p></div>
+      <div class="card glass"><h3>SIP stays on</h3><p>No kernel extension, nothing injected into the Dock or other apps. One permission, Accessibility, which you can take back any time.</p></div>
+      <div class="card glass"><h3>No account, no ads</h3><p>Download it and it works. Other permissions are asked for only when you turn a feature on.</p></div>
+      <div class="card glass"><h3>On-device by default</h3><p>Speech, summaries and text in images run on your Mac. AI services are used only with your own key, and only when you choose.</p></div>
+      <div class="card glass"><h3>Anonymous daily counts</h3><p>Version, Mac model and which features are on, once a day, and you can switch it off. Never titles, app names or files. <a href="/privacy/">Exactly what’s sent</a>.</p></div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="cmd"><code>shasum -a 256 Monorail-*.dmg</code><button type="button" class="copy">Copy</button></div>
+      <div class="cmd"><code>spctl -a -vvv -t open --context context:primary-signature Monorail-*.dmg</code><button type="button" class="copy">Copy</button></div>
+    </div>
+    <p class="faint" style="font-size:14px;margin-top:14px">Compare the first with <a href="/releases/latest/SHA256SUMS">SHA256SUMS</a>; the second should say “Notarized Developer ID”. Made by Ashforde OÜ, a company in the European Union. <a href="/docs/security/">Security</a></p>
+  </div>
+</section>
+
+<!-- 14 · Compare -->
+<section class="s" id="compare">
+  <div class="wrap">
+    <div class="head center"><span class="eyebrow"><i></i>How it compares</span><h2 class="h2">One app instead of a dozen.</h2>
+      <p class="lede">Mac utilities are often sold one job at a time, per Mac and per major version. Monorail does these jobs in one app, free: no licence key, no trial clock, no paid upgrade next year.</p></div>
+    <div class="center" style="margin-bottom:22px"><div class="seg" role="tablist" aria-label="Compare">
+      <button role="tab" aria-selected="true" aria-controls="cp-what" id="ct-what">What it replaces</button>
+      <button role="tab" aria-selected="false" aria-controls="cp-wm" id="ct-wm" tabindex="-1">Other window managers</button>
+    </div></div>
+    <div role="tabpanel" id="cp-what" aria-labelledby="ct-what">
+      <div class="replaces">
+        <div class="glass flat"><span><b>Window snapping</b><small>For example Magnet, BetterSnapTool</small></span><em>$2–5</em></div>
+        <div class="glass flat"><span><b>A window switcher with previews</b><small>For example Witch, Contexts</small></span><em>$10–15</em></div>
+        <div class="glass flat"><span><b>An automatic tiling window manager</b><small>For example Shoji</small></span><em>$10–15</em></div>
+        <div class="glass flat"><span><b>Saved window layouts</b><small>For example Moom</small></span><em>about $10</em></div>
+        <div class="glass flat"><span><b>A system monitor and battery use by app</b><small>For example iStat Menus</small></span><em>$10–15</em></div>
+        <div class="glass flat"><span><b>Keeping the Mac awake</b><small>For example Amphetamine, Lungo</small></span><em>$0–10</em></div>
+        <div class="glass flat"><span><b>A clipboard manager</b><small>Many are subscriptions</small></span><em>varies</em></div>
+        <div class="glass flat"><span><b>One-click system switches</b><small>Toggle apps for the menu bar</small></span><em>varies</em></div>
+        <div class="glass flat"><span><b>AI usage tracking</b><small>Menu bar trackers for AI plans</small></span><em>varies</em></div>
+        <div class="glass flat"><span><b>Meeting notes</b><small>Often a monthly subscription</small></span><em>varies</em></div>
+        <div class="glass flat"><span><b>Dimming below the lowest brightness</b><small>For example Lunar Pro</small></span><em>$0–23</em></div>
+        <div class="glass flat"><span><b>Resolution switching</b><small>For example SwitchResX</small></span><em>$0–16</em></div>
       </div>
+      <p class="faint" style="font-size:13px;margin-top:14px;text-align:center">Rough one-time or yearly prices of popular paid apps, 2026, in US dollars. Your costs may differ; app names belong to their makers and are examples only.</p>
     </div>
-  </section>
-
-  <section class="section" id="features">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">And much more</div><h2>Over 300 actions. All free.</h2><p>Every one in the command palette, which also searches your settings, menus, clipboard and notes, and does sums.</p></div>
-      <div class="everything">
-        <div><b>Smart slides</b><p>Windows of one app share a slide. Pair any two in grids, main and side, tabs or tall slides.</p></div>
-        <div><b>Saved views ⌃⌥⌘1</b><p>Nine places per display to jump back to, plus back and forward through where you've been.</p></div>
-        <div><b>Displays that remember</b><p>Unplug and replug: every window goes back where it was. A layout for each desk.</p></div>
-        <div><b>Desk</b><p>Your real displays drawn as they are, with every window where it sits.</p></div>
-        <div><b>Draw your own layouts</b><p>The zone editor splits a slide any way you like.</p></div>
-        <div><b>Safe screen sharing</b><p>Private windows step aside the moment you share in Zoom, Teams or Meet.</p></div>
-        <div><b>Battery that lasts</b><p>Health over months, what each night asleep cost, and your AirPods, mouse and keyboard batteries.</p></div>
-        <div><b>Space when you need it</b><p>A warning before the disk fills, the largest things in your home folder, and safe clean-ups.</p></div>
-        <div><b>Developer</b><p>Homebrew updates and services, Docker containers, and every listening port.</p></div>
-        <div><b>No chords needed</b><p>Tap right ⌥ for slide mode, or use Vim keys, a MIDI pad, a game controller or your phone.</p></div>
-        <div><b>Switch in a minute</b><p>Imports shortcuts, gaps and app rules from AeroSpace, yabai, skhd and Rectangle.</p></div>
-        <div><b>Built to be scripted</b><p>monorail:// links, a command line with a live event stream, a local API and AppleScript.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section alt" id="shortcuts">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Shortcuts</div><h2>Five keys and you're flying.</h2><p>Every shortcut starts with ⌃⌥, or Caps Lock if you like. Settings shows any that macOS already uses and swaps it for a free one in a click.</p></div>
-      <div class="keys">
-        <div><span>Slide left and right</span><kbd>⌃⌥← →</kbd></div>
-        <div><span>Move the window along</span><kbd>⌃⌥⇧← →</kbd></div>
-        <div><span>Cycle widths</span><kbd>⌃⌥R</kbd></div>
-        <div><span>Full width</span><kbd>⌃⌥F</kbd></div>
-        <div><span>Overview</span><kbd>⌃⌥O</kbd></div>
-        <div><span>Command palette</span><kbd>⌃⌥/</kbd></div>
-        <div><span>Workspaces</span><kbd>⌃⌥1…9</kbd></div>
-        <div><span>Undo</span><kbd>⌃⌥Z</kbd></div>
-      </div>
-      <p class="note">All 300+ actions: <a href="docs/actions/">the full list</a>.</p>
-    </div>
-  </section>
-
-  <section class="section" id="themes">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Make it yours</div><h2>27 themes. One follows the seasons.</h2><p>The overview, the slider and every workspace dot change with it. Choose the panel's glass too: Liquid Glass, frosted or solid.</p></div>
-      <div class="swatches" aria-hidden="true">
-        <i style="background:linear-gradient(135deg,#FF9E62,#D63A80)"></i><i style="background:linear-gradient(135deg,#5AC8FA,#007AFF)"></i><i style="background:linear-gradient(135deg,#34C759,#0A7F5A)"></i><i style="background:linear-gradient(135deg,#FFD60A,#FF9F0A)"></i><i style="background:linear-gradient(135deg,#BF5AF2,#5E5CE6)"></i><i style="background:linear-gradient(135deg,#1C1C1E,#3A3A3C)"></i><i style="background:linear-gradient(135deg,#F2F2F7,#D1D1D6)"></i><i style="background:linear-gradient(135deg,#FF375F,#FF9500)"></i>
-      </div>
-    </div>
-  </section>
-
-  <section class="section night">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Light on your battery</div><h2>So light you'll forget it's running.</h2>
-        <p>Measured on a 14-inch MacBook Pro with M4 Pro, on battery, managing real windows, idle for five minutes. Every build is checked the same way. <a href="performance/" style="color:#FFB3C8">How we measure</a>.</p></div>
-      <div class="numbers"><div><b>0.15%</b>of one core</div><div><b>0</b>wake-ups a second</div><div><b>55 MB</b>of memory</div></div>
-    </div>
-  </section>
-
-  <section class="section" id="trust">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Safe to install</div><h2>Signed, notarised and tested.</h2><p>Monorail opens without warnings, and you can check every claim on this page yourself.</p></div>
-      <div class="facts">
-        <div><b>Notarised by Apple</b><p>Every release is checked by Apple's notary service and carries Apple's ticket, so macOS opens it without the "can't verify the developer" warning.</p></div>
-        <div><b>Signed by Ashforde OÜ</b><p>Signed with Ashforde's Apple Developer ID (Team D69G45342Y), and updates install only if they carry the same signature.</p></div>
-        <div><b>SIP stays on</b><p>No kernel extension, nothing injected into the Dock or other apps. One permission, Accessibility, which you can take back any time.</p></div>
-        <div><b>Check your download</b><p>Compare <code>shasum -a 256 Monorail-*.dmg</code> with SHA256SUMS. <code>spctl -a -vvv -t open --context context:primary-signature Monorail-*.dmg</code> should say "Notarized Developer ID".</p></div>
-      </div>
-      <p class="note">Made by Ashforde OÜ, a company in the European Union. <a href="support/">Support</a> · <a href="privacy/">Privacy</a> · <a href="docs/security/">Security</a></p>
-    </div>
-  </section>
-
-  <section class="section alt" id="privacy">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Privacy</div><h2>Everything stays on your Mac.</h2><p>Window titles, your clipboard, your meetings and your files never leave it. Other permissions are asked for only when you turn a feature on.</p></div>
-      <div class="facts">
-        <div><b>No account</b><p>No sign-up and no ads. Download it and it works.</p></div>
-        <div><b>Anonymous daily counts</b><p>Versions, Mac model and which features are on, once a day, and you can switch them off. Never window titles, app names or files.</p></div>
-        <div><b>On-device by default</b><p>Speech, summaries and text in images run on your Mac. AI services are used only with your own key, and only when you choose to.</p></div>
-        <div><b>Crash reports stay put</b><p>Crash and hang reports stay on your Mac. Nothing is sent unless you choose to send it.</p></div>
-      </div>
-      <p class="note"><a href="privacy/">Exactly what's sent, in full ›</a></p>
-    </div>
-  </section>
-
-  <section class="section" id="compare">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">How it compares</div><h2>Everything others do, without the squeeze.</h2><p>Grid tilers shrink every window to fit one more. Snapping tools leave you arranging by hand. Monorail does neither.</p></div>
-      <div class="tablewrap"><table>
+    <div role="tabpanel" id="cp-wm" aria-labelledby="ct-wm" hidden>
+      <div class="tablewrap glass flat"><table class="cmp">
         <thead><tr><th></th><th>Monorail</th><th>Grid tilers</th><th>Snapping tools</th></tr></thead>
         <tbody>
-          <tr><td>New windows keep everyone's size</td><td class="y">Yes</td><td class="n">Squeezes the rest</td><td class="y">Yes</td></tr>
+          <tr><td>New windows keep everyone’s size</td><td class="y">Yes</td><td class="n">Squeezes the rest</td><td class="y">Yes</td></tr>
           <tr><td>Unlimited windows per screen</td><td class="y">On a strip</td><td class="n">Ever-smaller tiles</td><td class="n">They overlap</td></tr>
           <tr><td>Dock or tab any apps by dragging</td><td class="y">Yes</td><td class="n">Partly</td><td class="n">No</td></tr>
           <tr><td>Saved views, back and forward</td><td class="y">Yes</td><td class="n">No</td><td class="n">No</td></tr>
           <tr><td>A full system monitor and battery manager</td><td class="y">Yes</td><td class="n">No</td><td class="n">No</td></tr>
           <tr><td>AI plan limits and agents that can drive it</td><td class="y">Yes</td><td class="n">Partly</td><td class="n">No</td></tr>
           <tr><td>Keeps private windows out of screen shares</td><td class="y">Yes</td><td class="n">No</td><td class="n">No</td></tr>
-          <tr><td>Imports your old setup</td><td class="y">Yes</td><td class="n">No</td><td class="n">No</td></tr>
+          <tr><td>Imports your AeroSpace, yabai or Rectangle setup</td><td class="y">Yes</td><td class="n">No</td><td class="n">No</td></tr>
           <tr><td>Every feature free, no window limits</td><td class="y">Yes</td><td class="n">Varies</td><td class="n">Mostly paid</td></tr>
         </tbody>
       </table></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section alt" id="replaces">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Keep your money</div><h2>One app instead of a dozen.</h2><p>Mac utilities are often sold one job at a time, per Mac and per major version. Monorail does these jobs in one app, free: no licence key, no trial clock, no paid upgrade next year.</p></div>
-      <div class="replaces">
-        <div><span><b>Window snapping</b><small>For example Magnet, BetterSnapTool</small></span><em>$2–5</em></div>
-        <div><span><b>A window switcher with previews</b><small>For example Witch, Contexts</small></span><em>$10–15</em></div>
-        <div><span><b>An automatic tiling window manager</b><small>For example Shoji</small></span><em>$10–15</em></div>
-        <div><span><b>Saved window layouts</b><small>For example Moom</small></span><em>about $10</em></div>
-        <div><span><b>A system monitor and battery use by app</b><small>For example iStat Menus</small></span><em>$10–15</em></div>
-        <div><span><b>Keeping the Mac awake</b><small>For example Amphetamine, Lungo</small></span><em>$0–10</em></div>
-        <div><span><b>A clipboard manager</b><small>Many are subscriptions</small></span><em>varies</em></div>
-        <div><span><b>One-click system switches</b><small>Toggle apps for the menu bar</small></span><em>varies</em></div>
-        <div><span><b>AI usage tracking</b><small>Menu bar trackers for AI plans</small></span><em>varies</em></div>
-        <div><span><b>Meeting notes</b><small>Often a monthly subscription</small></span><em>varies</em></div>
-        <div><span><b>Dimming below the lowest brightness</b><small>For example Lunar Pro</small></span><em>$0–23</em></div>
-        <div><span><b>Resolution switching</b><small>For example SwitchResX</small></span><em>$0–16</em></div>
+<!-- 15 · Get it -->
+<section class="s" id="get">
+  <div class="wrap">
+    <div class="head center"><span class="eyebrow"><i></i>Get Monorail</span><h2 class="h2">However you like to install.</h2></div>
+    <div class="getgrid">
+      <div class="get glass rim">
+        <div class="seg" role="tablist" aria-label="Ways to install">
+          <button role="tab" aria-selected="true" aria-controls="gp-dl" id="gt-dl">Download</button>
+          <button role="tab" aria-selected="false" aria-controls="gp-brew" id="gt-brew" tabindex="-1">Homebrew</button>
+          <button role="tab" aria-selected="false" aria-controls="gp-sh" id="gt-sh" tabindex="-1">Terminal</button>
+          <button role="tab" aria-selected="false" aria-controls="gp-it" id="gt-it" tabindex="-1">IT and MDM</button>
+        </div>
+        <div class="panel" role="tabpanel" id="gp-dl" aria-labelledby="gt-dl"><p>A signed, notarised DMG. Open it, drag Monorail to Applications, and allow Accessibility when asked.</p><p><a class="btn primary dl" href="/download/" data-smartdl><span data-dl-label>Download for Mac</span></a></p><p class="faint" style="font-size:13.5px" data-release-line>macOS 13 or later · Apple silicon and Intel</p></div>
+        <div class="panel" role="tabpanel" id="gp-brew" aria-labelledby="gt-brew" hidden><p>After that, Monorail updates itself.</p><div class="cmd"><code>brew tap ashfordeou/monorail &amp;&amp; brew trust ashfordeou/monorail &amp;&amp; brew install --cask monorail</code><button type="button" class="copy">Copy</button></div></div>
+        <div class="panel" role="tabpanel" id="gp-sh" aria-labelledby="gt-sh" hidden><p>Downloads the latest release into Applications.</p><div class="cmd"><code>curl -fsSL https://monorail.ashforde.org/install.sh | bash</code><button type="button" class="copy">Copy</button></div></div>
+        <div class="panel" role="tabpanel" id="gp-it" aria-labelledby="gt-it" hidden><p>A signed, notarised <a href="/download/pkg/">.pkg</a> for Jamf, Kandji, Mosyle, Intune and Munki, every setting manageable with a profile, and <a href="/docs/it/">a guide for IT</a>.</p></div>
+        <p class="faint" style="font-size:13.5px;margin-top:20px">What changed in each version is in <a href="/changelog/">What’s new</a>, and every download comes with <a href="/releases/latest/SHA256SUMS">checksums</a>.</p>
       </div>
-      <p class="note">Rough one-time or yearly prices of popular paid apps, 2026, in US dollars. Your costs may differ; app names belong to their makers and are examples only.</p>
-    </div>
-  </section>
-
-  <section class="section" id="platforms">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Everywhere you work</div><h2>On the Mac. In beta on Windows and Linux.</h2><p>The same strip, the same docking and the same shortcuts, made natively for each system.</p></div>
-      <div class="platforms">
-        <div><h3>macOS <span class="badge go">Available</span></h3><p>macOS 13 or later, on Apple silicon and Intel. Free, with every feature.</p><p><a class="dl" href="download/">Download for Mac ›</a></p></div>
-        <div><h3>Windows <span class="badge beta">Beta</span></h3><p>For Windows 11 and 10. Unzip and run: no installer and no administrator rights, even on a work PC.</p><p><a href="download/windows/">Download the Windows beta ›</a></p></div>
-        <div><h3>Linux <span class="badge beta">Beta</span></h3><p>A GNOME Shell extension for GNOME 45 or later, on Wayland and X11. KDE is next.</p><p><a href="download/linux/">Download the GNOME beta ›</a></p></div>
+      <div class="grid" style="gap:12px">
+        <div class="card glass flat"><h3>macOS <span class="badge go">Available</span></h3><p>macOS 13 or later, on Apple silicon and Intel. Free, with every feature.</p></div>
+        <div class="card glass flat"><h3>Windows <span class="badge beta">Beta</span></h3><p>For Windows 11 and 10. Unzip and run: no installer and no administrator rights. <a href="/download/windows/">Download the beta</a></p></div>
+        <div class="card glass flat"><h3>Linux <span class="badge beta">Beta</span></h3><p>A GNOME Shell extension for GNOME 45 or later, on Wayland and X11. <a href="/download/linux/">Download the beta</a></p></div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section alt" id="install">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">Other ways to install</div><h2>However you like to install apps.</h2></div>
-      <div class="facts">
-        <div><b>Homebrew</b><p><code>brew tap ashfordeou/monorail &amp;&amp; brew trust ashfordeou/monorail &amp;&amp; brew install --cask monorail</code><br>After that, Monorail updates itself.</p></div>
-        <div><b>Terminal</b><p>Downloads the latest release into Applications.<br><code>curl -fsSL https://monorail.ashforde.org/install.sh | bash</code></p></div>
-        <div><b>For IT and MDM</b><p>A signed, notarised <a href="download/pkg/">.pkg</a> for Jamf, Kandji, Mosyle, Intune and Munki, every setting manageable with a profile, and <a href="docs/it/">a guide for IT</a>.</p></div>
-        <div><b>Every version</b><p>What changed in each version is in the <a href="changelog/">changelog</a>, and every download comes with <a href="releases/latest/SHA256SUMS">checksums</a>.</p></div>
-      </div>
+<!-- 16 · FAQ -->
+<section class="s" id="faq">
+  <div class="wrap">
+    <div class="head center"><span class="eyebrow"><i></i>Questions</span><h2 class="h2">Good questions.</h2></div>
+    <div class="faq">
+      <details><summary>What is a scrolling window manager?</summary><p>A window manager that puts your windows side by side on a strip that runs past the edges of your screen. A new window slides in next to the one you’re using, and every other window keeps its size: you move along the strip with the keyboard, the trackpad, the mouse or the slider bar, instead of squeezing everything into one screen or digging through overlapping windows.</p></details>
+      <details><summary>Is it really free?</summary><p>Yes. Every feature, including the Dashboard, docking, tab groups, saved views, scripting and every display, with no trial, subscription or window limits. There’s no licence key to buy, move between Macs or renew: install it on every Mac you own, and every update is free.</p></details>
+      <details><summary>Is it safe to install?</summary><p>Yes. Every release is signed with Ashforde’s Apple Developer ID and notarised by Apple, so macOS opens it without warnings. System Integrity Protection stays on, there’s no kernel extension, and nothing is injected into the Dock or other apps.</p></details>
+      <details><summary>What does the Dashboard show?</summary><p>Everything your Mac is doing: processor, memory, graphics, disk, network, battery, fans and heat, sound, ports and every app, with 30 days of history. It also has AI Usage, Switches, Time, Weather, Meeting Notes and a Developer page for Homebrew and Docker.</p></details>
+      <details><summary>Which AI accounts does AI Usage show?</summary><p>Claude and Codex plan limits, Gemini CLI, OpenClaw and Hermes from their logs, Ollama and LM Studio models on your Mac, and API keys for OpenRouter, DeepSeek, Moonshot (Kimi), LiteLLM, the Claude and OpenAI APIs and any OpenAI-compatible server. Add as many accounts as you like. Keys stay in your Keychain.</p></details>
+      <details><summary>Does Meeting Notes record my calls?</summary><p>Only when you start it, and a red pill stays on screen while it listens. It turns speech into text on your Mac and keeps no audio; nothing is uploaded. Recording people may need their agreement where you are, so tell everyone first.</p></details>
+      <details><summary>Does the clipboard keep my passwords?</summary><p>No. Copies from password managers are never kept, and anything that looks like an API key, token, private key or card number stays hidden until you click to show it. You can also choose apps whose copies are never kept.</p></details>
+      <details><summary>Which Macs does it run on?</summary><p>Every Mac with macOS 13 Ventura or later, on Apple silicon and on Intel: one universal app. Summaries in Meeting Notes need macOS 26 with Apple Intelligence; Liquid Glass appears on macOS 26.</p></details>
+      <details><summary>Can I use Monorail on a work Mac without admin rights?</summary><p>Yes. It installs into your own Applications folder. Stay Awake, Keep me Available, Evening Mode and the display controls work straight away. Arranging every window needs Accessibility, which IT can approve in one step with the guide for IT.</p></details>
+      <details><summary>Will it fight my other window tools?</summary><p>Quit other window managers first; Settings checks for them. Stage Manager is fine to keep: Monorail pauses while it’s on and carries on when you turn it off.</p></details>
+      <details><summary>Does it work with several displays, projectors and Sidecar?</summary><p>Yes: each display gets its own strip, an unplugged display’s windows come back when you reconnect, and Sidecar iPads fit every slide.</p></details>
+      <details><summary>Can I use a mouse instead of a trackpad?</summary><p>Yes. Hold ⌥ and turn the wheel, use a thumb wheel such as the one on Logitech’s MX Master, or the back and forward buttons. The slider bar above the Dock can show one app icon per slide; click one to go there.</p></details>
+      <details><summary>Which languages?</summary><p>English, German, French, Spanish, Japanese, Chinese (Simplified), Portuguese, Korean and Italian.</p></details>
+      <details><summary>I use AeroSpace, yabai or Rectangle. Can I bring my setup?</summary><p>Yes. Settings → Basics → Import Settings… brings over your shortcuts, gaps, floating apps and workspace rules.</p></details>
+      <details><summary>Can AI agents use it?</summary><p>Yes. Claude Desktop, Cursor, Hermes Agent, OpenClaw and other MCP clients connect through MCP; agents that load skills get a ready-made SKILL.md; and any agent can run monorail say "Slack and Mail side by side". Monorail asks before an agent closes a window or quits an app.</p></details>
+      <details><summary>Can I change how this site looks?</summary><p>Yes. The palette button in the header chooses light, dark or automatic, and any of Monorail’s themes. It’s remembered on this browser only.</p></details>
     </div>
-  </section>
+    <div class="ask">
+      <a class="btn glassy small" target="_blank" rel="noopener" href="https://chatgpt.com/?q=What%20is%20Monorail%20by%20Ashforde%2C%20the%20scrolling%20window%20manager%20for%20Mac%20(monorail.ashforde.org)%3F">Ask ChatGPT</a>
+      <a class="btn glassy small" target="_blank" rel="noopener" href="https://claude.ai/new?q=What%20is%20Monorail%20by%20Ashforde%2C%20the%20scrolling%20window%20manager%20for%20Mac%20(monorail.ashforde.org)%3F">Ask Claude</a>
+      <a class="btn glassy small" target="_blank" rel="noopener" href="https://www.perplexity.ai/search?q=Monorail%20by%20Ashforde%20scrolling%20window%20manager%20for%20Mac%20monorail.ashforde.org">Ask Perplexity</a>
+    </div>
+  </div>
+</section>
 
-  <section class="section" id="faq">
-    <div class="wrap">
-      <div class="head"><div class="eyebrow">FAQ</div><h2>Good questions.</h2></div>
-      <div class="faq">
-        <details><summary>What is a scrolling window manager?</summary><p>A window manager that puts your windows side by side on a strip that runs past the edges of your screen. A new window slides in next to the one you're using, and every other window keeps its size: you move along the strip with the keyboard, the trackpad, the mouse or the slider, instead of squeezing everything into one screen or digging through overlapping windows.</p></details>
-        <details><summary>Is it really free?</summary><p>Yes. Every feature, including the Dashboard, docking, tab groups, saved views, scripting and every display, with no trial, subscription or window limits. There's no licence key to buy, move between Macs or renew: install it on every Mac you own, and every update is free.</p></details>
-        <details><summary>Is it safe to install?</summary><p>Yes. Every release is signed with Ashforde's Apple Developer ID and notarised by Apple, so macOS opens it without warnings. System Integrity Protection stays on, there's no kernel extension, and nothing is injected into the Dock or other apps.</p></details>
-        <details><summary>What does the Dashboard show?</summary><p>Everything your Mac is doing: CPU, memory, GPU, disk, network, battery, fans and heat, sound, ports and every app, with 30 days of history. It also has AI Usage, Switches, Time, Weather, Meeting Notes and, in Monorail, a Developer page for Homebrew and Docker.</p></details>
-        <details><summary>Which AI accounts does AI Usage show?</summary><p>Claude and Codex plan limits, Gemini CLI, OpenClaw and Hermes from their logs, Ollama and LM Studio models on your Mac, and API keys for OpenRouter, DeepSeek, Moonshot (Kimi), LiteLLM, the Claude and OpenAI APIs and any OpenAI-compatible server. Add as many accounts as you like. Keys stay in your Keychain.</p></details>
-        <details><summary>Does Meeting Notes record my calls?</summary><p>Only when you start it, and a red pill stays on screen while it listens. It turns speech into text on your Mac and keeps no audio; nothing is uploaded. Recording people may need their agreement where you are, so tell everyone first.</p></details>
-        <details><summary>Does the clipboard keep my passwords?</summary><p>No. Copies from password managers are never kept, and anything that looks like an API key, token, private key or card number stays hidden until you click to show it. You can also choose apps whose copies are never kept.</p></details>
-        <details><summary>Which Macs does it run on?</summary><p>Every Mac with macOS 13 Ventura or later, on Apple silicon and on Intel: one universal app. Summaries in Meeting Notes need macOS 26 with Apple Intelligence; Liquid Glass appears on macOS 26.</p></details>
-        <details><summary>Can I use Monorail on a work Mac without admin rights?</summary><p>Yes. It installs into your own Applications folder. Stay Awake, Keep me Available, Evening Mode and the display controls work straight away. Arranging every window needs Accessibility, which IT can approve in one step: the guide for IT.</p></details>
-        <details><summary>Will it fight my other window tools?</summary><p>Quit other window managers first; Settings checks for them. Stage Manager is fine to keep: Monorail pauses while it's on and carries on when you turn it off.</p></details>
-        <details><summary>Does it work with several displays, projectors and Sidecar?</summary><p>Yes: each display gets its own strip, an unplugged display's windows come back when you reconnect, and Sidecar iPads fit every slide.</p></details>
-        <details><summary>Can I use a mouse instead of a trackpad?</summary><p>Yes. Hold ⌥ and turn the wheel, use a thumb wheel such as the one on Logitech's MX Master, or the back and forward buttons. The slider above the Dock can show one app icon per slide; click one to go there.</p></details>
-        <details><summary>Which languages?</summary><p>English, German, French, Spanish, Japanese, Chinese (Simplified), Portuguese, Korean and Italian.</p></details>
-        <details><summary>I use AeroSpace, yabai or Rectangle. Can I bring my setup?</summary><p>Yes. Settings → Basics → Import Settings… brings over your shortcuts, gaps, floating apps and workspace rules.</p></details>
-        <details><summary>Can AI agents use it?</summary><p>Yes. Claude Desktop, Cursor, Hermes Agent, OpenClaw and other MCP clients connect through MCP; agents that load skills get a ready-made SKILL.md; and any agent can run <code>monorail say "Slack and Mail side by side"</code>. Monorail asks before an agent closes a window or quits an app.</p></details>
-      </div>
-      <div class="note">Still curious? Ask your AI assistant about Monorail.</div>
-      <div class="ask">
-        <a class="btn ghost small" target="_blank" rel="noopener" href="https://chatgpt.com/?q=What%20is%20Monorail%20by%20Ashforde%2C%20the%20scrolling%20window%20manager%20for%20Mac%20(monorail.ashforde.org)%3F">Ask ChatGPT</a>
-        <a class="btn ghost small" target="_blank" rel="noopener" href="https://claude.ai/new?q=What%20is%20Monorail%20by%20Ashforde%2C%20the%20scrolling%20window%20manager%20for%20Mac%20(monorail.ashforde.org)%3F">Ask Claude</a>
-        <a class="btn ghost small" target="_blank" rel="noopener" href="https://www.perplexity.ai/search?q=Monorail%20by%20Ashforde%20scrolling%20window%20manager%20for%20Mac%20monorail.ashforde.org">Ask Perplexity</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="download" id="download">
-    <div class="wrap">
-      <img class="icon" src="assets/icon.png" alt="Monorail's app icon" width="104" height="104">
-      <h2>Give every window room. <span class="grad">Free.</span></h2>
-      <p>Download Monorail, allow Accessibility, and you're sliding in under a minute.</p>
-      <div class="ctas"><a class="btn primary dl" href="download/" data-smartdl><span data-dl-label>Download for Mac</span></a></div>
-      <code>brew tap ashfordeou/monorail &amp;&amp; brew trust ashfordeou/monorail &amp;&amp; brew install --cask monorail</code>
-    </div>
-  </section>
+<!-- 17 · Final call -->
+<section class="final">
+  <div class="wrap">
+    <img src="/assets/icon.png" alt="Monorail’s app icon" width="112" height="112">
+    <h2 class="h2"><span class="sheen">Give every window room.</span> <span class="light-text">Free.</span></h2>
+    <p class="lede" style="margin-top:16px">Download Monorail, allow Accessibility, and you’re sliding in under a minute.</p>
+    <div class="ctas"><a class="btn primary dl" href="/download/" data-smartdl><span data-dl-label>Download for Mac</span></a></div>
+    <div class="cmd"><code>brew tap ashfordeou/monorail &amp;&amp; brew trust ashfordeou/monorail &amp;&amp; brew install --cask monorail</code><button type="button" class="copy">Copy</button></div>
+  </div>
+</section>
 </main>
 
-<footer>
-  <div class="wrap cols">
-    <div><a class="brand" href="#"><img src="assets/icon.png" alt="" width="22" height="22">Monorail by Ashforde®</a><p style="margin-top:10px">Every window rides one rail. A free window manager and more for Mac, by Ashforde OÜ, a company in the European Union.</p></div>
-    <div><h2>Monorail</h2><ul><li><a href="#features">Features</a></li><li><a class="dl" href="download/">Download</a></li><li><a href="changelog/">Changelog</a></li><li><a href="performance/">Performance</a></li><li><a href="press/">Press</a></li><li><a href="privacy/">Privacy</a></li></ul></div>
-    <div><h2>Help</h2><ul><li><a href="support/">Support</a></li><li><a href="docs/actions/">All actions</a></li><li><a href="docs/settings/">All settings</a></li><li><a href="docs/it/">For IT</a></li><li><a href="docs/compatibility/">Compatibility</a></li><li><a href="docs/agents/">AI agents</a></li><li><a href="docs/security/">Security</a></li><li><a href="mailto:contact@ashforde.org?subject=Monorail%20problem">Report a problem</a></li></ul></div>
-    <div><h2>Ashforde</h2><ul><li><a href="docs/licence/">Licence</a></li><li><a href="docs/trademarks/">Trademarks</a></li><li><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></li></ul></div>
-  </div>
-  <p class="wrap legal">© Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ. Licensed under the Functional Source License (FSL-1.1-ALv2). The Monorail name and icon are trademarks of Ashforde OÜ. This site sets no cookies: it only counts visits and downloads, anonymously.</p>
-</footer>
+<!--#footer-->
 
-<div class="afterdl" id="afterdl" role="dialog" aria-label="Next steps" hidden>
-  <button type="button" class="x" id="afterdlclose" aria-label="Close">×</button>
-  <b>Thanks for downloading Monorail</b>
-  <ol><li>Open <span id="afterdlname">the Monorail DMG</span> from your Downloads.</li><li>Drag <b>Monorail</b> onto <b>Applications</b>.</li><li>Open Monorail and allow <b>Accessibility</b> when asked. The welcome tour does the rest.</li></ol>
-  <p class="hint">Didn't start? <a id="afterdlretry" href="download/">Download again</a></p>
-</div>
-
-<dialog id="film" aria-label="Monorail in 85 seconds">
-  <form method="dialog"><button class="film-x" aria-label="Close">✕</button></form>
-  <video id="film-video" controls playsinline preload="none" poster="assets/launch/v17/01-hero.png">
-    <source src="assets/launch/v17/monorail-demo.mp4" type="video/mp4">
-  </video>
+<dialog class="film" id="film" aria-label="Monorail in 85 seconds">
+  <form method="dialog"><button class="iconbtn x" aria-label="Close">✕</button></form>
+  <video controls playsinline preload="none" poster="/assets/launch/v17/01-hero.png"><source src="/assets/launch/v17/monorail-demo.mp4" type="video/mp4"></video>
 </dialog>
 
 <script>
 (() => {
-  // Theme: follow the system, or light or dark when chosen (remembered on this browser only).
-  const root = document.documentElement, btn = document.getElementById('themebtn');
-  const svg = d => `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
-  const order = ['auto', 'light', 'dark'], icons = {
-    auto: svg('<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>'),
-    light: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
-    dark: svg('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>') }, names = { auto: 'follows your system', light: 'light', dark: 'dark' };
-  function apply(mode) {
-    if (mode === 'auto') delete root.dataset.theme; else root.dataset.theme = mode;
-    btn.innerHTML = icons[mode]; btn.title = 'Theme: ' + names[mode]; btn.setAttribute('aria-label', btn.title);
-    const dark = mode === 'dark' || (mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
-    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', dark ? '#000000' : '#FBFBFD'));
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const io = (el, fn, threshold) => { if (!('IntersectionObserver' in window)) return fn(true); new IntersectionObserver(es => es.forEach(e => fn(e.isIntersecting)), { threshold: threshold || 0 }).observe(el); };
+  const APPS = [
+    { t: 'Docs — Launch plan', k: 'doc' }, { t: 'Mail', k: 'list' }, { t: 'Terminal — zsh', k: 'term' }, { t: 'Notes', k: 'doc' },
+    { t: 'Design — Home', k: 'tiles' }, { t: 'Calendar', k: 'tiles' }, { t: 'Messages', k: 'list' }, { t: 'Music', k: 'tiles' }
+  ];
+  // A window: title bar, then content in the style of its kind. --wc is its workspace colour from the theme.
+  function makeWin(i) {
+    const a = APPS[i % APPS.length], w = document.createElement('div');
+    w.className = 'w' + (a.k === 'term' ? ' term' : '');
+    w.style.setProperty('--wc', `var(--w${(i % 9) + 1})`);
+    let c = '<u class="h"></u><u></u><u style="width:82%"></u><u style="width:64%"></u><u></u><u style="width:72%"></u>';
+    if (a.k === 'tiles') c = '<u class="h"></u><div class="tiles"><s></s><s></s><s></s><s></s><s></s><s></s></div>';
+    if (a.k === 'list') c = '<u class="h"></u><u></u><u style="width:70%"></u><u></u><u style="width:76%"></u><u></u>';
+    if (a.k === 'term') c = '<u class="h" style="width:30%"></u><u style="width:58%"></u><u style="width:74%"></u><u style="width:40%"></u><u style="width:66%"></u>';
+    w.innerHTML = `<div class="t"><i></i><i></i><i></i>${a.t}</div><div class="c">${c}</div>`;
+    return w;
   }
-  let mode = root.dataset.theme || 'auto'; apply(mode);
-  btn.addEventListener('click', () => {
-    mode = order[(order.indexOf(mode) + 1) % 3]; apply(mode);
-    try { mode === 'auto' ? localStorage.removeItem('monorail-theme') : localStorage.setItem('monorail-theme', mode); } catch (e) {}
-  });
-})();
 
-(() => {
-  // The strip: windows slide, new ones arrive beside you, F makes one full width.
-  const track = document.getElementById('track'), pips = document.getElementById('pips'), demo = document.getElementById('demo');
-  const names = ['Safari — Monorail', 'Notes', 'Xcode — Engine.swift', 'Terminal — zsh', 'Slack', 'Mail', 'Figma', 'Music'];
-  const accents = ['#F66270', '#FFB020', '#5E5CE6', '#34C759', '#AF52DE', '#0A84FF', '#FF6B3D', '#FF2D55'];
-  let wins = [0, 1, 2, 3], focus = 1, full = -1;
-  function draw() {
-    track.innerHTML = ''; pips.innerHTML = '';
-    wins.forEach((w, i) => {
-      const el = document.createElement('div');
-      el.className = 'win' + (i === focus ? ' focus' : '');
-      el.style.width = (i === full ? demo.clientWidth * 0.86 : 300) + 'px';
-      el.innerHTML = `<b>${names[w % names.length]}</b><i class="c" style="background:${accents[w % accents.length]}"></i><i></i><i style="width:65%"></i><i></i>`;
-      track.appendChild(el);
-      const p = document.createElement('b'); if (i === focus) p.className = 'on'; pips.appendChild(p);
-    });
-    requestAnimationFrame(() => {
-      const el = track.children[focus]; if (!el) return;
-      const target = el.offsetLeft + el.offsetWidth / 2 - demo.clientWidth / 2;
-      track.style.transform = `translateX(${-Math.max(0, target)}px)`;
-    });
+  /* ---------- 1 · The hero desktop: plays a short script until you take over */
+  const desk = document.getElementById('desk'), row = document.getElementById('deskrow'), rail = document.getElementById('deskrail'), tip = document.getElementById('desktip');
+  let wins = [], focus = 0, full = -1, next = 0, auto = !reduce, timer = null;
+  function deskAdd(after) {
+    const w = makeWin(next++); w.classList.add('new');
+    const at = after == null ? wins.length : after + 1;
+    if (at >= row.children.length) row.appendChild(w); else row.insertBefore(w, row.children[at]);
+    wins.splice(at, 0, w); requestAnimationFrame(() => requestAnimationFrame(() => w.classList.remove('new')));
+    return at;
   }
-  demo.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') { focus = Math.min(focus + 1, wins.length - 1); }
-    else if (e.key === 'ArrowLeft') { focus = Math.max(focus - 1, 0); }
-    else if (e.key === 'n' || e.key === 'N') { if (wins.length < 8) { wins.splice(focus + 1, 0, wins.length); focus += 1; full = -1; } }
-    else if (e.key === 'f' || e.key === 'F') { full = full === focus ? -1 : focus; }
+  function deskDraw() {
+    wins.forEach((w, i) => { w.classList.toggle('focus', i === focus); w.style.width = i === full ? '88%' : '31%'; });
+    rail.innerHTML = wins.map((_, i) => `<b class="${i === focus ? 'on' : ''}"></b>`).join('');
+    setTimeout(() => {
+      const el = wins[focus]; if (!el) return;
+      const target = el.offsetLeft + el.offsetWidth / 2 - desk.clientWidth / 2;
+      row.style.transform = `translateX(${-Math.max(0, target)}px)`;
+    }, 30);
+  }
+  [0, 1, 2].forEach(() => deskAdd()); focus = 1; deskDraw();
+  const say = t => { tip.textContent = t; };
+  const script = [
+    () => { focus = deskAdd(focus); say('A new window slides in beside you. Nothing shrinks.'); },
+    () => { focus = deskAdd(focus); say('And another. Every window keeps its size.'); },
+    () => { focus = Math.max(0, focus - 2); say('⌃⌥← slides back along the strip'); },
+    () => { full = focus; say('⌃⌥F makes a window full width'); },
+    () => { full = -1; focus = Math.min(wins.length - 1, focus + 3); say('⌃⌥→ slides on'); },
+    () => { wins.splice(3).forEach(w => w.remove()); next = 3; focus = 1; full = -1; say('A new window slides in beside you'); }
+  ];
+  let step = 0;
+  const tick = () => { script[step % script.length](); step++; deskDraw(); };
+  io(desk, on => { if (on && auto && !timer) timer = setInterval(tick, 2600); if (!on) { clearInterval(timer); timer = null; } });
+  if (reduce) tip.style.opacity = '0';
+  function takeOver() { auto = false; clearInterval(timer); timer = null; tip.style.opacity = '0'; }
+  desk.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') focus = Math.min(focus + 1, wins.length - 1);
+    else if (e.key === 'ArrowLeft') focus = Math.max(focus - 1, 0);
+    else if (e.key === 'n' || e.key === 'N') { if (wins.length < 9) { focus = deskAdd(focus); full = -1; } }
+    else if (e.key === 'f' || e.key === 'F') full = full === focus ? -1 : focus;
     else return;
-    e.preventDefault(); draw();
+    e.preventDefault(); takeOver(); deskDraw();
   });
-  demo.addEventListener('click', () => demo.focus());
-  addEventListener('resize', draw);
-  draw();
+  desk.addEventListener('pointerdown', () => { takeOver(); desk.focus(); });
+  addEventListener('resize', deskDraw);
   const clock = document.getElementById('clock');
-  const tick = () => { clock.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); };
-  tick(); setInterval(tick, 30000);
-})();
+  const tickClock = () => { clock.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }; tickClock(); setInterval(tickClock, 30000);
 
-(() => {
-  // A welcome for visitors from Product Hunt (?ref=producthunt or a Product Hunt referrer).
-  const bar = document.getElementById('phbar');
-  let seen = false; try { seen = localStorage.getItem('monorail-ph-closed') === '1'; } catch (e) {}
-  const fromPH = /(^|[?&])ref=producthunt/i.test(location.search) || /producthunt\.com/i.test(document.referrer);
-  if (fromPH && !seen) bar.classList.add('show');
-  document.getElementById('phclose').addEventListener('click', () => { bar.classList.remove('show'); try { localStorage.setItem('monorail-ph-closed', '1'); } catch (e) {} });
-})();
+  /* ---------- 3 · A grid tiler against Monorail */
+  const gridRow = document.querySelector('#gridmini .row'), railMini = document.getElementById('railmini'), railRow = railMini.querySelector('.row');
+  let n = 0;
+  const gridText = { 4: 'Four windows, each already a quarter of the screen.', 5: 'Five: every window just got narrower, including the one you were reading.', 6: 'Six: your code editor is now a sliver.', 7: 'Seven: nothing is readable any more.', 8: 'Eight windows of nothing much.' };
+  const railText = { 4: 'Four windows, each as wide as you left it.', 5: 'Five: the new one slid in beside you. Nothing else changed.', 6: 'Six: still full size. The strip just got longer.', 7: 'Seven: slide along with ⌃⌥← and →.', 8: 'Eight, and every one still readable.' };
+  const words = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
+  function vsAdd(quiet) {
+    if (n >= 8) return;
+    gridRow.appendChild(makeWin(n)); railRow.appendChild(makeWin(n)); n++;
+    document.getElementById('gridcount').textContent = n + ' windows'; document.getElementById('railcount').textContent = n + ' windows';
+    if (n >= 4) { document.getElementById('gridtext').textContent = gridText[n]; document.getElementById('railtext').textContent = railText[n]; }
+    setTimeout(() => { const last = railRow.lastElementChild; const target = last.offsetLeft + last.offsetWidth - railMini.clientWidth * .96; railRow.style.transform = `translateX(${-Math.max(0, target)}px)`; }, 30);
+    document.getElementById('vsadd').disabled = n >= 8;
+  }
+  function vsReset() { gridRow.innerHTML = ''; railRow.innerHTML = ''; railRow.style.transform = ''; n = 0; for (let i = 0; i < 4; i++) vsAdd(); }
+  document.getElementById('vsadd').addEventListener('click', () => vsAdd());
+  document.getElementById('vsreset').addEventListener('click', vsReset);
+  vsReset();
 
-(() => {
-  // Every download button gets the latest DMG from this site's copy of the newest release, with its
-  // version, size and date. Features marked "Coming in 1.9.1" lose the mark once that version is out.
-  const newer = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number);
-    for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return true; };
-  fetch('/releases/latest.json').then(r => r.ok ? r.json() : null).then(release => {
-    if (!release) return;
-    const version = String(release.tag_name || '').replace(/^v/, '');
-    document.querySelectorAll('[data-since]').forEach(el => { if (version && newer(version, el.dataset.since)) el.remove(); });
-    const assets = release.assets || [];
-    const dmg = assets.find(a => /^Monorail.*\.dmg$/i.test(a.name)) || assets.find(a => /\.dmg$/i.test(a.name));
-    if (!dmg) return;
-    const mb = (dmg.size / 1048576).toFixed(1);
-    const date = new Date(release.published_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
-    document.querySelectorAll('a.dl').forEach(a => { a.title = `Monorail ${version} · ${mb} MB · macOS 13 or later`; a.dataset.name = dmg.name; });
-    const meta = document.getElementById('dlmeta'); if (meta) meta.textContent = `Version ${version} · ${mb} MB · ${date} · macOS 13 or later · notarised by Apple`;
-  }).catch(() => {});
-  const panel = document.getElementById('afterdl');
-  document.addEventListener('click', e => {
-    const a = e.target.closest && e.target.closest('a.dl'); if (!a || !/(\.dmg|\/download\/?)$/i.test(a.href)) return;
-    if (/\/download\/?$/i.test(a.href) && !(e.metaKey || e.ctrlKey || e.shiftKey)) {
-      e.preventDefault();
-      window.location.href = '/releases/latest/Monorail.dmg';
-    }
-    document.getElementById('afterdlname').textContent = a.dataset.name || 'the Monorail DMG';
-    panel.hidden = false;
-  });
-  document.getElementById('afterdlclose').addEventListener('click', () => { panel.hidden = true; });
+  /* ---------- 6 · Dashboard captions follow the tab */
+  const caps = { 'dt-time': 'A dotted map of day and night, who’s at work where, the hours you all overlap, and ten days of weather with no location access.',
+    'dt-ai': 'Plan limits with pace, tokens and their cost, context in use, local models and API balances, for every account you add.',
+    'dt-sw': 'Dark Mode, the Dock, hidden files, Do Not Disturb, flush DNS and your own switches. Modes set several at once and put everything back after.' };
+  document.getElementById('dashtabs').addEventListener('tab', e => { document.getElementById('dpcap').textContent = caps[e.detail.id]; });
 
-  // The download buttons know which computer they're on: a Mac gets the Mac download,
-  // Windows and Linux get their beta, and anything else is shown every platform.
-  const ua = navigator.userAgent || '';
-  const plat = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || ua;
-  const touchMac = /mac/i.test(plat) && navigator.maxTouchPoints > 1;
-  const isMac = /mac/i.test(plat) ? !touchMac : !/win|linux|android|iphone|ipad|ipod|ios|cros|x11/i.test(plat + ' ' + ua);
-  document.documentElement.dataset.os = isMac ? 'mac' : 'other';
-  const system = /win/i.test(plat) && !/darwin/i.test(plat) ? 'windows'
-    : /linux|x11/i.test(plat + ' ' + ua) && !/android|cros/i.test(ua) ? 'linux' : null;
-  if (!isMac) document.querySelectorAll('[data-smartdl]').forEach(a => {
-    a.classList.remove('dl'); a.removeAttribute('title');
-    const label = a.querySelector('[data-dl-label]');
-    a.href = system ? 'download/' + system + '/' : '#platforms';
-    if (label) label.textContent = system === 'windows' ? 'Download the Windows beta' : system === 'linux' ? 'Download the GNOME beta' : 'Get Monorail';
-  });
-})();
+  /* ---------- 7 · Limit bars fill when they come into view */
+  const lim = document.getElementById('limits'); let filled = false;
+  io(lim, on => { if (on && !filled) { filled = true; lim.querySelectorAll('.track i').forEach(i => { i.style.width = i.dataset.w + '%'; }); } }, .3);
 
-(() => {
-  const d = document.getElementById('film'), v = document.getElementById('film-video'), b = document.getElementById('film-open');
-  if (!d || !b) return;
-  if (typeof d.showModal !== 'function') { b.addEventListener('click', () => { location.href = 'assets/launch/v17/monorail-demo.mp4'; }); return; }
-  b.addEventListener('click', () => { d.showModal(); try { v.play(); } catch (e) {} });
-  d.addEventListener('close', () => v.pause());
-  d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+  /* ---------- 8 · Toggles and liquid sliders; warmth tints the page like Evening Mode */
+  const warm = document.getElementById('warm');
+  document.querySelectorAll('.tg').forEach(b => b.addEventListener('click', () => {
+    const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', String(on));
+    if (b.id === 'tg-evening') { warm.value = on ? 55 : 0; warm.dispatchEvent(new Event('input')); }
+  }));
+  function liquid(id, fillId, valId, onChange) {
+    const input = document.getElementById(id), f = document.getElementById(fillId), v = document.getElementById(valId);
+    const upd = () => { const p = +input.value; f.style.width = `calc(54px + (100% - 64px) * ${p / 100})`; v.textContent = p; if (onChange) onChange(p); };
+    input.addEventListener('input', upd); upd();
+  }
+  liquid('vol', 'volfill', 'volv');
+  liquid('warm', 'warmfill', 'warmv', p => { document.getElementById('warmth').style.opacity = String(p / 100 * .3); document.getElementById('tg-evening').setAttribute('aria-pressed', String(p > 0)); });
+
+  /* ---------- 9 · The live notch cycles through what Monorail shows there */
+  const notch = document.getElementById('notch'), nl = document.getElementById('notchl'), nr = document.getElementById('notchr'), chips = document.getElementById('notchchips');
+  const acts = [
+    { k: 'Notes', l: 'Taking notes', r: '12:04', dot: '#FF453A' },
+    { k: 'Sharing', l: 'Sharing · private windows hidden', r: '', dot: '#FF9F0A' },
+    { k: 'Meeting', l: 'Design review · Join', r: 'in 2 min', dot: '#30D158' },
+    { k: 'Focus', l: 'Focus session', r: '24:13', dot: '#BF5AF2' },
+    { k: 'Charging', l: 'Charging · full at 15:40', r: '82%', dot: '#30D158' },
+    { k: 'Agent', l: 'Your agent is waiting', r: 'Terminal', dot: '#64D2FF' }
+  ];
+  let ai = 0, nt = null;
+  function show(i) {
+    ai = i; const a = acts[i]; notch.classList.remove('open');
+    setTimeout(() => { nl.textContent = a.l; nr.textContent = a.r; notch.style.setProperty('--dot', a.dot); notch.classList.add('open'); }, reduce ? 0 : 260);
+    chips.querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+  }
+  acts.forEach((a, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = a.k; b.addEventListener('click', () => { clearInterval(nt); nt = null; show(i); }); chips.appendChild(b); });
+  show(0);
+  io(notch, on => { if (on && !reduce && nt === null) nt = setInterval(() => show((ai + 1) % acts.length), 3200); if (!on && nt) { clearInterval(nt); nt = null; } });
+
+  /* ---------- 10 · A transcript that writes itself */
+  const tr = document.getElementById('transcript');
+  const lines = [['you', 'You', 'I’ll send the deck to everyone tonight.'], ['them', 'Others', 'Great. Can you book the room for Thursday?'], ['you', 'You', 'Yes, I’ll do it after this call.']];
+  let started = false;
+  io(tr, on => {
+    if (!on || started) return; started = true; let li = 0;
+    const nextLine = () => {
+      if (li >= lines.length) { const t = document.createElement('div'); t.className = 'todo'; t.textContent = '☐ Send the deck tonight   ☐ Book the room for Thursday'; tr.appendChild(t); return; }
+      const [cls, who, text] = lines[li++], d = document.createElement('div'); d.innerHTML = `<span class="who ${cls}">${who}</span><span></span>`; tr.appendChild(d);
+      const s = d.lastChild; let c = reduce ? text.length - 1 : 0;
+      const type = () => { s.textContent = text.slice(0, ++c); if (c < text.length) setTimeout(type, 28); else setTimeout(nextLine, reduce ? 0 : 500); }; type();
+    };
+    nextLine();
+  }, .4);
+
+  /* ---------- 11 · The live overview follows the chosen theme */
+  const ws = document.getElementById('ovws'), dots = document.getElementById('ovdots');
+  ws.innerHTML = [[3, 0], [2, 3], [4, 5]].map(([count, off], r) => `<div class="lane"><b style="background:var(--w${r + 1})"></b>${Array.from({ length: count }, (_, i) => `<i style="--c:var(--w${((off + i) % 9) + 1})"></i>`).join('')}</div>`).join('');
+  dots.innerHTML = Array.from({ length: 9 }, (_, i) => `<i style="--c:var(--w${i + 1})"></i>`).join('');
 })();
 </script>
 <script type="application/ld+json">

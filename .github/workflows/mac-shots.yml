@@ -1,0 +1,42 @@
+name: Mac screenshots
+# Real screenshots and a short recording of Monorail on a Mac, for the website and the press kit.
+# Run it by hand (Actions → Mac screenshots → Run workflow); the pictures come back as an artifact.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shots:
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      MONORAIL_SIGNING_CERT: ${{ secrets.MONORAIL_SIGNING_CERT || secrets.MACSLIDER_SIGNING_CERT }}
+      MONORAIL_SIGNING_PASSWORD: ${{ secrets.MONORAIL_SIGNING_PASSWORD || secrets.MACSLIDER_SIGNING_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 20
+      - name: Use the newest Xcode
+        run: |
+          latest="$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -n1)"
+          [ -n "$latest" ] && sudo xcode-select -s "$latest/Contents/Developer"
+      - name: Throwaway signing certificate
+        if: env.MONORAIL_SIGNING_CERT == ''
+        run: |
+          scripts/make-signing-cert.sh --out "$RUNNER_TEMP/throwaway"
+          echo "MONORAIL_SIGNING_CERT=$(cat "$RUNNER_TEMP/throwaway/cert.p12.b64")" >> "$GITHUB_ENV"
+          echo "MONORAIL_SIGNING_PASSWORD=$(cat "$RUNNER_TEMP/throwaway/password")" >> "$GITHUB_ENV"
+      - name: Import signing certificate
+        run: scripts/ci-import-signing-cert.sh
+      - name: Build app
+        run: scripts/build-app.sh
+      - name: Take the screenshots
+        run: scripts/mac-shots.sh dist/mac-shots
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: mac-shots-${{ github.sha }}
+          path: dist/mac-shots
+          retention-days: 14

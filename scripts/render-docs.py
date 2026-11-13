@@ -27,46 +27,32 @@ PAGE = """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title} · Monorail</title>
-<link rel="icon" href="../../favicon.ico" sizes="48x48">
-<script>try {{ const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; }} catch (e) {{}}</script>
-<style>
-:root {{ --ink:#1D1D1F; --muted:#6E6E73; --line:rgba(0,0,0,.09); --bg:#FBFBFD; --card:#FFFFFF; --soft:#F2F2F5; --plum:#D63A80; color-scheme:light; }}
-@media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{ --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; }} }}
-:root[data-theme="dark"] {{ --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; }}
-* {{ box-sizing:border-box; }}
-body {{ margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }}
-main {{ max-width:900px; margin:0 auto; padding:32px 16px 72px; overflow-wrap:anywhere; }}
-a {{ color:var(--plum); }}
-.top {{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:24px; }}
-.brand {{ display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }}
-.brand img {{ width:30px; height:30px; border-radius:8px; }}
-.top nav {{ display:flex; gap:16px; font-size:15px; flex-wrap:wrap; }}
-.top nav a {{ color:var(--muted); text-decoration:none; }}
-h1 {{ font-size:clamp(30px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; }}
-h2 {{ margin-top:40px; }}
-code {{ background:var(--soft); padding:1px 6px; border-radius:6px; font-size:.92em; }}
-pre {{ background:var(--soft); padding:14px 16px; border-radius:12px; overflow-x:auto; }}
-pre code {{ padding:0; background:none; }}
-.table {{ overflow-x:auto; }}
-table {{ border-collapse:collapse; width:100%; font-size:15px; }}
-th, td {{ text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }}
-footer {{ margin-top:56px; color:var(--muted); font-size:14px; }}
-</style>
+<link rel="canonical" href="https://monorail.ashforde.org/docs/{slug}/">
+<!--#head-->
 </head>
 <body>
-<main>
-<header class="top">
-  <a class="brand" href="../../"><img src="../../assets/icon.png" alt="" width="30" height="30">Monorail</a>
-  <nav aria-label="Site"><a href="../../changelog/">Changelog</a><a href="../../support/">Support</a><a href="../../privacy/">Privacy</a><a href="../../download/">Download</a></nav>
-</header>
-{body}
-<footer>© Ashforde OÜ · <a href="mailto:contact@ashforde.org">contact@ashforde.org</a></footer>
+<!--#header-->
+<main id="main" class="wrap">
+  <section class="page-hero"><span class="eyebrow"><i></i>Guide</span><h1>{title}</h1></section>
+  <div class="{layout}">
+    {toc}
+    <article class="prose">{body}</article>
+  </div>
 </main>
+<!--#footer-->
 </body>
 </html>
 """
+
+
+def contents(body):
+    """A sticky list of the guide's sections, from its second-level headings."""
+    heads = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body)
+    if len(heads) < 3:
+        return ""
+    links = "".join('<a href="#%s">%s</a>' % (anchor, re.sub(r"<[^>]+>", "", text)) for anchor, text in heads)
+    return '<nav class="toc glass flat" aria-label="On this page"><b>On this page</b>%s</nav>' % links
 
 
 def relink(match):
@@ -83,12 +69,14 @@ def relink(match):
 for src, (slug, title) in GUIDES.items():
     text = open(src, encoding="utf-8").read()
     if src == "LICENSE":
-        body = f"<h1>{html.escape(title)}</h1>\n<pre>{html.escape(text)}</pre>"
+        body = f"<pre>{html.escape(text)}</pre>"
     else:
         text = re.sub(r"(?<!!)\[([^\]]+)\]\(([^)\s]+)\)", relink, text)
         body = markdown.markdown(text, extensions=["tables", "fenced_code", "toc", "sane_lists"])
-        body = body.replace("<table>", '<div class="table"><table>').replace("</table>", "</table></div>")
+        body = re.sub(r"^\s*<h1[^>]*>.*?</h1>", "", body, count=1, flags=re.S)  # the page has its own title
+    toc = contents(body)
     folder = os.path.join(OUT, "docs", slug)
     os.makedirs(folder, exist_ok=True)
-    open(os.path.join(folder, "index.html"), "w", encoding="utf-8").write(PAGE.format(title=html.escape(title), body=body))
+    page = PAGE.format(title=html.escape(title), slug=slug, body=body, toc=toc, layout="toc-layout" if toc else "narrow")
+    open(os.path.join(folder, "index.html"), "w", encoding="utf-8").write(page)
     print(f"docs/{slug}/ from {src}")

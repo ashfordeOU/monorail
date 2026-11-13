@@ -5,7 +5,7 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "assets/**", "scripts/mirror-releases.py", "scripts/render-docs.py", "scripts/install.sh", "server/endpoint.txt", "quirks.json", "extensions/scripts/**", "docs/IT.md", "docs/ACTIONS.md", "docs/SETTINGS.md", "docs/COMPATIBILITY.md", "docs/AGENTS.md", "extensions/agent-skill/**", "SECURITY.md", "LICENSE", "TRADEMARKS.md", "scripts/perf-check.sh", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
+    paths: ["site/**", "assets/**", "scripts/mirror-releases.py", "scripts/render-docs.py", "scripts/site-build.py", "scripts/install.sh", "server/endpoint.txt", "quirks.json", "extensions/scripts/**", "docs/IT.md", "docs/ACTIONS.md", "docs/SETTINGS.md", "docs/COMPATIBILITY.md", "docs/AGENTS.md", "extensions/agent-skill/**", "SECURITY.md", "LICENSE", "TRADEMARKS.md", "scripts/perf-check.sh", "CHANGELOG.md", "docs/launch/FACT-SHEET.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
   # Once a day as well, so the downloads on the site always match the newest release.
   schedule:
@@ -34,7 +34,7 @@ jobs:
           cp -R site/. public/
           cp -R assets/readme assets/launch assets/features public/assets/
           cp assets/icon.png public/assets/icon.png
-          cp site/index.html public/404.html
+          # site/404.html is its own page (copied with the rest of site/).
           # The Agent Skill, for agents told to read it from the site.
           mkdir -p public/agents && cp extensions/agent-skill/monorail/SKILL.md public/agents/SKILL.md
           # The FAQ as structured data, so search results can show the answers (built from the page itself).
@@ -63,6 +63,8 @@ jobs:
           kit=$(mktemp -d)/Monorail-press-kit
           mkdir -p "$kit/screenshots"
           cp assets/launch/v17/0*.png "$kit/screenshots/"
+          mkdir -p "$kit/screens" && cp site/img/time.webp site/img/ai-usage.webp site/img/switches.webp site/img/panel-light.webp site/img/clipboard-*.webp site/img/tools-*.webp "$kit/screens/"
+          cp site/media/docking.mp4 "$kit/"
           cp assets/launch/v17/docking.gif "$kit/"
           cp assets/icon.png "$kit/monorail-icon-1024.png"
           cp site/icons/icon-512.png "$kit/monorail-icon-512.png"
@@ -219,8 +221,8 @@ jobs:
               if r["date"]:
                   meta.append('<time datetime="%s">%s</time>' % (r["date"], nice(r["date"])))
               if i == 0 and numbered:
-                  meta.append('<a href="../download/">Download</a>')
-              articles.append('<article class="rel" id="%s"><header><h2><a href="#%s">%s</a></h2><p class="meta">%s</p></header><div class="body">%s</div></article>'
+                  meta.append('<a class="dl" href="/download/">Download</a>')
+              articles.append('<article class="rel glass flat" id="%s"><header><h2><a href="#%s">%s</a></h2><p class="meta">%s</p></header><div class="body">%s</div></article>'
                               % (sid, sid, v, badge + " · ".join(meta), "\n".join(r["body"])))
               chips.append('<a href="#%s">%s</a>' % (sid, v))
           latest = releases[0] if releases else None
@@ -229,94 +231,52 @@ jobs:
           <html lang="en">
           <head>
           <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>Monorail Changelog</title>
-          <meta name="description" content="Every Monorail release, newest first: what was added, changed and fixed in the scrolling window manager for Mac.">
+          <title>What’s new in Monorail</title>
+          <meta name="description" content="Every Monorail release, newest first: what was added, changed and fixed in the free Mac app.">
           <link rel="canonical" href="https://monorail.ashforde.org/changelog/">
-          <link rel="icon" href="../favicon.ico" sizes="48x48">
-          <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-          <meta name="theme-color" content="#FBFBFD" media="(prefers-color-scheme: light)">
-          <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-          <script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+          <!--#head-->
           <style>
-          :root { --ink:#1D1D1F; --muted:#6E6E73; --line:rgba(0,0,0,.09); --bg:#FBFBFD; --card:#FFFFFF; --soft:#F2F2F5; --coral:#FF9E62; --pink:#F66270; --plum:#D63A80; --link:#D63A80; --ok:#177A45; color-scheme:light; }
-          @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; } }
-          :root[data-theme="dark"] { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; }
-          * { box-sizing:border-box; }
-          html { scroll-behavior:smooth; }
-          body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
-          a { color:var(--link); }
-          .wrap { max-width:900px; margin:0 auto; padding:0 16px; }
-          .top { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:22px 0; }
-          .brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; white-space:nowrap; }
-          .brand img { width:30px; height:30px; border-radius:8px; }
-          .top nav { display:flex; flex-wrap:wrap; gap:6px 16px; margin-left:auto; font-size:15px; }
-          .top nav a { color:var(--muted); text-decoration:none; }
-          @media (max-width:560px) { .top nav { order:3; width:100%; margin-left:0; } .top .btn { margin-left:auto; } }
-          .top nav a:hover, .top nav a[aria-current] { color:var(--ink); }
-          .btn { display:inline-flex; align-items:center; padding:9px 18px; border-radius:999px; font-weight:700; font-size:15px; text-decoration:none; color:#fff; background:linear-gradient(100deg, var(--pink), var(--plum)); box-shadow:0 8px 22px rgba(214,58,128,.3); }
-          .hero { padding:40px 0 8px; }
-          .kicker { font-weight:800; font-size:13px; line-height:1; letter-spacing:2px; text-transform:uppercase; color:var(--link); }
-          h1 { font-size:clamp(36px, 7vw, 60px); line-height:1.04; letter-spacing:-1.5px; margin:14px 0 12px; }
-          .grad { background:linear-gradient(100deg, var(--coral), var(--pink) 45%, var(--plum)); -webkit-background-clip:text; background-clip:text; color:transparent; }
-          .lede { color:var(--muted); font-size:19px; margin:0; max-width:680px; }
-          .lede p { margin:0 0 6px; }
-          .jump { margin:22px 0 0; }
-          .jump summary { cursor:pointer; font-weight:700; color:var(--muted); font-size:15px; }
-          .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-          .chips a { padding:5px 11px; border-radius:999px; background:var(--card); border:1px solid var(--line); color:var(--ink); text-decoration:none; font-size:13.5px; font-weight:600; font-variant-numeric:tabular-nums; }
-          .chips a:hover { border-color:var(--pink); }
-          .rel { margin-top:22px; padding:clamp(18px, 3.5vw, 30px); border-radius:20px; background:var(--card); border:1px solid var(--line); scroll-margin-top:16px; }
-          .rel header { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; }
-          .rel h2 { margin:0; font-size:clamp(24px, 4vw, 30px); letter-spacing:-.5px; line-height:1.2; }
-          .rel h2 a { color:var(--ink); text-decoration:none; }
-          .rel h2 a:hover { color:var(--link); }
-          .meta { margin:0; color:var(--muted); font-size:14.5px; }
-          .meta a { color:var(--muted); }
-          .latest { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--ok); background:color-mix(in srgb, var(--ok) 14%, transparent); }
-          .body { overflow-wrap:anywhere; }
-          .body > p { color:var(--muted); margin:12px 0 0; }
-          .body h3 { margin:22px 0 8px; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--link); }
-          .body ul { margin:0; padding-left:22px; }
-          .body li { margin:7px 0; }
-          .body li::marker { color:var(--plum); }
-          .body li ul { margin-top:4px; }
-          .body li li { margin:4px 0; color:var(--muted); font-size:16px; }
-          code { font:.86em/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--soft); padding:1px 6px; border-radius:6px; }
-          footer { padding:48px 0 44px; color:var(--muted); font-size:14px; }
-          footer nav { display:flex; flex-wrap:wrap; gap:6px 18px; margin-bottom:10px; }
-          footer a { color:var(--muted); }
-          @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+          .rel { padding: clamp(22px, 3.5vw, 34px); border-radius: var(--r-l); margin-bottom: 16px; scroll-margin-top: 96px; }
+          .rel header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+          .rel h2 { margin: 0; font-size: clamp(26px, 4vw, 34px); letter-spacing: -.035em; }
+          .rel h2 a { color: var(--ink); }
+          .rel h2 a:hover { text-decoration: none; color: var(--l2); }
+          .meta { color: var(--ink3); font-size: 14.5px; }
+          .meta a { color: var(--ink2); }
+          .latest { display: inline-block; padding: 3px 10px; border-radius: 999px; font: 600 12px var(--font); color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); }
+          .body > p { color: var(--ink2); margin-top: 12px; }
+          .body h3 { margin: 26px 0 8px; font: 600 12px var(--font); letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); }
+          .body ul { margin: 0; padding-left: 20px; }
+          .body li { margin: 9px 0; color: var(--ink2); }
+          .body li strong { color: var(--ink); font-weight: 600; }
+          .body li::marker { color: var(--l2); }
+          .body li li { font-size: 15.5px; }
+          .toc .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+          .toc .chips a { padding: 4px 10px; border-radius: 999px; background: var(--glass2); border: 1px solid var(--hair); color: var(--ink2); font-size: 13px; font-variant-numeric: tabular-nums; }
+          .toc .chips a:hover { color: var(--ink); text-decoration: none; }
           </style>
           </head>
           <body>
-          <div class="wrap">
-            <header class="top">
-              <a class="brand" href="../"><img src="../assets/icon.png" alt="" width="30" height="30">Monorail</a>
-              <nav aria-label="Site"><a href="../#features">Features</a><a href="./" aria-current="page">Changelog</a><a href="../support/">Support</a><a href="../privacy/">Privacy</a></nav>
-              <a class="btn" href="../download/">Download</a>
-            </header>
-            <main>
-              <section class="hero">
-                <div class="kicker">Changelog</div>
-                <h1>What's <span class="grad">new</span></h1>
-                <div class="lede">@@INTRO@@</div>
-                @@LATEST@@
-                <details class="jump"><summary>Every version (@@COUNT@@)</summary><nav class="chips" aria-label="Versions">@@CHIPS@@</nav></details>
-              </section>
-              @@ARTICLES@@
-            </main>
-            <footer>
-              <nav aria-label="More"><a href="../">Monorail</a><a href="../download/">Download</a><a href="../privacy/">Privacy</a><a href="../support/">Support</a><a href="mailto:contact@ashforde.org">contact@ashforde.org</a></nav>
-              <p>© Ashforde OÜ. Ashforde® is a registered trademark of Ashforde OÜ. The Monorail name and icon are trademarks of Ashforde OÜ.</p>
-            </footer>
-          </div>
+          <!--#header-->
+          <main id="main" class="wrap">
+            <section class="page-hero">
+              <span class="eyebrow"><i></i>What’s new</span>
+              <h1><span class="sheen">Every release,</span> <span class="light-text">newest first.</span></h1>
+              <p class="lede">What was added, changed and fixed in each version of Monorail. Updates install themselves, or download the latest any time.</p>
+              @@LATEST@@
+            </section>
+            <div class="toc-layout">
+              <aside class="toc glass flat" aria-label="Versions"><b>@@COUNT@@ versions</b><nav class="chips">@@CHIPS@@</nav></aside>
+              <div>@@ARTICLES@@</div>
+            </div>
+          </main>
+          <!--#footer-->
           </body>
           </html>
           """
           latestline = ""
           if latest and re.match(r"\d", latest["version"]):
-              latestline = '<p class="lede" style="margin-top:10px;font-size:16px">Latest: <a href="#%s">%s</a>%s</p>' % (
+              latestline = '<p style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap;align-items:center"><a class="btn primary dl" href="/download/" data-smartdl><span data-dl-label>Download %s</span></a><span class="faint" style="font-size:14px">Latest: <a href="#%s">%s</a>%s</span></p>' % (html.escape(latest["version"]), 
                   slug(latest["version"]), html.escape(latest["version"]), " · " + nice(latest["date"]) if latest["date"] else "")
           for key, value in (("@@REPO@@", REPO), ("@@INTRO@@", "\n".join(intro)), ("@@LATEST@@", latestline),
                              ("@@COUNT@@", str(len(chips))), ("@@CHIPS@@", "".join(chips)), ("@@ARTICLES@@", "\n".join(articles))):
@@ -337,6 +297,9 @@ jobs:
           cp quirks.json public/app/quirks.json
           cp -R extensions/scripts public/app/scripts
           cp scripts/perf-check.sh public/perf-check.sh
+      - name: Give every page the shared head, header and footer
+        # Pages carry <!--#head-->, <!--#header--> and <!--#footer-->; generated pages (changelog, docs) too.
+        run: python3 scripts/site-build.py public
       - name: Copy the newest releases onto the site
         # Downloads and the app's update checks come from monorail.ashforde.org/releases/, so they
         # keep working when the repository is private.

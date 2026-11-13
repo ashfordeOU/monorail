@@ -2,28 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Downloading Monorail</title>
 <meta name="robots" content="noindex">
 <meta http-equiv="refresh" content="0; url=/releases/latest/Monorail.dmg">
-<link rel="icon" href="../favicon.ico" sizes="48x48">
+<!--#head-->
 <style>
-:root { --ink:#1D1D1F; --muted:#6E6E73; --bg:#FBFBFD; --plum:#D63A80; color-scheme:light dark; }
-@media (prefers-color-scheme: dark) { :root { --ink:#F5F5F7; --muted:#A1A1A6; --bg:#000000; --plum:#F07AB0; } }
-body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg); color:var(--ink); font:17px/1.6 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; text-align:center; padding:16px; box-sizing:border-box; }
-img { width:72px; height:72px; border-radius:16px; }
-h1 { font-size:24px; margin:16px 0 6px; }
-p { color:var(--muted); margin:6px 0; }
-a { color:var(--plum); }
+.dlpage { min-height: calc(100vh - 80px); display: grid; place-items: center; padding: 48px 0 80px; }
+.dlcard { width: min(620px, 100%); padding: clamp(28px, 5vw, 48px); border-radius: var(--r-xl); text-align: center; }
+.dlcard img.app { width: 96px; height: 96px; margin: 0 auto; border-radius: 22px; box-shadow: 0 24px 60px -18px color-mix(in srgb, var(--l2) 70%, transparent); }
+.dlcard h1 { font-size: clamp(30px, 5vw, 44px); margin-top: 26px; letter-spacing: -.04em; }
+.dlcard .lede { margin-top: 12px; font-size: 17px; }
+.dlcard ol { text-align: left; margin: 26px 0 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 10px; }
+.dlcard ol li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; padding: 14px 16px; border-radius: var(--r-m); background: var(--glass); border: 1px solid var(--hair); color: var(--ink2); font-size: 15.5px; }
+.dlcard ol li::before { content: counter(s); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 700 12.5px var(--font); background: var(--btn-bg); color: var(--btn-ink); }
+.dlcard ol b { color: var(--ink); font-weight: 600; }
+.dlcard .after { margin-top: 22px; font-size: 14.5px; color: var(--ink3); }
+.dlcard .ways { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--hair); display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 </style>
 </head>
 <body data-download="mac-dmg">
-<main>
-  <img src="../assets/icon.png" alt="">
-  <h1>Your download is starting</h1>
-  <p>Monorail for Mac, signed and notarised by Apple.</p>
-  <p>If it doesn't start, <a href="/releases/latest/Monorail.dmg">download it here</a>.</p>
-  <p><a href="../">Back to Monorail</a></p>
+<!--#header-->
+<main id="main" class="wrap dlpage">
+  <div class="dlcard glass rim">
+    <img class="app" src="/assets/icon.png" alt="" width="96" height="96">
+    <h1>Your download is starting</h1>
+    <p class="lede">Monorail <span data-version></span> for Mac, signed and notarised by Apple. <span data-size></span></p>
+    <ol><li><span>Open <b>Monorail.dmg</b> from your Downloads.</span></li><li><span>Drag <b>Monorail</b> onto <b>Applications</b>.</span></li><li><span>Open Monorail and allow <b>Accessibility</b> when asked. The welcome tour does the rest.</span></li></ol>
+    <p class="after">Didn’t start? <a href="/releases/latest/Monorail.dmg">Download it here</a>.</p>
+    <div class="ways"><a class="btn glassy small" href="/#get">Homebrew and other ways</a><a class="btn text small" href="/changelog/">What’s new</a></div>
+  </div>
 </main>
+<!--#footer-->
+
 </body>
 </html>

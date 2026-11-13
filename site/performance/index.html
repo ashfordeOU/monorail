@@ -2,103 +2,57 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Monorail Performance</title>
-<meta name="description" content="How light Monorail is: 0.15% of one core, no idle wake-ups and about 55 MB while idle on battery. How we measure it, how every build is checked, and how to measure it on your Mac.">
-<link rel="icon" href="../favicon.ico" sizes="48x48">
-<link rel="icon" type="image/png" sizes="32x32" href="../icons/icon-32.png">
-<link rel="apple-touch-icon" href="../apple-touch-icon.png">
-<meta property="og:title" content="Monorail performance">
-<meta property="og:description" content="0.15% of one core, no idle wake-ups, about 55 MB. Measured, checked on every build, and easy to check yourself.">
-<meta property="og:image" content="https://monorail.ashforde.org/assets/launch/v17/01-hero.png">
-<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<title>Performance · Monorail</title>
+<meta name="description" content="What Monorail uses while idle (0.15% of one core, 0 wake-ups, 55 MB), how it's measured, how every build is checked, and how to measure it on your Mac.">
+<link rel="canonical" href="https://monorail.ashforde.org/performance/">
+<!--#head-->
 <style>
-:root { --ink:#1D1D1F; --muted:#6E6E73; --line:rgba(0,0,0,.09); --bg:#FBFBFD; --card:#FFFFFF; --soft:#F2F2F5; --plum:#D63A80; color-scheme:light; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; } }
-:root[data-theme="dark"] { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; }
-* { box-sizing:border-box; }
-body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
-main { max-width:1040px; margin:0 auto; padding:32px 16px 72px; }
-a { color:var(--plum); }
-.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
-.brand img { width:30px; height:30px; border-radius:8px; }
-.top nav { display:flex; gap:16px; font-size:15px; }
-.top nav a { color:var(--muted); text-decoration:none; }
-h1 { font-size:clamp(32px, 6vw, 52px); line-height:1.05; letter-spacing:-.025em; margin:48px 0 10px; }
-h2 { font-size:24px; letter-spacing:-.01em; margin:56px 0 14px; }
-.lede { font-size:19px; color:var(--muted); max-width:720px; margin:0; }
-.muted { color:var(--muted); }
-.card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; }
-.facts { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
-.facts .card b { display:block; font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600; margin-bottom:4px; }
-.copy { position:relative; }
-.copy p { margin:0 0 12px; }
-.copy p:last-of-type { margin-bottom:0; }
-.copybtn { position:absolute; top:12px; right:12px; font-family:inherit; font-weight:600; font-size:13px; line-height:1; padding:8px 12px; border-radius:999px; border:1px solid var(--line); background:var(--soft); color:var(--ink); cursor:pointer; }
-.gallery { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
-.shot { margin:0; background:var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
-.shot img { display:block; width:100%; aspect-ratio:2540/1520; object-fit:cover; background:var(--soft); }
-.shot figcaption { display:flex; justify-content:space-between; gap:8px; padding:10px 14px; font-size:14px; }
-.shot figcaption a { white-space:nowrap; }
-.logos { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; }
-.logo { text-align:center; }
-.logo .pad { border-radius:14px; padding:24px; display:flex; align-items:center; justify-content:center; }
-.logo .light { background:#FBFBFD; } .logo .dark { background:#000000; }
-.logo img { width:96px; height:96px; }
-.btn { display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:999px; font-weight:600; text-decoration:none; border:1px solid var(--line); color:var(--ink); background:var(--card); }
-.btn.primary { background:var(--ink); color:var(--bg); border-color:transparent; }
-.actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
-ul.tight { margin:0; padding-left:20px; } ul.tight li { margin:4px 0; }
-video { width:100%; border-radius:16px; border:1px solid var(--line); background:#000; display:block; }
-footer { margin-top:64px; font-size:14px; color:var(--muted); }
-
-.nums { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-top:28px; }
-.nums .card b { display:block; font-size:44px; letter-spacing:-.03em; line-height:1.05; background:linear-gradient(100deg,#FF8A5B,#E8437A 50%,#8E3AB8); -webkit-background-clip:text; background-clip:text; color:transparent; }
-.nums .card span { color:var(--muted); font-size:15px; }
-table { width:100%; border-collapse:collapse; font-size:16px; }
-th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); }
-th { color:var(--muted); font-weight:600; font-size:14px; }
-td.n, th.n { text-align:right; font-variant-numeric:tabular-nums; }
-pre { background:var(--soft); border:1px solid var(--line); border-radius:14px; padding:14px 16px; overflow-x:auto; font:14px/1.5 ui-monospace, Menlo, monospace; margin:10px 0; }
-.bars { display:grid; gap:14px; }
-.bar b { display:flex; justify-content:space-between; font-weight:600; font-size:15px; margin-bottom:6px; }
-.bar i { display:block; height:12px; border-radius:6px; background:linear-gradient(90deg,#FF8A5B,#E8437A); }
-.bar i.old { background:var(--line); }
+.perf { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 900px) { .perf { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.perf .glass { padding: 24px; border-radius: var(--r-xl); text-align: center; }
+.perf .dial { max-width: 170px; }
+.perf p { color: var(--ink2); font-size: 14.5px; margin-top: 12px; }
+.bars { padding: 24px; border-radius: var(--r-xl); display: grid; gap: 16px; margin-top: 18px; }
+.bar b { display: flex; justify-content: space-between; font-weight: 500; font-size: 15px; margin-bottom: 7px; }
+.bar b span:last-child { font-variant-numeric: tabular-nums; color: var(--ink2); }
+.bar i { display: block; height: 10px; border-radius: 999px; background: linear-gradient(90deg, var(--l1), var(--l2)); }
+.bar i.old { background: var(--hair2); }
+.prose { margin-top: 56px; }
 </style>
 </head>
 <body>
-<main>
-  <div class="top">
-    <a class="brand" href="../"><img src="../assets/icon.png" alt="">Monorail <span class="muted" style="font-weight:500">by Ashforde®</span></a>
-    <nav><a href="../">Home</a><a href="../download/">Download</a><a href="../changelog/">Changelog</a></nav>
+<!--#header-->
+<main id="main" class="wrap">
+  <section class="page-hero">
+    <span class="eyebrow"><i></i>Performance</span>
+    <h1><span class="sheen">So light you’ll forget</span> <span class="light-text">it’s running.</span></h1>
+    <p class="lede">A window manager runs all day, so it has to cost next to nothing. Here is what Monorail uses, how we measured it, how every build is checked, and how to measure it on your own Mac in a minute.</p>
+  </section>
+
+  <div class="perf">
+    <div class="glass"><div class="dial" data-value="0.15" data-max="100" data-text="0.15%" data-label="of one core"></div><p>Processor time while idle</p></div>
+    <div class="glass"><div class="dial" data-value="0" data-max="100" data-text="0" data-label="wake-ups a second"></div><p>Times it wakes the processor</p></div>
+    <div class="glass"><div class="dial" data-value="55" data-max="1024" data-text="55 MB" data-label="of memory"></div><p>Memory footprint</p></div>
+    <div class="glass"><div class="dial" data-value="1" data-max="72" data-text="1" data-label="permission"></div><p>Accessibility. SIP stays on.</p></div>
   </div>
+  <p class="faint" style="font-size:14px;margin-top:14px">Measured on a 14-inch MacBook Pro with M4 Pro, on battery, with Monorail 1.7.24 managing real windows and the Mac left idle for five minutes.</p>
 
-  <h1>So light you'll forget it's running</h1>
-  <p class="lede">A window manager runs all day, so it has to cost next to nothing. Here is what Monorail uses, how we measured it, how every build is checked, and how to measure it on your own Mac in a minute.</p>
+  <div class="prose narrow">
+    <h2>How we measure</h2>
+    <ul>
+      <li><strong>CPU</strong> is the processor time Monorail used over the minute, divided by the minute. That’s the same as Activity Monitor’s “% CPU”, averaged, so short spikes count.</li>
+      <li><strong>Idle wake-ups</strong> are how often Monorail woke the processor from rest, from <code>top</code>. Waking the processor is what costs battery, even when each wake is tiny.</li>
+      <li><strong>Memory</strong> is the memory footprint Activity Monitor shows.</li>
+      <li><strong>Idle</strong> means nobody touching the Mac. While you move windows Monorail does more, then goes quiet again within a second.</li>
+    </ul>
 
-  <div class="nums">
-    <div class="card"><b>0.15%</b><span>of one CPU core while idle</span></div>
-    <div class="card"><b>0</b><span>idle wake-ups a second</span></div>
-    <div class="card"><b>55 MB</b><span>of memory</span></div>
-    <div class="card"><b>1</b><span>permission: Accessibility. SIP stays on</span></div>
+    <h2>Checked on every build</h2>
+    <p>Before any version is released, an automatic check starts Monorail on a Mac, leaves it alone for a minute, and fails the build if idle CPU or wake-ups go over their limits. A version that got heavier can’t ship by accident.</p>
+
+    <h2>Lighter over time</h2>
+    <p>Idle on a MacBook, before and after the energy work in 1.3.0.</p>
   </div>
-  <p class="muted" style="font-size:15px">Measured on a 14-inch MacBook Pro with M4 Pro, on battery, with Monorail 1.7.24 managing real windows and the Mac left idle for five minutes.</p>
-
-  <h2>How we measure</h2>
-  <ul class="tight">
-    <li><b>CPU</b> is the processor time Monorail used over the minute, divided by the minute. That's the same as Activity Monitor's “% CPU”, averaged, so short spikes count.</li>
-    <li><b>Idle wake-ups</b> are how often Monorail woke the processor from rest, from <code>top</code>. Waking the processor is what costs battery, even when each wake is tiny.</li>
-    <li><b>Memory</b> is the memory footprint Activity Monitor shows.</li>
-    <li><b>Idle</b> means nobody touching the Mac. While you move windows Monorail does more, then goes quiet again within a second.</li>
-  </ul>
-
-  <h2>Checked on every build</h2>
-  <p>Before any version is released, an automatic check starts Monorail on a Mac, leaves it alone for a minute, and fails the build if idle CPU or wake-ups go over their limits. A version that got heavier can't ship by accident.</p>
-
-  <h2>Lighter over time</h2>
-  <p class="muted">Idle on a MacBook, before and after the energy work in 1.3.0.</p>
-  <div class="card bars">
+  <div class="bars glass narrow">
     <div class="bar"><b><span>CPU, 1.2.0</span><span>0.33%</span></b><i class="old" style="width:100%"></i></div>
     <div class="bar"><b><span>CPU, 1.3.0</span><span>0.09%</span></b><i style="width:27%"></i></div>
     <div class="bar"><b><span>Wake-ups a second, 1.2.0</span><span>18</span></b><i class="old" style="width:100%"></i></div>
@@ -106,29 +60,29 @@ pre { background:var(--soft); border:1px solid var(--line); border-radius:14px; 
     <div class="bar"><b><span>Memory, 1.2.0</span><span>272 MB</span></b><i class="old" style="width:100%"></i></div>
     <div class="bar"><b><span>Memory, 1.3.0</span><span>47 MB</span></b><i style="width:17%"></i></div>
   </div>
-  <p class="muted" style="font-size:15px">Since then: checks for system prompts, screen sharing and the slider bar run a fifth to a third as often while nobody is at the Mac, and hidden windows cost nothing while the pointer is still.</p>
+  <div class="prose narrow" style="margin-top:18px">
+    <p>Since then: checks for system prompts, screen sharing and the slider bar run a fifth to a third as often while nobody is at the Mac, and hidden windows cost nothing while the pointer is still.</p>
 
-  <h2>Measure it on your Mac</h2>
-  <p>Open Terminal, leave the Mac alone, and run this. It needs no password and changes nothing.</p>
-  <pre>curl -fsSL https://monorail.ashforde.org/perf-check.sh | bash</pre>
-  <p>It prints Monorail's CPU, idle wake-ups, memory and energy impact for one minute. For a longer run, give it the number of seconds; this one runs for an hour:</p>
-  <pre>curl -fsSL https://monorail.ashforde.org/perf-check.sh | bash -s 3600</pre>
-  <p class="muted">You can also see Monorail's own numbers in <b>Settings → About → Usage</b>, and in Activity Monitor's Energy tab.</p>
-
-  <h2>What keeps it light</h2>
-  <ul class="tight">
-    <li>A native Mac app, with no web view inside.</li>
-    <li>It mostly reacts to the Mac's own window events, and the few regular checks slow right down when nobody is at the Mac.</li>
-    <li>Animations run only while something moves, and can be turned off on battery.</li>
-    <li>Overview previews are captured at the size they're shown, and only while the overview is open.</li>
-  </ul>
-
-  <div class="actions">
-    <a class="btn primary dl" href="../download/">Download Monorail, free</a>
-    <a class="btn" href="../">Back to the home page</a>
+    <h2>Measure it on your Mac</h2>
+    <p>Open Terminal, leave the Mac alone, and run this. It needs no password and changes nothing. It prints Monorail’s CPU, idle wake-ups, memory and energy impact for one minute.</p>
   </div>
-
-  <footer>Monorail by Ashforde®. <a href="../privacy/">Privacy</a> · <a href="../support/">Support</a></footer>
+  <div class="narrow" style="display:grid;gap:10px;margin-top:6px">
+    <div class="cmd"><code>curl -fsSL https://monorail.ashforde.org/perf-check.sh | bash</code><button type="button" class="copy">Copy</button></div>
+    <p class="faint" style="font-size:14.5px">For a longer run, give it the number of seconds; this one runs for an hour:</p>
+    <div class="cmd"><code>curl -fsSL https://monorail.ashforde.org/perf-check.sh | bash -s 3600</code><button type="button" class="copy">Copy</button></div>
+  </div>
+  <div class="prose narrow">
+    <p>You can also see Monorail’s own numbers in <strong>Settings → About → Usage</strong>, and in Activity Monitor’s Energy tab.</p>
+    <h2>What keeps it light</h2>
+    <ul>
+      <li>A native Mac app, with no web view inside.</li>
+      <li>It mostly reacts to the Mac’s own window events, and the few regular checks slow right down when nobody is at the Mac.</li>
+      <li>Animations run only while something moves, and can be turned off on battery.</li>
+      <li>Overview previews are captured at the size they’re shown, and only while the overview is open.</li>
+    </ul>
+    <p style="margin-top:28px"><a class="btn primary dl" href="/download/" data-smartdl><span data-dl-label>Download Monorail, free</span></a></p>
+  </div>
 </main>
+<!--#footer-->
 </body>
 </html>

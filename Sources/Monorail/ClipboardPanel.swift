@@ -562,9 +562,9 @@ struct ClipboardPage: View {
             if let number { Text("⌘⌃\(number % 10)").font(.system(size: 9.5, design: .rounded)).foregroundStyle(.tertiary) }
             Button { clips.togglePin(clip) } label: {
                 Image(systemName: clip.pinned ? "pin.fill" : "pin").font(.system(size: 11)).foregroundStyle(clip.pinned ? Tone.ok : Color.secondary)
+                    .accessibilityLabel(clip.pinned ? "Unpin" : "Pin")
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(clip.pinned ? "Unpin" : "Pin")
         }
         .padding(.horizontal, 10).padding(.vertical, 5)
         .contextMenu { ClipMenu(clip: clip) }

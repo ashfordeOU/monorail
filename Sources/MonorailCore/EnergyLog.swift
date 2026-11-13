@@ -59,17 +59,27 @@ public struct EnergyLog: Codable, Equatable, Sendable {
             }
         }
         let useEnergy = sum.values.contains { $0.joules > 0 }
-        return Array(sum.map { (id: $0.key, entry: $0.value) }
-            .filter { useEnergy ? $0.entry.joules > 0 : $0.entry.cpuSeconds > 0 }
-            .sorted { useEnergy ? $0.entry.joules > $1.entry.joules : $0.entry.cpuSeconds > $1.entry.cpuSeconds }
-            .prefix(limit))
+        func amount(_ e: Entry) -> Double { useEnergy ? e.joules : e.cpuSeconds }
+        var rows: [(id: String, entry: Entry)] = []
+        for (id, entry) in sum where amount(entry) > 0 { rows.append((id: id, entry: entry)) }
+        rows.sort { amount($0.entry) > amount($1.entry) }
+        return Array(rows.prefix(limit))
     }
 
     /// Each day's total, for a bar chart (joules, or processor seconds without energy figures).
     public func dailyTotals(_ keys: [String]) -> [Double] {
-        let useEnergy = days.values.contains { $0.values.contains { $0.joules > 0 } }
-        return keys.map { key in (days[key] ?? [:]).values.reduce(0) { $0 + (useEnergy ? $1.joules : $1.cpuSeconds) } }
+        let useEnergy = hasEnergy
+        var totals: [Double] = []
+        for key in keys {
+            var sum = 0.0
+            for entry in (days[key] ?? [:]).values { sum += useEnergy ? entry.joules : entry.cpuSeconds }
+            totals.append(sum)
+        }
+        return totals
     }
 
-    public var hasEnergy: Bool { days.values.contains { $0.values.contains { $0.joules > 0 } } }
+    public var hasEnergy: Bool {
+        for day in days.values { for entry in day.values where entry.joules > 0 { return true } }
+        return false
+    }
 }

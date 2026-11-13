@@ -63,8 +63,8 @@ jobs:
           kit=$(mktemp -d)/Monorail-press-kit
           mkdir -p "$kit/screenshots"
           cp assets/launch/v17/0*.png "$kit/screenshots/"
-          mkdir -p "$kit/screens" && cp site/img/time.webp site/img/ai-usage.webp site/img/switches.webp site/img/panel-light.webp site/img/clipboard-*.webp site/img/tools-*.webp "$kit/screens/"
-          cp site/media/docking.mp4 "$kit/"
+          mkdir -p "$kit/screens" && cp site/img/time.webp site/img/ai-usage.webp site/img/switches.webp site/img/panel-light.webp site/img/clipboard-*.webp site/img/tools-*.webp site/img/real/*.webp "$kit/screens/"
+          cp site/media/docking.mp4 site/media/strip-real.mp4 "$kit/"
           cp assets/launch/v17/docking.gif "$kit/"
           cp assets/icon.png "$kit/monorail-icon-1024.png"
           cp site/icons/icon-512.png "$kit/monorail-icon-512.png"

@@ -25,15 +25,6 @@
 .release { font-size: 13.5px; color: var(--ink3); margin-top: 16px; }
 
 /* The desktop: the theme's backdrop, a menu bar, the strip and the slider bar */
-.desk { position: relative; margin: clamp(48px, 7vw, 80px) auto 0; width: min(1120px, 100%); aspect-ratio: 16 / 9; border-radius: clamp(16px, 2.4vw, 28px); overflow: hidden; outline: none;
-  background: radial-gradient(60% 70% at 18% 20%, color-mix(in srgb, var(--l1) 55%, transparent), transparent 70%), radial-gradient(55% 60% at 85% 75%, color-mix(in srgb, var(--l2) 50%, transparent), transparent 70%),
-              radial-gradient(50% 50% at 60% 10%, color-mix(in srgb, var(--l3) 40%, transparent), transparent 70%), linear-gradient(140deg, var(--g1), var(--g2) 55%, var(--g3));
-  box-shadow: 0 0 0 1px var(--hair2), 0 60px 160px -50px color-mix(in srgb, var(--l2) 55%, transparent), var(--shadow); }
-.desk:focus-visible { box-shadow: 0 0 0 3px var(--l2), var(--shadow); }
-.desk .mb { position: absolute; inset: 0 0 auto; height: 4.2%; min-height: 18px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.6%; font: 600 clamp(8px, 1.05vw, 12.5px) var(--font); color: rgba(255,255,255,.88); background: rgba(0,0,0,.22); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
-.desk .mb span { display: flex; gap: 1.4em; align-items: center; }
-.desk .mb img { width: 1.25em; height: 1.25em; border-radius: 3px; }
-.desk .row { position: absolute; top: 9%; bottom: 17%; left: 0; display: flex; gap: 1.3%; padding-left: 6%; width: 100%; transition: transform .7s var(--ease); }
 .w { flex: 0 0 auto; width: 31%; height: 100%; border-radius: clamp(6px, .9vw, 12px); background: rgba(250,250,252,.96); overflow: hidden; box-shadow: 0 18px 40px -18px rgba(0,0,0,.6); transition: width .55s var(--ease), box-shadow .3s, opacity .4s, transform .55s var(--ease); display: flex; flex-direction: column; }
 .w.new { opacity: 0; transform: translateY(14px) scale(.96); }
 .w.focus { box-shadow: 0 0 0 2px #fff, 0 0 0 5px color-mix(in srgb, var(--wc) 70%, transparent), 0 24px 50px -16px rgba(0,0,0,.65); }
@@ -44,13 +35,21 @@
 .w .c u.h { background: var(--wc); width: 46%; height: clamp(6px, .9vw, 11px); }
 .w.term { background: #15161C; } .w.term .t { background: #23242C; color: #ccc; } .w.term .c u { background: #2E3140; } .w.term .c u.h { background: var(--wc); }
 .w .c .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6%; } .w .c .tiles s { aspect-ratio: 1.3; border-radius: 4px; background: color-mix(in srgb, var(--wc) 30%, #EEE); }
-.desk .rail { position: absolute; left: 50%; bottom: 4.5%; transform: translateX(-50%); display: flex; gap: clamp(4px, .6vw, 8px); padding: clamp(5px, .7vw, 9px); border-radius: 999px;
-  background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 10px 30px -10px rgba(0,0,0,.5); }
-.desk .rail b { width: clamp(18px, 3vw, 38px); height: clamp(11px, 1.7vw, 22px); border-radius: 999px; background: rgba(255,255,255,.3); transition: background .3s, width .4s var(--ease); }
-.desk .rail b.on { background: #fff; width: clamp(26px, 4.4vw, 54px); }
-.desk .tip { position: absolute; top: 5.5%; left: 50%; transform: translateX(-50%); font: 600 clamp(9px, 1.1vw, 13px) var(--font); color: #fff; padding: .5em 1.1em; border-radius: 999px; background: rgba(0,0,0,.35); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.18); white-space: nowrap; transition: opacity .3s; z-index: 2; }
-.deskhint { margin-top: 18px; font-size: 14px; color: var(--ink3); }
-@media (max-width: 600px) { .deskhint { display: none; } }
+
+/* A real recording in a Mac display frame */
+.macframe { margin: clamp(48px, 7vw, 80px) auto 0; width: min(1120px, 100%); }
+.macframe .screen { padding: clamp(6px, 1vw, 12px); border-radius: clamp(14px, 2vw, 26px) clamp(14px, 2vw, 26px) 6px 6px; background: linear-gradient(180deg, #2b2b2f, #111113);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset, 0 60px 160px -50px color-mix(in srgb, var(--l2) 55%, transparent), var(--shadow); }
+.macframe video, .macframe img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: clamp(6px, 1vw, 12px); background: #000; display: block; }
+.macframe .hinge { height: clamp(10px, 1.4vw, 18px); margin: 0 -3%; border-radius: 0 0 22px 22px / 0 0 14px 14px; background: linear-gradient(180deg, #d9d9de, #9a9aa0 60%, #6c6c72); box-shadow: 0 18px 30px -16px rgba(0,0,0,.6); }
+.macframe figcaption { margin-top: 18px; font-size: 14px; color: var(--ink3); text-align: center; }
+.realshot { border-radius: var(--r-l); overflow: hidden; border: 1px solid var(--hair2); box-shadow: var(--shadow); background: #000; }
+.realshot img { width: 100%; display: block; }
+.panelpages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: start; }
+@media (max-width: 900px) { .panelpages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.panelpages figure { margin: 0; }
+.panelpages img { width: 100%; border-radius: 16px; border: 1px solid var(--hair2); box-shadow: var(--shadow); display: block; }
+.panelpages figcaption { font-size: 13.5px; color: var(--ink2); margin-top: 10px; text-align: center; }
 
 /* Proof ribbon */
 .ribbon { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: clamp(40px, 6vw, 64px); }
@@ -68,6 +67,8 @@
 .mini .w { width: 44%; }
 .mini.grid .w { flex: 1 1 0; width: auto; min-width: 0; }
 .mini .w .c { padding: 8%; }
+.w.real { background: none; box-shadow: 0 14px 30px -14px rgba(0,0,0,.6); border-radius: 8px; }
+.w.real img { width: 100%; height: 100%; object-fit: cover; object-position: left top; border-radius: 8px; display: block; }
 .vs p { margin-top: 14px; color: var(--ink2); font-size: 15px; min-height: 3em; }
 .vsbar { display: flex; justify-content: center; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
 
@@ -255,13 +256,11 @@ table.cmp { width: 100%; min-width: 640px; border-collapse: collapse; font-size:
     </div>
     <p class="release" data-release-line>macOS 13 or later · Apple silicon and Intel · notarised by Apple</p>
 
-    <div class="desk" id="desk" tabindex="0" role="application" aria-label="Try Monorail: left and right arrows slide along the strip, N opens a window, F makes the focused window full width">
-      <div class="mb"><span><img src="/assets/icon.png" alt="">Finder File Edit View Go</span><span id="clock">9:41</span></div>
-      <div class="tip" id="desktip">A new window slides in beside you</div>
-      <div class="row" id="deskrow"></div>
-      <div class="rail" id="deskrail" aria-hidden="true"></div>
-    </div>
-    <p class="deskhint">Click the desktop, then <kbd>←</kbd> <kbd>→</kbd> to slide, <kbd>N</kbd> for a new window, <kbd>F</kbd> for full width.</p>
+    <figure class="macframe">
+      <div class="screen"><video src="/media/strip-real.mp4" poster="/media/strip-real.webp" autoplay muted loop playsinline preload="auto" aria-label="Monorail on a Mac: Finder, Safari, Terminal, TextEdit, Preview and Activity Monitor side by side on one strip, sliding along"></video></div>
+      <div class="hinge" aria-hidden="true"></div>
+      <figcaption>Recorded on a Mac running Monorail: real apps, side by side, sliding along the strip.</figcaption>
+    </figure>
 
     <div class="ribbon">
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Notarised by Apple</span>
@@ -298,6 +297,8 @@ table.cmp { width: 100%; min-width: 640px; border-collapse: collapse; font-size:
       <div class="card glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="7" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/></svg></div><h3>The overview</h3><p>Every workspace and slide at once. Drag windows anywhere, pair them, close them.</p><div class="keys"><kbd>⌃⌥O</kbd></div></div>
       <div class="card glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7"/><path d="m17 15 3 3-3 3"/></svg></div><h3>Your own words</h3><p>“Slack and Mail side by side on 3.” The command palette understands it, on your Mac.</p><div class="keys"><kbd>⌃⌥/</kbd></div></div>
     </div>
+    <figure class="realshot" style="margin:22px 0 0"><img src="/img/real/overview.webp" width="1920" height="1080" loading="lazy" alt="Monorail's overview on a real Mac: every workspace and its slides with live previews of Finder, Preview, Safari, TextEdit and Terminal"></figure>
+    <p class="faint" style="font-size:13px;margin-top:10px;text-align:center">The overview (⌃⌥O) on a Mac running Monorail: every workspace, every slide, live previews.</p>
   </div>
 </section>
 
@@ -391,7 +392,7 @@ table.cmp { width: 100%; min-width: 640px; border-collapse: collapse; font-size:
   <div class="wrap">
     <div class="split rev">
       <div class="grid g2" style="align-items:center">
-        <div><img class="panelshot" src="/img/panel-light.webp" width="360" height="629" loading="lazy" alt="Monorail’s menu bar panel: windows, today, system, storage and network cards above round toggles"></div>
+        <div><img class="panelshot" src="/img/panel-light.webp" width="360" height="663" loading="lazy" alt="Monorail’s menu bar panel on a real Mac: five slides, today, system, storage and network, round toggles and the volume and warmth sliders"></div>
         <div class="controls glass">
           <div class="toggles">
             <button type="button" class="tg" aria-pressed="true"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h12v3a6 6 0 0 1-12 0z"/><path d="M17 12h1.5a2.5 2.5 0 0 1 0 5H16M8 4c0 1.5 1.5 1.5 1.5 3M12 4c0 1.5 1.5 1.5 1.5 3"/></svg></span><span>Stay Awake</span></button>
@@ -415,6 +416,15 @@ table.cmp { width: 100%; min-width: 640px; border-collapse: collapse; font-size:
         </ol>
       </div>
     </div>
+  </div>
+  <div class="wrap" style="margin-top:44px">
+    <div class="panelpages">
+      <figure><img width="540" height="760" src="/img/real/panel-home.webp" loading="lazy" alt="The panel's Home on a real Mac"><figcaption>Home</figcaption></figure>
+      <figure><img width="540" height="760" src="/img/real/panel-system.webp" loading="lazy" alt="The System page: processor, memory and heat rings, the chip core by core, memory, processor time and this Mac"><figcaption>System: every core, memory, swap, heat</figcaption></figure>
+      <figure><img width="540" height="760" src="/img/real/panel-network.webp" loading="lazy" alt="The Network page: live speed, connection, addresses, router, DNS and the apps using the network"><figcaption>Network: connection, Wi-Fi, apps, latency</figcaption></figure>
+      <figure><img width="540" height="760" src="/img/real/panel-storage.webp" loading="lazy" alt="The Storage page: the disk drawn like System Settings, clean-ups and the largest items"><figcaption>Storage: like System Settings, explained</figcaption></figure>
+    </div>
+    <p class="faint" style="font-size:13px;margin-top:14px;text-align:center">Captured on a Mac running Monorail.</p>
   </div>
 </section>
 
@@ -650,8 +660,20 @@ table.cmp { width: 100%; min-width: 640px; border-collapse: collapse; font-size:
     { t: 'Docs — Launch plan', k: 'doc' }, { t: 'Mail', k: 'list' }, { t: 'Terminal — zsh', k: 'term' }, { t: 'Notes', k: 'doc' },
     { t: 'Design — Home', k: 'tiles' }, { t: 'Calendar', k: 'tiles' }, { t: 'Messages', k: 'list' }, { t: 'Music', k: 'tiles' }
   ];
-  // A window: title bar, then content in the style of its kind. --wc is its workspace colour from the theme.
+  // Real windows, captured on a Mac running Monorail; drawn ones only if a picture is missing.
+  const REAL = ['finder', 'safari', 'terminal', 'textedit', 'preview', 'activity'];
   function makeWin(i) {
+    const real = REAL[i % REAL.length];
+    if (real) {
+      const w = document.createElement('div');
+      w.className = 'w real';
+      w.innerHTML = `<img src="/media/win/${real}.webp" alt="" loading="lazy" decoding="async">`;
+      return w;
+    }
+    return drawnWin(i);
+  }
+  // A drawn window: title bar, then content in the style of its kind. --wc is its workspace colour from the theme.
+  function drawnWin(i) {
     const a = APPS[i % APPS.length], w = document.createElement('div');
     w.className = 'w' + (a.k === 'term' ? ' term' : '');
     w.style.setProperty('--wc', `var(--w${(i % 9) + 1})`);
@@ -662,53 +684,6 @@ table.cmp { width: 100%; min-width: 640px; border-collapse: collapse; font-size:
     w.innerHTML = `<div class="t"><i></i><i></i><i></i>${a.t}</div><div class="c">${c}</div>`;
     return w;
   }
-
-  /* ---------- 1 · The hero desktop: plays a short script until you take over */
-  const desk = document.getElementById('desk'), row = document.getElementById('deskrow'), rail = document.getElementById('deskrail'), tip = document.getElementById('desktip');
-  let wins = [], focus = 0, full = -1, next = 0, auto = !reduce, timer = null;
-  function deskAdd(after) {
-    const w = makeWin(next++); w.classList.add('new');
-    const at = after == null ? wins.length : after + 1;
-    if (at >= row.children.length) row.appendChild(w); else row.insertBefore(w, row.children[at]);
-    wins.splice(at, 0, w); requestAnimationFrame(() => requestAnimationFrame(() => w.classList.remove('new')));
-    return at;
-  }
-  function deskDraw() {
-    wins.forEach((w, i) => { w.classList.toggle('focus', i === focus); w.style.width = i === full ? '88%' : '31%'; });
-    rail.innerHTML = wins.map((_, i) => `<b class="${i === focus ? 'on' : ''}"></b>`).join('');
-    setTimeout(() => {
-      const el = wins[focus]; if (!el) return;
-      const target = el.offsetLeft + el.offsetWidth / 2 - desk.clientWidth / 2;
-      row.style.transform = `translateX(${-Math.max(0, target)}px)`;
-    }, 30);
-  }
-  [0, 1, 2].forEach(() => deskAdd()); focus = 1; deskDraw();
-  const say = t => { tip.textContent = t; };
-  const script = [
-    () => { focus = deskAdd(focus); say('A new window slides in beside you. Nothing shrinks.'); },
-    () => { focus = deskAdd(focus); say('And another. Every window keeps its size.'); },
-    () => { focus = Math.max(0, focus - 2); say('⌃⌥← slides back along the strip'); },
-    () => { full = focus; say('⌃⌥F makes a window full width'); },
-    () => { full = -1; focus = Math.min(wins.length - 1, focus + 3); say('⌃⌥→ slides on'); },
-    () => { wins.splice(3).forEach(w => w.remove()); next = 3; focus = 1; full = -1; say('A new window slides in beside you'); }
-  ];
-  let step = 0;
-  const tick = () => { script[step % script.length](); step++; deskDraw(); };
-  io(desk, on => { if (on && auto && !timer) timer = setInterval(tick, 2600); if (!on) { clearInterval(timer); timer = null; } });
-  if (reduce) tip.style.opacity = '0';
-  function takeOver() { auto = false; clearInterval(timer); timer = null; tip.style.opacity = '0'; }
-  desk.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') focus = Math.min(focus + 1, wins.length - 1);
-    else if (e.key === 'ArrowLeft') focus = Math.max(focus - 1, 0);
-    else if (e.key === 'n' || e.key === 'N') { if (wins.length < 9) { focus = deskAdd(focus); full = -1; } }
-    else if (e.key === 'f' || e.key === 'F') full = full === focus ? -1 : focus;
-    else return;
-    e.preventDefault(); takeOver(); deskDraw();
-  });
-  desk.addEventListener('pointerdown', () => { takeOver(); desk.focus(); });
-  addEventListener('resize', deskDraw);
-  const clock = document.getElementById('clock');
-  const tickClock = () => { clock.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }; tickClock(); setInterval(tickClock, 30000);
 
   /* ---------- 3 · A grid tiler against Monorail */
   const gridRow = document.querySelector('#gridmini .row'), railMini = document.getElementById('railmini'), railRow = railMini.querySelector('.row');

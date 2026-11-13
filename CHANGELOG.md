@@ -14,6 +14,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **A fuller System page.** How the processor's time splits between apps, macOS and idle, with its recent history; load averages, processes and disk speed; heat; memory pressure over the last hour with swap and swapping in and out, and advice when the Mac is swapping; the apps using the most memory; and this Mac: model, chip, cores, memory, macOS version and when it started.
 - **Live Notch on Home.** On a MacBook with a notch, a round toggle turns the live notch on and off.
 - **The Dashboard in the overview fits the screen.** It stays clear of the Dock wherever it is, and the active workspace's windows sit in a row above it, one click to go to one.
+- **The website shows the real thing.** A screen recording of Monorail on a Mac in the hero, real app windows in the side-by-side demo, and real captures of the overview and the panel's Home, System, Network and Storage pages, all taken on a Mac by a new screenshot workflow.
 - **Links to the panel and the Dashboard.** `monorail://panel` opens the menu bar panel (`panel/battery`, `panel/clipboard` and other pages too), and `monorail://dashboard/ai-usage` opens the Dashboard on any page, for scripts, Shortcuts and launchers.
 
 ### Fixed

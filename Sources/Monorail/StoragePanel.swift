@@ -221,7 +221,7 @@ struct StorageWidget: View {
     var body: some View {
         Button(action: open) {
             VStack(alignment: .leading, spacing: 6) {
-                Label("STORAGE", systemImage: "internaldrive.fill").font(.label).foregroundStyle(levelColour(storage.level)).labelStyle(.titleAndIcon)
+                CardTitle(title: "STORAGE", symbol: "internaldrive.fill", tint: levelColour(storage.level))
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(Storage.size(storage.free)).font(.figure(20))
                     Text("free").font(.system(size: 11)).foregroundStyle(.tertiary)

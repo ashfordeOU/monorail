@@ -1505,6 +1505,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func dynamicCommands(_ query: String) -> [PaletteCommand] {
         var list: [PaletteCommand] = []
+        // What you copied, today's meetings, reminders and notes that match.
+        let q = query.trimmingCharacters(in: .whitespaces)
+        if q.count >= 2 {
+            for clip in ClipboardWatch.shared.history.shown(matching: q).prefix(4) {
+                list.append(PaletteCommand(id: "clip-\(clip.id)", title: clip.preview(60), subtitle: "Clipboard · paste it", symbol: "doc.on.clipboard",
+                                           keywords: q) { ClipboardWatch.shared.use(clip.text) })
+            }
+            for event in TodayWatch.shared.meetings where event.title.localizedCaseInsensitiveContains(q) {
+                list.append(PaletteCommand(id: "event-\(event.id)", title: event.title,
+                                           subtitle: "Calendar · \(event.start.formatted(date: .omitted, time: .shortened))" + (event.join == nil ? "" : " · Join"),
+                                           symbol: "calendar", keywords: q) {
+                    if let link = event.join { NSWorkspace.shared.open(link) }
+                })
+            }
+            for reminder in RemindersWatch.shared.reminders where (reminder.title ?? "").localizedCaseInsensitiveContains(q) {
+                list.append(PaletteCommand(id: "reminder-\(reminder.calendarItemIdentifier)", title: reminder.title ?? "",
+                                           subtitle: "Reminder · mark as done", symbol: "checkmark.circle", keywords: q) {
+                    RemindersWatch.shared.complete(reminder)
+                })
+            }
+            for note in AppleNotes.shared.notes where note.title.localizedCaseInsensitiveContains(q) || note.snippet.localizedCaseInsensitiveContains(q) {
+                list.append(PaletteCommand(id: "note-\(note.id)", title: note.title, subtitle: "Notes · open", symbol: "note.text", keywords: q) {
+                    AppleNotes.shared.open(note.id)
+                })
+            }
+        }
         // Ask Monorail: "how do I keep my Mac awake?"
         if HelpIndex.isQuestion(query) {
             for (n, answer) in HelpIndex.answers(for: query).enumerated() {
@@ -3178,7 +3204,66 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         list.append(PaletteCommand(id: "settings", title: "Open Settings", symbol: "gearshape") { [weak self] in
             self?.showSettings()
         })
-        return scriptablePaletteCommands() + v12PaletteCommands() + list
+        return scriptablePaletteCommands() + v12PaletteCommands() + list + everywhereCommands()
+    }
+
+    /// One search for everything: each page of the panel, every setting, and every menu item, so
+    /// nothing is only reachable by knowing where it lives.
+    private func everywhereCommands() -> [PaletteCommand] {
+        var list: [PaletteCommand] = []
+        let pages: [(String, PanelPage, String, String)] = [
+            ("Battery", .battery, "bolt.fill", "charge health cycles drain apps report accessories airpods mouse keyboard"),
+            ("System", .system, "cpu", "processor cpu memory ram heat network speed test ip vpn uptime chip cores"),
+            ("Storage", .storage, "internaldrive.fill", "disk space free clean up largest files trash"),
+            ("Calendar", .today, "calendar", "today meetings events join month world clocks timers"),
+            ("Reminders", .reminders, "checklist", "todo tasks due overdue"),
+            ("Notes", .note, "note.text", "quick note apple notes"),
+            ("Clipboard", .clipboard, "doc.on.clipboard.fill", "copy paste history pins plain text colours"),
+            ("Text and Codes", .text, "text.viewfinder", "ocr qr scan read text picture screenshot"),
+            ("Focus Session", .focus, "timer", "pomodoro sounds rain brown noise streak eye breaks"),
+            ("Film Mode", .film, "film.fill", "movie video sleep timer"),
+            ("Stay Awake", .awake, "cup.and.saucer.fill", "caffeine keep awake amphetamine"),
+            ("Evening Mode", .evening, "moon.fill", "night shift warm screen blue light"),
+        ]
+        for (title, page, symbol, keywords) in pages {
+            list.append(PaletteCommand(id: "page-\(title)", title: title, subtitle: "Open in the \(Brand.name) panel", symbol: symbol,
+                                       keywords: keywords) { [weak self] in
+                guard let self, let button = self.statusItem?.button else { return }
+                self.popover.toggle(relativeTo: button, page: page)
+            })
+        }
+        if !Edition.isAppStore {
+            list.append(PaletteCommand(id: "page-live", title: "Live View", subtitle: "Every core, network and apps over time", symbol: "waveform.path.ecg",
+                                       keywords: "activity monitor graphs") { LiveWindow.shared.show() })
+        }
+        // Every setting, opening Settings at its page.
+        for (index, entry) in SettingsIndex.entries.enumerated() {
+            guard let tab = SettingsTab(rawValue: entry.tab) else { continue }
+            list.append(PaletteCommand(id: "setting-\(index)", title: entry.label, subtitle: "Settings › \(tab.title)", symbol: "gearshape",
+                                       keywords: "setting preference option") { [weak self] in
+                self?.navigation.tab = tab
+                self?.showSettings()
+            })
+        }
+        // Every menu item, run as if chosen from the menu.
+        let menu = NSMenu()
+        menuNeedsUpdate(menu)
+        func walk(_ menu: NSMenu, path: [String]) {
+            for item in menu.items where !item.isSeparatorItem && !item.title.isEmpty {
+                if let sub = item.submenu {
+                    walk(sub, path: path + [item.title])
+                } else if let action = item.action, item.isEnabled {
+                    let target = item.target
+                    list.append(PaletteCommand(id: "menu-\((path + [item.title]).joined(separator: "/"))", title: item.title,
+                                               subtitle: (["Menu"] + path).joined(separator: " › "), symbol: "filemenu.and.selection",
+                                               keywords: path.joined(separator: " ")) {
+                        NSApp.sendAction(action, to: target, from: item)
+                    })
+                }
+            }
+        }
+        walk(menu, path: [])
+        return list
     }
 
     private func saveAppPair(from id: WindowID) {

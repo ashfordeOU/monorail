@@ -205,7 +205,7 @@ struct SystemWidget: View {
     var body: some View {
         Button(action: open) {
             VStack(alignment: .leading, spacing: 6) {
-                Label("SYSTEM", systemImage: "cpu").font(.label).foregroundStyle(Tone.blue).labelStyle(.titleAndIcon)
+                CardTitle(title: "SYSTEM", symbol: "cpu", tint: Tone.blue)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text("\(Int(system.total.rounded()))%").font(.figure(22))
                     Text("processor").font(.system(size: 11)).foregroundStyle(.tertiary)
@@ -218,6 +218,33 @@ struct SystemWidget: View {
         .onAppear { system.setLive(true) }
         .onDisappear { system.setLive(false) }
         .accessibilityLabel(Text("System: processor \(Int(system.total.rounded())) percent. Opens the System page"))
+    }
+}
+/// Home's network card: speed now, and whether a VPN is on; opens the System page.
+struct NetworkWidget: View {
+    let open: () -> Void
+    @ObservedObject private var system = SystemWatch.shared
+
+    var body: some View {
+        Button(action: open) {
+            VStack(alignment: .leading, spacing: 6) {
+                CardTitle(title: "NETWORK", symbol: "network", tint: Color(nsColor: .systemTeal))
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Image(systemName: "arrow.down").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
+                    Text(SystemStats.speed(system.down)).font(.figure(17))
+                }
+                HStack(spacing: 6) {
+                    Text("↑ \(SystemStats.speed(system.up))")
+                    if system.vpn { Text("· VPN").foregroundStyle(Tone.good) }
+                }
+                .font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+            .tile()
+        }
+        .buttonStyle(PressStyle())
+        .onAppear { system.setLive(true) }
+        .onDisappear { system.setLive(false) }
+        .accessibilityLabel(Text("Network: down \(SystemStats.speed(system.down)), up \(SystemStats.speed(system.up)). Opens the System page"))
     }
 }
 #endif

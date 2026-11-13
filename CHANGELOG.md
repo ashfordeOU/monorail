@@ -12,9 +12,13 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **The App Store edition is now Signalbox.** A new name, a new icon (mostly navy with a band of Monorail's pink, two white rings and a pink pulse through the M) and a matching menu bar glyph: the M's two windows with a pulse running through them. Same app, same settings. <!-- station -->
 
 ### Added
+- **Search finds everything.** The search at the foot of the panel (and ⌃⌥/) now also finds every setting, every menu item, each page of the panel (Battery, System, Storage, Calendar, Reminders, Notes, Clipboard, Focus and more), and as you type, what you copied, today's meetings, your reminders and your notes. Pick one to open it, paste it, join it or tick it off.
+- **Home says more, and shows what opens.** Cards that open a page have a › and brighten under the pointer. A Network card (speed and VPN) sits beside Storage. The Battery card shows your mouse, keyboard and AirPods when one is low, Focus Session shows your streak, and there are tiles for Keep me Available and muting the microphone. With no saved layouts, the Layouts row offers to save this arrangement.
 - **Calendar, Reminders and Notes.** The Today card opens one page with three tabs. Calendar: a month you can click through, with dots on busy days, the chosen day's agenda (all-day events, times, places and a Join button) and New Event in a line, with world clocks and timers below. Reminders: overdue, today, coming up and no date, each with its list's colour; tick to complete and add one in a line, for today or whenever. Notes: the quick note, and in Monorail your Apple Notes too, newest first, searchable, opening in Notes with a click, and Save to Notes turns the quick note into a real one (Station sends it with macOS's Share to Notes, since the App Store doesn't let apps read Notes). Home's Today card says when reminders are due.
 
 ### Fixed
+- **"All calm" when the battery isn't.** The battery card now comes up at a quarter left or under 45 minutes (not only at 10%), says so in the title, and when Stay Awake is on while on battery it says it ends at your cut-off unless you plug in.
+- **The clipboard stays private on Home.** The Clipboard tile shows how many things you've copied, not the last one, since the panel can be on screen while you share it.
 - **Allow Calendar works in Monorail.** The download version wasn't signed for calendar access, so macOS quietly refused the request; it now asks, and if you'd said Don't Allow before, the button opens the right page of System Settings.
 
 ## [1.9.0] - 2026-11-13

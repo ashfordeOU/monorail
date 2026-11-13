@@ -190,7 +190,7 @@ struct HomePage: View {
         var index = 0
         while index < cards.count {
             let card = cards[index]
-            let pairable: (HomeCard) -> Bool = { [.battery, .system, .storage, .agents].contains($0) && !plan.raised.contains($0) }
+            let pairable: (HomeCard) -> Bool = { [.battery, .system, .storage, .network, .agents].contains($0) && !plan.raised.contains($0) }
             if pairable(card), index + 1 < cards.count, pairable(cards[index + 1]) {
                 rows.append([card, cards[index + 1]])
                 index += 2
@@ -242,6 +242,7 @@ struct HomePage: View {
         case .system: SystemWidget { nav.push(.system) }
         case .today: TodayWidget { nav.push(.today) }
         case .storage: StorageWidget { nav.push(.storage) }
+        case .network: NetworkWidget { nav.push(.system) }
         case .controls: controls
         case .tools: ToolsRow(openClipboard: { nav.push(.clipboard) }, openNote: { nav.push(.note) }, openText: { nav.push(.text) })
         case .layouts: if !Edition.isAppStore { layoutsRow }
@@ -361,7 +362,7 @@ struct HomePage: View {
         let b = power.battery
         return Button { nav.push(.battery) } label: {
             VStack(alignment: .leading, spacing: 6) {
-                Label("BATTERY", systemImage: "bolt.fill").font(.label).foregroundStyle(Tone.good).labelStyle(.titleAndIcon)
+                CardTitle(title: "BATTERY", symbol: "bolt.fill", tint: Tone.good)
                 HStack(spacing: 10) {
                     BatteryRingsView(rings: power.rings, size: 50, glow: false)
                     VStack(alignment: .leading, spacing: 0) {
@@ -369,6 +370,21 @@ struct HomePage: View {
                         Text(b.isCharging ? "Charging" : b.onBattery ? "\(Self.clock(b.minutesAtCurrentRate)) left" : "Plugged in")
                             .font(.system(size: 11)).foregroundStyle(.tertiary)
                     }
+                }
+                // Accessories, lowest first, so a dying mouse is seen in time.
+                let gear = BatteryLog.shared.accessories.sorted { $0.percent < $1.percent }.prefix(2)
+                if !gear.isEmpty {
+                    HStack(spacing: 8) {
+                        ForEach(Array(gear)) { item in
+                            HStack(spacing: 3) {
+                                Image(systemName: item.symbol).font(.system(size: 9))
+                                Text("\(item.percent)%").monospacedDigit()
+                            }
+                            .foregroundStyle(item.percent <= 15 ? Tone.high : Color.secondary)
+                            .help(item.name)
+                        }
+                    }
+                    .font(.system(size: 10.5))
                 }
             }
             .tile()
@@ -380,15 +396,15 @@ struct HomePage: View {
     private var batteryRaised: some View {
         let b = power.battery
         let rings = power.rings
-        let low = HomePlanner.batteryIsLow(HomeSignals(onBattery: b.onBattery, percent: b.percent, minutesLeft: b.minutesAtCurrentRate))
+        let signals = HomeSignals(onBattery: b.onBattery, percent: b.percent, minutesLeft: b.minutesAtCurrentRate)
+        let low = HomePlanner.batteryIsLow(signals)
+        let gettingLow = HomePlanner.batteryGettingLow(signals)
         let tone = low ? Tone.high : Tone.ok
         return VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Label(low ? "BATTERY · LOW" : "BATTERY · DRAINING FAST", systemImage: "bolt.fill").font(.label).foregroundStyle(tone)
-                Spacer()
-                Button { nav.push(.battery) } label: { Image(systemName: "chevron.right").foregroundStyle(.tertiary) }
-                    .buttonStyle(.plain).accessibilityLabel("Open the Battery page")
+            Button { nav.push(.battery) } label: {
+                CardTitle(title: low ? "BATTERY · LOW" : gettingLow ? "BATTERY · \(b.percent)%" : "BATTERY · DRAINING FAST", symbol: "bolt.fill", tint: tone)
             }
+            .buttonStyle(PressStyle()).accessibilityLabel("Open the Battery page")
             HStack(spacing: 12) {
                 BatteryRingsView(rings: rings, size: 72)
                 VStack(alignment: .leading, spacing: 3) {
@@ -397,13 +413,18 @@ struct HomePage: View {
                         Text("left at this rate").font(.system(size: 11)).foregroundStyle(.tertiary)
                     }
                     Text(sentence(rings)).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    if context.awake.isOn(), b.onBattery {
+                        // Stay Awake on battery: say what happens, before it happens.
+                        Label("Stay Awake is on: plug in, or it ends at \(store.settings.awakeBatteryCutoff)%.", systemImage: "cup.and.saucer.fill")
+                            .font(.system(size: 11)).foregroundStyle(Tone.warm).fixedSize(horizontal: false, vertical: true)
+                    }
                     if let app = power.attention {
                         HStack(spacing: 6) {
                             Button("Quit \(app.use.appName)") { power.quit(app.id) }.buttonStyle(.borderedProminent)
                             if power.canPause(app.id) { Button("Pause") { power.pause(app.id) } }
                         }
                         .controlSize(.small).padding(.top, 2)
-                    } else if low, !b.lowPowerMode {
+                    } else if low || gettingLow, !b.lowPowerMode {
                         Button("Turn On Low Power Mode") { power.setLowPowerMode(true) }.controlSize(.small).padding(.top, 2)
                     }
                 }
@@ -516,9 +537,16 @@ struct HomePage: View {
                             toggle: { more.toggleFocus(); settle() }, open: nil)
             }
             // Low Power Mode needs an administrator, which the App Store's sandbox doesn't allow.
-            ControlTile(title: "Focus Session", status: focusSession.isRunning ? "\(TimeModel.countdown(focusSession.remaining)) left" : "\(store.settings.sessionMinutes) min",
+            ControlTile(title: "Focus Session", status: focusSession.isRunning ? "\(TimeModel.countdown(focusSession.remaining)) left"
+                            : "\(store.settings.sessionMinutes) min" + (focusSession.log.streak() > 1 ? " · \(focusSession.log.streak())-day streak" : ""),
                         systemImage: "timer", isOn: focusSession.isRunning, tint: Color(nsColor: .systemIndigo),
                         toggle: { focusSession.isRunning ? focusSession.stop() : focusSession.start() }, open: { nav.push(.focus) })
+            ControlTile(title: "Keep Available", status: store.settings.keepAvailable ? "Teams and Slack" : "Off",
+                        systemImage: "person.crop.circle.badge.checkmark", isOn: store.settings.keepAvailable, tint: Tone.good,
+                        toggle: { context.awake.toggleKeepAvailable(); settle() }, open: { nav.push(.awake) })
+            ControlTile(title: "Microphone", status: MomentsWatch.micMuted() ? "Muted" : "On",
+                        systemImage: MomentsWatch.micMuted() ? "mic.slash.fill" : "mic.fill", isOn: MomentsWatch.micMuted(), tint: Tone.high,
+                        toggle: { moments.toggleMute(); settle() }, open: nil)
             ControlTile(title: "Film", status: moments.film ? (moments.sleepAt.map { "Sleeps at \($0.formatted(date: .omitted, time: .shortened))" } ?? "On") : "Off",
                         systemImage: "film.fill", isOn: moments.film, tint: Color(nsColor: .systemIndigo),
                         toggle: { moments.setFilm(!moments.film) }, open: { nav.push(.film) })
@@ -537,6 +565,11 @@ struct HomePage: View {
             Spacer(minLength: 4)
             ForEach(layouts.prefix(2), id: \.self) { name in
                 Button(name) { more.applyLayout(name) }.buttonStyle(ChipStyle())
+            }
+            if layouts.isEmpty {
+                // Nothing saved yet: the one useful thing to do here.
+                Button("Save This Arrangement") { more.takeSnapshot() }.buttonStyle(ChipStyle())
+                    .help("Keeps these windows as they are, to come back to with one click")
             }
             Menu {
                 if !layouts.isEmpty { Section("Layouts") { ForEach(layouts, id: \.self) { name in Button(name) { more.applyLayout(name) } } } }
@@ -558,7 +591,7 @@ struct HomePage: View {
         Button(action: more.openPalette) {
             HStack(spacing: 7) {
                 Image(systemName: "magnifyingglass")
-                Text("Search \(Brand.name)")
+                Text("Search \(Brand.name): windows, settings, clipboard…")
                 Spacer()
             }
             .font(.system(size: 12))
@@ -567,7 +600,7 @@ struct HomePage: View {
             .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.primary.opacity(0.06)))
         }
         .buttonStyle(.plain)
-        .help("Commands, settings and windows in one search")
+        .help("Windows, commands, settings, menu items, the clipboard, meetings, reminders and notes in one search")
     }
 
     private func settle() {

@@ -79,10 +79,47 @@ extension View {
 /// Presses in slightly with a spring, like Control Centre's modules.
 struct PressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .contentShape(Rectangle())
-            .scaleEffect(configuration.isPressed && !Motion.reduced ? 0.96 : 1)
-            .animation(Motion.pop, value: configuration.isPressed)
+        PressBody(configuration: configuration)
+    }
+
+    /// Brightens a touch under the pointer (with the hand cursor), so it's plain what can be clicked.
+    private struct PressBody: View {
+        let configuration: ButtonStyleConfiguration
+        @State private var hovering = false
+
+        var body: some View {
+            configuration.label
+                .contentShape(Rectangle())
+                .brightness(hovering ? 0.035 : 0)
+                .scaleEffect(configuration.isPressed && !Motion.reduced ? 0.96 : 1)
+                .animation(Motion.pop, value: configuration.isPressed)
+                .animation(.easeOut(duration: 0.12), value: hovering)
+                .onHover { inside in
+                    guard inside != hovering else { return }
+                    hovering = inside
+                    if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
+                }
+        }
+    }
+}
+
+/// A card's title line: its coloured label and, when the card opens a page, a › at the right,
+/// as in Control Centre, so it's clear there's more behind it.
+struct CardTitle: View {
+    let title: String
+    let symbol: String
+    let tint: Color
+    var opens = true
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Label(title, systemImage: symbol).font(.label).foregroundStyle(tint).labelStyle(.titleAndIcon)
+            Spacer(minLength: 4)
+            if opens {
+                Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold)).foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
+            }
+        }
     }
 }
 

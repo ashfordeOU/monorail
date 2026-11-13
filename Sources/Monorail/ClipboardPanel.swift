@@ -127,18 +127,31 @@ struct ToolsRow: View {
 
     var body: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible())], spacing: 8) {
-            tool("doc.on.clipboard.fill", "Clipboard", clips.history.clips.first?.preview(24) ?? "Empty", Tone.blue, openClipboard)
-            tool("eyedropper", "Colour", clips.colours.first?.hex ?? "Pick from screen", Color(nsColor: .systemPink)) { clips.pickColour() }
+            tool("doc.on.clipboard.fill", "Clipboard", clipsLine, Tone.blue, openClipboard)
+            tool("eyedropper", "Colour", clips.colours.first?.hex ?? "Pick from screen", Color(nsColor: .systemPink), opens: false) { clips.pickColour() }
             tool("text.viewfinder", "Text", "From a picture", Color(nsColor: .systemTeal), openText)
             tool("note.text", "Notes", clips.note.isEmpty ? (AppleNotes.available ? "Quick note and Apple Notes" : "Jot something") : "\(PlainText.counts(clips.note).words) words", Tone.ok, openNote)
         }
     }
 
-    private func tool(_ symbol: String, _ title: String, _ detail: String, _ tint: Color, _ action: @escaping () -> Void) -> some View {
+    /// How many clips, never the text: the panel can be on screen while you share it.
+    private var clipsLine: String {
+        let n = clips.history.clips.count
+        return n == 0 ? "Empty" : "\(n) item\(n == 1 ? "" : "s")"
+    }
+
+    private func tool(_ symbol: String, _ title: String, _ detail: String, _ tint: Color, opens: Bool = true, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: symbol).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
-                    .frame(width: 26, height: 26).background(Circle().fill(tint))
+                HStack(alignment: .top) {
+                    Image(systemName: symbol).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
+                        .frame(width: 26, height: 26).background(Circle().fill(tint))
+                    Spacer()
+                    if opens {
+                        Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold)).foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
+                    }
+                }
                 Text(title).font(.system(size: 12, weight: .semibold))
                 Text(detail).font(.system(size: 10.5)).foregroundStyle(.secondary).lineLimit(1)
             }

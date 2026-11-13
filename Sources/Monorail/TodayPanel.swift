@@ -257,10 +257,12 @@ struct TodayWidget: View {
                         }
                     }
                     Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold)).foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
                 }
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressStyle())
             if let link = today.next?.join, TimeModel.isImminent(today.next!.start, end: today.next!.end, now: today.now) || today.next!.start <= today.now {
                 Button("Join") { NSWorkspace.shared.open(link) }.buttonStyle(.borderedProminent).controlSize(.small)
             }

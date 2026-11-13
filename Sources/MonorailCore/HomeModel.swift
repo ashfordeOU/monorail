@@ -2,7 +2,7 @@ import Foundation
 
 /// The cards on the home page of the menu bar panel.
 public enum HomeCard: String, CaseIterable, Sendable, Equatable {
-    case notices, heat, call, movie, battery, windows, today, system, storage, agents, controls, tools, layouts
+    case notices, heat, call, movie, battery, windows, today, system, storage, network, agents, controls, tools, layouts
 }
 
 /// What the home page knows when it opens: enough to decide what matters most.
@@ -57,11 +57,17 @@ public struct HomeLayout: Equatable, Sendable {
 /// Decides the home page. Calm, it keeps one fixed order so things are where you left them;
 /// when something needs you, that card moves to the top. Like a Smart Stack, without the guessing.
 public enum HomePlanner {
-    public static let calmOrder: [HomeCard] = [.windows, .today, .battery, .system, .storage, .agents, .controls, .tools, .layouts]
+    public static let calmOrder: [HomeCard] = [.windows, .today, .battery, .system, .storage, .network, .agents, .controls, .tools, .layouts]
 
     public static func batteryIsLow(_ s: HomeSignals) -> Bool {
         guard s.onBattery else { return false }
         return (s.percent.map { $0 <= 10 } ?? false) || (s.minutesLeft.map { $0 > 0 && $0 < 30 } ?? false)
+    }
+
+    /// Not low yet, but worth a look: a quarter left, or under 45 minutes.
+    public static func batteryGettingLow(_ s: HomeSignals) -> Bool {
+        guard s.onBattery, !batteryIsLow(s) else { return false }
+        return (s.percent.map { $0 <= 25 } ?? false) || (s.minutesLeft.map { $0 > 0 && $0 < 45 } ?? false)
     }
 
     public static func drainingFast(_ s: HomeSignals) -> Bool {
@@ -80,6 +86,9 @@ public enum HomePlanner {
         if batteryIsLow(s) {
             raised.append(.battery)
             reasons.append("Battery low")
+        } else if batteryGettingLow(s) {
+            raised.append(.battery)
+            reasons.append(s.percent.map { "Battery at \($0)%" } ?? "Battery getting low")
         } else if drainingFast(s) {
             raised.append(.battery)
             reasons.append("Draining fast")

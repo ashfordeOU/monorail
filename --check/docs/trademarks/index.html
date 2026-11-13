@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trademarks · Monorail</title>
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --plum:#D63A80; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; } }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+main { max-width:900px; margin:0 auto; padding:32px 16px 72px; overflow-wrap:anywhere; }
+a { color:var(--plum); }
+.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
+.brand img { width:30px; height:30px; border-radius:8px; }
+.top nav { display:flex; gap:16px; font-size:15px; flex-wrap:wrap; }
+.top nav a { color:var(--muted); text-decoration:none; }
+h1 { font-size:clamp(30px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; }
+h2 { margin-top:40px; }
+code { background:var(--soft); padding:1px 6px; border-radius:6px; font-size:.92em; }
+pre { background:var(--soft); padding:14px 16px; border-radius:12px; overflow-x:auto; }
+pre code { padding:0; background:none; }
+.table { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:15px; }
+th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }
+footer { margin-top:56px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <a class="brand" href="../../"><img src="../../assets/icon.png" alt="" width="30" height="30">Monorail</a>
+  <nav aria-label="Site"><a href="../../changelog/">Changelog</a><a href="../../support/">Support</a><a href="../../privacy/">Privacy</a><a href="../../download/">Download</a></nav>
+</header>
+<h1 id="trademark-policy">Trademark policy</h1>
+<p>“Monorail by Ashforde”, “Monorail” when used for a window manager, “Ashforde®” and the Monorail
+icon are trademarks of Ashforde OÜ. Ashforde® is a registered trademark.</p>
+<p>The source code is licensed under the <a href="../licence/">Functional Source License</a>. That licence covers the
+code only. <strong>It does not grant any right to use these names or the icon.</strong></p>
+<h2 id="you-may">You may</h2>
+<ul>
+<li>Say that your project is “based on Monorail” or “a fork of Monorail” in a plain sentence.</li>
+<li>Refer to Monorail by name in articles, reviews, videos, tutorials and comparisons.</li>
+<li>Link to the official site and repository.</li>
+</ul>
+<h2 id="you-may-not-without-written-permission">You may not, without written permission</h2>
+<ul>
+<li>Publish, sell or distribute an app, build or installer called Monorail, or with the Monorail icon.</li>
+<li>Use the names or icon in a way that suggests your build is official, endorsed or supported by
+  Ashforde OÜ.</li>
+<li>Use the names or icon in an app store listing, domain name, ad or product name.</li>
+<li>Remove or change the copyright and trademark notices in the About window.</li>
+</ul>
+<p>A fork must have its own name and icon, and its own bundle identifier (not <code>com.ashforde.*</code>).</p>
+<h2 id="official-builds">Official builds</h2>
+<p>The only official builds are the ones published at <a href="https://monorail.ashforde.org/">https://monorail.ashforde.org/</a> and the Homebrew
+cask <code>ashfordeou/monorail/monorail</code>. They are signed by Ashforde OÜ.</p>
+<p>To ask for permission, or to report a copy being sold or passed off as Monorail, open an issue or
+contact Ashforde OÜ through the repository.</p>
+<footer>© Ashforde OÜ · <a href="mailto:contact@ashforde.org">contact@ashforde.org</a></footer>
+</main>
+</body>
+</html>

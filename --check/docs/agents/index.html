@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI agents and Monorail · Monorail</title>
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --plum:#D63A80; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; } }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+main { max-width:900px; margin:0 auto; padding:32px 16px 72px; overflow-wrap:anywhere; }
+a { color:var(--plum); }
+.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
+.brand img { width:30px; height:30px; border-radius:8px; }
+.top nav { display:flex; gap:16px; font-size:15px; flex-wrap:wrap; }
+.top nav a { color:var(--muted); text-decoration:none; }
+h1 { font-size:clamp(30px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; }
+h2 { margin-top:40px; }
+code { background:var(--soft); padding:1px 6px; border-radius:6px; font-size:.92em; }
+pre { background:var(--soft); padding:14px 16px; border-radius:12px; overflow-x:auto; }
+pre code { padding:0; background:none; }
+.table { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:15px; }
+th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }
+footer { margin-top:56px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <a class="brand" href="../../"><img src="../../assets/icon.png" alt="" width="30" height="30">Monorail</a>
+  <nav aria-label="Site"><a href="../../changelog/">Changelog</a><a href="../../support/">Support</a><a href="../../privacy/">Privacy</a><a href="../../download/">Download</a></nav>
+</header>
+<h1 id="ai-agents-and-monorail">AI agents and Monorail</h1>
+<p>Monorail can be driven by AI agents as well as by you: desktop assistants, coding agents, bots and
+computer-use agents. They arrange windows with exact commands instead of screenshots and clicks, so
+it's faster, cheaper and easy to undo.</p>
+<h2 id="1-turn-on-the-local-api">1. Turn on the local API</h2>
+<p>Open <strong>Settings → Automation</strong> and turn on <strong>Local API</strong>. It listens only on this Mac, and every
+request needs a token that only your user account can read.</p>
+<h2 id="2-connect-your-agent">2. Connect your agent</h2>
+<p><strong>MCP clients</strong> (Claude Desktop, Cursor, Hermes Agent, OpenClaw and any other client that speaks the
+Model Context Protocol): click <strong>Copy MCP Server Config</strong> and add it to the client's MCP servers. It
+runs:</p>
+<pre><code class="language-json">&quot;monorail&quot;: { &quot;command&quot;: &quot;/Applications/Monorail.app/Contents/MacOS/Monorail&quot;, &quot;args&quot;: [&quot;--mcp&quot;] }
+</code></pre>
+<p><strong>Agents that load skills</strong> (OpenClaw, Hermes Agent, Claude and others that read <code>SKILL.md</code> files):
+click <strong>Save Agent Skill…</strong> and choose the agent's skills folder. The skill is also at
+<a href="https://monorail.ashforde.org/agents/SKILL.md">monorail.ashforde.org/agents/SKILL.md</a>.</p>
+<p><strong>Any other agent or bot that can run commands</strong> (computer-use agents, bots built on Grok, ChatGPT
+or Gemini, scripts): click <strong>Copy Agent Instructions</strong> and paste them into its instructions, or point
+it at the skill's address above. It then uses the <code>monorail</code> command:</p>
+<pre><code class="language-sh">/Applications/Monorail.app/Contents/Resources/monorail say &quot;Slack and Mail side by side on 2&quot;
+/Applications/Monorail.app/Contents/Resources/monorail windows
+</code></pre>
+<h2 id="3-ask">3. Ask</h2>
+<p>“Put my editor and browser side by side.” “Move every chat app to workspace 3.” “Keep the Mac awake
+for an hour while the build runs.”</p>
+<h2 id="what-agents-can-do">What agents can do</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th></th>
+<th>Command line</th>
+<th>HTTP (local API)</th>
+<th>MCP tool</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Do what a sentence says</td>
+<td><code>monorail say "…"</code></td>
+<td><code>POST /say</code></td>
+<td><code>say</code></td>
+</tr>
+<tr>
+<td>Read the state</td>
+<td><code>monorail state</code></td>
+<td><code>GET /state</code></td>
+<td><code>get_state</code></td>
+</tr>
+<tr>
+<td>List windows</td>
+<td><code>monorail windows</code></td>
+<td><code>GET /windows</code></td>
+<td><code>list_windows</code></td>
+</tr>
+<tr>
+<td>Run any action</td>
+<td><code>monorail focus-left</code></td>
+<td><code>POST /action</code></td>
+<td><code>perform_action</code></td>
+</tr>
+<tr>
+<td>Put windows together</td>
+<td></td>
+<td><code>POST /pair</code></td>
+<td><code>pair_windows</code></td>
+</tr>
+<tr>
+<td>Move a window to a workspace</td>
+<td></td>
+<td><code>POST /move</code></td>
+<td><code>move_window</code></td>
+</tr>
+<tr>
+<td>Apply a saved layout</td>
+<td><code>monorail layout Coding</code></td>
+<td><code>POST /layout</code></td>
+<td><code>apply_layout</code></td>
+</tr>
+<tr>
+<td>Keep the Mac awake</td>
+<td><code>monorail awake 60</code></td>
+<td></td>
+<td><code>stay_awake</code></td>
+</tr>
+<tr>
+<td>Battery and the apps using it</td>
+<td><code>monorail battery</code></td>
+<td><code>GET /battery</code></td>
+<td><code>battery_status</code></td>
+</tr>
+<tr>
+<td>Hide, pause or quit a hungry app</td>
+<td></td>
+<td><code>POST /battery</code></td>
+<td><code>save_battery</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Every action is listed in <a href="../actions/">the actions reference</a>.</p>
+<h2 id="safety">Safety</h2>
+<ul>
+<li>The API only listens on this Mac, and every request needs your token.</li>
+<li>Monorail asks you before an agent closes a window.</li>
+<li>Anything an agent does can be undone with ⌃⌥Z or <code>monorail undo</code>.</li>
+<li>Turning off <strong>Local API</strong> cuts every agent off at once.</li>
+</ul>
+<h2 id="the-other-way-round-monorails-own-assistant">The other way round: Monorail's own assistant</h2>
+<p>When Monorail doesn't understand something you type in the command palette, it can ask a model of
+your choice to turn it into commands, and shows them to you before doing anything. Pick the provider
+in <strong>Settings → Smart → Assistant</strong>: Anthropic (Claude), OpenAI, Google Gemini, xAI (Grok),
+OpenRouter, a model in Ollama on this Mac (nothing leaves the Mac), or any OpenAI-compatible server
+such as LM Studio. Keys are kept in your Keychain.</p>
+<footer>© Ashforde OÜ · <a href="mailto:contact@ashforde.org">contact@ashforde.org</a></footer>
+</main>
+</body>
+</html>

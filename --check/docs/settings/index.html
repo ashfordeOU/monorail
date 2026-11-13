@@ -1,0 +1,1403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Every setting · Monorail</title>
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --plum:#D63A80; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; } }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+main { max-width:900px; margin:0 auto; padding:32px 16px 72px; overflow-wrap:anywhere; }
+a { color:var(--plum); }
+.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
+.brand img { width:30px; height:30px; border-radius:8px; }
+.top nav { display:flex; gap:16px; font-size:15px; flex-wrap:wrap; }
+.top nav a { color:var(--muted); text-decoration:none; }
+h1 { font-size:clamp(30px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; }
+h2 { margin-top:40px; }
+code { background:var(--soft); padding:1px 6px; border-radius:6px; font-size:.92em; }
+pre { background:var(--soft); padding:14px 16px; border-radius:12px; overflow-x:auto; }
+pre code { padding:0; background:none; }
+.table { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:15px; }
+th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }
+footer { margin-top:56px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <a class="brand" href="../../"><img src="../../assets/icon.png" alt="" width="30" height="30">Monorail</a>
+  <nav aria-label="Site"><a href="../../changelog/">Changelog</a><a href="../../support/">Support</a><a href="../../privacy/">Privacy</a><a href="../../download/">Download</a></nav>
+</header>
+<h1 id="every-monorail-setting">Every Monorail setting</h1>
+<p>Generated from <code>Sources/MonorailCore/AppSettings.swift</code> by <code>scripts/gen-docs.py</code>. Don't edit by hand.</p>
+<p>Settings live in <code>~/Library/Application Support/Monorail/settings.json</code>. Every one can be changed in the
+Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.</p>
+<p>269 settings.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>What it does</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>layout</code></td>
+<td></td>
+<td><code>LayoutConfig()</code></td>
+</tr>
+<tr>
+<td><code>animate</code></td>
+<td>Animate windows into place instead of jumping.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>animationDuration</code></td>
+<td>Animation length in seconds.</td>
+<td><code>0.2</code></td>
+</tr>
+<tr>
+<td><code>modifierSwipe</code></td>
+<td>Scroll the strip with the mouse wheel or trackpad while holding <code>scrollModifier</code>.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>scrollModifier</code></td>
+<td>Keys to hold while scrolling to move the strip instead of the app under the pointer.</td>
+<td><code>[.option]</code></td>
+</tr>
+<tr>
+<td><code>scrollOverMenuBar</code></td>
+<td>Scrolling over the menu bar moves the strip, no keys needed.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>showNavigationArrows</code></td>
+<td>Show clickable ‹ › buttons in the menu bar.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>slideTrigger</code></td>
+<td>Tapping this key on its own turns on slide mode.</td>
+<td><code>.rightOption</code></td>
+</tr>
+<tr>
+<td><code>swipeFingers</code></td>
+<td>Scroll the strip with a three- or four-finger swipe.</td>
+<td><code>.off</code></td>
+</tr>
+<tr>
+<td><code>swipeSensitivity</code></td>
+<td>Multiplier applied to swipe distance.</td>
+<td><code>1.0</code></td>
+</tr>
+<tr>
+<td><code>invertSwipe</code></td>
+<td>Flip the swipe direction.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>mouseFollowsFocus</code></td>
+<td>Move the mouse pointer to the centre of a window focused from the keyboard.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>focusFollowsMouse</code></td>
+<td>Focus the window under the mouse pointer.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>keepHeights</code></td>
+<td>Windows in single-window columns keep their own height, top aligned.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>focusBorder</code></td>
+<td>Draw a coloured border around the focused window.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>focusBorderWidth</code></td>
+<td></td>
+<td><code>3.0</code></td>
+</tr>
+<tr>
+<td><code>focusBorderColor</code></td>
+<td>Hex colour of the focus border, e.g. "#4C8DFF".</td>
+<td><code>"#4C8DFF"</code></td>
+</tr>
+<tr>
+<td><code>dimInactive</code></td>
+<td>Darken tiled windows that do not have focus.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>dimAmount</code></td>
+<td>Opacity of the dimming overlay, 0...1.</td>
+<td><code>0.2</code></td>
+</tr>
+<tr>
+<td><code>showColumnIndicator</code></td>
+<td>Show "3/8" (focused column / columns) next to the menu bar icon.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>newWindowPosition</code></td>
+<td>Where newly opened windows join the strip.</td>
+<td><code>.afterFocused</code></td>
+</tr>
+<tr>
+<td><code>appRules</code></td>
+<td>Per-app rules.</td>
+<td><code>AppSettings.defaultAppRules</code></td>
+</tr>
+<tr>
+<td><code>keymap</code></td>
+<td></td>
+<td><code>.default</code></td>
+</tr>
+<tr>
+<td><code>sliderBar</code></td>
+<td>The slider bar: a mini-map of the strip you can drag to slide.</td>
+<td><code>.whileMoving</code></td>
+</tr>
+<tr>
+<td><code>sliderBarEdge</code></td>
+<td></td>
+<td><code>.bottom</code></td>
+</tr>
+<tr>
+<td><code>iconOpensSlider</code></td>
+<td>Clicking the menu bar icon shows the slider; right-click shows the menu.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>groupByApp</code></td>
+<td>Group windows into full-screen slides by app as they open.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>tilesPerSlide</code></td>
+<td>Windows per slide when grouping, unless an app rule says otherwise.</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td><code>hotEdges</code></td>
+<td>Push the pointer against the left or right screen edge to slide.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>customLayouts</code></td>
+<td>Slide layouts designed in Settings.</td>
+<td><code>[</code></td>
+</tr>
+<tr>
+<td><code>appPairs</code></td>
+<td>Saved app pairs.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>profiles</code></td>
+<td>Profiles: whole sets of workspaces ("Work", "Home").</td>
+<td><code>["Default"]</code></td>
+</tr>
+<tr>
+<td><code>dynamicWorkspaces</code></td>
+<td>Show only the workspaces in use, plus one empty one.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>hapticFeedback</code></td>
+<td>A light tap on Force Touch trackpads when the strip settles.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>pinchForOverview</code></td>
+<td>Hold ⌥ and pinch on the trackpad to open (pinch in) or close the overview.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>attentionMarkers</code></td>
+<td>Red dots on slides whose apps show a badge in the Dock.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>snapPicker</code></td>
+<td>Dragging a window to the top of the screen shows layouts to drop it into.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>focusMinutes</code></td>
+<td>Focus mode: how long it lasts (0 = until turned off) and how dark the rest gets.</td>
+<td><code>25</code></td>
+</tr>
+<tr>
+<td><code>focusDim</code></td>
+<td></td>
+<td><code>0.6</code></td>
+</tr>
+<tr>
+<td><code>displayOverrides</code></td>
+<td>Overrides per display, by display UUID.</td>
+<td><code>[:]</code></td>
+</tr>
+<tr>
+<td><code>theme</code></td>
+<td></td>
+<td><code>.vivid</code></td>
+</tr>
+<tr>
+<td><code>syncThroughICloud</code></td>
+<td>Keep settings, layouts and app pairs in iCloud Drive, shared by your Macs.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>threeFingerTapOverview</code></td>
+<td>A three-finger tap on the trackpad opens the overview.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>peekWithOption</code></td>
+<td>Hold ⌥ while hovering a slide in the slider to peek at it full size.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>collectStats</code></td>
+<td>Count switches and pairings on this Mac, for Insights and suggestions.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>autoRules</code></td>
+<td>Profile and layout changes by time of day or Wi-Fi network.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>smartGaps</code></td>
+<td>No gaps around a lone window; wider gaps on big displays.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>launchSlots</code></td>
+<td>Quick launch: a letter opens or focuses an app (by bundle ID).</td>
+<td><code>[:]</code></td>
+</tr>
+<tr>
+<td><code>menuBarShowsApp</code></td>
+<td>The menu bar shows the focused app's name next to the position.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>modifierDrag</code></td>
+<td>Hold ⌃⌥ and drag anywhere in a window to move it; right-drag to resize.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>titleBarSwipes</code></td>
+<td>Two-finger swipes on a window's title bar: left and right move its slide, up toggles full width, down minimises.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>focusBorderGradient</code></td>
+<td>The focus border fades from its colour into a second one.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>focusBorderColor2</code></td>
+<td></td>
+<td><code>"#FF5F9E"</code></td>
+</tr>
+<tr>
+<td><code>workspaceWallpapers</code></td>
+<td>A desktop picture per workspace (index → file path).</td>
+<td><code>[:]</code></td>
+</tr>
+<tr>
+<td><code>liveReloadSettings</code></td>
+<td>Watch settings.json and pick up changes made in a text editor.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>publishState</code></td>
+<td>Write state.json and post a notification on changes, for SketchyBar and other status bars.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>eventScript</code></td>
+<td>A script run on events (workspace and focus changes), with details in environment variables.</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>followReduceMotion</code></td>
+<td>Skip animations when macOS's Reduce Motion or Low Power Mode is on.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>resizeHUD</code></td>
+<td>While resizing by hand, show the window's size.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>rememberWidths</code></td>
+<td>New windows of an app open at the width you last gave it.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>centerLoneWindow</code></td>
+<td>A lone window sits centred at this share of the screen (0 = off).</td>
+<td><code>0.0</code></td>
+</tr>
+<tr>
+<td><code>autoGrowFocus</code></td>
+<td>The focused one of two windows in a slide grows to this share (0 = off).</td>
+<td><code>0.0</code></td>
+</tr>
+<tr>
+<td><code>projects</code></td>
+<td>Windows whose titles name one of these projects gather in one workspace.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>templates</code></td>
+<td>Workspace templates.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>meetingHelper</code></td>
+<td>Before a calendar event with a meeting link: open it and switch profile.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>meetingProfile</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>verticalWorkspaceSwipes</code></td>
+<td>Three- or four-finger vertical swipes switch workspace (sliding up or down).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>pinchZoomsStrip</code></td>
+<td>⌥ + pinch zooms out on the strip (instead of opening the overview).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>localAPI</code></td>
+<td>A local API (and MCP server) for other apps and AI assistants.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>apiPort</code></td>
+<td></td>
+<td><code>4767</code></td>
+</tr>
+<tr>
+<td><code>scripts</code></td>
+<td>Run JavaScript plugins from the Scripts folder.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>Interface language: empty follows macOS.</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>openNextToSameApp</code></td>
+<td>New windows open right after their app's other windows.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>openIntoFocusedSlide</code></td>
+<td>New windows join the focused slide (toggled by an action).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>workspaceHUD</code></td>
+<td>Show the workspace's name in the middle of the screen when switching.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>sliderTitles</code></td>
+<td>Window titles on the slider bar's tiles, and a smaller bar.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>compactSlider</code></td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>menuBarStyle</code></td>
+<td></td>
+<td><code>.mini</code></td>
+</tr>
+<tr>
+<td><code>compactMenuBarApplied</code></td>
+<td>Set once the narrower 1.1 menu bar has been applied to older settings.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>quietMode</code></td>
+<td>No pop-up notices (confirmations, tips).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>slideSound</code></td>
+<td>A soft click as the strip lands on a slide.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>announceChanges</code></td>
+<td>VoiceOver says which slide and workspace you moved to.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>rememberFloatingPositions</code></td>
+<td>Floating windows go back where you last put them, per app.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>autoSnapshot</code></td>
+<td>Take a "Last session" snapshot on quit and before sleep.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>dailyBackups</code></td>
+<td>Keep a copy of the settings each day (the last seven).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>skipAnimationsOnBattery</code></td>
+<td>Skip animations while running on battery.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>cheatSheetOnHold</code></td>
+<td>Hold ⌃⌥ for a moment to see a cheat sheet of shortcuts.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>focusFollowsMouseDelay</code></td>
+<td>Focus follows mouse waits this long (seconds) before switching.</td>
+<td><code>0.15</code></td>
+</tr>
+<tr>
+<td><code>capsLockKey</code></td>
+<td>Caps Lock becomes the Monorail key: hold it instead of ⌃⌥.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>fitByDefault</code></td>
+<td>Fit mode: every slide shares the screen. On for all workspaces, or just some; <code>fitExceptions</code> lists workspaces (absolute numbers) that differ.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>fitExceptions</code></td>
+<td></td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>workspaceNotes</code></td>
+<td>A line of notes per workspace (by its number from 0).</td>
+<td><code>[:]</code></td>
+</tr>
+<tr>
+<td><code>autoNameWorkspaces</code></td>
+<td>Workspaces without a name take their apps' names.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>betaUpdates</code></td>
+<td>Get early (beta) versions as well as final ones.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>weeklySummary</code></td>
+<td>A notification on Monday mornings with last week's Insights.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>lastSeenVersion</code></td>
+<td>The version whose What's New was last shown.</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>hotCorners</code></td>
+<td>Screen corners: top-left, top-right, bottom-left, bottom-right.</td>
+<td><code>[.none, .none, .none, .none]</code></td>
+</tr>
+<tr>
+<td><code>mouseButtonsStep</code></td>
+<td>Mouse buttons 4 and 5 (back and forward) step through slides.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>scrollResizes</code></td>
+<td>⌃⌥ + scroll over a window changes its slide's width.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>shiftScrollSwitchesWorkspace</code></td>
+<td>⇧ + scroll over the slider bar switches workspace.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>middleClickZoom</code></td>
+<td>⌥ + middle-click a window zooms it.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>focusGlow</code></td>
+<td>The focus border glows, and can take the app icon's colour.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>borderFromAppIcon</code></td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>pauseForStageManager</code></td>
+<td>Monorail pauses while Stage Manager is on and carries on when it's turned off.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>portraitStacks</code></td>
+<td>On a display taller than it is wide, slides stack top to bottom and the main window goes on top.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>restoreHidesOthers</code></td>
+<td>Restoring a saved layout or snapshot hides (never quits) the apps that aren't in it.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>reservedEdges</code></td>
+<td>Space kept clear at each screen edge for another app's bar or dock.</td>
+<td><code>ReservedEdges()</code></td>
+</tr>
+<tr>
+<td><code>appAppearance</code></td>
+<td>Monorail's own windows in light or dark, or following the Mac.</td>
+<td><code>.system</code></td>
+</tr>
+<tr>
+<td><code>powerMarkers</code></td>
+<td>On battery, ⚡ marks the windows of apps using the most power, and ⚡ in the popover lists them.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>parkPowerHogs</code></td>
+<td>On battery, hide (never quit) power-hungry apps left alone for an hour; they come back when plugged in.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>batteryMenuBar</code></td>
+<td>A battery item in the menu bar (charge or time left), opening the battery panel.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>batteryCards</code></td>
+<td>The battery panel's cards, in the order you arranged them, and the ones you hid.</td>
+<td><code>BatteryCards.standard</code></td>
+</tr>
+<tr>
+<td><code>batteryHiddenCards</code></td>
+<td></td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>awakeDuringCalls</code></td>
+<td>Keep the Mac and its display awake while the microphone or camera is in use.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>movieAuto</code></td>
+<td>Movie mode turns on by itself when a video plays full screen.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>chargeLimit</code></td>
+<td>While charging, a notice once the battery reaches <code>chargeLimit</code> (100 = off).</td>
+<td><code>100</code></td>
+</tr>
+<tr>
+<td><code>worldClocks</code></td>
+<td>World clocks on the Today page: time zone identifiers ("Europe/London").</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>clipboardHistory</code></td>
+<td>Remember what you copy, for the Clipboard page. Passwords and other concealed copies are never kept.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>clipboardKeep</code></td>
+<td>How many clips to remember (pinned ones don't count).</td>
+<td><code>50</code></td>
+</tr>
+<tr>
+<td><code>sessionMinutes</code></td>
+<td>Focus sessions: length in minutes, background sound ("none", "brown", "pink", "rain") and, in Monorail, hiding your distracting apps while one runs.</td>
+<td><code>25</code></td>
+</tr>
+<tr>
+<td><code>focusSound</code></td>
+<td></td>
+<td><code>"none"</code></td>
+</tr>
+<tr>
+<td><code>focusHidesApps</code></td>
+<td></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>eyeBreaks</code></td>
+<td>A reminder every 20 minutes at the screen to look into the distance for 20 seconds.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>stationStepsBack</code></td>
+<td>Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>menuBarIconStyle</code></td>
+<td>The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black.</td>
+<td><code>"colour"</code></td>
+</tr>
+<tr>
+<td><code>menuBarReadings</code></td>
+<td>Live readings next to the icon, in this order: "cpu", "memory", "gpu", "network", "disk", "battery", "ai" (the fullest AI plan limit).</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>systemAlerts</code></td>
+<td>Notifications when the Mac strains: a runaway app, memory pressure, heavy swap.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>homePins</code></td>
+<td>Readings pinned to the panel's Home, from the Dashboard: "cpu", "memory", "swap", "gpu", "down", "write", "battery".</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>clipboardImages</code></td>
+<td>Clipboard: keep copied images and files too (images are read for text so you can search them).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>clipboardHideSensitive</code></td>
+<td>Clipboard: hide copies that look like secrets (API keys, card numbers, private keys) until you reveal them.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>clipboardQuickPaste</code></td>
+<td>Clipboard: ⌘⌃1 to ⌘⌃0 paste the last ten things you copied.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>clipboardIgnoredApps</code></td>
+<td>Clipboard: apps whose copies are never kept (bundle identifiers).</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>clipboardNotch</code></td>
+<td>Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>meetingNotesOffer</code></td>
+<td>Meeting Notes: offer to take notes when a call starts.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>meetingNotesSystemAudio</code></td>
+<td>Meeting Notes: hear the other people too, from the Mac's sound (needs Screen Recording permission); off records only your microphone.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>panelGlass</code></td>
+<td>The menu bar panel's background: automatic, frosted or solid. Reduce Transparency always makes it solid.</td>
+<td><code>PanelGlass.automatic</code></td>
+</tr>
+<tr>
+<td><code>homeOrder</code></td>
+<td>Home: your order for its cards ("windows", "today", "battery"…), and the ones you've hidden.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>homeHidden</code></td>
+<td></td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>weatherPlaces</code></td>
+<td>Weather: the places to show (the first is yours); found by name, no location access needed.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>weatherFahrenheit</code></td>
+<td>Weather in °F instead of °C.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>notchLive</code></td>
+<td>Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>modes</code></td>
+<td>Switches: modes (Recording, Call, Presentation, Deep Work and your own); each can start by itself when turned on.</td>
+<td><code>Mode.defaultSet</code></td>
+</tr>
+<tr>
+<td><code>customSwitches</code></td>
+<td>Switches you made from a shell command or a shortcut.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>backdropColour</code></td>
+<td>The Backdrop switch's colour (hex).</td>
+<td><code>"#1E2235"</code></td>
+</tr>
+<tr>
+<td><code>aiAccounts</code></td>
+<td>AI Usage: the AI accounts to watch (Claude, Codex, OpenClaw, Hermes, Ollama, LM Studio, API keys). Keys stay in the Keychain.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>aiLiveLimits</code></td>
+<td>AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>aiThresholds</code></td>
+<td>AI Usage: notify when a plan limit passes these percentages.</td>
+<td><code>[80, 95]</code></td>
+</tr>
+<tr>
+<td><code>aiNotifyResets</code></td>
+<td>AI Usage: notify when a plan limit resets.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>aiNotifyContext</code></td>
+<td>AI Usage: notify when a running conversation's context is nearly full (90%).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>aiNotifyIncidents</code></td>
+<td>AI Usage: notify when Claude or OpenAI reports an incident on its status page.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>focusFlash</code></td>
+<td>A quick highlight of the focused window when focus moves by keyboard.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>sliderOpacity</code></td>
+<td>The slider bar's opacity and size (0.8, 1 or 1.25).</td>
+<td><code>1.0</code></td>
+</tr>
+<tr>
+<td><code>sliderScale</code></td>
+<td></td>
+<td><code>1.0</code></td>
+</tr>
+<tr>
+<td><code>plainOverview</code></td>
+<td>The overview's backdrop: colourful, or plain.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>overviewIconsOnly</code></td>
+<td>The overview with app icons only (no live previews).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>menuBarShowsTitle</code></td>
+<td>The menu bar shows the focused window's title.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>noticePosition</code></td>
+<td>Where notices appear and for how long (seconds).</td>
+<td><code>.top</code></td>
+</tr>
+<tr>
+<td><code>noticeDuration</code></td>
+<td></td>
+<td><code>1.8</code></td>
+</tr>
+<tr>
+<td><code>pomodoroFocus</code></td>
+<td>Pomodoro: focus and break lengths in minutes.</td>
+<td><code>25</code></td>
+</tr>
+<tr>
+<td><code>pomodoroBreak</code></td>
+<td></td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td><code>breakReminderMinutes</code></td>
+<td>Remind to rest your eyes every so many minutes (0 = off).</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>dailyFocusGoal</code></td>
+<td>A daily focus goal in minutes (0 = none), shown in Insights.</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>workspaceConfigs</code></td>
+<td>Settings per workspace, by absolute workspace number.</td>
+<td><code>[:]</code></td>
+</tr>
+<tr>
+<td><code>autoParkHours</code></td>
+<td>Park a workspace you haven't visited for this many hours (0 = never).</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>floatSmallerThan</code></td>
+<td>Windows smaller than this (points, either side) float on their own (0 = off).</td>
+<td><code>0.0</code></td>
+</tr>
+<tr>
+<td><code>floatSettingsWindows</code></td>
+<td>Settings and preferences windows float.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>pauseForApps</code></td>
+<td>Tiling pauses while one of these apps (bundle IDs) is in front.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>retileAfterWake</code></td>
+<td>Lay everything out again after the Mac wakes.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>animationCurve</code></td>
+<td></td>
+<td><code>.smooth</code></td>
+</tr>
+<tr>
+<td><code>animationFPS</code></td>
+<td>Animation frames per second: 30, 60 or 120.</td>
+<td><code>60</code></td>
+</tr>
+<tr>
+<td><code>rescueAfterCrash</code></td>
+<td>Bring every window back after Monorail quit unexpectedly.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>clickSound</code></td>
+<td>The click sound for slide changes.</td>
+<td><code>"Tink"</code></td>
+</tr>
+<tr>
+<td><code>announceWindows</code></td>
+<td>VoiceOver also says which window got focus.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>webhookURL</code></td>
+<td>POST events as JSON to this address (empty = off).</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>remoteCommands</code></td>
+<td>Let other apps run actions with the org.ashforde.monorail.perform distributed notification.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>stageNextWindow</code></td>
+<td>Bring the window you usually go to next right beside the one you are in.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>distractionNudges</code></td>
+<td>Suggest focus mode when you switch windows very often.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>contentAwareWidths</code></td>
+<td>New slides get a width that suits the app: ~100 columns of code, a page of text, a web page.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>pathRules</code></td>
+<td>Documents from these folders open in these workspaces.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>displayProfiles</code></td>
+<td>Remember the layout for each set of displays and bring it back when they connect again.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>agentAlerts</code></td>
+<td>Tell me when an AI coding agent in a terminal is waiting for me.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>agentBringIntoView</code></td>
+<td>Slide a waiting agent's window into view.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>ruleSuggestions</code></td>
+<td>Suggest rules from the fixes you keep making.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>suggestedRules</code></td>
+<td>Widths Monorail noticed you keep giving apps (bundle ID → share), waiting to become rules.</td>
+<td><code>[:]</code></td>
+</tr>
+<tr>
+<td><code>monorailKeySource</code></td>
+<td>The key that acts as the Monorail key.</td>
+<td><code>.capsLock</code></td>
+</tr>
+<tr>
+<td><code>mouseGestures</code></td>
+<td>⌃⌥⇧ + drag left, right, up or down for workspaces, the overview and the desktop.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>midiControl</code></td>
+<td>Run actions from a MIDI controller.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>midiMap</code></td>
+<td>MIDI note number → action name.</td>
+<td><code>[:]</code></td>
+</tr>
+<tr>
+<td><code>gameController</code></td>
+<td>Drive Monorail with a game controller.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>webRemote</code></td>
+<td>A remote control page for your phone on the local network.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>webRemoteToken</code></td>
+<td>The secret in the remote page link.</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>headFocus</code></td>
+<td>Experimental: turn your head towards a display to focus it (uses the camera).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>deepWorkApps</code></td>
+<td>Apps hidden during deep work (bundle IDs).</td>
+<td><code>["com.tinyspeck.slackmacgap", "com.apple.MobileSMS", "com.hnc.Discord", "com.apple.mail"]</code></td>
+</tr>
+<tr>
+<td><code>deepWorkFromCalendar</code></td>
+<td>Calendar events called Focus or Deep work turn deep work on.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>safeScreenShare</code></td>
+<td>Hide private apps while you share your screen.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>privateApps</code></td>
+<td>Apps whose windows count as private (bundle IDs).</td>
+<td><code>["com.apple.MobileSMS", "net.whatsapp.WhatsApp", "com.apple.mail", "com.apple.Passwords", "com.1password.1password"]</code></td>
+</tr>
+<tr>
+<td><code>privacyBlur</code></td>
+<td>Blur private windows in the overview and previews.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>dimFollowsPointer</code></td>
+<td>Dimming follows the pointer instead of focus.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>energySaver</code></td>
+<td>On battery, animate at 30 fps and pause live previews.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>presenterNotes</code></td>
+<td>Your presenter notes (never shown in screen shares).</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>workspaceClipboard</code></td>
+<td>Keep a clipboard history for each workspace.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>driftWallpaper</code></td>
+<td>A picture that drifts gently behind the strip as it scrolls (empty = off).</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>notchHUD</code></td>
+<td>Show slides and workspaces around the MacBook notch as you move.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>soundPack</code></td>
+<td>The sounds Monorail plays.</td>
+<td><code>.classic</code></td>
+</tr>
+<tr>
+<td><code>crashReports</code></td>
+<td>Keep crash and hang reports on this Mac so you can send them.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>askAfterCrash</code></td>
+<td>After Monorail quits unexpectedly, ask (once per version) what happened.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>confirmDestructiveAPI</code></td>
+<td>Ask before an assistant or script closes windows.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>parkInCorner</code></td>
+<td>Slides off screen wait hidden in the corner (no slivers at the screen edges).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>wholeSlidesOnly</code></td>
+<td>Hide slides that only partly fit on screen, instead of showing them cut off at the edge.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>fitMinimumWidth</code></td>
+<td>Fit mode never makes a window narrower than this (points; a pair needs twice as much); extra slides scroll.</td>
+<td><code>480.0</code></td>
+</tr>
+<tr>
+<td><code>awakeKeepDisplayOn</code></td>
+<td>Stay Awake keeps the display on too (otherwise only the Mac stays awake and the display may sleep).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>awakeAllowScreenSaver</code></td>
+<td>Let the screen saver start during a Stay Awake session (the Mac still stays awake).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>awakeDefaultMinutes</code></td>
+<td>How long Stay Awake lasts when toggled on (0 = until you end it).</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>awakeBatteryCutoff</code></td>
+<td>End Stay Awake when the battery drops to this percent on battery power (0 = never).</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td><code>awakeMoveCursor</code></td>
+<td>During Stay Awake, nudge the pointer now and then so chat apps don’t mark you away.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>keepAvailable</code></td>
+<td>Keep me Available: keep the Mac awake and keep chat apps such as Teams and Slack showing you as available, by telling macOS you're active when it has been idle (no permission needed).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>arrangeScriptableApps</code></td>
+<td>Arrange scriptable apps (Safari, Finder, Terminal…) with Apple Events while Accessibility isn't allowed.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>awakeMoveCursorMinutes</code></td>
+<td>How often the pointer is nudged (minutes).</td>
+<td><code>4</code></td>
+</tr>
+<tr>
+<td><code>awakeDriveAlive</code></td>
+<td>During Stay Awake, keep external drives from spinning down.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>awakeClosedLid</code></td>
+<td>During Stay Awake, keep running with the lid closed, even without an external display (asks for your password).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>awakeClosedLidOnlyOnPower</code></td>
+<td>Lid-closed mode only while plugged in (on battery, closing the lid puts the Mac to sleep).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>showAllSettings</code></td>
+<td>Settings shows every section; off, only the essential ones (search still finds everything).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>eveningStrength</code></td>
+<td>Evening Mode: a warmer screen with less blue light. How strong, 0–1.</td>
+<td><code>0.5</code></td>
+</tr>
+<tr>
+<td><code>eveningOn</code></td>
+<td>Turned on by hand (from the menu bar or Settings).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>eveningSchedule</code></td>
+<td>By hand only, or every day on a schedule.</td>
+<td><code>EveningSchedule.manual</code></td>
+</tr>
+<tr>
+<td><code>eveningStart</code></td>
+<td>The schedule, in minutes after midnight (it may run past midnight).</td>
+<td><code>20 * 60</code></td>
+</tr>
+<tr>
+<td><code>eveningEnd</code></td>
+<td></td>
+<td><code>7 * 60</code></td>
+</tr>
+<tr>
+<td><code>eveningPausedApps</code></td>
+<td>Evening Mode rests while one of these apps (bundle IDs) is in front, for work where colour matters.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>eveningRed</code></td>
+<td>Evening Mode goes red: green and blue fade out as well, down to red light only at full strength.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>displayBrightness</code></td>
+<td>Software brightness for each display (by UUID), 0.1–1, on top of its own: dims below its lowest setting.</td>
+<td><code>[:]</code></td>
+</tr>
+<tr>
+<td><code>windowSwitcherShortcut</code></td>
+<td>Hold a modifier and press Tab for a grid of every window, let go to switch (⌘Tab replaces the app switcher).</td>
+<td><code>.off</code></td>
+</tr>
+<tr>
+<td><code>edgeSnapping</code></td>
+<td>Drag a floating window to a screen edge for a half, a corner for a quarter, or the top to maximise.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>edgeSnappingDefersToMacOS</code></td>
+<td>Leave edge drags to macOS when its own tiling by dragging to screen edges is on (macOS 15 and later).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>awakeNotify</code></td>
+<td>Show a notice when Stay Awake starts and ends.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>awakeSound</code></td>
+<td>Play a sound when Stay Awake starts and ends.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>awakeShowTime</code></td>
+<td>Show the time left in the menu bar.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>awakeOnLaunch</code></td>
+<td>Start Stay Awake when Monorail opens.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>awakeTriggers</code></td>
+<td>Things that start Stay Awake by themselves.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>awakeTriggersOn</code></td>
+<td>Automatic Stay Awake triggers are on.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>awakeLockAfterMinutes</code></td>
+<td>During Stay Awake, still lock the screen after this many idle minutes (0 = never).</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>menuWindowsInline</code></td>
+<td>List the workspace’s windows right in the menu bar menu (otherwise they are in a Windows submenu).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>meetingLayout</code></td>
+<td>When a call opens from your calendar, put your notes app beside it (and keep your layout to bring back afterwards).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>meetingNotesApp</code></td>
+<td>The notes app put beside calls (bundle ID).</td>
+<td><code>"com.apple.Notes"</code></td>
+</tr>
+<tr>
+<td><code>sidecarFit</code></td>
+<td>On a Sidecar iPad, every slide fits on screen.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>seenTips</code></td>
+<td>Tips already shown.</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>shareUsageStats</code></td>
+<td>Send anonymous daily usage counts (version, macOS, Mac model, features on). Never titles, apps or files.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>usageNoticeShown</code></td>
+<td>Whether the one-time notice about anonymous usage counts was shown.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>restoreBrowserTabs</code></td>
+<td>Snapshots also save and reopen browser tabs (Safari, Chrome, Arc, Brave, Edge) and Finder windows.</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>floatSuggestions</code></td>
+<td>Suggest always floating an app after you float its windows by hand a few times.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>assistantModel</code></td>
+<td>The Claude model the optional assistant uses, with your own API key.</td>
+<td><code>"claude-opus-5-5"</code></td>
+</tr>
+<tr>
+<td><code>assistantProvider</code></td>
+<td>Who the assistant asks: Anthropic, OpenAI, Gemini, xAI, OpenRouter, Ollama on this Mac, or any OpenAI-compatible server.</td>
+<td><code>.anthropic</code></td>
+</tr>
+<tr>
+<td><code>assistantModels</code></td>
+<td>The model for each provider other than Anthropic, as the provider names it.</td>
+<td><code>[:]</code></td>
+</tr>
+<tr>
+<td><code>assistantBaseURL</code></td>
+<td>The address of an OpenAI-compatible server (Other), or a different address for Ollama.</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>dragToDock</code></td>
+<td>Drag a window onto another window: near an edge docks it beside, the middle makes a tab group (any apps).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>gapHandles</code></td>
+<td>Drag the gap between two windows to resize both at once.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>sliderBarStepsAside</code></td>
+<td>The slider bar steps aside for full-screen apps and for a playing video underneath it.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>keepEverythingOnScreen</code></td>
+<td>Floating windows and dialogs that end up off screen (a display unplugged, a size saved on a bigger screen, waking from sleep) come back into view on their own.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>systemPromptsInFront</code></td>
+<td>macOS permission, password and security prompts always come to the front, centred on your screen, and Monorail holds focus changes until they are answered.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>keepWindowsInPlace</code></td>
+<td>Snap windows back when an app moves or resizes one by itself.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>resizeAssist</code></td>
+<td>After resizing a window in a slide, offer to rearrange the slide.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>pairLoneWindowsOnOpen</code></td>
+<td>Put a newly opened lone window into a slide with another app's lone window. When off, that only happens when regrouping (⌃⌥A).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>groupTerminals</code></td>
+<td>Terminal apps (Terminal, iTerm, Ghostty, Warp, kitty, Alacritty, WezTerm) share slides with each other, as if they were one app.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>slideArrangement</code></td>
+<td>Layout of new slides, unless an app rule says otherwise.</td>
+<td><code>.grid</code></td>
+</tr>
+<tr>
+<td><code>workspaceCount</code></td>
+<td>Workspaces per display (1...9). Each has its own strip.</td>
+<td><code>4</code></td>
+</tr>
+<tr>
+<td><code>workspaceNames</code></td>
+<td>Names for workspaces, by index; empty or missing means "Workspace N".</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>checkForUpdates</code></td>
+<td>Look for new versions on monorail.ashforde.org once a day.</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>installUpdatesAutomatically</code></td>
+<td>Install new versions without asking (Monorail relaunches itself).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>rulesVersion</code></td>
+<td>Bumped when new default app rules ship, so existing settings pick them up once.</td>
+<td><code>AppSettings.currentRulesVersion</code></td>
+</tr>
+<tr>
+<td><code>hasCompletedOnboarding</code></td>
+<td>Set once the welcome tour has been shown.</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table></div>
+<footer>© Ashforde OÜ · <a href="mailto:contact@ashforde.org">contact@ashforde.org</a></footer>
+</main>
+</body>
+</html>

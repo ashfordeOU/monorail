@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security · Monorail</title>
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --plum:#D63A80; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; } }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+main { max-width:900px; margin:0 auto; padding:32px 16px 72px; overflow-wrap:anywhere; }
+a { color:var(--plum); }
+.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
+.brand img { width:30px; height:30px; border-radius:8px; }
+.top nav { display:flex; gap:16px; font-size:15px; flex-wrap:wrap; }
+.top nav a { color:var(--muted); text-decoration:none; }
+h1 { font-size:clamp(30px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; }
+h2 { margin-top:40px; }
+code { background:var(--soft); padding:1px 6px; border-radius:6px; font-size:.92em; }
+pre { background:var(--soft); padding:14px 16px; border-radius:12px; overflow-x:auto; }
+pre code { padding:0; background:none; }
+.table { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:15px; }
+th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }
+footer { margin-top:56px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <a class="brand" href="../../"><img src="../../assets/icon.png" alt="" width="30" height="30">Monorail</a>
+  <nav aria-label="Site"><a href="../../changelog/">Changelog</a><a href="../../support/">Support</a><a href="../../privacy/">Privacy</a><a href="../../download/">Download</a></nav>
+</header>
+<h1 id="security">Security</h1>
+<h2 id="reporting-a-vulnerability">Reporting a vulnerability</h2>
+<p>Please report security problems privately by email to
+<strong><a href="mailto:contact@ashforde.org?subject=Security">contact@ashforde.org</a></strong>. We reply within a few days, keep you updated while we fix it, and credit you in
+the release notes if you'd like.</p>
+<h2 id="supported-versions">Supported versions</h2>
+<p>Security fixes go into the newest release; Monorail updates itself (or through Homebrew), so please update before reporting.</p>
+<h2 id="how-releases-are-protected">How releases are protected</h2>
+<ul>
+<li>Signed with Ashforde OÜ's Apple Developer ID (Team <code>D69G45342Y</code>) with the hardened runtime, and
+  notarised and stapled by Apple. The pkg is signed with the Developer ID Installer certificate.</li>
+<li>Built and signed by automated builds, never on a personal machine; every change to the source is
+  signed.</li>
+<li>Every release publishes SHA-256 checksums (<code>SHA256SUMS</code>).</li>
+<li>The built-in updater installs a download only when its checksum matches and its code signature
+  satisfies the running app's designated requirement (or Ashforde's Developer ID).</li>
+</ul>
+<p>Check a download yourself:</p>
+<pre><code class="language-bash">shasum -a 256 -c SHA256SUMS --ignore-missing
+spctl -a -vvv -t open --context context:primary-signature Monorail-*.dmg   # Notarized Developer ID
+spctl -a -vvv -t install Monorail-*.pkg                                     # Notarized Developer ID
+</code></pre>
+<footer>© Ashforde OÜ · <a href="mailto:contact@ashforde.org">contact@ashforde.org</a></footer>
+</main>
+</body>
+</html>

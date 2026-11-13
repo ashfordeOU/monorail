@@ -1,0 +1,1584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Every action · Monorail</title>
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --plum:#D63A80; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; } }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+main { max-width:900px; margin:0 auto; padding:32px 16px 72px; overflow-wrap:anywhere; }
+a { color:var(--plum); }
+.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
+.brand img { width:30px; height:30px; border-radius:8px; }
+.top nav { display:flex; gap:16px; font-size:15px; flex-wrap:wrap; }
+.top nav a { color:var(--muted); text-decoration:none; }
+h1 { font-size:clamp(30px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; }
+h2 { margin-top:40px; }
+code { background:var(--soft); padding:1px 6px; border-radius:6px; font-size:.92em; }
+pre { background:var(--soft); padding:14px 16px; border-radius:12px; overflow-x:auto; }
+pre code { padding:0; background:none; }
+.table { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:15px; }
+th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }
+footer { margin-top:56px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <a class="brand" href="../../"><img src="../../assets/icon.png" alt="" width="30" height="30">Monorail</a>
+  <nav aria-label="Site"><a href="../../changelog/">Changelog</a><a href="../../support/">Support</a><a href="../../privacy/">Privacy</a><a href="../../download/">Download</a></nav>
+</header>
+<h1 id="every-monorail-action">Every Monorail action</h1>
+<p>Generated from <code>Sources/MonorailCore/Action.swift</code> by <code>scripts/gen-docs.py</code>. Don't edit by hand.</p>
+<p>Run any action from the command palette (⌃⌥/), with <code>open -g monorail://&lt;name&gt;</code>, <code>monorail &lt;name&gt;</code>,
+the local API (<code>POST /action</code>), MCP (<code>perform_action</code>), AppleScript or a script (<code>monorail.perform</code>).
+Give any of them a key in <strong>Settings → Shortcuts</strong>.</p>
+<p>305 actions.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Name</th>
+<th>Default key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Focus left</td>
+<td><code>focus-left</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Focus right</td>
+<td><code>focus-right</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Focus up in stack</td>
+<td><code>focus-up</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Focus down in stack</td>
+<td><code>focus-down</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Focus first column</td>
+<td><code>focus-first</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Focus last column</td>
+<td><code>focus-last</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>focusColumn1</td>
+<td><code>focus-column-1</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>focusColumn2</td>
+<td><code>focus-column-2</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>focusColumn3</td>
+<td><code>focus-column-3</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>focusColumn4</td>
+<td><code>focus-column-4</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>focusColumn5</td>
+<td><code>focus-column-5</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>focusColumn6</td>
+<td><code>focus-column-6</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>focusColumn7</td>
+<td><code>focus-column-7</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>focusColumn8</td>
+<td><code>focus-column-8</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>focusColumn9</td>
+<td><code>focus-column-9</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Move column left</td>
+<td><code>move-left</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Move column right</td>
+<td><code>move-right</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Move window up in stack</td>
+<td><code>move-up</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Move window down in stack</td>
+<td><code>move-down</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Cycle width</td>
+<td><code>cycle-width</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Cycle width backward</td>
+<td><code>cycle-width-backward</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Narrower</td>
+<td><code>narrower</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Wider</td>
+<td><code>wider</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Toggle full width</td>
+<td><code>full-width</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Centre column</td>
+<td><code>center</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Stack into left column</td>
+<td><code>stack-into-left</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Stack into right column</td>
+<td><code>stack-into-right</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Pop out of stack to the left</td>
+<td><code>unstack-left</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Pop out of stack to the right</td>
+<td><code>unstack</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Float / tile window</td>
+<td><code>toggle-float</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Pin column to left edge</td>
+<td><code>pin-left</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Pin column to right edge</td>
+<td><code>pin-right</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Tabbed column on / off</td>
+<td><code>toggle-tabbed</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Next slide layout</td>
+<td><code>cycle-layout</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Main window larger</td>
+<td><code>main-larger</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Main window smaller</td>
+<td><code>main-smaller</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Make main window</td>
+<td><code>make-main</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Reset to smart pairs</td>
+<td><code>regroup</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Overview of all windows</td>
+<td><code>overview</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>macOS full screen</td>
+<td><code>toggle-fullscreen</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Search windows</td>
+<td><code>window-switcher</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Send to next display</td>
+<td><code>send-to-next-display</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>workspace1</td>
+<td><code>workspace-1</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>workspace2</td>
+<td><code>workspace-2</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>workspace3</td>
+<td><code>workspace-3</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>workspace4</td>
+<td><code>workspace-4</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>workspace5</td>
+<td><code>workspace-5</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>workspace6</td>
+<td><code>workspace-6</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>workspace7</td>
+<td><code>workspace-7</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>workspace8</td>
+<td><code>workspace-8</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>workspace9</td>
+<td><code>workspace-9</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>moveToWorkspace1</td>
+<td><code>move-to-workspace-1</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>moveToWorkspace2</td>
+<td><code>move-to-workspace-2</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>moveToWorkspace3</td>
+<td><code>move-to-workspace-3</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>moveToWorkspace4</td>
+<td><code>move-to-workspace-4</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>moveToWorkspace5</td>
+<td><code>move-to-workspace-5</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>moveToWorkspace6</td>
+<td><code>move-to-workspace-6</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>moveToWorkspace7</td>
+<td><code>move-to-workspace-7</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>moveToWorkspace8</td>
+<td><code>move-to-workspace-8</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>moveToWorkspace9</td>
+<td><code>move-to-workspace-9</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: left half</td>
+<td><code>snap-left-half</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: right half</td>
+<td><code>snap-right-half</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: top half</td>
+<td><code>snap-top-half</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: bottom half</td>
+<td><code>snap-bottom-half</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: first third</td>
+<td><code>snap-first-third</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: centre third</td>
+<td><code>snap-center-third</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: last third</td>
+<td><code>snap-last-third</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: first two thirds</td>
+<td><code>snap-first-two-thirds</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: last two thirds</td>
+<td><code>snap-last-two-thirds</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: top-left quarter</td>
+<td><code>snap-top-left</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: top-right quarter</td>
+<td><code>snap-top-right</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: bottom-left quarter</td>
+<td><code>snap-bottom-left</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: bottom-right quarter</td>
+<td><code>snap-bottom-right</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: maximise</td>
+<td><code>snap-maximize</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: centre</td>
+<td><code>snap-center</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Snap: restore</td>
+<td><code>snap-restore</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Mark window (then a letter)</td>
+<td><code>set-mark</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Jump to mark (then a letter)</td>
+<td><code>jump-to-mark</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Show / hide scratchpad</td>
+<td><code>scratchpad</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Make this window the scratchpad</td>
+<td><code>make-scratchpad</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Next profile</td>
+<td><code>next-profile</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Focus mode on / off</td>
+<td><code>focus-mode</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Command palette</td>
+<td><code>command-palette</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Take a session snapshot</td>
+<td><code>snapshot</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Show window on every workspace</td>
+<td><code>sticky</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Zoom tile to fill the slide</td>
+<td><code>zoom</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Back to the last window</td>
+<td><code>last-window</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Quick launch (then a letter)</td>
+<td><code>launch</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Picture in picture</td>
+<td><code>picture-in-picture</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Radial menu (move the pointer, then let go)</td>
+<td><code>radial-menu</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Even out widths and splits</td>
+<td><code>balance</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Back to the last workspace</td>
+<td><code>workspace-back</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Move window to an empty workspace</td>
+<td><code>move-to-empty-workspace</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Go to the window that wants attention</td>
+<td><code>focus-attention</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Show desktop</td>
+<td><code>show-desktop</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Screenshot the slide</td>
+<td><code>screenshot-slide</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Overview of this app’s windows</td>
+<td><code>app-overview</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Window hints (then a letter)</td>
+<td><code>hints</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Resize mode (arrows, 1–9, esc)</td>
+<td><code>resize-mode</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Zoom out on the strip</td>
+<td><code>strip-zoom</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Presentation mode</td>
+<td><code>presentation-mode</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Record the slide (again to stop)</td>
+<td><code>record-slide</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Redo layout change</td>
+<td><code>redo</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Next workspace</td>
+<td><code>next-workspace</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Previous workspace</td>
+<td><code>previous-workspace</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Move window to the next workspace</td>
+<td><code>move-to-next-workspace</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Move window to the previous workspace</td>
+<td><code>move-to-previous-workspace</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Focus the next display</td>
+<td><code>focus-next-display</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Move the workspace to the next display</td>
+<td><code>move-workspace-to-next-display</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Swap the workspaces on two displays</td>
+<td><code>swap-displays</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Move window to the display under the pointer</td>
+<td><code>move-to-pointer-display</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Next window of the same app</td>
+<td><code>cycle-app-windows</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Swap with the last window</td>
+<td><code>swap-with-recent</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Rotate the windows in the slide</td>
+<td><code>rotate-slide</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Flip the slide</td>
+<td><code>flip-slide</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Widen the slide to fill the screen’s free space</td>
+<td><code>expand-to-fill</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Close every window in the slide</td>
+<td><code>close-slide</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Minimise the slide</td>
+<td><code>minimize-slide</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Gather this app’s windows into one slide</td>
+<td><code>gather-app</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Sort slides by app</td>
+<td><code>sort-slides</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Tile every floating window</td>
+<td><code>tile-floating</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Rescue windows (bring everything on screen)</td>
+<td><code>rescue-windows</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Solo: hide other apps</td>
+<td><code>solo</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Gaps on / off</td>
+<td><code>toggle-gaps</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Bigger gaps</td>
+<td><code>bigger-gaps</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Smaller gaps</td>
+<td><code>smaller-gaps</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Centre the floating window</td>
+<td><code>center-floating</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Lock / unlock the slide</td>
+<td><code>lock-slide</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>New windows join the focused slide (on / off)</td>
+<td><code>open-into-slide</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Show the shortcut cheat sheet</td>
+<td><code>cheat-sheet</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Name the slide…</td>
+<td><code>name-slide</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Fit mode on / off (every slide on screen)</td>
+<td><code>fit-mode</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Move the slide to the start</td>
+<td><code>slide-to-start</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Move the slide to the end</td>
+<td><code>slide-to-end</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Move the slide to the next workspace</td>
+<td><code>slide-to-next-workspace</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Move the slide to the previous workspace</td>
+<td><code>slide-to-previous-workspace</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Move the slide to an empty workspace</td>
+<td><code>slide-to-empty-workspace</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Give every window in the slide its own slide</td>
+<td><code>unpair-slide</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Merge with the next slide</td>
+<td><code>merge-next</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Merge with the previous slide</td>
+<td><code>merge-previous</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Next window in the slide</td>
+<td><code>next-tile</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Previous window in the slide</td>
+<td><code>previous-tile</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Go to the slide’s main window</td>
+<td><code>main-tile</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Width: a quarter</td>
+<td><code>width-quarter</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Width: a third</td>
+<td><code>width-third</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Width: half</td>
+<td><code>width-half</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Width: two thirds</td>
+<td><code>width-two-thirds</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Width: three quarters</td>
+<td><code>width-three-quarters</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Look at the start of the strip</td>
+<td><code>scroll-to-start</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Look at the end of the strip</td>
+<td><code>scroll-to-end</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Slide layout: side by side</td>
+<td><code>layout-side-by-side</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Slide layout: up and down</td>
+<td><code>layout-up-down</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Slide layout: grid</td>
+<td><code>layout-grid</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Slide layout: main + side</td>
+<td><code>layout-main-side</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Slide layout: main + bottom</td>
+<td><code>layout-main-bottom</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Slide layout: spiral</td>
+<td><code>layout-spiral</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Slide layout: accordion</td>
+<td><code>layout-accordion</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Slide layout: tabs</td>
+<td><code>layout-tabs</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Reset the main window’s share</td>
+<td><code>reset-split</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Hide the focused app</td>
+<td><code>hide-app</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Minimise every window in the workspace</td>
+<td><code>minimize-workspace</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Minimise everything but this slide</td>
+<td><code>minimize-others</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Rename the workspace…</td>
+<td><code>rename-workspace</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Swap the workspace with the next one</td>
+<td><code>swap-workspace-next</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Swap the workspace with the previous one</td>
+<td><code>swap-workspace-previous</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Merge the workspace into the previous one</td>
+<td><code>merge-workspace-previous</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Quick launch beside this window (then a letter)</td>
+<td><code>launch-beside</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Open the copied link beside this window</td>
+<td><code>open-link-beside</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Copy the workspace’s layout</td>
+<td><code>copy-layout</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Paste a copied layout</td>
+<td><code>paste-layout</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Add a note to the window…</td>
+<td><code>note-window</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Show where the pointer is</td>
+<td><code>locate-pointer</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Show which window has focus</td>
+<td><code>flash-focus</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Dimming on / off</td>
+<td><code>toggle-dim</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus border on / off</td>
+<td><code>toggle-border</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Slider bar on / off</td>
+<td><code>toggle-slider-bar</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Animations on / off</td>
+<td><code>toggle-animations</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Pomodoro: focus and break cycles</td>
+<td><code>pomodoro</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Quiet mode on / off</td>
+<td><code>toggle-quiet</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Restart Monorail</td>
+<td><code>restart</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Open Settings</td>
+<td><code>open-settings</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Check for updates</td>
+<td><code>check-updates</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Sort windows into project workspaces</td>
+<td><code>sort-into-projects</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Go to the window you usually go to next</td>
+<td><code>go-to-predicted</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Start working on…</td>
+<td><code>start-intent</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Elastic focus on or off</td>
+<td><code>elastic-focus</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Bookmark this view</td>
+<td><code>add-bookmark</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Go to the next bookmarked view</td>
+<td><code>next-bookmark</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Try a new layout (fork this workspace)</td>
+<td><code>fork-layout</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Keep the layout you tried</td>
+<td><code>keep-fork</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Back to the layout before trying</td>
+<td><code>discard-fork</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Add to or remove from the window group</td>
+<td><code>group-window</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Move the window group to the next workspace</td>
+<td><code>move-group-next</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Layout timeline</td>
+<td><code>timeline</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Tall slide: windows full height, scroll up and down</td>
+<td><code>tall-slide</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Archive this workspace (save and close its windows)</td>
+<td><code>archive-workspace</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Share this workspace’s setup</td>
+<td><code>share-workspace</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Vim mode on or off</td>
+<td><code>vim-mode</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Find a window by what’s in it</td>
+<td><code>search-window-text</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Voice command</td>
+<td><code>voice-command</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Deep work on or off</td>
+<td><code>deep-work</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Reading mode</td>
+<td><code>reading-mode</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Mark this window private</td>
+<td><code>mark-private</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Share this slide as one window</td>
+<td><code>share-slide</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Demo zoom</td>
+<td><code>demo-zoom</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Show keystrokes and clicks</td>
+<td><code>show-keystrokes</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Draw on the screen</td>
+<td><code>annotate</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Presenter notes</td>
+<td><code>presenter-notes</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Mirror this window on another display</td>
+<td><code>mirror-window</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Guest mode</td>
+<td><code>guest-mode</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Centre the main slide</td>
+<td><code>ultrawide-center</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Link this slide with the one on the other display</td>
+<td><code>link-across-displays</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Camera preview tile</td>
+<td><code>camera-tile</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Sync layout with a nearby Mac</td>
+<td><code>pair-sync</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Continue this workspace on my other Mac</td>
+<td><code>handoff</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>This workspace’s clipboard</td>
+<td><code>workspace-clipboard</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Stay Awake on or off</td>
+<td><code>stay-awake</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Stay awake for 30 minutes</td>
+<td><code>stay-awake-30</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Stay awake for 1 hour</td>
+<td><code>stay-awake-60</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Stay awake for 2 hours</td>
+<td><code>stay-awake-120</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Stay awake while downloading</td>
+<td><code>stay-awake-downloading</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Stay Awake: keep the display on or let it sleep</td>
+<td><code>stay-awake-display</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Dock onto the window on the left</td>
+<td><code>dock-left</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Dock onto the window on the right</td>
+<td><code>dock-right</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Dock onto the window above</td>
+<td><code>dock-up</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Dock onto the window below</td>
+<td><code>dock-down</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Tear off into a slide of its own</td>
+<td><code>tear-off</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Even out the splits in this slide</td>
+<td><code>balance-splits</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Split this slide freely (nested)</td>
+<td><code>nest-slide</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Back to the previous view</td>
+<td><code>view-back</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Forward to the next view</td>
+<td><code>view-forward</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>view1</td>
+<td><code>view-1</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>view2</td>
+<td><code>view-2</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>view3</td>
+<td><code>view-3</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>view4</td>
+<td><code>view-4</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>view5</td>
+<td><code>view-5</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>view6</td>
+<td><code>view-6</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>view7</td>
+<td><code>view-7</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>view8</td>
+<td><code>view-8</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>view9</td>
+<td><code>view-9</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>saveView1</td>
+<td><code>save-view-1</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>saveView2</td>
+<td><code>save-view-2</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>saveView3</td>
+<td><code>save-view-3</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>saveView4</td>
+<td><code>save-view-4</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>saveView5</td>
+<td><code>save-view-5</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>saveView6</td>
+<td><code>save-view-6</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>saveView7</td>
+<td><code>save-view-7</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>saveView8</td>
+<td><code>save-view-8</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>saveView9</td>
+<td><code>save-view-9</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>tag1</td>
+<td><code>tag-1</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>tag2</td>
+<td><code>tag-2</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>tag3</td>
+<td><code>tag-3</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>tag4</td>
+<td><code>tag-4</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>tag5</td>
+<td><code>tag-5</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>tag6</td>
+<td><code>tag-6</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>tag7</td>
+<td><code>tag-7</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>tag8</td>
+<td><code>tag-8</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>tag9</td>
+<td><code>tag-9</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>combine1</td>
+<td><code>combine-1</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>combine2</td>
+<td><code>combine-2</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>combine3</td>
+<td><code>combine-3</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>combine4</td>
+<td><code>combine-4</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>combine5</td>
+<td><code>combine-5</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>combine6</td>
+<td><code>combine-6</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>combine7</td>
+<td><code>combine-7</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>combine8</td>
+<td><code>combine-8</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>combine9</td>
+<td><code>combine-9</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Retile everything</td>
+<td><code>retile</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Undo last layout change</td>
+<td><code>undo</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Pause / resume</td>
+<td><code>toggle-pause</code></td>
+<td>yes (see Settings → Shortcuts)</td>
+</tr>
+<tr>
+<td>Focus the display on the left</td>
+<td><code>focus-display-left</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus the display on the right</td>
+<td><code>focus-display-right</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus the display above</td>
+<td><code>focus-display-up</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus the display below</td>
+<td><code>focus-display-down</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to the display on the left</td>
+<td><code>send-to-display-left</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to the display on the right</td>
+<td><code>send-to-display-right</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to the display above</td>
+<td><code>send-to-display-up</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to the display below</td>
+<td><code>send-to-display-down</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus display 1</td>
+<td><code>focus-display-1</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus display 2</td>
+<td><code>focus-display-2</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus display 3</td>
+<td><code>focus-display-3</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus display 4</td>
+<td><code>focus-display-4</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus display 5</td>
+<td><code>focus-display-5</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus display 6</td>
+<td><code>focus-display-6</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus display 7</td>
+<td><code>focus-display-7</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus display 8</td>
+<td><code>focus-display-8</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Focus display 9</td>
+<td><code>focus-display-9</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to display 1</td>
+<td><code>send-to-display-1</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to display 2</td>
+<td><code>send-to-display-2</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to display 3</td>
+<td><code>send-to-display-3</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to display 4</td>
+<td><code>send-to-display-4</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to display 5</td>
+<td><code>send-to-display-5</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to display 6</td>
+<td><code>send-to-display-6</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to display 7</td>
+<td><code>send-to-display-7</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to display 8</td>
+<td><code>send-to-display-8</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Send window to display 9</td>
+<td><code>send-to-display-9</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Brighter display (software brightness)</td>
+<td><code>display-brighter</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Dimmer display (below the lowest brightness)</td>
+<td><code>display-dimmer</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Display resolution: more space</td>
+<td><code>display-more-space</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Display resolution: larger text</td>
+<td><code>display-larger-text</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Display resolution: back to default</td>
+<td><code>display-default-resolution</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Stash the window at the screen edge (again to bring it back)</td>
+<td><code>stash-window</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Bring back every stashed window</td>
+<td><code>unstash-all</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Evening Mode on or off</td>
+<td><code>evening-mode</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+<tr>
+<td>Keep me Available on or off (Teams, Slack)</td>
+<td><code>keep-available</code></td>
+<td>none (add one in Settings)</td>
+</tr>
+</tbody>
+</table></div>
+<footer>© Ashforde OÜ · <a href="mailto:contact@ashforde.org">contact@ashforde.org</a></footer>
+</main>
+</body>
+</html>

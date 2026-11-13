@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compatibility · Monorail</title>
+<link rel="icon" href="../../favicon.ico" sizes="48x48">
+<script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --plum:#D63A80; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; } }
+:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
+main { max-width:900px; margin:0 auto; padding:32px 16px 72px; overflow-wrap:anywhere; }
+a { color:var(--plum); }
+.top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+.brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--ink); text-decoration:none; }
+.brand img { width:30px; height:30px; border-radius:8px; }
+.top nav { display:flex; gap:16px; font-size:15px; flex-wrap:wrap; }
+.top nav a { color:var(--muted); text-decoration:none; }
+h1 { font-size:clamp(30px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; }
+h2 { margin-top:40px; }
+code { background:var(--soft); padding:1px 6px; border-radius:6px; font-size:.92em; }
+pre { background:var(--soft); padding:14px 16px; border-radius:12px; overflow-x:auto; }
+pre code { padding:0; background:none; }
+.table { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:15px; }
+th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }
+footer { margin-top:56px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <a class="brand" href="../../"><img src="../../assets/icon.png" alt="" width="30" height="30">Monorail</a>
+  <nav aria-label="Site"><a href="../../changelog/">Changelog</a><a href="../../support/">Support</a><a href="../../privacy/">Privacy</a><a href="../../download/">Download</a></nav>
+</header>
+<h1 id="app-compatibility">App compatibility</h1>
+<p>Monorail moves windows through macOS's Accessibility interface, so it works with any app that
+exposes its windows there, which is nearly all of them. This page lists what Monorail does by
+default with popular apps, what to expect, and the fix if something looks wrong.</p>
+<p><strong>Help keep it accurate.</strong> If an app misbehaves, use <strong>Settings → Smart → Trust → Report a
+Problem…</strong>, or open an issue with the app's name and version. Fixes ship as <em>app quirks</em>, which
+Monorail downloads without needing a new release.</p>
+<h2 id="built-in-defaults">Built-in defaults</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>App</th>
+<th>Default</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>System Settings, Calculator, Activity Monitor, Archive Utility</td>
+<td>Float</td>
+<td>Small fixed-size utility windows</td>
+</tr>
+<tr>
+<td>Terminal, iTerm, Ghostty, Warp, kitty, Alacritty, WezTerm</td>
+<td>Up to 4 per slide</td>
+<td>Terminals are useful side by side</td>
+</tr>
+<tr>
+<td>Any settings or preferences window</td>
+<td>Float</td>
+<td>Recognised by title (Settings → Apps → Float settings windows)</td>
+</tr>
+<tr>
+<td>Fixed-size windows (dialogs, Get Info, About boxes)</td>
+<td>Float, kept on screen</td>
+<td>They can't be resized</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="popular-apps">Popular apps</h2>
+<p>These apps tile like any other. The notes say what people usually change.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>App</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Safari, Chrome, Arc, Brave, Edge, Vivaldi</td>
+<td>Snapshots can save and reopen their tabs (Settings → Smart). Firefox tiles too, but has no AppleScript for tabs</td>
+</tr>
+<tr>
+<td>Slack, Discord, Microsoft Teams, Zoom</td>
+<td>A title rule (for example “Zoom Meeting”) can give calls a slide of their own</td>
+</tr>
+<tr>
+<td>Google Meet in a browser</td>
+<td>A title rule for “Meet” gives the call its own slide</td>
+</tr>
+<tr>
+<td>Mail, Outlook, Spark, Superhuman</td>
+<td>Compose windows join the app's slide; turn off grouping for the app to keep them apart</td>
+</tr>
+<tr>
+<td>VS Code, Cursor, Zed, Xcode, JetBrains IDEs, Sublime Text, Nova</td>
+<td>Content-aware widths give about 100 columns (Settings → Smart)</td>
+</tr>
+<tr>
+<td>Figma, Sketch, Affinity, Adobe apps</td>
+<td>Float any palette window that tiles by mistake (⌃⌥F)</td>
+</tr>
+<tr>
+<td>Notion, Obsidian, Craft, Bear, Notes, Things, Todoist</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Finder</td>
+<td>Get Info and other fixed-size windows float and are kept on screen</td>
+</tr>
+<tr>
+<td>Spotify, Music, Podcasts</td>
+<td>Float a mini player with ⌃⌥F if it tiles</td>
+</tr>
+<tr>
+<td>Preview, Pages, Numbers, Keynote, Word, Excel, PowerPoint</td>
+<td>Presentation mode (command palette → “Presentation”) keeps windows still while you present, or add Keynote to “Pause tiling while these apps are in front” in Settings → Apps</td>
+</tr>
+<tr>
+<td>Calendar, Fantastical, Messages, WhatsApp, Telegram, Signal</td>
+<td>—</td>
+</tr>
+<tr>
+<td>1Password, Raycast, Alfred, Spotlight</td>
+<td>Their pop-up panels aren't normal windows, so they're left alone</td>
+</tr>
+<tr>
+<td>Games and native full-screen apps</td>
+<td>Native full-screen windows live on their own Space and are left alone</td>
+</tr>
+<tr>
+<td>Simulator, Android Emulator</td>
+<td>Fixed-size windows float</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="common-fixes">Common fixes</h2>
+<ul>
+<li><strong>A window keeps jumping back.</strong> The app is resizing itself and Monorail is putting it back. Turn
+  off <strong>Settings → Layout → Keep windows in place when an app resizes or moves them itself</strong>, or
+  float that app.</li>
+<li><strong>An app's windows shouldn't tile.</strong> Float one (⌃⌥F) three times and Monorail offers to always
+  float that app, or add a rule in Settings → Apps.</li>
+<li><strong>A window is too narrow.</strong> Some apps have a minimum width. Monorail never squeezes a window below
+  it; the slide widens instead.</li>
+</ul>
+<footer>© Ashforde OÜ · <a href="mailto:contact@ashforde.org">contact@ashforde.org</a></footer>
+</main>
+</body>
+</html>

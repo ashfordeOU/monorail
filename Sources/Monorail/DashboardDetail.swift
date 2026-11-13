@@ -107,7 +107,7 @@ struct WeekHeatmap: View {
 }
 
 /// One bar a day.
-struct DailyBars: View {
+struct DayTotalBars: View {
     let totals: [(day: Date, total: Double)]
     var colour: Color = Color(nsColor: .systemTeal)
     var format: (Double) -> String
@@ -464,7 +464,7 @@ struct DiskSection: View {
                 DashCard(title: "Reading") { TrendChart(values: samples.map(\.readBytes), colour: Color(nsColor: .systemTeal), format: SystemStats.speed, height: 90) }
                 DashCard(title: "Writing", pin: "write") { TrendChart(values: samples.map(\.writeBytes), colour: Color(nsColor: .systemPink), format: SystemStats.speed, height: 90) }
             }
-            DashCard(title: "Written each day", trailing: "last 14 days") { DailyBars(totals: writes, colour: Color(nsColor: .systemPink), format: { Storage.size(Int64($0)) }) }
+            DashCard(title: "Written each day", trailing: "last 14 days") { DayTotalBars(totals: writes, colour: Color(nsColor: .systemPink), format: { Storage.size(Int64($0)) }) }
             DashCard(title: "Disks and volumes") {
                 ForEach(Self.volumes()) { volume in
                     HStack(spacing: 12) {
@@ -523,7 +523,7 @@ struct NetworkSection: View {
                 DashCard(title: "Download", pin: "down") { TrendChart(values: samples.map(\.downBytes), colour: Color(nsColor: .systemTeal), format: SystemStats.speed, height: 100) }
                 DashCard(title: "Upload") { TrendChart(values: samples.map(\.upBytes), colour: Color(nsColor: .systemIndigo), format: SystemStats.speed, height: 100) }
             }
-            DashCard(title: "Downloaded each day", trailing: "last 14 days") { DailyBars(totals: down, colour: Color(nsColor: .systemTeal), format: { Storage.size(Int64($0)) }) }
+            DashCard(title: "Downloaded each day", trailing: "last 14 days") { DayTotalBars(totals: down, colour: Color(nsColor: .systemTeal), format: { Storage.size(Int64($0)) }) }
             NetworkPage(onBack: {}, embedded: true).frame(maxWidth: 720, alignment: .leading)
         }
         .sectionScroll()

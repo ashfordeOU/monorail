@@ -106,7 +106,7 @@ struct TrendChart: View {
 private func bytesRate(_ v: Double) -> String { SystemStats.speed(v) }
 
 /// A section's title line with the range buttons.
-private struct SectionHeader: View {
+struct SectionHeader: View {
     let title: String
     let subtitle: String
     @Binding var range: SystemHistory.Range

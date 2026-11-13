@@ -767,6 +767,8 @@ private struct InputPane: View {
             }
             Section {
                 Toggle("Mouse buttons 4 and 5 (back and forward) step through slides", isOn: $store.settings.mouseButtonsStep)
+                Toggle("A mouse's thumb wheel slides the strip, no keys needed", isOn: $store.settings.thumbWheelSlides)
+                    .help("For mice with a sideways wheel, such as Logitech's MX Master. Sideways scrolling inside apps then needs ⇧ and the main wheel.")
                 Toggle("⌥ + middle-click zooms the window under the pointer", isOn: $store.settings.middleClickZoom)
                 Toggle("⌃⌥ + scroll over a window makes its slide narrower or wider", isOn: $store.settings.scrollResizes)
                 Toggle("⇧ + scroll over the menu bar or slider switches workspace", isOn: $store.settings.shiftScrollSwitchesWorkspace)
@@ -841,6 +843,7 @@ private struct AppearancePane: View {
                         .help("Hides while any app fills the screen, and while a playing video is underneath it, like a player's controls")
                     Toggle("Window titles on the slides", isOn: $store.settings.sliderTitles)
                     Toggle("Compact", isOn: $store.settings.compactSlider)
+                    Toggle("Icons only: a small pill above the Dock, one app icon per slide", isOn: $store.settings.sliderIconsOnly)
                     LabeledContent("Opacity") {
                         Slider(value: $store.settings.sliderOpacity, in: 0.3...1).frame(width: 240)
                     }

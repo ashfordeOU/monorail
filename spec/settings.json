@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 269,
+  "count": 271,
   "settings": [
     {
       "key": "layout",
@@ -589,6 +589,18 @@
       "type": "Bool",
       "default": "false",
       "about": "Mouse buttons 4 and 5 (back and forward) step through slides."
+    },
+    {
+      "key": "thumbWheelSlides",
+      "type": "Bool",
+      "default": "false",
+      "about": "A mouse's thumb wheel (sideways scrolling, no keys held) slides the strip one slide per notch."
+    },
+    {
+      "key": "sliderIconsOnly",
+      "type": "Bool",
+      "default": "false",
+      "about": "The slider bar as a small pill of app icons, one per slide, instead of the full map."
     },
     {
       "key": "scrollResizes",

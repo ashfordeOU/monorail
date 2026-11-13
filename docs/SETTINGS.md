@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-269 settings.
+271 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -107,6 +107,8 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `lastSeenVersion` | The version whose What's New was last shown. | `""` |
 | `hotCorners` | Screen corners: top-left, top-right, bottom-left, bottom-right. | `[.none, .none, .none, .none]` |
 | `mouseButtonsStep` | Mouse buttons 4 and 5 (back and forward) step through slides. | `false` |
+| `thumbWheelSlides` | A mouse's thumb wheel (sideways scrolling, no keys held) slides the strip one slide per notch. | `false` |
+| `sliderIconsOnly` | The slider bar as a small pill of app icons, one per slide, instead of the full map. | `false` |
 | `scrollResizes` | ⌃⌥ + scroll over a window changes its slide's width. | `true` |
 | `shiftScrollSwitchesWorkspace` | ⇧ + scroll over the slider bar switches workspace. | `true` |
 | `middleClickZoom` | ⌥ + middle-click a window zooms it. | `true` |

@@ -73,6 +73,7 @@ final class InputMonitor {
     var onKeyActivity: () -> Void = {}
     /// Mouse buttons 4 and 5 step slides back and forward.
     var mouseButtonsStep = false
+    var thumbWheelSlides = false
     /// ⌥ + middle-click zooms the window under the pointer.
     var middleClickZoom = false
     var onMiddleClickZoom: (CGPoint) -> Void = { _ in }
@@ -448,6 +449,20 @@ final class InputMonitor {
                 onWorkspaceScroll(value < 0)
             }
             return true
+        }
+        // A mouse's thumb wheel: sideways notches with no keys held move one slide each.
+        if thumbWheelSlides, rawMods.isEmpty, event.getIntegerValueField(.scrollWheelEventIsContinuous) == 0 {
+            let dx = event.getIntegerValueField(.scrollWheelEventDeltaAxis2)
+            let dy = event.getIntegerValueField(.scrollWheelEventDeltaAxis1)
+            if dx != 0, dy == 0 {
+                let now = CACurrentMediaTime()
+                if now - lastStep > 0.12 {
+                    lastStep = now
+                    let forward = dx < 0
+                    DispatchQueue.main.async { self.onStep(forward) }
+                }
+                return true
+            }
         }
         var mods = rawMods
         mods.remove(.shift)  // Shift turns a mouse wheel sideways; allow it.

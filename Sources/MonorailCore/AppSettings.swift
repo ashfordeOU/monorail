@@ -740,6 +740,10 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var hotCorners: [HotCorner] = [.none, .none, .none, .none]
     /// Mouse buttons 4 and 5 (back and forward) step through slides.
     public var mouseButtonsStep = false
+    /// A mouse's thumb wheel (sideways scrolling, no keys held) slides the strip one slide per notch.
+    public var thumbWheelSlides = false
+    /// The slider bar as a small pill of app icons, one per slide, instead of the full map.
+    public var sliderIconsOnly = false
     /// ⌃⌥ + scroll over a window changes its slide's width.
     public var scrollResizes = true
     /// ⇧ + scroll over the slider bar switches workspace.
@@ -1236,7 +1240,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, panelGlass, meetingNotesOffer, meetingNotesSystemAudio, homeOrder, homeHidden, weatherPlaces, weatherFahrenheit, notchLive, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, thumbWheelSlides, sliderIconsOnly, panelGlass, meetingNotesOffer, meetingNotesSystemAudio, homeOrder, homeHidden, weatherPlaces, weatherFahrenheit, notchLive, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
     }
 
     public init(from decoder: Decoder) throws {
@@ -1496,6 +1500,8 @@ public struct AppSettings: Equatable, Codable, Sendable {
         menuBarReadings = value(.menuBarReadings, d.menuBarReadings)
         systemAlerts = value(.systemAlerts, d.systemAlerts)
         homePins = value(.homePins, d.homePins)
+        thumbWheelSlides = value(.thumbWheelSlides, d.thumbWheelSlides)
+        sliderIconsOnly = value(.sliderIconsOnly, d.sliderIconsOnly)
         panelGlass = value(.panelGlass, d.panelGlass)
         meetingNotesOffer = value(.meetingNotesOffer, d.meetingNotesOffer)
         meetingNotesSystemAudio = value(.meetingNotesSystemAudio, d.meetingNotesSystemAudio)

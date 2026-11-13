@@ -2338,6 +2338,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         hotEdges.setEnabled(settings.hotEdges && engine.isRunning)
         sliderBar.compact = settings.compactSlider
         sliderBar.showTitles = settings.sliderTitles
+        sliderBar.iconsOnly = settings.sliderIconsOnly
         sliderBar.peekEnabled = settings.peekWithOption
         popover.peekEnabled = settings.peekWithOption
         sliderBar.edge = settings.sliderBarEdge
@@ -2352,6 +2353,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if let index = Int(entry.key), let color = entry.value.color, !color.isEmpty { result[index] = color }
         }
         input.mouseButtonsStep = settings.mouseButtonsStep
+        input.thumbWheelSlides = settings.thumbWheelSlides
         input.middleClickZoom = settings.middleClickZoom
         input.scrollResizes = settings.scrollResizes
         input.shiftScrollSwitchesWorkspace = settings.shiftScrollSwitchesWorkspace

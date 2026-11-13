@@ -45,6 +45,8 @@ final class SliderBarController {
     /// A smaller bar, and window titles on its tiles.
     var compact = false
     var showTitles = false
+    /// A small pill of app icons, one per slide, instead of the full map.
+    var iconsOnly = false
     /// How see-through and how big the bar is (Settings → Slider).
     var opacity: Double = 1
     var scale: Double = 1
@@ -92,6 +94,7 @@ final class SliderBarController {
             let bar = bars[map.displayUUID] ?? makeBar(for: map.displayUUID)
             bars[map.displayUUID] = bar
             if bar.model.showTitles != showTitles { bar.model.showTitles = showTitles }
+            if bar.model.iconsOnly != iconsOnly { bar.model.iconsOnly = iconsOnly }
             if bar.model.map != map {
                 changed = changed || bar.model.map?.viewportX != map.viewportX
                     || bar.model.map?.tiles != map.tiles || bar.model.map?.workspace != map.workspace
@@ -179,7 +182,11 @@ final class SliderBarController {
 
     private func position(_ panel: NSPanel, for map: Engine.MiniMap) {
         let screen = map.screenFrame
-        let width = min(max(screen.width * 0.5, 320), 820) * CGFloat(min(max(scale, 0.7), 1.6))
+        let sized = CGFloat(min(max(scale, 0.7), 1.6))
+        let dots = map.workspaceCount > 1 ? CGFloat(map.workspaceCount) * 12 + 12 : 0
+        let width = iconsOnly
+            ? min(CGFloat(max(map.tiles.count, 1)) * 38 * sized + dots + 64, screen.width * 0.9)
+            : min(max(screen.width * 0.5, 320), 820) * sized
         let y = edge == .bottom
             ? screen.minY + Self.margin
             : screen.maxY - height - Self.margin
@@ -297,6 +304,7 @@ final class SliderBarModel: ObservableObject {
     @Published var isDragging = false
     /// Window titles (or the slide's name) on the tiles.
     @Published var showTitles = false
+    @Published var iconsOnly = false
     /// Where the track sits in the bar (top-left based), for drops.
     var trackFrame: CGRect?
 }
@@ -354,11 +362,15 @@ struct SliderBarView: View {
                     }
                 }
             }
+            if model.iconsOnly {
+                iconStrip
+            } else {
             GeometryReader { geometry in
                 track(size: geometry.size)
                     .overlay(alignment: .leading) { hoveredName }
                     .onAppear { model.trackFrame = geometry.frame(in: .global) }
                     .onChange(of: geometry.size) { _ in model.trackFrame = geometry.frame(in: .global) }
+            }
             }
             Button(action: actions.showOverview) {
                 Image(systemName: "square.grid.2x2")
@@ -377,6 +389,36 @@ struct SliderBarView: View {
         .onHover { hovering in
             model.isHovering = hovering
             if !hovering { onInteraction() }
+        }
+    }
+
+    /// One app icon per slide, the slide on screen outlined: small enough to sit above the Dock.
+    @ViewBuilder
+    private var iconStrip: some View {
+        if let map = model.map {
+            let ordered = map.isRightToLeft ? Array(map.tiles.reversed()) : map.tiles
+            HStack(spacing: 6) {
+                ForEach(ordered) { tile in
+                    let onScreen = tile.x + tile.width > map.viewportX + 1 && tile.x < map.viewportX + map.viewportWidth - 1
+                    Button {
+                        if let id = tile.windows.first?.id { actions.focus(id) }
+                    } label: {
+                        TileView(tile: tile, height: 30, showTitle: false)
+                            .frame(width: 32, height: 28)
+                            .background(RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(onScreen ? Color.accentColor.opacity(0.14) : Color.clear))
+                            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(onScreen ? Color.accentColor.opacity(0.9) : Color.clear, lineWidth: 1.5))
+                    }
+                    .buttonStyle(.plain)
+                    .onHover { hovering in
+                        if hovering { model.hoveredTile = tile } else if model.hoveredTile?.id == tile.id { model.hoveredTile = nil }
+                    }
+                    .help(tile.name ?? tile.windows.map(\.appName).joined(separator: ", "))
+                }
+                if map.tiles.isEmpty { Text("No windows").font(.caption).foregroundStyle(.secondary) }
+            }
+            .animation(.spring(response: 0.32, dampingFraction: 0.86), value: map)
         }
     }
 

@@ -103,6 +103,8 @@ public static class SettingKeys
     public const string LastSeenVersion = "lastSeenVersion";
     public const string HotCorners = "hotCorners";
     public const string MouseButtonsStep = "mouseButtonsStep";
+    public const string ThumbWheelSlides = "thumbWheelSlides";
+    public const string SliderIconsOnly = "sliderIconsOnly";
     public const string ScrollResizes = "scrollResizes";
     public const string ShiftScrollSwitchesWorkspace = "shiftScrollSwitchesWorkspace";
     public const string MiddleClickZoom = "middleClickZoom";
@@ -422,6 +424,10 @@ public static class SettingDefaults
     public const string LastSeenVersion = "";
     /// <summary>Mouse buttons 4 and 5 (back and forward) step through slides.</summary>
     public const bool MouseButtonsStep = false;
+    /// <summary>A mouse's thumb wheel (sideways scrolling, no keys held) slides the strip one slide per notch.</summary>
+    public const bool ThumbWheelSlides = false;
+    /// <summary>The slider bar as a small pill of app icons, one per slide, instead of the full map.</summary>
+    public const bool SliderIconsOnly = false;
     /// <summary>⌃⌥ + scroll over a window changes its slide's width.</summary>
     public const bool ScrollResizes = true;
     /// <summary>⇧ + scroll over the slider bar switches workspace.</summary>

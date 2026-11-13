@@ -4,11 +4,11 @@
 
 stdenvNoCC.mkDerivation rec {
   pname = "monorail";
-  version = "1.9.0";
+  version = "1.9.1";
 
   src = fetchurl {
     url = "https://github.com/ashfordeOU/monorail/releases/download/v${version}/Monorail-${version}.zip";
-    hash = "sha256-NZQN8zxF04VA9C7Mvm5lacmgwoy+vqrgo89gWh4qWv4=";
+    hash = "sha256-N9A1jcIPAKx15c2HmPrOZgU1j+22W3coQGWlFV/OMUs=";
   };
 
   nativeBuildInputs = [ unzip ];

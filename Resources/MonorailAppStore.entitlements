@@ -17,6 +17,12 @@
 	<!-- Opening and saving .monorail layout files you choose. -->
 	<key>com.apple.security.files.user-selected.read-write</key>
 	<true/>
+	<!-- Remembering a folder you chose (Storage), across launches. -->
+	<key>com.apple.security.files.bookmarks.app-scope</key>
+	<true/>
+	<!-- Listing paired Bluetooth accessories (batteries). -->
+	<key>com.apple.security.device.bluetooth</key>
+	<true/>
 	<!-- Calendar events for meeting layouts. -->
 	<key>com.apple.security.personal-information.calendars</key>
 	<true/>

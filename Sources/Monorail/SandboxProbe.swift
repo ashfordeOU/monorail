@@ -8,6 +8,10 @@ import IOKit
 import IOKit.ps
 import IOKit.pwr_mgt
 import Network
+import IOBluetooth
+import ScreenCaptureKit
+import Vision
+import CoreImage
 
 /// `Monorail --probe-sandbox`: tries, for real, each thing Monorail Station (the App Store edition)
 /// would need, and prints one line per check: `PROBE <name> ok|denied <detail>`. Run on GitHub's Mac
@@ -41,6 +45,19 @@ enum SandboxProbe {
         check("lowPowerSwitch", lowPowerSwitch)
         check("localServer", localServer)
         check("moveWindows", moveWindows)
+        // The 🧪 features: what each would need, tried for real.
+        check("airpodsPlist", airpodsPlist)
+        check("bluetoothPaired", bluetoothPaired)
+        check("perCoreLoad", perCoreLoad)
+        check("chipSensorsSMC", chipSensorsSMC)
+        check("networkCounters", networkCounters)
+        check("speedTest", speedTest)
+        check("homeWithoutGrant", homeWithoutGrant)
+        check("bookmarkScope", bookmarkScope)
+        check("trashFile", trashFile)
+        check("screenCapture", screenCapture)
+        check("ocrOnImage", ocrOnImage)
+        check("qrOnImage", qrOnImage)
         let passed = results.filter(\.1).count
         print("PROBE summary ok \(passed) of \(results.count) allowed")
         exit(0)
@@ -281,5 +298,171 @@ enum SandboxProbe {
         let result = AXUIElementCopyAttributeValue(element, kAXWindowsAttribute as CFString, &windows)
         return result == .success ? (true, "read Finder's windows through Accessibility") : (false, "Accessibility refused (\(result.rawValue))")
     }
+    // MARK: The 🧪 features
+
+    /// AirPods' battery is only kept in this system file (and in private Bluetooth properties).
+    private static func airpodsPlist() -> (Bool, String) {
+        let path = "/Library/Preferences/com.apple.Bluetooth.plist"
+        guard let data = FileManager.default.contents(atPath: path) else { return (false, "\(path) not readable") }
+        return (true, "\(path) readable, \(data.count) bytes")
+    }
+
+    private static func bluetoothPaired() -> (Bool, String) {
+        let devices = IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice]
+        guard let devices else { return (false, "pairedDevices returned nil") }
+        return (true, "pairedDevices allowed, \(devices.count) paired")
+    }
+
+    private static func perCoreLoad() -> (Bool, String) {
+        var count: natural_t = 0, infoCount: mach_msg_type_number_t = 0
+        var info: processor_info_array_t?
+        let r = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &count, &info, &infoCount)
+        guard r == KERN_SUCCESS, let info else { return (false, "host_processor_info returned \(r)") }
+        vm_deallocate(mach_task_self_, vm_address_t(bitPattern: info), vm_size_t(Int(infoCount) * MemoryLayout<integer_t>.stride))
+        return (true, "\(count) cores' ticks readable")
+    }
+
+    /// Per-core temperatures come from the SMC (or private HID sensor APIs, which the App Store refuses).
+    private static func chipSensorsSMC() -> (Bool, String) {
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSMC"))
+        guard service != 0 else { return (false, "no AppleSMC service visible") }
+        defer { IOObjectRelease(service) }
+        var connection: io_connect_t = 0
+        let r = IOServiceOpen(service, mach_task_self_, 0, &connection)
+        guard r == KERN_SUCCESS else { return (false, String(format: "IOServiceOpen(AppleSMC) refused 0x%x", r)) }
+        IOServiceClose(connection)
+        return (true, "AppleSMC opened")
+    }
+
+    private static func networkCounters() -> (Bool, String) {
+        var list: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&list) == 0, let first = list else { return (false, "getifaddrs failed") }
+        defer { freeifaddrs(list) }
+        var bytes: UInt64 = 0
+        for pointer in sequence(first: first, next: { $0.pointee.ifa_next }) {
+            guard let addr = pointer.pointee.ifa_addr, addr.pointee.sa_family == UInt8(AF_LINK),
+                  let data = pointer.pointee.ifa_data?.assumingMemoryBound(to: if_data.self) else { continue }
+            bytes += UInt64(data.pointee.ifi_ibytes) + UInt64(data.pointee.ifi_obytes)
+        }
+        return bytes > 0 ? (true, "interface byte counters readable (\(bytes / 1_000_000) MB so far)") : (false, "counters read as zero")
+    }
+
+    private static func speedTest() -> (Bool, String) {
+        guard let url = URL(string: "https://speed.cloudflare.com/__down?bytes=5000000") else { return (false, "bad URL") }
+        let done = DispatchSemaphore(value: 0)
+        var outcome: (Bool, String) = (false, "timed out")
+        let start = Date()
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            if let data, !data.isEmpty {
+                let seconds = Date().timeIntervalSince(start)
+                outcome = (true, String(format: "downloaded %.1f MB at %.0f Mbit/s", Double(data.count) / 1e6, Double(data.count) * 8 / 1e6 / seconds))
+            } else {
+                outcome = (false, error?.localizedDescription ?? "no data")
+            }
+            done.signal()
+        }.resume()
+        _ = done.wait(timeout: .now() + 30)
+        return outcome
+    }
+
+    /// Without the open dialog, can it read the real home folder? (Expected: no.)
+    private static func homeWithoutGrant() -> (Bool, String) {
+        guard let pw = getpwuid(getuid()), let dir = pw.pointee.pw_dir else { return (false, "no home") }
+        let home = String(cString: dir)
+        var seen: [String] = []
+        for sub in ["Downloads", "Documents", "Library/Developer", "Library/Caches"] {
+            if (try? FileManager.default.contentsOfDirectory(atPath: home + "/" + sub)) != nil { seen.append(sub) }
+        }
+        return seen.isEmpty ? (false, "real home folders closed without a grant (as expected)") : (true, "readable without a grant: \(seen.joined(separator: ", "))")
+    }
+
+    /// Remembering a folder you chose, across launches, needs a security-scoped bookmark.
+    private static func bookmarkScope() -> (Bool, String) {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("probe-bookmark", isDirectory: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        do {
+            let data = try folder.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            return (true, "security-scoped bookmark made (\(data.count) bytes)")
+        } catch {
+            return (false, "bookmark refused: \(error.localizedDescription)")
+        }
+    }
+
+    private static func trashFile() -> (Bool, String) {
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("probe-trash.txt")
+        try? "probe".write(to: file, atomically: true, encoding: .utf8)
+        do {
+            var landed: NSURL?
+            try FileManager.default.trashItem(at: file, resultingItemURL: &landed)
+            return (true, "moved to \(landed?.path ?? "the Trash")")
+        } catch {
+            return (false, "trashItem refused: \(error.localizedDescription)")
+        }
+    }
+
+    /// OCR and QR read what's on screen: ScreenCaptureKit, after the Screen Recording permission.
+    /// The CI step grants it as a person would in System Settings; here the screen is captured and
+    /// the word TextEdit shows ("Probe") is looked for.
+    private static var captured: CGImage?
+
+    private static func screenCapture() -> (Bool, String) {
+        let preflight = CGPreflightScreenCaptureAccess()
+        guard #available(macOS 14.0, *) else { return (false, "needs macOS 14") }
+        let done = DispatchSemaphore(value: 0)
+        var outcome: (Bool, String) = (false, "timed out")
+        SCShareableContent.getExcludingDesktopWindows(false, onScreenWindowsOnly: true) { content, error in
+            guard let content, let display = content.displays.first else {
+                outcome = (false, "permission \(preflight ? "granted" : "not granted"); content refused: \(error?.localizedDescription ?? "none")")
+                done.signal()
+                return
+            }
+            let config = SCStreamConfiguration()
+            config.width = display.width
+            config.height = display.height
+            SCScreenshotManager.captureImage(contentFilter: SCContentFilter(display: display, excludingWindows: []), configuration: config) { image, error in
+                if let image {
+                    captured = image
+                    outcome = (true, "permission \(preflight ? "granted" : "not preflighted"); captured \(image.width)x\(image.height), \(content.windows.count) windows")
+                } else {
+                    outcome = (false, "capture refused: \(error?.localizedDescription ?? "none")")
+                }
+                done.signal()
+            }
+        }
+        _ = done.wait(timeout: .now() + 20)
+        return outcome
+    }
+
+    private static func ocrOnImage() -> (Bool, String) {
+        let image = captured ?? renderedText("Probe 12345")
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        do {
+            try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+        } catch { return (false, "Vision refused: \(error.localizedDescription)") }
+        let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+        let source = captured == nil ? "a drawn image" : "the captured screen"
+        let found = text.contains { $0.localizedCaseInsensitiveContains("Probe") }
+        return found ? (true, "read \"Probe\" from \(source) (\(text.count) lines)") : (false, "Vision ran on \(source) but found: \(text.prefix(5).joined(separator: " | "))")
+    }
+
+    private static func qrOnImage() -> (Bool, String) {
+        guard let filter = CIFilter(name: "CIQRCodeGenerator") else { return (false, "no QR generator") }
+        filter.setValue("https://monorail.ashforde.org".data(using: .utf8), forKey: "inputMessage")
+        guard let output = filter.outputImage?.transformed(by: CGAffineTransform(scaleX: 8, y: 8)),
+              let image = CIContext().createCGImage(output, from: output.extent) else { return (false, "couldn't draw a QR code") }
+        let request = VNDetectBarcodesRequest()
+        do { try VNImageRequestHandler(cgImage: image, options: [:]).perform([request]) } catch { return (false, "Vision refused: \(error.localizedDescription)") }
+        let payload = request.results?.first?.payloadStringValue
+        return payload == nil ? (false, "no code found") : (true, "read \(payload!)")
+    }
+
+    private static func renderedText(_ text: String) -> CGImage {
+        let image = NSImage(size: NSSize(width: 600, height: 160), flipped: false) { rect in
+            NSColor.white.setFill(); rect.fill()
+            (text as NSString).draw(at: NSPoint(x: 20, y: 50), withAttributes: [.font: NSFont.systemFont(ofSize: 64), .foregroundColor: NSColor.black])
+            return true
+        }
+        return image.cgImage(forProposedRect: nil, context: nil, hints: nil)!
+    }
 }
-#endif

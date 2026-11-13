@@ -2,8 +2,8 @@
 import AppKit
 
 /// The menu bar glyph, matching the app icon: an M of three windows with the
-/// middle one slid down. Always the same shape; its colour shows the state. Drawn as a
-/// template image so macOS tints it for light and dark menu bars.
+/// middle one slid down (outlined while paused). Drawn as a template image so macOS tints it for
+/// light and dark menu bars, exactly like the icons beside it.
 enum StatusIcon {
     /// `badge` adds a dot in the corner (an update is waiting).
     static func image(paused: Bool, badge: Bool = false) -> NSImage {
@@ -15,9 +15,15 @@ enum StatusIcon {
             // As heavy as the other icons in the menu bar.
             sides.lineWidth = 1.5
             sides.stroke()
-            // …and the middle one, slid down.
-            let middle = NSRect(x: 7, y: 2, width: 4, height: 8.5)
-            NSBezierPath(roundedRect: middle, xRadius: 1.4, yRadius: 1.4).fill()
+            // …and the middle one, slid down: solid while running, an outline while paused (same
+            // strength either way, so it's as easy to see as the icons next to it).
+            if paused {
+                let middle = NSBezierPath(roundedRect: NSRect(x: 7.6, y: 2.6, width: 2.8, height: 7.3), xRadius: 1.1, yRadius: 1.1)
+                middle.lineWidth = 1.3
+                middle.stroke()
+            } else {
+                NSBezierPath(roundedRect: NSRect(x: 7, y: 2, width: 4, height: 8.5), xRadius: 1.4, yRadius: 1.4).fill()
+            }
             if badge {
                 NSBezierPath(ovalIn: NSRect(x: 18, y: 10.5, width: 4, height: 4)).fill()
             }

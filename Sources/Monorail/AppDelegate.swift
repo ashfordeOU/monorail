@@ -2148,6 +2148,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
+    private var chosenAppearance: NSAppearance?
+    private var appearanceObservers: [NSObjectProtocol] = []
+
+    /// Every window of ours takes the chosen theme, except the menu bar's, which follows the menu bar.
+    private func applyChosenAppearance() {
+        for window in NSApp.windows where !window.className.contains("StatusBar") && !window.className.contains("NSMenu") {
+            if window.appearance?.name != chosenAppearance?.name { window.appearance = chosenAppearance }
+        }
+        statusItem?.button?.appearance = nil
+        guard appearanceObservers.isEmpty else { return }
+        // New windows and panels pick it up as they appear.
+        for name in [NSWindow.didBecomeKeyNotification, NSWindow.didChangeOcclusionStateNotification] {
+            appearanceObservers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] note in
+                guard let self, let window = note.object as? NSWindow,
+                    !window.className.contains("StatusBar"), !window.className.contains("NSMenu"),
+                    window.appearance?.name != self.chosenAppearance?.name else { return }
+                window.appearance = self.chosenAppearance
+            })
+        }
+    }
+
     private func apply(_ original: AppSettings) {
         let settings = Edition.restrict(adjustedV12(original))
         let syncWasOn = engine.settings.syncThroughICloud
@@ -2155,11 +2176,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         engine.settings = settings
         ClipboardWatch.shared.apply(settings)
         FocusWatch.shared.apply(settings)
-        switch settings.appAppearance {
-        case .system: NSApp.appearance = nil
-        case .light: NSApp.appearance = NSAppearance(named: .aqua)
-        case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
-        }
+        // The theme goes on Monorail's own windows only. Set on the whole app, it also reached the
+        // menu bar icon, which then came out black on a dark menu bar (or white on a light one).
+        chosenAppearance = {
+            switch settings.appAppearance {
+            case .system: return nil
+            case .light: return NSAppearance(named: .aqua)
+            case .dark: return NSAppearance(named: .darkAqua)
+            }
+        }()
+        NSApp.appearance = nil
+        applyChosenAppearance()
         if settings.pauseForStageManager != (stageManagerTimer != nil) { watchStageManager() }
         PowerWatch.shared.parkOnBattery = settings.parkPowerHogs
         PowerWatch.shared.showMarkers = settings.powerMarkers
@@ -3183,21 +3210,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         updateStatusItem()
     }
 
-    /// The menu bar shows only the Monorail icon, always the same shape. Its colour says what's on:
-    /// the menu bar's own colour while running, dimmed while paused, orange while Stay Awake is on,
+    /// The menu bar shows only the Monorail icon. Its shape and colour say what's on: the menu bar's
+    /// own colour while running, the middle window outlined while paused, orange while Stay Awake is on,
     /// red while recording. Position, timers and notices live in the panel instead.
     private func updateStatusItem() {
         guard let button = statusItem?.button else { return }
-        button.image = StatusIcon.image(paused: engine.isPaused)
+        let paused = engine.isPaused && !Edition.isAppStore
+        button.image = StatusIcon.image(paused: paused)
         button.title = ""
         button.imagePosition = .imageOnly
         // A template image, so macOS draws it white on a dark menu bar and black on a light one, like
-        // every other icon there. Paused uses macOS's own dimmed look, which follows the theme; a
-        // grey colour of our own resolved against the wrong appearance and nearly vanished.
-        button.appearsDisabled = engine.isPaused && !engine.isRecording
-        button.contentTintColor = engine.isRecording ? .systemRed : (awake.isOn && !engine.isPaused) ? .systemOrange : nil
+        // every other icon there. Never dimmed: paused has its own shape (an outlined middle window)
+        // at full strength, since the dimmed look nearly vanished on some menu bars.
+        button.appearsDisabled = false
+        button.contentTintColor = engine.isRecording ? .systemRed : (awake.isOn && !paused) ? .systemOrange : nil
         var states: [String] = []
-        if engine.isPaused { states.append("paused") }
+        if paused { states.append("paused") }
         if awake.isOn { states.append("Stay Awake on") }
         if engine.isRecording { states.append("recording") }
         if updater.available != nil { states.append("update ready") }

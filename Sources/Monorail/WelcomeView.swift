@@ -370,7 +370,7 @@ struct WelcomeView: View {
             Text("You’re all set").font(.system(size: 28, weight: .bold))
             Text(Edition.isAppStore
                  ? "Station lives in the menu bar. Click its icon for everything; it turns orange while your Mac stays awake."
-                 : "Monorail lives in the menu bar. Click its icon for everything; it turns grey while paused and orange while your Mac stays awake.")
+                 : "Monorail lives in the menu bar. Click its icon for everything; its middle window turns to an outline while paused, and it turns orange while your Mac stays awake.")
                 .font(.system(size: 13)).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).frame(maxWidth: 380)
             VStack(alignment: .leading, spacing: 6) {

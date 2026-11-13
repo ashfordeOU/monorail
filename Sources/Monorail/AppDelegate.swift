@@ -2134,6 +2134,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let syncWasOn = engine.settings.syncThroughICloud
         let liveReloadWasOn = engine.settings.liveReloadSettings
         engine.settings = settings
+        ClipboardWatch.shared.apply(settings)
         switch settings.appAppearance {
         case .system: NSApp.appearance = nil
         case .light: NSApp.appearance = NSAppearance(named: .aqua)

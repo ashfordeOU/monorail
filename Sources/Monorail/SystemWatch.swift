@@ -112,7 +112,7 @@ final class SystemWatch: ObservableObject {
         }
         guard result == KERN_SUCCESS else { return nil }
         return SystemStats.Memory.fromPages(pageSize: UInt64(vm_kernel_page_size), total: ProcessInfo.processInfo.physicalMemory,
-                                            internal: UInt64(stats.internal_page_count), purgeable: UInt64(stats.purgeable_count),
+                                            internalPages: UInt64(stats.internal_page_count), purgeable: UInt64(stats.purgeable_count),
                                             wired: UInt64(stats.wire_count), compressed: UInt64(stats.compressor_page_count),
                                             external: UInt64(stats.external_page_count))
     }

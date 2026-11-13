@@ -122,6 +122,8 @@ public static class SettingKeys
     public const string MovieAuto = "movieAuto";
     public const string ChargeLimit = "chargeLimit";
     public const string WorldClocks = "worldClocks";
+    public const string ClipboardHistory = "clipboardHistory";
+    public const string ClipboardKeep = "clipboardKeep";
     public const string FocusFlash = "focusFlash";
     public const string SliderOpacity = "sliderOpacity";
     public const string SliderScale = "sliderScale";
@@ -416,6 +418,10 @@ public static class SettingDefaults
     public const bool MovieAuto = false;
     /// <summary>While charging, a notice once the battery reaches `chargeLimit` (100 = off).</summary>
     public const int ChargeLimit = 100;
+    /// <summary>Remember what you copy, for the Clipboard page. Passwords and other concealed copies are never kept.</summary>
+    public const bool ClipboardHistory = true;
+    /// <summary>How many clips to remember (pinned ones don't count).</summary>
+    public const int ClipboardKeep = 50;
     /// <summary>A quick highlight of the focused window when focus moves by keyboard.</summary>
     public const bool FocusFlash = false;
     /// <summary>The slider bar's opacity and size (0.8, 1 or 1.25).</summary>

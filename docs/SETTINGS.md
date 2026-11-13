@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-236 settings.
+238 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -126,6 +126,8 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `movieAuto` | Movie mode turns on by itself when a video plays full screen. | `false` |
 | `chargeLimit` | While charging, a notice once the battery reaches `chargeLimit` (100 = off). | `100` |
 | `worldClocks` | World clocks on the Today page: time zone identifiers ("Europe/London"). | `[]` |
+| `clipboardHistory` | Remember what you copy, for the Clipboard page. Passwords and other concealed copies are never kept. | `true` |
+| `clipboardKeep` | How many clips to remember (pinned ones don't count). | `50` |
 | `focusFlash` | A quick highlight of the focused window when focus moves by keyboard. | `false` |
 | `sliderOpacity` | The slider bar's opacity and size (0.8, 1 or 1.25). | `1.0` |
 | `sliderScale` |  | `1.0` |

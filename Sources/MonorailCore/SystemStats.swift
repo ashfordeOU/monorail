@@ -48,9 +48,9 @@ public enum SystemStats {
         }
 
         /// From page counts (internal pages minus purgeable is app memory, as Activity Monitor shows).
-        public static func fromPages(pageSize: UInt64, total: UInt64, internal: UInt64, purgeable: UInt64, wired: UInt64,
+        public static func fromPages(pageSize: UInt64, total: UInt64, internalPages: UInt64, purgeable: UInt64, wired: UInt64,
                                      compressed: UInt64, external: UInt64) -> Memory {
-            let app = internal > purgeable ? internal - purgeable : 0
+            let app = internalPages > purgeable ? internalPages - purgeable : 0
             return Memory(total: total, app: app * pageSize, wired: wired * pageSize, compressed: compressed * pageSize,
                           cached: (external + purgeable) * pageSize)
         }

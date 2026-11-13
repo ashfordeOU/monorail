@@ -23,7 +23,7 @@ final class SystemStatsTests: XCTestCase {
     }
 
     func testMemoryFromPages() {
-        let m = SystemStats.Memory.fromPages(pageSize: 16384, total: 36 * 1_073_741_824, internal: 1_000_000, purgeable: 50_000,
+        let m = SystemStats.Memory.fromPages(pageSize: 16384, total: 36 * 1_073_741_824, internalPages: 1_000_000, purgeable: 50_000,
                                              wired: 260_000, compressed: 200_000, external: 150_000)
         XCTAssertEqual(m.app, 950_000 * 16384)
         XCTAssertEqual(m.cached, 200_000 * 16384)

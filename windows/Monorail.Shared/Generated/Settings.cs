@@ -138,6 +138,9 @@ public static class SettingKeys
     public const string ClipboardQuickPaste = "clipboardQuickPaste";
     public const string ClipboardIgnoredApps = "clipboardIgnoredApps";
     public const string ClipboardNotch = "clipboardNotch";
+    public const string Modes = "modes";
+    public const string CustomSwitches = "customSwitches";
+    public const string BackdropColour = "backdropColour";
     public const string AiAccounts = "aiAccounts";
     public const string AiLiveLimits = "aiLiveLimits";
     public const string AiThresholds = "aiThresholds";
@@ -462,6 +465,8 @@ public static class SettingDefaults
     public const bool ClipboardQuickPaste = true;
     /// <summary>Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch).</summary>
     public const bool ClipboardNotch = false;
+    /// <summary>The Backdrop switch's colour (hex).</summary>
+    public const string BackdropColour = "#1E2235";
     /// <summary>AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access).</summary>
     public const bool AiLiveLimits = false;
     /// <summary>AI Usage: notify when a plan limit resets.</summary>

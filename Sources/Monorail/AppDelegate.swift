@@ -598,6 +598,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         deepWork.onBlocked = { [weak self] app in self?.toast.show("\(app) waits until deep work ends") }
         shareWatch.onChange = { [weak self] sharing in
             guard let self else { return }
+            Switchboard.shared.sharingChanged()
+            guard self.store.settings.safeScreenShare else { return }
             self.engine.setPrivateHidden(sharing)
             if sharing { self.toast.show("You’re sharing your screen · private windows are out of sight") }
             self.postWebhook(sharing ? "screen_share_on" : "screen_share_off", [:])
@@ -1263,7 +1265,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             webRemote.token = settings.webRemoteToken
             webRemote.setEnabled(settings.webRemote && !settings.webRemoteToken.isEmpty, port: UInt16(clamping: settings.apiPort + 1))
         }
-        shareWatch.setEnabled(settings.safeScreenShare)
+        shareWatch.setEnabled(settings.safeScreenShare || settings.modes.contains { $0.enabled && $0.triggers.contains(.screenShare) })
         workspaceClipboard.setEnabled(settings.workspaceClipboard)
         calendarFocus.setEnabled(settings.deepWorkFromCalendar)
         crashReporter.setEnabled(settings.crashReports)
@@ -1507,6 +1509,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         var list: [PaletteCommand] = []
         // What you copied, today's meetings, reminders and notes that match.
         let q = query.trimmingCharacters(in: .whitespaces)
+        if let value = QuickCalc.evaluate(q) {
+            let answer = QuickCalc.format(value)
+            list.append(PaletteCommand(id: "calc", title: "= \(answer)", subtitle: "Copy the answer", symbol: "equal.circle", keywords: q) { ClipboardWatch.shared.copy(answer) })
+        }
         if q.count >= 2 {
             for clip in ClipboardWatch.shared.history.shown(matching: q).prefix(4) {
                 list.append(PaletteCommand(id: "clip-\(clip.id)", title: clip.preview(60), subtitle: "Clipboard · paste it", symbol: clip.kind.symbol,
@@ -2143,6 +2149,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         SystemRecorder.shared.start()
         AIUsageWatch.shared.store = store
         AIUsageWatch.shared.start()
+        SwitchContext.store = store
+        SwitchContext.awakeIsOn = { [weak self] in self?.awake.isOn ?? false }
+        SwitchContext.awakeSet = { [weak self] on in
+            guard let self else { return }
+            if on { self.awake.start(minutes: self.store.settings.awakeDefaultMinutes) } else { self.awake.end() }
+        }
+        SwitchContext.sharingScreen = { [weak self] in self?.shareWatch.isSharing ?? false }
+        Switchboard.shared.start()
         NotchOpener.shared.open = { [weak self] in
             guard let self, let button = self.statusItem?.button, !self.popover.isShown else { return }
             self.popover.toggle(relativeTo: button, page: .clipboard)
@@ -3270,6 +3284,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                                        keywords: "clipboard history copied paste boards tags moodboard images") { ClipboardWindow.shared.show() })
             list.append(PaletteCommand(id: "tools", title: "Tools", subtitle: "Screenshot names, images, PDFs, text and developer tools", symbol: "wrench.and.screwdriver",
                                        keywords: "tools utilities toolbox convert rename") { ToolsWindow.shared.show() })
+            list.append(PaletteCommand(id: "switches", title: "Switches", subtitle: "System settings and actions in one click, and modes", symbol: "switch.2",
+                                       keywords: "switches toggles levers modes dark mode dock desktop icons hidden files trash dns recording") {
+                UserDefaults.standard.set(DashboardSection.switches.rawValue, forKey: "DashboardSection")
+                DashboardWindow.shared.show()
+            })
+            for item in Switchboard.shared.catalogue {
+                let state = Switchboard.shared.states[item.id]
+                list.append(PaletteCommand(id: "switch-" + item.id, title: item.isAction ? item.title : "\(item.title): \(state == true ? "Turn Off" : "Turn On")",
+                                           subtitle: item.about, symbol: item.symbol, keywords: "switch toggle " + item.group.rawValue.lowercased()) { Switchboard.shared.toggle(item.id) })
+            }
+            for mode in store.settings.modes {
+                let active = Switchboard.shared.isActive(mode)
+                list.append(PaletteCommand(id: "mode-" + mode.id, title: "\(active ? "Stop" : "Start") \(mode.name) Mode", subtitle: "Mode", symbol: mode.symbol,
+                                           keywords: "mode " + mode.name.lowercased()) { Switchboard.shared.toggleMode(mode) })
+            }
             for tool in ToolKind.available {
                 list.append(PaletteCommand(id: "tool-" + tool.rawValue, title: tool.rawValue, subtitle: tool.about, symbol: tool.symbol,
                                            keywords: "tool " + tool.group.lowercased()) { ToolsWindow.shared.show(tool) })

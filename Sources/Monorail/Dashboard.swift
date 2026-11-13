@@ -16,7 +16,7 @@ enum DashboardTab: String, CaseIterable, Identifiable {
 
 enum DashboardSection: String, CaseIterable, Identifiable {
     case overview = "Overview", desk = "Desk", apps = "Apps", cpu = "CPU", memory = "Memory", gpu = "GPU", disk = "Disk", network = "Network",
-         battery = "Battery", devices = "Devices", sound = "Sound", ports = "Ports", agents = "Agents", ai = "AI Usage", today = "Today", trends = "Trends"
+         battery = "Battery", devices = "Devices", sound = "Sound", ports = "Ports", agents = "Agents", ai = "AI Usage", switches = "Switches", today = "Today", trends = "Trends"
     var id: String { rawValue }
     var symbol: String {
         switch self {
@@ -34,6 +34,7 @@ enum DashboardSection: String, CaseIterable, Identifiable {
         case .ports: return "point.3.connected.trianglepath.dotted"
         case .agents: return "sparkles"
         case .ai: return "brain"
+        case .switches: return "switch.2"
         case .today: return "calendar"
         case .trends: return "chart.xyaxis.line"
         }
@@ -124,6 +125,7 @@ struct SidebarDashboard: View {
                 case .ports: PortsSection()
                 case .agents: AgentsSection()
                 case .ai: AIUsageSection()
+                case .switches: SwitchesSection()
                 case .today: TodayDashboard()
                 case .trends: TrendsSection()
                 }

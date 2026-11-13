@@ -789,6 +789,12 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var clipboardIgnoredApps: [String] = []
     /// Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch).
     public var clipboardNotch = false
+    /// Switches: modes (Recording, Call, Presentation, Deep Work and your own); each can start by itself when turned on.
+    public var modes: [Mode] = Mode.defaultSet
+    /// Switches you made from a shell command or a shortcut.
+    public var customSwitches: [CustomSwitch] = []
+    /// The Backdrop switch's colour (hex).
+    public var backdropColour = "#1E2235"
     /// AI Usage: the AI accounts to watch (Claude, Codex, OpenClaw, Hermes, Ollama, LM Studio, API keys). Keys stay in the Keychain.
     public var aiAccounts: [AIAccount] = []
     /// AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access).
@@ -1197,7 +1203,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
     }
 
     public init(from decoder: Decoder) throws {
@@ -1457,6 +1463,9 @@ public struct AppSettings: Equatable, Codable, Sendable {
         menuBarReadings = value(.menuBarReadings, d.menuBarReadings)
         systemAlerts = value(.systemAlerts, d.systemAlerts)
         homePins = value(.homePins, d.homePins)
+        modes = value(.modes, d.modes)
+        customSwitches = value(.customSwitches, d.customSwitches)
+        backdropColour = value(.backdropColour, d.backdropColour)
         clipboardImages = value(.clipboardImages, d.clipboardImages)
         clipboardHideSensitive = value(.clipboardHideSensitive, d.clipboardHideSensitive)
         clipboardQuickPaste = value(.clipboardQuickPaste, d.clipboardQuickPaste)

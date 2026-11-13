@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 258,
+  "count": 261,
   "settings": [
     {
       "key": "layout",
@@ -799,6 +799,24 @@
       "type": "Bool",
       "default": "false",
       "about": "Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch)."
+    },
+    {
+      "key": "modes",
+      "type": "[Mode]",
+      "default": "Mode.defaultSet",
+      "about": "Switches: modes (Recording, Call, Presentation, Deep Work and your own); each can start by itself when turned on."
+    },
+    {
+      "key": "customSwitches",
+      "type": "[CustomSwitch]",
+      "default": "[]",
+      "about": "Switches you made from a shell command or a shortcut."
+    },
+    {
+      "key": "backdropColour",
+      "type": "String",
+      "default": "\"#1E2235\"",
+      "about": "The Backdrop switch's colour (hex)."
     },
     {
       "key": "aiAccounts",

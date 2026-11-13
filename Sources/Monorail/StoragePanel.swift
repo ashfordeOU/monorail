@@ -193,6 +193,7 @@ final class StorageWatch: ObservableObject {
     }
 
     private func notify(_ title: String, _ body: String) {
+        guard !SuiteRole.shared.pauses(.notifications) else { return }
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body

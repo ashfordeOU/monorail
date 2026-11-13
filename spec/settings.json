@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 242,
+  "count": 243,
   "settings": [
     {
       "key": "layout",
@@ -739,6 +739,12 @@
       "type": "Bool",
       "default": "false",
       "about": "A reminder every 20 minutes at the screen to look into the distance for 20 seconds."
+    },
+    {
+      "key": "stationStepsBack",
+      "type": "Bool",
+      "default": "true",
+      "about": "Station: while Monorail runs, let Monorail lead (Station hides its icon and pauses its jobs)."
     },
     {
       "key": "focusFlash",

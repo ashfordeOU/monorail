@@ -59,6 +59,11 @@ final class EveningLight {
 
     /// Works out the strength for now and shows it (call after settings change, for a live slider).
     func update() {
+        // While Monorail leads, it owns the screen's colours; two apps writing them would flicker.
+        if SuiteRole.shared.pauses(.eveningColours) {
+            if !applied.isNeutral { restore() }
+            return
+        }
         let settings = self.settings()
         let parts = Calendar.current.dateComponents([.hour, .minute], from: Date())
         let minute = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)

@@ -761,7 +761,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         evening.start()
         // Keeper owns staying awake while it runs and says so: a session started here goes to it.
         awake.forwardToPeer = { [weak self] session in
-            guard let self, let peer = self.activePeer else { return false }
+            guard let self else { return false }
+            // Station resting: Monorail keeps the Mac awake instead.
+            if Edition.isAppStore, SuiteRole.shared.isResting {
+                var args = ["for": "0"]  // 0: until turned off
+                if case .until(let end) = session, let minutes = SuiteRoles.handoffMinutes(endsAt: end) { args["for"] = "\(minutes)m" }
+                self.askMonorail("awake.on", args)
+                return true
+            }
+            guard let peer = self.activePeer else { return false }
             let closedLid = self.store.settings.awakeClosedLid
             let id = String(UUID().uuidString.prefix(8)).lowercased()
             guard let link = peer.awakeHandoffLink(for: session, closedLid: closedLid, handoffID: id),
@@ -2099,6 +2107,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         BatteryLog.shared.start()
         StorageWatch.shared.start()
         MonorailNudgeWatch.shared.start()
+        SuiteRole.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
+        SuiteRole.shared.onChange = { [weak self] role in self?.roleChanged(role) }
+        SuiteRole.shared.start()
         FocusWatch.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         FocusWatch.shared.onRunningChange = { [weak self] on in
             guard let self, !Edition.isAppStore, self.store.settings.focusHidesApps else { return }
@@ -2660,6 +2671,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: Ashforde suite channel (App Group + doorbell; works inside the sandbox)
 
     private var suite: SuiteChannel?
+    /// This app's name on the shared channel.
+    private static var suiteName: String { Edition.isAppStore ? "station" : "monorail" }
+
+    /// Station, resting: asks Monorail to do something (Stay Awake), through the shared channel.
+    private func askMonorail(_ op: String, _ args: [String: String] = [:]) {
+        guard let suite else { return }
+        suite.send(to: "monorail", from: Self.suiteName, op: op, args: args)
+        ringSuiteDoorbell()
+    }
+
+    /// Station steps back while Monorail runs and takes over again when it quits (SuiteRoles).
+    private func roleChanged(_ role: SuiteRoles.Role) {
+        guard Edition.isAppStore else { return }
+        if role == .resting {
+            // A Stay Awake session carries on in Monorail rather than stopping.
+            if let session = awake.session {
+                var args = ["for": "0"]  // 0: until turned off
+                if case .until(let end) = session, let minutes = SuiteRoles.handoffMinutes(endsAt: end) { args["for"] = "\(minutes)m" }
+                askMonorail("awake.on", args)
+                awake.end()
+            }
+            statusItem?.isVisible = false
+        } else {
+            statusItem?.isVisible = true
+        }
+        // Each job looks at the role again: colours, clipboard, eye breaks, notifications.
+        evening.update()
+        apply(store.settings)
+        publishSuiteHello()
+    }
 
     private func startSuiteChannel() {
         guard suite == nil,
@@ -2676,9 +2717,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Monorail's hello, in the shape Keeper's PeerHello reads.
     private var suiteHello: [String: Any] {
         [
-            "app": "Monorail", "bundleID": Bundle.main.bundleIdentifier ?? BundleIDs.current,
+            "app": Brand.name, "bundleID": Bundle.main.bundleIdentifier ?? BundleIDs.current,
             "version": Bundle.main.shortVersion, "pid": Int(ProcessInfo.processInfo.processIdentifier),
             "owns": ["awake": false, "focus": false, "stage": false],
+            "role": SuiteRole.shared.role.rawValue,
             "caps": ["closedLid": !Edition.isAppStore, "closedLidReady": false],
             "state": ["awake": awake.isOn, "paused": engine.isPaused, "focusMode": engine.isFocusMode, "presenting": engine.isPresenting],
             "links": ["monorail://settings", "monorail://awake", "monorail://awake/off"],
@@ -2687,7 +2729,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func publishSuiteHello() {
         guard let suite else { return }
-        suite.writeHello("monorail", suiteHello)
+        suite.writeHello(Self.suiteName, suiteHello)
         ringSuiteDoorbell()
     }
 
@@ -2705,7 +2747,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         {
             peer = hello
         }
-        let requests = suite.takeRequests(for: "monorail")
+        let requests = suite.takeRequests(for: Self.suiteName)
         for request in requests {
             switch request.op {
             case "awake.on":
@@ -3373,6 +3415,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Settings, help, updates and Quit, at the foot of the menu.
     private func addFooter(to menu: NSMenu) {
         menu.addItem(.separator())
+        if SuiteRole.shared.stationAlongside {
+            // Both apps here: Monorail leads, Station rests until Monorail quits.
+            let note = NSMenuItem(title: "Station is resting while Monorail runs", action: nil, keyEquivalent: "")
+            note.isEnabled = false
+            note.toolTip = "Monorail does everything Station does. Quit Monorail and Station takes over again by itself."
+            menu.addItem(note)
+        }
         menu.addItem(item(L("Settings…"), #selector(showSettingsFromMenu), key: ","))
         menu.addItem(item(L("Send Feedback…"), #selector(sendFeedbackFromMenu)))
         menu.addItem(shortcutsMenu())

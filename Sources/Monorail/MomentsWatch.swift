@@ -110,6 +110,7 @@ final class MomentsWatch: ObservableObject {
         guard Moments.shouldNudgeToUnplug(percent: b.percent, isCharging: b.isCharging, limit: settings().chargeLimit,
                                           alreadyNudged: nudgedThisCharge) else { return }
         nudgedThisCharge = true
+        guard !SuiteRole.shared.pauses(.notifications) else { return }
         let content = UNMutableNotificationContent()
         content.title = "Charged to \(b.percent)%"
         content.body = "Unplug now to keep the battery healthy."
@@ -196,7 +197,7 @@ final class MomentsWatch: ObservableObject {
     // MARK: Keeping the display awake
 
     private func hold(_ id: inout IOPMAssertionID, _ reason: String) {
-        guard id == 0 else { return }
+        guard id == 0, !SuiteRole.shared.pauses(.callAssertions) else { return }
         IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep as CFString,
                                     IOPMAssertionLevel(kIOPMAssertionLevelOn), reason as CFString, &id)
     }

@@ -80,6 +80,7 @@ final class FocusWatch: ObservableObject {
     }
 
     private func checkEyes() {
+        guard !SuiteRole.shared.pauses(.eyeBreaks) else { return }
         let idle = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: CGEventType(rawValue: ~0)!)
         if idle >= 60 { activeSince = Date(); return }
         if EyeBreaks.isDue(activeSeconds: Date().timeIntervalSince(activeSince), idleSeconds: idle) {

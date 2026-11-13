@@ -243,6 +243,7 @@ struct SettingsView: View {
 /// to the full Monorail.
 private struct StationGeneralPane: View {
     @ObservedObject var store: SettingsStore
+    @ObservedObject private var role = SuiteRole.shared
     @State private var launchAtLogin = LoginItem.isEnabled
 
     var body: some View {
@@ -261,12 +262,29 @@ private struct StationGeneralPane: View {
                 HStack {
                     Text("Monorail, Station's free big sibling, puts your windows on one endless strip.")
                     Spacer()
-                    Button("Get Monorail") { NSWorkspace.shared.open(Brand.monorailURL) }
+                    Button(NSWorkspace.shared.urlForApplication(withBundleIdentifier: SuiteRole.monorailID) == nil ? "Get Monorail" : "Open Monorail") {
+                        if let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: SuiteRole.monorailID) {
+                            NSWorkspace.shared.openApplication(at: app, configuration: .init())
+                        } else {
+                            NSWorkspace.shared.open(Brand.monorailURL)
+                        }
+                    }
+                }
+                Toggle(isOn: $store.settings.stationStepsBack) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Let Monorail take over while it runs")
+                        Text("Monorail does everything Station does. While it's open, Station hides its icon and hands Stay Awake to it, so nothing runs twice; when Monorail quits, Station takes over again.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                if role.isResting {
+                    Label("Monorail is running and looking after everything.", systemImage: "checkmark.circle.fill").foregroundStyle(.secondary)
                 }
             }
         }
         .formStyle(.grouped)
         .onAppear { launchAtLogin = LoginItem.isEnabled }
+        .onChange(of: store.settings.stationStepsBack) { _ in SuiteRole.shared.evaluate() }
     }
 }
 

@@ -71,6 +71,10 @@ for src, (slug, title) in GUIDES.items():
     if src == "LICENSE":
         body = f"<pre>{html.escape(text)}</pre>"
     else:
+        # The App Store edition (and Keeper) aren't on the site yet: leave out table rows and list items that name them.
+        hidden = re.compile(r"\b(Signalbox|Station|Keeper)\b|App Store edition|\bstation[A-Z]\w*")
+        text = "\n".join(line for line in text.splitlines()
+                          if not (line.lstrip().startswith(("|", "- ", "* ")) and hidden.search(line)))
         text = re.sub(r"(?<!!)\[([^\]]+)\]\(([^)\s]+)\)", relink, text)
         body = markdown.markdown(text, extensions=["tables", "fenced_code", "toc", "sane_lists"])
         body = re.sub(r"^\s*<h1[^>]*>.*?</h1>", "", body, count=1, flags=re.S)  # the page has its own title

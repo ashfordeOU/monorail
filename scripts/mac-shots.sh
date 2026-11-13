@@ -18,6 +18,28 @@ sw_vers || true
 csrutil status || true
 system_profiler SPDisplaysDataType 2>/dev/null | grep -E "Resolution|Retina|UI Looks like" || true
 
+log "The largest screen size the machine offers (HiDPI if it can)"
+cat > /tmp/res.swift <<'SWIFT'
+import CoreGraphics
+let display = CGMainDisplayID()
+let options = [kCGDisplayShowDuplicateLowResolutionModes: kCFBooleanTrue] as CFDictionary
+let modes = (CGDisplayCopyAllDisplayModes(display, options) as? [CGDisplayMode]) ?? []
+for m in modes { print("mode \(m.width)x\(m.height) pixels \(m.pixelWidth)x\(m.pixelHeight)") }
+// Prefer a HiDPI mode about 1440-1728 points wide, else the widest.
+let hidpi = modes.filter { $0.pixelWidth == $0.width * 2 && $0.width >= 1280 }.sorted { $0.width > $1.width }
+let pick = hidpi.first { $0.width <= 1728 } ?? modes.filter { $0.width <= 1920 }.max { $0.width * $0.height < $1.width * $1.height }
+if let pick {
+    var config: CGDisplayConfigRef?
+    CGBeginDisplayConfiguration(&config)
+    CGConfigureDisplayWithDisplayMode(config, display, pick, nil)
+    let err = CGCompleteDisplayConfiguration(config, .permanently)
+    print("chose \(pick.width)x\(pick.height) (\(pick.pixelWidth)x\(pick.pixelHeight) pixels), result \(err.rawValue)")
+}
+SWIFT
+swift /tmp/res.swift || true
+sleep 3
+system_profiler SPDisplaysDataType 2>/dev/null | grep -E "Resolution|UI Looks like" || true
+
 log "Install Monorail in Applications"
 rm -rf /Applications/Monorail.app
 cp -R "$work/dist/Monorail.app" /Applications/
@@ -34,6 +56,7 @@ grant() { # service client client_type(0 bundle id, 1 path)
 for service in kTCCServiceAccessibility kTCCServiceScreenCapture kTCCServicePostEvent; do
   grant "$service" org.ashforde.monorail 0
 done
+for tool in /usr/bin/osascript /bin/bash /bin/zsh; do grant kTCCServiceAccessibility "$tool" 1; done
 for tool in /bin/bash /bin/zsh /usr/sbin/screencapture /usr/bin/swift "$(xcrun --find swift 2>/dev/null)"; do
   [ -n "$tool" ] && grant kTCCServiceScreenCapture "$tool" 1
 done
@@ -95,8 +118,10 @@ chmod +x /tmp/term.command
 log "Settings: no usage counts, no update checks, welcome done, local API on"
 mkdir -p "$HOME/Library/Application Support/Monorail"
 cat > "$HOME/Library/Application Support/Monorail/settings.json" <<'JSON'
-{"shareUsageStats":false,"checkForUpdates":false,"usageNoticeShown":true,"hasCompletedOnboarding":true,"localAPI":true}
+{"shareUsageStats":false,"checkForUpdates":false,"usageNoticeShown":true,"hasCompletedOnboarding":true,"localAPI":true,"lastSeenVersion":"__VERSION__"}
 JSON
+sed -i '' "s/__VERSION__/$(cat "$work/VERSION" | tr -d '[:space:]')/" "$HOME/Library/Application Support/Monorail/settings.json"
+cat "$HOME/Library/Application Support/Monorail/settings.json"
 
 log "Open the apps"
 open -a Safari "https://monorail.ashforde.org/changelog/"; sleep 4
@@ -104,7 +129,7 @@ open -a Finder "$docs"; sleep 2
 open -a Terminal /tmp/term.command; sleep 3
 open -a TextEdit "$docs/Launch plan.txt"; sleep 2
 open -a Preview "$work/assets/launch/v17/07-themes.png"; sleep 2
-open -a Calendar; sleep 4
+open -a "System Settings"; sleep 4
 screencapture -x "$out/00-before-monorail.png"
 
 log "Start Monorail"
@@ -119,6 +144,7 @@ log "What Monorail sees"
 curl -fsS -m 5 -H "Authorization: Bearer $token" "http://127.0.0.1:$port/windows" | python3 -m json.tool | head -60 || echo "no window list"
 
 shot() { sleep "${2:-1.6}"; screencapture -x "$out/$1.png"; echo "  $1"; }
+esc() { osascript -e 'tell application "System Events" to key code 53' >/dev/null 2>&1 || true; }
 log "The strip"
 shot 01-strip 2
 api focus-left; shot 02-strip-left

@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-268 settings.
+269 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -144,6 +144,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `clipboardNotch` | Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch). | `false` |
 | `meetingNotesOffer` | Meeting Notes: offer to take notes when a call starts. | `true` |
 | `meetingNotesSystemAudio` | Meeting Notes: hear the other people too, from the Mac's sound (needs Screen Recording permission); off records only your microphone. | `true` |
+| `panelGlass` | The menu bar panel's background: automatic, frosted or solid. Reduce Transparency always makes it solid. | `PanelGlass.automatic` |
 | `homeOrder` | Home: your order for its cards ("windows", "today", "battery"…), and the ones you've hidden. | `[]` |
 | `homeHidden` |  | `[]` |
 | `weatherPlaces` | Weather: the places to show (the first is yours); found by name, no location access needed. | `[]` |

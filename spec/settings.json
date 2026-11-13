@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 268,
+  "count": 269,
   "settings": [
     {
       "key": "layout",
@@ -811,6 +811,12 @@
       "type": "Bool",
       "default": "true",
       "about": "Meeting Notes: hear the other people too, from the Mac's sound (needs Screen Recording permission); off records only your microphone."
+    },
+    {
+      "key": "panelGlass",
+      "type": "?",
+      "default": "PanelGlass.automatic",
+      "about": "The menu bar panel's background: automatic, frosted or solid. Reduce Transparency always makes it solid."
     },
     {
       "key": "homeOrder",

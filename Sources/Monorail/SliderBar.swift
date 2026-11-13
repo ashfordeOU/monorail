@@ -963,6 +963,16 @@ final class SliderPopover {
     private var host: NSView?
     private var clickMonitor: Any?
     private weak var anchor: NSStatusBarButton?
+    private var builtGlass: MonorailCore.PanelGlass?
+    private lazy var accessibilityObserver: Any = NSWorkspace.shared.notificationCenter.addObserver(
+        forName: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification, object: nil, queue: .main) { [weak self] _ in self?.rebuildWhenClosed() }
+
+    /// Reduce Transparency, Increase Contrast or the panel style changed: build the panel afresh.
+    func rebuildWhenClosed() {
+        guard !isShown else { return }
+        panel = nil
+        host = nil
+    }
     private let model = SliderBarModel()
     private lazy var peekWatcher = PeekWatcher(
         models: { [weak self] in self.map { [$0.model] } ?? [] },
@@ -992,6 +1002,9 @@ final class SliderPopover {
             close()
             return
         }
+        _ = accessibilityObserver
+        if builtGlass != store?.settings.panelGlass { panel = nil; host = nil }
+        builtGlass = store?.settings.panelGlass
         let panel = self.panel ?? makePanel()
         self.panel = panel
         anchor = button
@@ -1136,25 +1149,8 @@ final class SliderPopover {
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .transient, .fullScreenAuxiliary]
 
-        let glass = NSVisualEffectView()
-        glass.material = .popover
-        glass.blendingMode = .behindWindow
-        glass.state = .active
-        glass.wantsLayer = true
-        glass.layer?.cornerRadius = 16
-        glass.layer?.cornerCurve = .continuous
-        glass.layer?.masksToBounds = true
-        glass.layer?.borderWidth = 0.5
-        glass.layer?.borderColor = NSColor.separatorColor.cgColor
         let host = NSHostingView(rootView: view)
-        host.translatesAutoresizingMaskIntoConstraints = false
-        glass.addSubview(host)
-        NSLayoutConstraint.activate([
-            host.leadingAnchor.constraint(equalTo: glass.leadingAnchor),
-            host.trailingAnchor.constraint(equalTo: glass.trailingAnchor),
-            host.topAnchor.constraint(equalTo: glass.topAnchor),
-            host.bottomAnchor.constraint(equalTo: glass.bottomAnchor),
-        ])
+        let glass = PanelBackground.make(host, style: store?.settings.panelGlass ?? .automatic)
         panel.contentView = glass
         panel.onEscape = { [weak self] in
             guard let self else { return }

@@ -272,6 +272,24 @@ public struct ReservedEdges: Equatable, Hashable, Codable, Sendable {
 }
 
 /// Light or dark for Monorail's own windows.
+/// How the menu bar panel's background looks.
+public enum PanelGlass: String, Codable, CaseIterable, Sendable {
+    /// Liquid Glass on macOS 26, frosted glass before, always dark enough (or light enough) to read.
+    case automatic
+    /// Frosted and more opaque: the wallpaper only tints it.
+    case frosted
+    /// Solid, like Reduce Transparency.
+    case solid
+
+    public var title: String {
+        switch self {
+        case .automatic: return "Automatic (Liquid Glass on macOS 26)"
+        case .frosted: return "Frosted"
+        case .solid: return "Solid"
+        }
+    }
+}
+
 public enum AppAppearance: String, Codable, CaseIterable, Sendable {
     case system, light, dark
     public var title: String {
@@ -793,6 +811,8 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var meetingNotesOffer = true
     /// Meeting Notes: hear the other people too, from the Mac's sound (needs Screen Recording permission); off records only your microphone.
     public var meetingNotesSystemAudio = true
+    /// The menu bar panel's background: automatic, frosted or solid. Reduce Transparency always makes it solid.
+    public var panelGlass = PanelGlass.automatic
     /// Home: your order for its cards ("windows", "today", "battery"…), and the ones you've hidden.
     public var homeOrder: [String] = []
     public var homeHidden: [String] = []
@@ -1216,7 +1236,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, meetingNotesOffer, meetingNotesSystemAudio, homeOrder, homeHidden, weatherPlaces, weatherFahrenheit, notchLive, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, panelGlass, meetingNotesOffer, meetingNotesSystemAudio, homeOrder, homeHidden, weatherPlaces, weatherFahrenheit, notchLive, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
     }
 
     public init(from decoder: Decoder) throws {
@@ -1476,6 +1496,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         menuBarReadings = value(.menuBarReadings, d.menuBarReadings)
         systemAlerts = value(.systemAlerts, d.systemAlerts)
         homePins = value(.homePins, d.homePins)
+        panelGlass = value(.panelGlass, d.panelGlass)
         meetingNotesOffer = value(.meetingNotesOffer, d.meetingNotesOffer)
         meetingNotesSystemAudio = value(.meetingNotesSystemAudio, d.meetingNotesSystemAudio)
         homeOrder = value(.homeOrder, d.homeOrder)

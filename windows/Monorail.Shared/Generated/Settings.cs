@@ -140,6 +140,7 @@ public static class SettingKeys
     public const string ClipboardNotch = "clipboardNotch";
     public const string MeetingNotesOffer = "meetingNotesOffer";
     public const string MeetingNotesSystemAudio = "meetingNotesSystemAudio";
+    public const string PanelGlass = "panelGlass";
     public const string HomeOrder = "homeOrder";
     public const string HomeHidden = "homeHidden";
     public const string WeatherPlaces = "weatherPlaces";

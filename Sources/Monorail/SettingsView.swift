@@ -254,6 +254,10 @@ private struct StationGeneralPane: View {
                 Toggle("Show the battery in the menu bar", isOn: $store.settings.batteryMenuBar)
                 MenuBarReadingsPicker(store: store)
                 Toggle("Alert me when the Mac strains (memory, swap, a runaway app)", isOn: $store.settings.systemAlerts)
+                Picker("Panel background", selection: $store.settings.panelGlass) {
+                    ForEach(PanelGlass.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                .help("Frosted or Solid keep text easiest to read over bright wallpapers. Reduce Transparency and Increase Contrast in System Settings are always followed.")
                 Picker("Menu bar icon", selection: $store.settings.menuBarIconStyle) {
                     Text("Colour").tag("colour")
                     Text("White").tag("white")
@@ -899,6 +903,10 @@ private struct AppearancePane: View {
                 }
                 MenuBarReadingsPicker(store: store)
                 Toggle("Alert me when the Mac strains (memory, swap, a runaway app)", isOn: $store.settings.systemAlerts)
+                Picker("Panel background", selection: $store.settings.panelGlass) {
+                    ForEach(PanelGlass.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                .help("Frosted or Solid keep text easiest to read over bright wallpapers. Reduce Transparency and Increase Contrast in System Settings are always followed.")
                 Picker("Menu bar icon", selection: $store.settings.menuBarIconStyle) {
                     Text("Colour").tag("colour")
                     Text("White").tag("white")

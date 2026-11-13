@@ -2096,6 +2096,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         MomentsWatch.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         MomentsWatch.shared.onFilmChange = { [weak self] on in self?.evening.pauseForFilm(on) }
         MomentsWatch.shared.start()
+        BatteryLog.shared.start()
         store.startCloudSync()
         store.watchFile()
         startTelemetry()

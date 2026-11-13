@@ -186,7 +186,7 @@ public struct ChargeSession: Codable, Equatable, Sendable {
 /// The battery panel's cards: which exist, their names, and keeping a saved order valid as cards
 /// are added in later versions.
 public enum BatteryCards {
-    public static let standard = ["numbers", "lowPower", "sinceCharge", "history", "attention", "resting", "apps", "agents", "options"]
+    public static let standard = ["numbers", "lowPower", "sinceCharge", "history", "health", "sleep", "accessories", "attention", "resting", "apps", "agents", "options"]
 
     public static func title(_ id: String) -> String {
         switch id {
@@ -194,6 +194,9 @@ public enum BatteryCards {
         case "lowPower": return "Low Power Mode"
         case "sinceCharge": return "Since last charge"
         case "history": return "Battery history"
+        case "health": return "Battery health"
+        case "sleep": return "Overnight drain"
+        case "accessories": return "Mouse, keyboard and headphones"
         case "attention": return "Needs your attention"
         case "resting": return "Paused and hidden apps"
         case "apps": return "Apps"

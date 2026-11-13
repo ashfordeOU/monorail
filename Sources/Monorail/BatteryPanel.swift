@@ -79,6 +79,9 @@ struct BatteryPanel: View {
         case "lowPower": return AnyView(lowPower)
         case "sinceCharge": return power.session.since == nil || power.session.ranked.isEmpty ? nil : AnyView(sinceChargeCard)
         case "history": return PowerWatch.hasBattery ? AnyView(historyCard) : nil
+        case "health": return PowerWatch.hasBattery ? AnyView(BatteryHealthCard()) : nil
+        case "sleep": return PowerWatch.hasBattery ? AnyView(SleepDrainCard()) : nil
+        case "accessories": return BatteryLog.shared.accessories.isEmpty ? nil : AnyView(AccessoriesCard())
         case "attention": return power.attention.map { AnyView(attentionCard($0)) }
         case "resting": return power.paused.isEmpty && power.parked.isEmpty ? nil : AnyView(restCard)
         case "apps": return AnyView(appsCard)

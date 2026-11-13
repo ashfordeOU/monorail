@@ -1,0 +1,74 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Station icon, combined</title><link rel="stylesheet" href="mac.css">
+<style>
+body{background:#f5f5f7}
+h1 { position:absolute; left:40px; top:34px; margin:0; font:700 26px "SF Pro Display",sans-serif; }
+.sub { position:absolute; left:40px; top:70px; color:var(--ink-2); font-size:13px; }
+.row { position:absolute; left:40px; right:40px; top:108px; display:flex; justify-content:space-between; }
+.cell { text-align:center; width:320px; }
+.cell svg.big { width:260px; height:260px; filter:drop-shadow(0 16px 26px rgba(0,0,0,.25)); }
+.cell b { display:block; font-size:15px; margin-top:8px; }
+.cell span { display:block; font-size:12px; color:var(--ink-2); line-height:1.35; margin-top:3px; height:34px; }
+.sizes { display:flex; justify-content:center; align-items:flex-end; gap:10px; margin-top:14px; }
+.sizes svg { filter:drop-shadow(0 3px 6px rgba(0,0,0,.2)); }
+.sizes i { font-style:normal; font-size:9px; color:var(--ink-3); display:block; text-align:center; }
+.dock { position:absolute; left:40px; right:40px; height:100px; border-radius:24px; display:flex; align-items:center; justify-content:center; gap:14px; }
+.dock svg{width:66px;height:66px}
+.dock .lab{font-size:11.5px;margin-right:10px}
+.light{top:650px;background:rgba(255,255,255,.65);box-shadow:0 10px 30px rgba(0,0,0,.12)} .light .lab{color:#666}
+.dark{top:770px;background:#1d1f27} .dark .lab{color:#aaa}
+.store { position:absolute; left:40px; top:900px; width:700px; padding:18px; border-radius:16px; background:#fff; box-shadow:0 6px 20px rgba(0,0,0,.08); display:flex; gap:18px; align-items:center; }
+.store svg{width:110px;height:110px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.2))}
+.store .t{font:700 22px "SF Pro Display",sans-serif} .store .s{color:var(--ink-2);font-size:13px;margin-top:2px}
+.store .btn{display:inline-block;margin-top:10px;background:#0A84FF;color:#fff;border-radius:999px;padding:5px 16px;font-weight:600;font-size:13px}
+.mb { position:absolute; left:780px; top:900px; right:40px; height:146px; border-radius:16px; overflow:hidden; }
+.mb .bar{height:36px;display:flex;align-items:center;justify-content:flex-end;gap:18px;padding:0 18px;font-size:13px}
+.mb .d{background:#24262e;color:#fff} .mb .l{background:#ececf0;color:#111}
+.mb .cap{font-size:11px;color:var(--ink-2);padding:8px 2px}
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const sDefs = (k, top, bottom) => `<defs>
+  <linearGradient id="top${k}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${top[0]}"/><stop offset="1" stop-color="${top[1]}"/></linearGradient>
+  <linearGradient id="bot${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${bottom[0]}"/><stop offset="1" stop-color="${bottom[1]}"/></linearGradient>
+  <clipPath id="clip${k}"><rect x="10" y="10" width="80" height="80" rx="18"/></clipPath></defs>`;
+const sRing = (r, w, share, col, track = .22) => { const c = 2 * Math.PI * r;
+  return `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-opacity="${track}" stroke-width="${w}"/>
+  <circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${c * share} ${c}" transform="rotate(-90 50 50)"/>`; };
+// The M (two tall windows) with a pulse for its middle.
+const sM = (k, s = 1, pulse = '#30D158', stroke = '#fff') => {
+  const x = (v) => 50 + (v - 50) * s, y = (v) => 50 + (v - 50) * s, w = (v) => v * s;
+  return `<rect x="${x(33)}" y="${y(32)}" width="${w(9)}" height="${w(36)}" rx="${w(3.6)}" fill="none" stroke="${stroke}" stroke-width="${w(3)}"/>
+  <rect x="${x(58)}" y="${y(32)}" width="${w(9)}" height="${w(36)}" rx="${w(3.6)}" fill="none" stroke="${stroke}" stroke-width="${w(3)}"/>
+  <path d="M${x(24)} ${y(52)} H${x(42)} L${x(45.5)} ${y(42)} L${x(50)} ${y(62)} L${x(54)} ${y(46)} L${x(56)} ${y(52)} H${x(76)}" fill="none" stroke="${pulse}" stroke-width="${w(3.2)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+};
+const variants = [
+  { k: 'a', name: 'A · Sunset over night', note: 'Monorail’s pink above, Station navy below; three rings; a green pulse',
+    top: ['#FF8A5B', '#E8437A'], bottom: ['#1E2D63', '#0A102A'], split: 50, rings: [['#30D158', .82], ['#5AC8FA', .64], ['#FFD60A', .9]], pulse: '#30D158' },
+  { k: 'b', name: 'B · Low horizon', note: 'More navy, a thin band of pink; white rings; a pink pulse',
+    top: ['#FF8A5B', '#E8437A'], bottom: ['#1E2D63', '#0A102A'], split: 36, rings: [['#ffffff', .82], ['#ffffff', .6]], pulse: '#FF6FA0' },
+  { k: 'c', name: 'C · One ring', note: 'A single green ring like a charge gauge; calm and readable small',
+    top: ['#FF8A5B', '#E8437A'], bottom: ['#1E2D63', '#0A102A'], split: 50, rings: [['#30D158', .78]], pulse: '#ffffff' },
+];
+const sIcon = (v, size = null) => {
+  const r = v.rings.length === 1 ? [[33, 5.5]] : v.rings.length === 2 ? [[34, 4.2], [28, 4.2]] : [[35, 3.6], [29.5, 3.6], [24, 3.6]];
+  const scale = v.rings.length === 1 ? .6 : v.rings.length === 2 ? .66 : .56;
+  return `<svg viewBox="0 0 100 100" ${size ? `width="${size}" height="${size}"` : 'class="big"'}>${sDefs(v.k + (size || ''), v.top, v.bottom)}
+    <g clip-path="url(#clip${v.k}${size || ''})"><rect x="10" y="10" width="80" height="80" fill="url(#bot${v.k}${size || ''})"/>
+    <rect x="10" y="10" width="80" height="${v.split - 10}" fill="url(#top${v.k}${size || ''})"/>
+    <rect x="10" y="${v.split - 1}" width="80" height="2" fill="#fff" opacity=".08"/></g>
+    ${v.rings.map(([c, share], i) => sRing(r[i][0], r[i][1], share, c)).join('')}
+    ${sM(v.k, scale, v.pulse)}</svg>`;
+};
+const monorail = `<svg viewBox="0 0 100 100"><defs><linearGradient id="mono" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".6" stop-color="#E8437A"/><stop offset="1" stop-color="#C2456E"/></linearGradient></defs><rect x="10" y="10" width="80" height="80" rx="18" fill="url(#mono)"/><rect x="31" y="27" width="10.4" height="46" rx="4" fill="none" stroke="#fff" stroke-width="3"/><rect x="58.6" y="27" width="10.4" height="46" rx="4" fill="none" stroke="#fff" stroke-width="3"/><rect x="44.8" y="40.9" width="10.4" height="18.2" rx="3.1" fill="#fff"/></svg>`;
+const others = ['#5AC8FA', '#34C759', '#FF9F0A', '#8E8E93', '#AF52DE'].map(c => `<svg viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" rx="18" fill="${c}"/></svg>`);
+// The menu bar glyph: the same M and pulse, one colour.
+const sGlyph = (col) => `<svg viewBox="0 0 22 16" width="22" height="16"><rect x="2.5" y="1.5" width="4" height="13" rx="1.6" fill="none" stroke="${col}" stroke-width="1.4"/><rect x="15.5" y="1.5" width="4" height="13" rx="1.6" fill="none" stroke="${col}" stroke-width="1.4"/><path d="M0.8 8.8 H8 L9.3 5 L11 12 L12.4 7 L13.2 8.8 H21.2" fill="none" stroke="${col}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const gradGlyph = `<svg viewBox="0 0 22 16" width="22" height="16"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset="1" stop-color="#F0527F"/></linearGradient></defs>${sGlyph('url(#gg)').replace(/<svg[^>]*>|<\/svg>/g, '')}</svg>`;
+document.getElementById('app').innerHTML = menubar(`<span>${monoIcon}</span>`)
+  + `<h1>Station icon: two-tone, rings and a pulse</h1><div class="sub">Three ways to combine them. Each is shown big, at the sizes macOS uses, in the Dock next to Monorail, in the App Store and as the menu bar glyph.</div>`
+  + `<div class="row">${variants.map(v => `<div class="cell">${sIcon(v)}<b>${v.name}</b><span>${v.note}</span>
+      <div class="sizes">${[16, 32, 64, 128].map(s => `<div>${sIcon(v, s)}<i>${s}</i></div>`).join('')}</div></div>`).join('')}</div>`
+  + `<div class="dock light"><span class="lab">Light Dock:</span>${others[0]}${monorail}${variants.map(v => sIcon(v, 66)).join('')}${others[2]}${others[4]}</div>`
+  + `<div class="dock dark"><span class="lab">Dark Dock:</span>${others[1]}${monorail}${variants.map(v => sIcon(v, 66)).join('')}${others[3]}${others[0]}</div>`
+  + `<div class="store">${sIcon(variants[0], 110)}<div><div class="t">Monorail Station</div><div class="s">Battery, calendar and your Mac at a glance</div><div class="s" style="font-size:11.5px">Ashforde · Utilities</div><span class="btn">Get</span></div></div>`
+  + `<div class="mb"><div class="bar d">${gradGlyph}${sGlyph('#fff')}<span>Fri 13 Nov 14:20</span></div><div class="bar l">${gradGlyph}${sGlyph('#fff').replace(/#fff/g, '#1d1d1f')}<span>Fri 13 Nov 14:20</span></div><div class="cap">Menu bar glyph: the M with its pulse, in Monorail's colours or white. Never black on a dark bar (on a light bar it's dark grey by choice).</div></div>`;
+</script></body></html>

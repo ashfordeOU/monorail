@@ -47,7 +47,6 @@ enum SandboxProbe {
         check("moveWindows", moveWindows)
         // The 🧪 features: what each would need, tried for real.
         check("airpodsPlist", airpodsPlist)
-        check("bluetoothPaired", bluetoothPaired)
         check("perCoreLoad", perCoreLoad)
         check("chipSensorsSMC", chipSensorsSMC)
         check("networkCounters", networkCounters)
@@ -58,6 +57,8 @@ enum SandboxProbe {
         check("screenCapture", screenCapture)
         check("ocrOnImage", ocrOnImage)
         check("qrOnImage", qrOnImage)
+        // Last: without the Bluetooth permission macOS ends the app here.
+        check("bluetoothPaired", bluetoothPaired)
         let passed = results.filter(\.1).count
         print("PROBE summary ok \(passed) of \(results.count) allowed")
         exit(0)

@@ -46,6 +46,8 @@
 	<true/>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Monorail looks at your upcoming events to open video calls a minute before they start. Your calendar never leaves your Mac.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>To show the batteries of your mouse, keyboard, trackpad and headphones. Nothing is sent anywhere.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Monorail looks at your upcoming events to open video calls a minute before they start. Your calendar never leaves your Mac.</string>
 	<key>NSAppleEventsUsageDescription</key>

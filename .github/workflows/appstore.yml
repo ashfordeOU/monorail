@@ -55,12 +55,13 @@ jobs:
           id="$(defaults read "$PWD/$app/Contents/Info" CFBundleIdentifier)"
           [ "$id" = "org.ashforde.monorail.appstore" ] || { echo "::error::Wrong bundle ID $id"; exit 1; }
           echo "Bundle ID $id, sandboxed"
-      - name: Allow Screen Recording, as a person would in System Settings
+      - name: Allow Screen Recording and Bluetooth, as a person would in System Settings
         # GitHub's Macs let the runner write the permission database, so the screen capture probe
         # measures the sandbox and not a missing click. A failure here only means that probe says so.
         run: |
           db="/Library/Application Support/com.apple.TCC/TCC.db"
           sudo sqlite3 "$db" "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, indirect_object_identifier, flags, last_modified) VALUES ('kTCCServiceScreenCapture','org.ashforde.monorail.appstore',0,2,4,1,'UNUSED',0,CAST(strftime('%s','now') AS INTEGER));" || echo "::warning::Couldn't record the Screen Recording permission"
+          sudo sqlite3 "$db" "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, indirect_object_identifier, flags, last_modified) VALUES ('kTCCServiceBluetoothAlways','org.ashforde.monorail.appstore',0,2,4,1,'UNUSED',0,CAST(strftime('%s','now') AS INTEGER));" || echo "::warning::Couldn't record the Bluetooth permission"
           sudo sqlite3 "$db" "SELECT service, client, auth_value FROM access WHERE client='org.ashforde.monorail.appstore';" || true
       - name: Measure what the sandbox allows (Monorail --probe-sandbox)
         # Each capability Monorail Station would use is tried for real and undone (docs/APP-STORE.md).

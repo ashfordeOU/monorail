@@ -2137,6 +2137,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         SuiteRole.shared.onChange = { [weak self] role in self?.roleChanged(role) }
         SuiteRole.shared.start()
         DashboardContext.store = store
+        SystemRecorder.shared.start()
         // Shortcuts and Spotlight actions.
         ShortcutsBridge.stayAwake = { [weak self] minutes in self?.awake.start(minutes: minutes) }
         ShortcutsBridge.endStayAwake = { [weak self] in self?.awake.end() }
@@ -3233,9 +3234,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 self.popover.toggle(relativeTo: button, page: page)
             })
         }
-        if Edition.isAppStore {
+        do {
             list.append(PaletteCommand(id: "dashboard", title: "Dashboard", subtitle: "System, battery, storage and today, full size", symbol: "gauge.with.dots.needle.67percent",
-                                       keywords: "system monitor battery history energy storage calendar") { DashboardWindow.shared.show() })
+                                       keywords: "system monitor activity apps cpu memory gpu disk network battery sound ports agents trends history") { DashboardWindow.shared.show() })
         }
         if !Edition.isAppStore {
             list.append(PaletteCommand(id: "page-live", title: "Live View", subtitle: "Every core, network and apps over time", symbol: "waveform.path.ecg",

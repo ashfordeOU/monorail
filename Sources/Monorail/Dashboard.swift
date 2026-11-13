@@ -3,23 +3,43 @@ import AppKit
 import MonorailCore
 import SwiftUI
 
-/// The big views behind the panel's cards, at full size: a system monitor, the battery's whole story,
-/// storage and your day. Monorail shows them as tabs in the Overview (beside Windows); Signalbox, which
-/// has no Overview, in a Dashboard window of its own.
+/// The big views behind the panel's cards, at full size, in a sidebar like System Settings: Overview,
+/// Apps, CPU, Memory, GPU, Disk, Network, Battery, Devices, Sound, Ports, Agents, Today and Trends.
+/// Monorail shows it as the Overview's second tab (beside Windows); Signalbox, which has no Overview,
+/// in a Dashboard window of its own.
 enum DashboardTab: String, CaseIterable, Identifiable {
-    case windows = "Windows", system = "System", battery = "Battery", storage = "Storage", today = "Today"
+    case windows = "Windows", dashboard = "Dashboard"
+    var id: String { rawValue }
+    var symbol: String { self == .windows ? "rectangle.split.3x1" : "gauge.with.dots.needle.67percent" }
+    static var available: [DashboardTab] { Edition.isAppStore ? [.dashboard] : allCases }
+}
+
+enum DashboardSection: String, CaseIterable, Identifiable {
+    case overview = "Overview", apps = "Apps", cpu = "CPU", memory = "Memory", gpu = "GPU", disk = "Disk", network = "Network",
+         battery = "Battery", devices = "Devices", sound = "Sound", ports = "Ports", agents = "Agents", today = "Today", trends = "Trends"
     var id: String { rawValue }
     var symbol: String {
         switch self {
-        case .windows: return "rectangle.split.3x1"
-        case .system: return "cpu"
-        case .battery: return "bolt.fill"
-        case .storage: return "internaldrive.fill"
+        case .overview: return "square.grid.2x2"
+        case .apps: return "list.bullet.rectangle"
+        case .cpu: return "cpu"
+        case .memory: return "memorychip"
+        case .gpu: return "cube.transparent"
+        case .disk: return "internaldrive"
+        case .network: return "network"
+        case .battery: return "battery.75percent"
+        case .devices: return "headphones"
+        case .sound: return "speaker.wave.2"
+        case .ports: return "point.3.connected.trianglepath.dotted"
+        case .agents: return "sparkles"
         case .today: return "calendar"
+        case .trends: return "chart.xyaxis.line"
         }
     }
-    /// The tabs this edition has: Signalbox has no windows to arrange.
-    static var available: [DashboardTab] { Edition.isAppStore ? allCases.filter { $0 != .windows } : allCases }
+    /// What this edition can show: the App Store's sandbox hides other apps' processes and ports.
+    static var available: [DashboardSection] {
+        Edition.isAppStore ? allCases.filter { ![.apps, .ports, .agents].contains($0) } : allCases
+    }
 }
 
 /// Settings for the dashboard's views that need them (the app delegate sets it).
@@ -51,22 +71,61 @@ struct DashboardTabs: View {
     }
 }
 
-/// The content of every tab but Windows.
+/// The Overview's Dashboard tab.
 struct DashboardContent: View {
     let tab: DashboardTab
+    var body: some View {
+        if tab == .dashboard { SidebarDashboard().environment(\.colorScheme, .dark) }
+    }
+}
+
+/// The sidebar and the chosen section.
+struct SidebarDashboard: View {
+    @AppStorage("DashboardSection") private var sectionName = DashboardSection.overview.rawValue
+    private var section: DashboardSection { DashboardSection(rawValue: sectionName).flatMap { DashboardSection.available.contains($0) ? $0 : nil } ?? .overview }
 
     var body: some View {
-        Group {
-            switch tab {
-            case .windows: EmptyView()
-            case .system: LiveView()
-            case .battery: BatteryDashboard()
-            case .storage:
-                ScrollView { StoragePage(onBack: {}, embedded: true).frame(maxWidth: 640).frame(maxWidth: .infinity) }
-            case .today: TodayDashboard()
+        HStack(alignment: .top, spacing: 18) {
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(DashboardSection.available) { item in
+                    Button { sectionName = item.rawValue } label: {
+                        HStack(spacing: 9) {
+                            Image(systemName: item.symbol).frame(width: 18)
+                            Text(item.rawValue)
+                            Spacer()
+                        }
+                        .font(.system(size: 13, weight: section == item ? .semibold : .regular))
+                        .padding(.horizontal, 10).padding(.vertical, 6)
+                        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(section == item ? Color.white.opacity(0.16) : .clear))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(section == item ? Color.white : Color.white.opacity(0.75))
+                    .accessibilityAddTraits(section == item ? .isSelected : [])
+                }
+                Spacer()
             }
+            .frame(width: 170)
+            Group {
+                switch section {
+                case .overview: OverviewSection(go: { sectionName = $0.rawValue })
+                case .apps: AppsSection()
+                case .cpu: CPUSection()
+                case .memory: MemorySection()
+                case .gpu: GPUSection()
+                case .disk: DiskSection()
+                case .network: NetworkSection()
+                case .battery: BatteryDashboard()
+                case .devices: ScrollView { VStack(spacing: 14) { AccessoriesCard(); SoundSection(compact: true) }.frame(maxWidth: 640) }
+                case .sound: SoundSection(compact: false)
+                case .ports: PortsSection()
+                case .agents: AgentsSection()
+                case .today: TodayDashboard()
+                case .trends: TrendsSection()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .environment(\.colorScheme, .dark)
     }
 }
 
@@ -259,10 +318,9 @@ final class DashboardWindow {
     private var window: NSWindow?
     private let model = Model()
 
-    final class Model: ObservableObject { @Published var tab: DashboardTab = .system }
+    final class Model: ObservableObject {}
 
-    func show(_ tab: DashboardTab = .system) {
-        model.tab = tab == .windows ? .system : tab
+    func show() {
         if let window {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
@@ -288,12 +346,8 @@ final class DashboardWindow {
         @ObservedObject var model: Model
         var body: some View {
             VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Text("Dashboard").font(.system(size: 26, weight: .bold, design: .rounded)).foregroundStyle(.white)
-                    Spacer()
-                    DashboardTabs(tab: $model.tab)
-                }
-                DashboardContent(tab: model.tab)
+                Text("Dashboard").font(.system(size: 26, weight: .bold, design: .rounded)).foregroundStyle(.white)
+                SidebarDashboard().environment(\.colorScheme, .dark)
             }
             .padding(.horizontal, 24).padding(.top, 34).padding(.bottom, 12)
             .background(LinearGradient(colors: [Color(red: 0.12, green: 0.16, blue: 0.3), Color(red: 0.04, green: 0.06, blue: 0.16)],

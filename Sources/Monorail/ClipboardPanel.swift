@@ -239,9 +239,10 @@ final class ClipboardWatch: ObservableObject {
         for (image, frame) in zip(images, layout.frames) {
             // Flipped: the layout counts from the top.
             let rect = NSRect(x: frame.x, y: size.height - frame.y - frame.height, width: frame.width, height: frame.height)
+            NSGraphicsContext.saveGraphicsState()
             NSBezierPath(roundedRect: rect, xRadius: 10, yRadius: 10).addClip()
             image.draw(in: rect)
-            NSGraphicsContext.current?.resetClip()
+            NSGraphicsContext.restoreGraphicsState()
         }
         board.unlockFocus()
         let paste = NSPasteboard.general

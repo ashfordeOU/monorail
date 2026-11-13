@@ -354,6 +354,43 @@ table.cmp { width: 100%; min-width: 640px; border-collapse: collapse; font-size:
   </div>
 </section>
 
+<!-- New in 1.9.2: shows once 1.9.2 is released -->
+<section class="s" id="new" data-from="1.9.2">
+  <div class="wrap">
+    <div class="head center"><span class="eyebrow"><i></i>New in 1.9.2</span><h2 class="h2">Every page, <span class="light-text">in depth.</span></h2>
+      <p class="lede">The Dashboard's system pages lead with live figures, then everything behind them: every core, where every gigabyte went, every display, every disk, the whole connection. And the whole app moves: cards rise into place, charts draw themselves in, numbers roll.</p></div>
+    <div class="showcase glass">
+      <div class="bar">
+        <div class="seg" role="tablist" aria-label="New Dashboard pages" id="newtabs">
+          <button role="tab" aria-selected="true" aria-controls="np-cpu" id="nt-cpu">CPU</button>
+          <button role="tab" aria-selected="false" aria-controls="np-mem" id="nt-mem" tabindex="-1">Memory</button>
+          <button role="tab" aria-selected="false" aria-controls="np-disk" id="nt-disk" tabindex="-1">Disk</button>
+          <button role="tab" aria-selected="false" aria-controls="np-net" id="nt-net" tabindex="-1">Network</button>
+          <button role="tab" aria-selected="false" aria-controls="np-gpu" id="nt-gpu" tabindex="-1">GPU</button>
+        </div>
+        <p>Captured on a Mac running Monorail.</p>
+      </div>
+      <div class="win" role="tabpanel" id="np-cpu" aria-labelledby="nt-cpu"><img src="/img/real/dash-cpu.webp" width="1920" height="1080" loading="lazy" alt="The CPU page: processor time split, load, processes, heat, every core live, the chip, the busiest hours and the apps using the processor"></div>
+      <div class="win" role="tabpanel" id="np-mem" aria-labelledby="nt-mem" hidden><img src="/img/real/dash-memory.webp" width="1920" height="1080" loading="lazy" alt="The Memory page: pressure, compression, swap, where it went, and the apps using the most memory"></div>
+      <div class="win" role="tabpanel" id="np-disk" aria-labelledby="nt-disk" hidden><img src="/img/real/dash-disk.webp" width="1920" height="1080" loading="lazy" alt="The Disk page: reading and writing, two weeks of writes, every volume, and the storage map"></div>
+      <div class="win" role="tabpanel" id="np-net" aria-labelledby="nt-net" hidden><img src="/img/real/dash-network.webp" width="1920" height="1080" loading="lazy" alt="The Network page: speeds, today's totals, signal, two weeks of downloads and the full connection"></div>
+      <div class="win" role="tabpanel" id="np-gpu" aria-labelledby="nt-gpu" hidden><img src="/img/real/dash-gpu.webp" width="1920" height="1080" loading="lazy" alt="The GPU page: graphics load, cores, memory and every display"></div>
+    </div>
+    <div class="split" style="margin-top:56px">
+      <div>
+        <span class="eyebrow"><i></i>The island</span>
+        <h3 class="h2" style="margin-top:18px;font-size:clamp(32px,4.4vw,52px)">The notch, alive.</h3>
+        <ol class="steps">
+          <li><span><b>Grows when you rest on it</b>It slides out from under the notch and opens into a card with everything going on. On Macs without a notch, it's a pill at the top of the screen.</span></li>
+          <li><span><b>A shelf for files</b>Drag files to the top of the screen and the island opens to take them. They wait there until you drag them somewhere else, or AirDrop them.</span></li>
+          <li><span><b>Now Playing</b>What's playing in Music or Spotify, with an equaliser that dances and play, pause and skip.</span></li>
+        </ol>
+      </div>
+      <figure class="realshot"><img src="/img/real/island.webp" loading="lazy" alt="The island open at the top of the screen with files on its shelf"></figure>
+    </div>
+  </div>
+</section>
+
 <!-- 7 · AI -->
 <section class="s" id="ai">
   <div class="wrap">

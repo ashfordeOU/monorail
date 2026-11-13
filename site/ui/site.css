@@ -159,6 +159,8 @@ section.s { padding-block: clamp(80px, 12vw, 150px); position: relative; }
 .seg button[aria-selected="true"] { background: var(--btn-bg); color: var(--btn-ink); }
 .seg button:not([aria-selected="true"]):hover { color: var(--ink); background: var(--glass2); }
 .seg.wrap-ok { flex-wrap: wrap; border-radius: 22px; overflow: visible; }
+/* Content for a version that isn't out yet stays hidden until the release feed says it is. */
+[data-from]:not(.released) { display: none !important; }
 [role="tabpanel"][hidden] { display: none !important; }
 
 /* Theme popover */

@@ -132,6 +132,10 @@
     const mb = dmg ? (dmg.size / 1048576).toFixed(1) + ' MB' : '';
     const date = rel.published_at ? fmtDate(rel.published_at) : '';
     document.querySelectorAll('[data-version]').forEach(el => { el.textContent = version; });
+    // What's new in a version shows once that version is the latest release (or anything newer).
+    const atLeast = (a, b) => { const x = a.split('.').map(Number), y = b.split('.').map(Number);
+      for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return true; };
+    document.querySelectorAll('[data-from]').forEach(el => { if (version && atLeast(version, el.dataset.from)) el.classList.add('released'); });
     document.querySelectorAll('[data-release-date]').forEach(el => { el.textContent = date; });
     document.querySelectorAll('[data-size]').forEach(el => { el.textContent = mb; });
     document.querySelectorAll('[data-release-line]').forEach(el => { el.textContent = `Version ${version}${mb ? ' · ' + mb : ''}${date ? ' · ' + date : ''} · macOS 13 or later`; });

@@ -2192,6 +2192,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         PowerWatch.shared.showMarkers = settings.powerMarkers
         PowerWatch.shared.isEnabled = true
         updateBatteryItem(settings.batteryMenuBar)
+        updateStatusItem()
         evening.update()
         WorkspaceColor.theme = settings.theme
         stats.isEnabled = settings.collectStats
@@ -3216,14 +3217,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func updateStatusItem() {
         guard let button = statusItem?.button else { return }
         let paused = engine.isPaused && !Edition.isAppStore
-        button.image = StatusIcon.image(paused: paused)
+        // Its own colours, never black: the chosen style, orange while Stay Awake is on, red while recording.
+        let tint: NSColor? = engine.isRecording ? .systemRed : (awake.isOn && !paused) ? .systemOrange : nil
+        button.image = StatusIcon.image(paused: paused, style: StatusIcon.Style(rawValue: store.settings.menuBarIconStyle) ?? .colour, tint: tint)
         button.title = ""
         button.imagePosition = .imageOnly
-        // A template image, so macOS draws it white on a dark menu bar and black on a light one, like
-        // every other icon there. Never dimmed: paused has its own shape (an outlined middle window)
-        // at full strength, since the dimmed look nearly vanished on some menu bars.
         button.appearsDisabled = false
-        button.contentTintColor = engine.isRecording ? .systemRed : (awake.isOn && !paused) ? .systemOrange : nil
+        button.contentTintColor = nil
         var states: [String] = []
         if paused { states.append("paused") }
         if awake.isOn { states.append("Stay Awake on") }

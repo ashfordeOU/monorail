@@ -1,37 +1,52 @@
 #if os(macOS)
 import AppKit
 
-/// The menu bar glyph, matching the app icon: an M of three windows with the
-/// middle one slid down (outlined while paused). Drawn as a template image so macOS tints it for
-/// light and dark menu bars, exactly like the icons beside it.
+/// The menu bar glyph, matching the app icon: an M of three windows with the middle one slid
+/// down (an outline while paused). Never black: in Monorail's colours (the app icon's orange to
+/// pink) or plain white, as chosen in Settings, and orange while Stay Awake is on, red while recording.
 enum StatusIcon {
-    /// `badge` adds a dot in the corner (an update is waiting).
-    static func image(paused: Bool, badge: Bool = false) -> NSImage {
-        let image = NSImage(size: NSSize(width: badge ? 22 : 18, height: 16), flipped: false) { _ in
-            NSColor.black.set()
+    enum Style: String { case colour, white }
+
+    /// `badge` adds a dot in the corner (an update is waiting). `tint` overrides the style's colour.
+    static func image(paused: Bool, badge: Bool = false, style: Style = .colour, tint: NSColor? = nil) -> NSImage {
+        let image = NSImage(size: NSSize(width: badge ? 22 : 18, height: 16), flipped: false) { rect in
             // The M: two outlined windows standing tall…
             let sides = NSBezierPath(roundedRect: NSRect(x: 1.5, y: 1.5, width: 4.5, height: 13), xRadius: 1.6, yRadius: 1.6)
             sides.append(NSBezierPath(roundedRect: NSRect(x: 12, y: 1.5, width: 4.5, height: 13), xRadius: 1.6, yRadius: 1.6))
-            // As heavy as the other icons in the menu bar.
             sides.lineWidth = 1.5
-            sides.stroke()
-            // …and the middle one, slid down: solid while running, an outline while paused (same
-            // strength either way, so it's as easy to see as the icons next to it).
+            // …and the middle one, slid down: solid while running, an outline while paused.
+            let middle: NSBezierPath
             if paused {
-                let middle = NSBezierPath(roundedRect: NSRect(x: 7.6, y: 2.6, width: 2.8, height: 7.3), xRadius: 1.1, yRadius: 1.1)
+                middle = NSBezierPath(roundedRect: NSRect(x: 7.6, y: 2.6, width: 2.8, height: 7.3), xRadius: 1.1, yRadius: 1.1)
                 middle.lineWidth = 1.3
-                middle.stroke()
             } else {
-                NSBezierPath(roundedRect: NSRect(x: 7, y: 2, width: 4, height: 8.5), xRadius: 1.4, yRadius: 1.4).fill()
-            }
-            if badge {
-                NSBezierPath(ovalIn: NSRect(x: 18, y: 10.5, width: 4, height: 4)).fill()
+                middle = NSBezierPath(roundedRect: NSRect(x: 7, y: 2, width: 4, height: 8.5), xRadius: 1.4, yRadius: 1.4)
             }
             // Where it slid from.
-            NSBezierPath(roundedRect: NSRect(x: 8.4, y: 12, width: 1.2, height: 2.5), xRadius: 0.6, yRadius: 0.6).fill()
+            let notch = NSBezierPath(roundedRect: NSRect(x: 8.4, y: 12, width: 1.2, height: 2.5), xRadius: 0.6, yRadius: 0.6)
+            let dot = badge ? NSBezierPath(ovalIn: NSRect(x: 18, y: 10.5, width: 4, height: 4)) : nil
+
+            // Draw the shape as a mask, then fill it with the colour.
+            NSGraphicsContext.saveGraphicsState()
+            NSColor.white.set()
+            sides.stroke()
+            if paused { middle.stroke() } else { middle.fill() }
+            notch.fill()
+            dot?.fill()
+            if let tint {
+                tint.set()
+                rect.fill(using: .sourceAtop)
+            } else if style == .colour {
+                let gradient = NSGradient(colors: [NSColor(red: 1, green: 0.58, blue: 0.36, alpha: 1),
+                                                   NSColor(red: 0.95, green: 0.32, blue: 0.52, alpha: 1)])
+                NSGraphicsContext.current?.compositingOperation = .sourceAtop
+                gradient?.draw(in: rect, angle: -60)
+            }
+            NSGraphicsContext.restoreGraphicsState()
             return true
         }
-        image.isTemplate = true
+        // Not a template: it keeps its own colour on every menu bar, light or dark.
+        image.isTemplate = false
         image.accessibilityDescription = paused ? "Monorail (paused)" : "Monorail"
         return image
     }

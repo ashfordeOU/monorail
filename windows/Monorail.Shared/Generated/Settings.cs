@@ -129,6 +129,7 @@ public static class SettingKeys
     public const string FocusHidesApps = "focusHidesApps";
     public const string EyeBreaks = "eyeBreaks";
     public const string StationStepsBack = "stationStepsBack";
+    public const string MenuBarIconStyle = "menuBarIconStyle";
     public const string FocusFlash = "focusFlash";
     public const string SliderOpacity = "sliderOpacity";
     public const string SliderScale = "sliderScale";
@@ -435,6 +436,8 @@ public static class SettingDefaults
     public const bool EyeBreaks = false;
     /// <summary>Station: while Monorail runs, let Monorail lead (Station hides its icon and pauses its jobs).</summary>
     public const bool StationStepsBack = true;
+    /// <summary>The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black.</summary>
+    public const string MenuBarIconStyle = "colour";
     /// <summary>A quick highlight of the focused window when focus moves by keyboard.</summary>
     public const bool FocusFlash = false;
     /// <summary>The slider bar's opacity and size (0.8, 1 or 1.25).</summary>

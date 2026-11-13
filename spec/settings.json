@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 243,
+  "count": 244,
   "settings": [
     {
       "key": "layout",
@@ -745,6 +745,12 @@
       "type": "Bool",
       "default": "true",
       "about": "Station: while Monorail runs, let Monorail lead (Station hides its icon and pauses its jobs)."
+    },
+    {
+      "key": "menuBarIconStyle",
+      "type": "String",
+      "default": "\"colour\"",
+      "about": "The menu bar icon: \"colour\" (Monorail's orange to pink) or \"white\". Never black."
     },
     {
       "key": "focusFlash",

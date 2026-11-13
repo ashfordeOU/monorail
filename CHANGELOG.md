@@ -30,7 +30,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 - **Station, the App Store edition.** Built from the same code as the menu bar half of Monorail: the panel with battery rings, Stay Awake and Evening Mode, without the window strip (the App Store's sandbox doesn't let apps move other apps' windows) and without asking for Accessibility. Its own name, icon, menu, first run and Settings, and a permanent card that points to the free Monorail. Builds as `dist/AppStore/Station.app`. <!-- station -->
 
 ### Fixed
-- **The menu bar icon is always easy to see.** It follows the menu bar's own colour, white on dark and black on light, even when Monorail's theme is set to Light or Dark (the theme now applies to Monorail's windows only; before, it could turn the icon black on a dark menu bar). And it's never dimmed: while paused, its middle window becomes an outline instead, at full strength.
+- **The menu bar icon is always easy to see, and never black.** It's drawn in Monorail's own colours (orange to pink) or plain white, your choice in Settings, so it stands out on any menu bar; orange while Stay Awake is on and red while recording. While paused its middle window becomes an outline instead of the whole icon dimming. Monorail's Light or Dark theme now applies to its windows only.
 
 ## [1.8.1] - 2026-11-13
 

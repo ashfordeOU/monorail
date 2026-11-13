@@ -252,6 +252,10 @@ private struct StationGeneralPane: View {
                 Toggle("Open Station when I log in", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { LoginItem.setEnabled($0) }
                 Toggle("Show the battery in the menu bar", isOn: $store.settings.batteryMenuBar)
+                Picker("Menu bar icon", selection: $store.settings.menuBarIconStyle) {
+                    Text("Colour").tag("colour")
+                    Text("White").tag("white")
+            }
             }
             Section {
                 LabeledContent("Privacy", value: "Nothing leaves your Mac")
@@ -890,6 +894,10 @@ private struct AppearancePane: View {
             Section("Overview, menu bar and notices") {
                 Picker("Monorail’s windows", selection: $store.settings.appAppearance) {
                     ForEach(AppAppearance.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                Picker("Menu bar icon", selection: $store.settings.menuBarIconStyle) {
+                    Text("Colour").tag("colour")
+                    Text("White").tag("white")
                 }
                 Toggle("App icons in the overview instead of live previews", isOn: $store.settings.overviewIconsOnly)
                 Picker("Notices appear", selection: $store.settings.noticePosition) {

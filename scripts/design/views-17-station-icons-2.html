@@ -1,0 +1,70 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Station icons, round two</title><link rel="stylesheet" href="mac.css">
+<style>
+body{background:#f5f5f7}
+h1 { position:absolute; left:40px; top:34px; margin:0; font:700 26px "SF Pro Display",sans-serif; }
+.sub { position:absolute; left:40px; top:70px; color:var(--ink-2); font-size:13px; }
+.grid { position:absolute; left:40px; top:104px; right:40px; display:grid; grid-template-columns:repeat(6, 1fr); gap:22px 18px; }
+.cell { text-align:center; }
+.cell svg { width:140px; height:140px; filter:drop-shadow(0 10px 18px rgba(0,0,0,.22)); }
+.cell .n { font-size:11px; color:var(--blue); font-weight:600; }
+.cell b { display:block; font-size:13px; margin-top:2px; }
+.cell span { display:block; font-size:11px; color:var(--ink-2); line-height:1.3; margin:2px auto 0; max-width:190px; }
+.dock { position:absolute; left:40px; right:40px; top:1020px; height:96px; border-radius:24px; background:rgba(255,255,255,.6); box-shadow:0 10px 30px rgba(0,0,0,.12); display:flex; align-items:center; justify-content:center; gap:12px; }
+.dock svg{width:64px;height:64px}
+.dock .lab{font-size:11px;color:var(--ink-2);margin-right:8px}
+.dark { position:absolute; left:40px; right:40px; top:1130px; height:96px; border-radius:24px; background:#1d1f27; display:flex; align-items:center; justify-content:center; gap:12px; }
+.dark svg{width:64px;height:64px}
+.dark .lab{font-size:11px;color:#aaa;margin-right:8px}
+</style></head>
+<body><div id="app"></div><script src="mac.js"></script><script>
+const sq = (fill, inner = '') => `<svg viewBox="0 0 100 100"><defs>
+  <linearGradient id="mono" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".6" stop-color="#E8437A"/><stop offset="1" stop-color="#C2456E"/></linearGradient>
+  <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#263E78"/><stop offset="1" stop-color="#0A102A"/></linearGradient>
+  <linearGradient id="dusk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".45" stop-color="#E8437A"/><stop offset="1" stop-color="#2B3F86"/></linearGradient>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5AC8FA"/><stop offset="1" stop-color="#1E5BD8"/></linearGradient>
+  <linearGradient id="white" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E9E9EE"/></linearGradient>
+  </defs><rect x="10" y="10" width="80" height="80" rx="18" fill="${fill}"/>${inner}</svg>`;
+// Monorail's M: two tall windows and the middle one slid down. (cx, cy, scale)
+const M = (cx, cy, k = 1, col = '#fff', mid = null) => {
+  const x = (v) => cx + (v - 9) * k * 2.6, y = (v) => cy + (v - 7) * k * 2.6, w = (v) => v * k * 2.6;
+  return `<rect x="${x(1)}" y="${y(1)}" width="${w(4)}" height="${w(12)}" rx="${w(1.5)}" fill="none" stroke="${col}" stroke-width="${w(1.15)}"/>
+    <rect x="${x(13)}" y="${y(1)}" width="${w(4)}" height="${w(12)}" rx="${w(1.5)}" fill="none" stroke="${col}" stroke-width="${w(1.15)}"/>
+    ${mid ?? `<rect x="${x(7)}" y="${y(3.5)}" width="${w(4)}" height="${w(7)}" rx="${w(1.2)}" fill="${col}"/>`}`;
+};
+const arc = (cx, cy, r, w, share, col, track = .2) => { const c = 2 * Math.PI * r;
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-opacity="${track}" stroke-width="${w}"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-dasharray="${c * share} ${c}" transform="rotate(-90 ${cx} ${cy})"/>`; };
+const bolt = (cx, cy, s, col) => `<path transform="translate(${cx - 12 * s} ${cy - 12 * s}) scale(${s})" d="M13 2 4 14h7l-1 8 9-12h-7z" fill="${col}"/>`;
+
+
+const G = (id, stops, x2 = 1, y2 = 1) => `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">${stops.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join('')}</linearGradient>`;
+const tile = (defs, fill, inner, extra = '') => `<svg viewBox="0 0 100 100"><defs>${defs}</defs><rect x="10" y="10" width="80" height="80" rx="18" fill="${fill}"/>${extra}${inner}</svg>`;
+const mid = (fill, opts = '') => `<rect x="44.8" y="40.9" width="10.4" height="18.2" rx="3.1" fill="${fill}" ${opts}/>`;
+const NAVY = G('nv', [[0, '#263E78'], [1, '#0A102A']], 0, 1);
+const ideas = [
+  ['Navy and green', 'The shortlist #1, refined: a soft glow under the green window', tile(NAVY, 'url(#nv)', `<ellipse cx="50" cy="66" rx="16" ry="5" fill="#30D158" opacity=".25"/>` + M(50, 50, 1, '#fff', mid('#30D158')))],
+  ['Amber window', 'Navy with a warm middle window, like a lit train', tile(NAVY, 'url(#nv)', M(50, 50, 1, '#fff', mid('#FFB648')))],
+  ['Light edition', 'White tile, navy M, green window: calm on a light Dock', tile(G('wt', [[0, '#FFFFFF'], [1, '#E8EAF0']], 0, 1), 'url(#wt)', M(50, 50, 1, '#1B2A55', mid('#30D158')))],
+  ['Indigo glass', 'Navy to indigo, the window ringed in light', tile(G('ig', [[0, '#3F3AA8'], [1, '#121A3A']]), 'url(#ig)', M(50, 50, 1, '#fff', mid('#fff', 'opacity=".95"') + `<rect x="42.4" y="38.5" width="15.2" height="23" rx="4.6" fill="none" stroke="#9FA8FF" stroke-width="1.2" opacity=".7"/>`))],
+  ['Neon', 'Monorail\u2019s pink as a neon outline on black', tile('', '#0D0D12', M(50, 50, 1, '#FF5C8A', `<rect x="44.8" y="40.9" width="10.4" height="18.2" rx="3.1" fill="none" stroke="#FF8A5B" stroke-width="2.4"/>`), `<rect x="10" y="10" width="80" height="80" rx="18" fill="none" stroke="#FF5C8A" stroke-opacity=".12" stroke-width="2"/>`)],
+  ['Rings behind', 'Battery, time and drain rings with a bold M', tile(NAVY, 'url(#nv)', arc(50, 50, 31, 5, .82, '#30D158', .15) + arc(50, 50, 24.5, 5, .64, '#5AC8FA', .15) + M(50, 50, .5))],
+  ['Canopy', 'A station roof over the M', tile(G('cn', [[0, '#1E2A55'], [1, '#0C1230']], 0, 1), 'url(#cn)', `<path d="M20 40 L50 22 L80 40" fill="none" stroke="#FF8A5B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>` + M(50, 58, .66))],
+  ['Split-flap', 'A departure board: the M on a black flap', tile('', '#2A2A30', `<rect x="22" y="26" width="56" height="48" rx="7" fill="#111116"/><rect x="22" y="49.4" width="56" height="1.2" fill="#2A2A30"/>` + M(50, 50, .72, '#FFD60A'))],
+  ['Frosted', 'Translucent glass, like macOS Tahoe icons', tile(G('fr', [[0, '#C9D6FF'], [1, '#8EA2E6']]), 'url(#fr)', M(50, 50, 1, '#ffffff', mid('#30D158')), `<rect x="16" y="16" width="68" height="34" rx="14" fill="#fff" opacity=".22"/>`)],
+  ['Two-tone', 'Monorail\u2019s pink on top, Station\u2019s navy below', `<svg viewBox="0 0 100 100"><defs><clipPath id="tt"><rect x="10" y="10" width="80" height="80" rx="18"/></clipPath></defs><g clip-path="url(#tt)"><rect x="10" y="10" width="80" height="40" fill="url(#mono)"/><rect x="10" y="50" width="80" height="40" fill="#14204A"/></g>${M(50, 50, 1)}</svg>`],
+  ['Window only', 'Just the slid-down window: the simplest mark', tile(NAVY, 'url(#nv)', `<rect x="39" y="34" width="22" height="40" rx="7" fill="#30D158"/><rect x="47.5" y="22" width="5" height="8" rx="2.5" fill="#fff" opacity=".8"/>`)],
+  ['Charge window', 'The middle window fills like a battery', tile(NAVY, 'url(#nv)', M(50, 50, 1, '#fff', `<rect x="44.8" y="40.9" width="10.4" height="18.2" rx="3.1" fill="none" stroke="#fff" stroke-width="2.2"/><rect x="47" y="48" width="6" height="9.4" rx="1.6" fill="#30D158"/>`))],
+  ['Moon window', 'Evening Mode: a crescent in the middle window', tile(G('mn', [[0, '#2B3F86'], [1, '#0E1430']]), 'url(#mn)', M(50, 50, 1, '#fff', `<circle cx="50" cy="50" r="6" fill="#FFD60A"/><circle cx="53" cy="47.5" r="5.2" fill="#1A2550"/>`))],
+  ['Horizon', 'The M against a dusk sky', tile(G('hz', [[0, '#FF8A5B'], [.5, '#E8437A'], [1, '#2B3F86']], 0, 1), 'url(#hz)', `<circle cx="50" cy="64" r="14" fill="#FFD27A" opacity=".55"/>` + M(50, 50, .95))],
+  ['Blocks', 'Three solid blocks, the middle one lower', tile(NAVY, 'url(#nv)', `<rect x="24" y="26" width="14" height="44" rx="4" fill="#5AC8FA"/><rect x="43" y="40" width="14" height="34" rx="4" fill="#30D158"/><rect x="62" y="26" width="14" height="44" rx="4" fill="#5AC8FA"/>`)],
+  ['Pulse', 'A heartbeat line through the M: your Mac, alive', tile(NAVY, 'url(#nv)', M(50, 50, 1, '#fff', '') + `<path d="M18 52 H40 L44 42 L50 62 L55 46 L58 52 H82" fill="none" stroke="#30D158" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`)],
+  ['Rail ribbon', 'A single rail curving under the M', tile(NAVY, 'url(#nv)', M(50, 46, .85, '#fff', mid('#30D158')) + `<path d="M18 76 Q50 62 82 76" fill="none" stroke="url(#mono)" stroke-width="4" stroke-linecap="round"/>`)],
+  ['Classic Monorail', 'Monorail\u2019s own icon, for comparison', tile('', 'url(#mono)', M(50, 50, 1))],
+];
+document.getElementById('app').innerHTML = `<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="mono" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8A5B"/><stop offset=".6" stop-color="#E8437A"/><stop offset="1" stop-color="#C2456E"/></linearGradient><linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#263E78"/><stop offset="1" stop-color="#0A102A"/></linearGradient></defs></svg>`
+  + menubar(`<span>${monoIcon}</span>`)
+  + `<h1>Station icons, round two</h1><div class="sub">18 more, mostly on the navy-and-green direction, plus some new ideas. The last is Monorail's own icon, to compare against.</div>`
+  + `<div class="grid">${ideas.map(([t, d, svg], i) => `<div class="cell">${svg}<div class="n">${i + 13}</div><b>${t}</b><span>${d}</span></div>`).join('')}</div>`
+  + `<div class="dock"><span class="lab">Light Dock, next to Monorail:</span>${ideas[17][2]}${ideas.slice(0, 9).map(i => i[2]).join('')}</div>`
+  + `<div class="dark"><span class="lab">Dark Dock:</span>${ideas[17][2]}${ideas.slice(9, 17).map(i => i[2]).join('')}</div>`;
+</script></body></html>

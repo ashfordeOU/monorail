@@ -466,3 +466,4 @@ enum SandboxProbe {
         return image.cgImage(forProposedRect: nil, context: nil, hints: nil)!
     }
 }
+#endif

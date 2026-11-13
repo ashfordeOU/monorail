@@ -133,6 +133,12 @@ public static class SettingKeys
     public const string MenuBarReadings = "menuBarReadings";
     public const string SystemAlerts = "systemAlerts";
     public const string HomePins = "homePins";
+    public const string AiAccounts = "aiAccounts";
+    public const string AiLiveLimits = "aiLiveLimits";
+    public const string AiThresholds = "aiThresholds";
+    public const string AiNotifyResets = "aiNotifyResets";
+    public const string AiNotifyContext = "aiNotifyContext";
+    public const string AiNotifyIncidents = "aiNotifyIncidents";
     public const string FocusFlash = "focusFlash";
     public const string SliderOpacity = "sliderOpacity";
     public const string SliderScale = "sliderScale";
@@ -443,6 +449,14 @@ public static class SettingDefaults
     public const string MenuBarIconStyle = "colour";
     /// <summary>Notifications when the Mac strains: a runaway app, memory pressure, heavy swap.</summary>
     public const bool SystemAlerts = true;
+    /// <summary>AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access).</summary>
+    public const bool AiLiveLimits = false;
+    /// <summary>AI Usage: notify when a plan limit resets.</summary>
+    public const bool AiNotifyResets = true;
+    /// <summary>AI Usage: notify when a running conversation's context is nearly full (90%).</summary>
+    public const bool AiNotifyContext = true;
+    /// <summary>AI Usage: notify when Claude or OpenAI reports an incident on its status page.</summary>
+    public const bool AiNotifyIncidents = true;
     /// <summary>A quick highlight of the focused window when focus moves by keyboard.</summary>
     public const bool FocusFlash = false;
     /// <summary>The slider bar's opacity and size (0.8, 1 or 1.25).</summary>

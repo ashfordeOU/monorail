@@ -9,7 +9,7 @@ import UserNotifications
 /// ("CPU 12%  MEM 61%  ↓1.2 MB/s  82%"), turning red under strain. Clicking it opens the Dashboard.
 final class MenuBarReadings {
     static let shared = MenuBarReadings()
-    static let all: [(id: String, title: String)] = [("cpu", "CPU"), ("memory", "Memory"), ("gpu", "GPU"), ("network", "Network"), ("disk", "Disk"), ("battery", "Battery")]
+    static let all: [(id: String, title: String)] = [("cpu", "CPU"), ("memory", "Memory"), ("gpu", "GPU"), ("network", "Network"), ("disk", "Disk"), ("battery", "Battery"), ("ai", "AI limit")]
 
     private var item: NSStatusItem?
     private var timer: Timer?
@@ -73,6 +73,10 @@ final class MenuBarReadings {
                 if PowerWatch.hasBattery {
                     let b = PowerWatch.shared.battery
                     add(b.isCharging ? "⚡︎" : "", "\(b.percent)%", strained: b.onBattery && b.percent <= 10)
+                }
+            case "ai":
+                if let top = AIUsageWatch.shared.headline {
+                    add(String(top.account.label.uppercased().prefix(8)), "\(Int(top.window.usedPercent.rounded()))%", strained: top.window.usedPercent >= 90)
                 }
             default: break
             }

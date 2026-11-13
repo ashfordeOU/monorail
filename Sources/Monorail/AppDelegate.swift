@@ -2141,6 +2141,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DeskContext.save = { [weak self] in self?.engine.perform(.takeSnapshot) }
         SystemAlerts.shared.enabled = { [weak self] in self?.store.settings.systemAlerts ?? true }
         SystemRecorder.shared.start()
+        AIUsageWatch.shared.store = store
+        AIUsageWatch.shared.start()
         // Shortcuts and Spotlight actions.
         ShortcutsBridge.stayAwake = { [weak self] minutes in self?.awake.start(minutes: minutes) }
         ShortcutsBridge.endStayAwake = { [weak self] in self?.awake.end() }
@@ -3241,6 +3243,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         do {
             list.append(PaletteCommand(id: "dashboard", title: "Dashboard", subtitle: "System, battery, storage and today, full size", symbol: "gauge.with.dots.needle.67percent",
                                        keywords: "system monitor activity apps cpu memory gpu disk network battery sound ports agents trends history") { DashboardWindow.shared.show() })
+            list.append(PaletteCommand(id: "ai-usage", title: "AI Usage", subtitle: "Claude, Codex, Gemini, OpenClaw, Hermes, Ollama, LM Studio and API keys", symbol: "brain",
+                                       keywords: "ai usage limits tokens context codexbar claude codex gemini openclaw hermes ollama lm studio openrouter api spend credits") {
+                UserDefaults.standard.set(DashboardSection.ai.rawValue, forKey: "DashboardSection")
+                DashboardWindow.shared.show()
+            })
         }
         if !Edition.isAppStore {
             list.append(PaletteCommand(id: "page-live", title: "Live View", subtitle: "Every core, network and apps over time", symbol: "waveform.path.ecg",

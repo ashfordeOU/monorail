@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 247,
+  "count": 253,
   "settings": [
     {
       "key": "layout",
@@ -756,7 +756,7 @@
       "key": "menuBarReadings",
       "type": "[String]",
       "default": "[]",
-      "about": "Live readings next to the icon, in this order: \"cpu\", \"memory\", \"gpu\", \"network\", \"disk\", \"battery\"."
+      "about": "Live readings next to the icon, in this order: \"cpu\", \"memory\", \"gpu\", \"network\", \"disk\", \"battery\", \"ai\" (the fullest AI plan limit)."
     },
     {
       "key": "systemAlerts",
@@ -769,6 +769,42 @@
       "type": "[String]",
       "default": "[]",
       "about": "Readings pinned to the panel's Home, from the Dashboard: \"cpu\", \"memory\", \"swap\", \"gpu\", \"down\", \"write\", \"battery\"."
+    },
+    {
+      "key": "aiAccounts",
+      "type": "[AIAccount]",
+      "default": "[]",
+      "about": "AI Usage: the AI accounts to watch (Claude, Codex, OpenClaw, Hermes, Ollama, LM Studio, API keys). Keys stay in the Keychain."
+    },
+    {
+      "key": "aiLiveLimits",
+      "type": "Bool",
+      "default": "false",
+      "about": "AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access)."
+    },
+    {
+      "key": "aiThresholds",
+      "type": "[Double]",
+      "default": "[80, 95]",
+      "about": "AI Usage: notify when a plan limit passes these percentages."
+    },
+    {
+      "key": "aiNotifyResets",
+      "type": "Bool",
+      "default": "true",
+      "about": "AI Usage: notify when a plan limit resets."
+    },
+    {
+      "key": "aiNotifyContext",
+      "type": "Bool",
+      "default": "true",
+      "about": "AI Usage: notify when a running conversation's context is nearly full (90%)."
+    },
+    {
+      "key": "aiNotifyIncidents",
+      "type": "Bool",
+      "default": "true",
+      "about": "AI Usage: notify when Claude or OpenAI reports an incident on its status page."
     },
     {
       "key": "focusFlash",

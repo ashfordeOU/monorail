@@ -773,12 +773,24 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var stationStepsBack = true
     /// The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black.
     public var menuBarIconStyle = "colour"
-    /// Live readings next to the icon, in this order: "cpu", "memory", "gpu", "network", "disk", "battery".
+    /// Live readings next to the icon, in this order: "cpu", "memory", "gpu", "network", "disk", "battery", "ai" (the fullest AI plan limit).
     public var menuBarReadings: [String] = []
     /// Notifications when the Mac strains: a runaway app, memory pressure, heavy swap.
     public var systemAlerts = true
     /// Readings pinned to the panel's Home, from the Dashboard: "cpu", "memory", "swap", "gpu", "down", "write", "battery".
     public var homePins: [String] = []
+    /// AI Usage: the AI accounts to watch (Claude, Codex, OpenClaw, Hermes, Ollama, LM Studio, API keys). Keys stay in the Keychain.
+    public var aiAccounts: [AIAccount] = []
+    /// AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access).
+    public var aiLiveLimits = false
+    /// AI Usage: notify when a plan limit passes these percentages.
+    public var aiThresholds: [Double] = [80, 95]
+    /// AI Usage: notify when a plan limit resets.
+    public var aiNotifyResets = true
+    /// AI Usage: notify when a running conversation's context is nearly full (90%).
+    public var aiNotifyContext = true
+    /// AI Usage: notify when Claude or OpenAI reports an incident on its status page.
+    public var aiNotifyIncidents = true
     /// A quick highlight of the focused window when focus moves by keyboard.
     public var focusFlash = false
     /// The slider bar's opacity and size (0.8, 1 or 1.25).
@@ -1175,7 +1187,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
     }
 
     public init(from decoder: Decoder) throws {
@@ -1435,6 +1447,12 @@ public struct AppSettings: Equatable, Codable, Sendable {
         menuBarReadings = value(.menuBarReadings, d.menuBarReadings)
         systemAlerts = value(.systemAlerts, d.systemAlerts)
         homePins = value(.homePins, d.homePins)
+        aiAccounts = value(.aiAccounts, d.aiAccounts)
+        aiLiveLimits = value(.aiLiveLimits, d.aiLiveLimits)
+        aiThresholds = value(.aiThresholds, d.aiThresholds)
+        aiNotifyResets = value(.aiNotifyResets, d.aiNotifyResets)
+        aiNotifyContext = value(.aiNotifyContext, d.aiNotifyContext)
+        aiNotifyIncidents = value(.aiNotifyIncidents, d.aiNotifyIncidents)
         // Settings from before 1.1 get the narrow menu bar once.
         compactMenuBarApplied = (try? c.decodeIfPresent(Bool.self, forKey: .compactMenuBarApplied)) ?? false
         if !compactMenuBarApplied {

@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-247 settings.
+253 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -134,9 +134,15 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `eyeBreaks` | A reminder every 20 minutes at the screen to look into the distance for 20 seconds. | `false` |
 | `stationStepsBack` | Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs). | `true` |
 | `menuBarIconStyle` | The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black. | `"colour"` |
-| `menuBarReadings` | Live readings next to the icon, in this order: "cpu", "memory", "gpu", "network", "disk", "battery". | `[]` |
+| `menuBarReadings` | Live readings next to the icon, in this order: "cpu", "memory", "gpu", "network", "disk", "battery", "ai" (the fullest AI plan limit). | `[]` |
 | `systemAlerts` | Notifications when the Mac strains: a runaway app, memory pressure, heavy swap. | `true` |
 | `homePins` | Readings pinned to the panel's Home, from the Dashboard: "cpu", "memory", "swap", "gpu", "down", "write", "battery". | `[]` |
+| `aiAccounts` | AI Usage: the AI accounts to watch (Claude, Codex, OpenClaw, Hermes, Ollama, LM Studio, API keys). Keys stay in the Keychain. | `[]` |
+| `aiLiveLimits` | AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access). | `false` |
+| `aiThresholds` | AI Usage: notify when a plan limit passes these percentages. | `[80, 95]` |
+| `aiNotifyResets` | AI Usage: notify when a plan limit resets. | `true` |
+| `aiNotifyContext` | AI Usage: notify when a running conversation's context is nearly full (90%). | `true` |
+| `aiNotifyIncidents` | AI Usage: notify when Claude or OpenAI reports an incident on its status page. | `true` |
 | `focusFlash` | A quick highlight of the focused window when focus moves by keyboard. | `false` |
 | `sliderOpacity` | The slider bar's opacity and size (0.8, 1 or 1.25). | `1.0` |
 | `sliderScale` |  | `1.0` |

@@ -4,7 +4,7 @@ import XCTest
 final class HomeModelTests: XCTestCase {
     func testCalmKeepsTheFixedOrder() {
         let plan = HomePlanner.plan(HomeSignals(onBattery: true, percent: 64, minutesLeft: 352, drainRatio: 1.1))
-        XCTAssertEqual(plan.cards, [.windows, .battery, .controls, .layouts])
+        XCTAssertEqual(plan.cards, [.windows, .today, .battery, .system, .controls, .layouts])
         XCTAssertEqual(plan.raised, [])
         XCTAssertEqual(plan.tone, .calm)
         XCTAssertEqual(plan.title, "All calm")
@@ -80,5 +80,13 @@ final class HomeModelTests: XCTestCase {
         let start = Date(timeIntervalSince1970: 0)
         let points = [BatteryPoint(time: start, percent: 50, charging: false), BatteryPoint(time: start.addingTimeInterval(600), percent: 48, charging: false)]
         XCTAssertNil(DrainBaseline.percentPerHour(points))
+    }
+
+    func testAMeetingAboutToStartComesFirstCalmly() {
+        let plan = HomePlanner.plan(HomeSignals(meetingSoon: true))
+        XCTAssertEqual(plan.cards.first, .today)
+        XCTAssertEqual(plan.tone, .calm)
+        XCTAssertEqual(plan.title, "Meeting soon")
+        XCTAssertEqual(HomePlanner.plan(HomeSignals(onCall: true, meetingSoon: true)).cards.first, .call)
     }
 }

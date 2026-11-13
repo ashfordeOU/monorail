@@ -121,6 +121,7 @@ public static class SettingKeys
     public const string AwakeDuringCalls = "awakeDuringCalls";
     public const string MovieAuto = "movieAuto";
     public const string ChargeLimit = "chargeLimit";
+    public const string WorldClocks = "worldClocks";
     public const string FocusFlash = "focusFlash";
     public const string SliderOpacity = "sliderOpacity";
     public const string SliderScale = "sliderScale";

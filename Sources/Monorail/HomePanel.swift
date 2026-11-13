@@ -8,7 +8,7 @@ import SwiftUI
 // which slides across and resizes to fit. ‹ goes back. Nothing opens on top of anything else.
 
 enum PanelPage: Hashable {
-    case home, battery, app(String), awake, evening, theme, whatsNew, film
+    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today
 }
 
 final class PanelNavigator: ObservableObject {
@@ -106,6 +106,10 @@ struct PanelRoot: View {
             UpdatePage(updater: updater, onBack: nav.pop)
         case .film:
             FilmPage(onBack: nav.pop)
+        case .system:
+            SystemPage(onBack: nav.pop)
+        case .today:
+            TodayPage(onBack: nav.pop, store: store)
         }
     }
 
@@ -132,6 +136,7 @@ struct HomePage: View {
     /// Bumped after a switch is flipped, to redraw once it has settled.
     @State private var tick = 0
 
+    @ObservedObject private var today = TodayWatch.shared
     private var more: SliderPopover.MoreControls { context.more }
 
     private var layout: HomeLayout {
@@ -141,7 +146,8 @@ struct HomePage: View {
             minutesLeft: b.minutesAtCurrentRate, drainRatio: power.rings.drainRatio,
             agentsRunning: Edition.isAppStore ? 0 : power.agents.count, clashes: Edition.isAppStore ? 0 : more.clashCount(),
             updateAvailable: updater.available != nil, paused: paused.value,
-            heat: moments.heat, onCall: moments.call.isOnCall, movie: moments.film))
+            heat: moments.heat, onCall: moments.call.isOnCall, movie: moments.film,
+            meetingSoon: today.next.map { TimeModel.isImminent($0.start, end: $0.end, now: today.now) } ?? false))
     }
 
     var body: some View {
@@ -169,7 +175,7 @@ struct HomePage: View {
         var index = 0
         while index < cards.count {
             let card = cards[index]
-            let pairable: (HomeCard) -> Bool = { ($0 == .battery || $0 == .agents) && !plan.raised.contains($0) }
+            let pairable: (HomeCard) -> Bool = { [.battery, .system, .agents].contains($0) && !plan.raised.contains($0) }
             if pairable(card), index + 1 < cards.count, pairable(cards[index + 1]) {
                 rows.append([card, cards[index + 1]])
                 index += 2
@@ -218,6 +224,8 @@ struct HomePage: View {
         case .battery: raised ? AnyView(batteryRaised) : AnyView(batteryWidget)
         case .windows: if Edition.isAppStore { MonorailCard() } else { windows }
         case .agents: agentsWidget
+        case .system: SystemWidget { nav.push(.system) }
+        case .today: TodayWidget { nav.push(.today) }
         case .controls: controls
         case .layouts: if !Edition.isAppStore { layoutsRow }
         }

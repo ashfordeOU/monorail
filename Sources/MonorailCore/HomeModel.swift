@@ -2,7 +2,7 @@ import Foundation
 
 /// The cards on the home page of the menu bar panel.
 public enum HomeCard: String, CaseIterable, Sendable, Equatable {
-    case notices, heat, call, movie, battery, windows, agents, controls, layouts
+    case notices, heat, call, movie, battery, windows, today, system, agents, controls, layouts
 }
 
 /// What the home page knows when it opens: enough to decide what matters most.
@@ -19,10 +19,13 @@ public struct HomeSignals: Equatable, Sendable {
     public var heat: Heat
     public var onCall: Bool
     public var movie: Bool
+    /// A meeting starts within a few minutes.
+    public var meetingSoon: Bool
 
     public init(onBattery: Bool = false, percent: Int? = nil, minutesLeft: Int? = nil, drainRatio: Double? = nil,
                 agentsRunning: Int = 0, clashes: Int = 0, updateAvailable: Bool = false, paused: Bool = false,
-                heat: Heat = .normal, onCall: Bool = false, movie: Bool = false) {
+                heat: Heat = .normal, onCall: Bool = false, movie: Bool = false, meetingSoon: Bool = false) {
+        self.meetingSoon = meetingSoon
         self.heat = heat
         self.onCall = onCall
         self.movie = movie
@@ -51,7 +54,7 @@ public struct HomeLayout: Equatable, Sendable {
 /// Decides the home page. Calm, it keeps one fixed order so things are where you left them;
 /// when something needs you, that card moves to the top. Like a Smart Stack, without the guessing.
 public enum HomePlanner {
-    public static let calmOrder: [HomeCard] = [.windows, .battery, .agents, .controls, .layouts]
+    public static let calmOrder: [HomeCard] = [.windows, .today, .battery, .system, .agents, .controls, .layouts]
 
     public static func batteryIsLow(_ s: HomeSignals) -> Bool {
         guard s.onBattery else { return false }
@@ -66,7 +69,7 @@ public enum HomePlanner {
         var raised: [HomeCard] = []
         var reasons: [String] = []
         // A call or a film comes first: it's what you're doing right now. Calm, not a warning.
-        if s.onCall { raised.append(.call) } else if s.movie { raised.append(.movie) }
+        if s.onCall { raised.append(.call) } else if s.meetingSoon { raised.append(.today) } else if s.movie { raised.append(.movie) }
         if s.heat.needsYou {
             raised.append(.heat)
             reasons.append(s.heat == .throttling ? "Slowing down to cool" : "Running hot")
@@ -91,6 +94,7 @@ public enum HomePlanner {
         let title: String
         switch reasons.count {
         case 0 where s.onCall: title = "On a call"
+        case 0 where s.meetingSoon: title = "Meeting soon"
         case 0 where s.movie: title = "Movie mode"
         case 0: title = "All calm"
         case 1: title = reasons[0]

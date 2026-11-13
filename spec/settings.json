@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 235,
+  "count": 236,
   "settings": [
     {
       "key": "layout",
@@ -697,6 +697,12 @@
       "type": "Int",
       "default": "100",
       "about": "While charging, a notice once the battery reaches `chargeLimit` (100 = off)."
+    },
+    {
+      "key": "worldClocks",
+      "type": "[String]",
+      "default": "[]",
+      "about": "World clocks on the Today page: time zone identifiers (\"Europe/London\")."
     },
     {
       "key": "focusFlash",

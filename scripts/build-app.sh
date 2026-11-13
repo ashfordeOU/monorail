@@ -32,6 +32,15 @@ cp scripts/monorail "$APP/Contents/Resources/monorail"
 cp LICENSE "$APP/Contents/Resources/LICENSE"
 cp Resources/Monorail.sdef "$APP/Contents/Resources/Monorail.sdef"
 cp CHANGELOG.md "$APP/Contents/Resources/CHANGELOG.md"
+# The Shortcuts and Spotlight actions: Xcode's App Intents step writes Metadata.appintents during the
+# build; macOS finds the actions only when it's inside the app's Resources.
+INTENTS="$(find "$BIN_DIR" "$(dirname "$BIN_DIR")" -maxdepth 4 -type d -name 'Metadata.appintents' 2>/dev/null | head -n1 || true)"
+if [ -n "$INTENTS" ]; then
+    cp -R "$INTENTS" "$APP/Contents/Resources/Metadata.appintents"
+    echo "    Shortcuts actions included ($INTENTS)"
+else
+    echo "    No Metadata.appintents found: Shortcuts actions won't appear"
+fi
 sed -e "s/__VERSION__/${VERSION}/" -e "s/__BUILD__/${BUILD}/" Resources/Info.plist > "$APP/Contents/Info.plist"
 if [ "${APPSTORE:-0}" = "1" ]; then
     # Its own identifier: the App Store edition and the direct download are separate apps.

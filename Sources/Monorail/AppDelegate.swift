@@ -2110,6 +2110,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         SuiteRole.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         SuiteRole.shared.onChange = { [weak self] role in self?.roleChanged(role) }
         SuiteRole.shared.start()
+        // Shortcuts and Spotlight actions.
+        ShortcutsBridge.stayAwake = { [weak self] minutes in self?.awake.start(minutes: minutes) }
+        ShortcutsBridge.endStayAwake = { [weak self] in self?.awake.end() }
+        ShortcutsBridge.setEvening = { [weak self] on in self?.store.settings.eveningOn = on }
+        ShortcutsBridge.arrange = { [weak self] text in
+            guard let self, !Edition.isAppStore else { return false }
+            if self.engine.layouts.contains(where: { $0.name.caseInsensitiveCompare(text) == .orderedSame }) {
+                self.engine.applyLayout(named: text)
+                return true
+            }
+            return self.say(text)
+        }
         FocusWatch.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         FocusWatch.shared.onRunningChange = { [weak self] on in
             guard let self, !Edition.isAppStore, self.store.settings.focusHidesApps else { return }

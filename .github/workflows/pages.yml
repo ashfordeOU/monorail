@@ -85,6 +85,15 @@ jobs:
           # The App Store edition is parked (docs/APP-STORE.md): no mention of it on the site either.
           lines = [l.replace(" Not in the App Store edition.", "") for l in lines]
           lines = [l for l in lines if not (l.lstrip().startswith("- ") and "App Store edition" in l)]
+          # Nor its name: drop the brackets and sentences that mention Signalbox, keep the rest of the entry.
+          def unsignal(line):
+              if "Signalbox" not in line:
+                  return line
+              line = re.sub(r"\s*\([^()]*Signalbox[^()]*\)", "", line)
+              parts = re.split(r"(?<=[.!?])\s+", line)
+              kept = " ".join(p for p in parts if "Signalbox" not in p)
+              return kept if kept.lstrip().startswith("- ") or not line.lstrip().startswith("- ") else "- " + kept
+          lines = [unsignal(l) for l in lines]
           REPO = "https://github.com/ashfordeOU/monorail"
 
           def inline(text):
@@ -206,13 +215,13 @@ jobs:
           <link rel="canonical" href="https://monorail.ashforde.org/changelog/">
           <link rel="icon" href="../favicon.ico" sizes="48x48">
           <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-          <meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
-          <meta name="theme-color" content="#120914" media="(prefers-color-scheme: dark)">
+          <meta name="theme-color" content="#FBFBFD" media="(prefers-color-scheme: light)">
+          <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
           <script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
           <style>
-          :root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --coral:#FF9E62; --pink:#F66270; --plum:#D63A80; --link:#D63A80; --ok:#177A45; color-scheme:light; }
-          @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; } }
-          :root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; }
+          :root { --ink:#1D1D1F; --muted:#6E6E73; --line:rgba(0,0,0,.09); --bg:#FBFBFD; --card:#FFFFFF; --soft:#F2F2F5; --coral:#FF9E62; --pink:#F66270; --plum:#D63A80; --link:#D63A80; --ok:#177A45; color-scheme:light; }
+          @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; } }
+          :root[data-theme="dark"] { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --link:#F07AB0; --ok:#45D18C; color-scheme:dark; }
           * { box-sizing:border-box; }
           html { scroll-behavior:smooth; }
           body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }

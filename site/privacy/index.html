@@ -9,9 +9,9 @@
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <script>try { const t = localStorage.getItem('monorail-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <style>
-:root { --ink:#24112B; --muted:#7A5A70; --line:rgba(36,17,43,.10); --bg:#FFF8F3; --card:#FFFFFF; --soft:#FBEFEA; --plum:#D63A80; color-scheme:light; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; } }
-:root[data-theme="dark"] { --ink:#F6ECF3; --muted:#BFA6B6; --line:rgba(255,255,255,.10); --bg:#120914; --card:#1D1022; --soft:#241429; --plum:#F07AB0; color-scheme:dark; }
+:root { --ink:#1D1D1F; --muted:#6E6E73; --line:rgba(0,0,0,.09); --bg:#FBFBFD; --card:#FFFFFF; --soft:#F2F2F5; --plum:#D63A80; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; } }
+:root[data-theme="dark"] { --ink:#F5F5F7; --muted:#A1A1A6; --line:rgba(255,255,255,.10); --bg:#000000; --card:#161617; --soft:#1C1C1E; --plum:#F07AB0; color-scheme:dark; }
 * { box-sizing:border-box; }
 body { margin:0; font:17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
 main { max-width:1040px; margin:0 auto; padding:32px 16px 72px; }

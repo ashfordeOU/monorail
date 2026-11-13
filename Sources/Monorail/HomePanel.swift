@@ -8,7 +8,7 @@ import SwiftUI
 // which slides across and resizes to fit. ‹ goes back. Nothing opens on top of anything else.
 
 enum PanelPage: Hashable {
-    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today, clipboard, note, focus, storage, text, reminders, arrange
+    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, network, today, clipboard, note, focus, storage, text, reminders, arrange
 }
 
 final class PanelNavigator: ObservableObject {
@@ -132,6 +132,8 @@ struct PanelRoot: View {
             FilmPage(onBack: nav.pop)
         case .system:
             SystemPage(onBack: nav.pop)
+        case .network:
+            NetworkPage(onBack: nav.pop)
         case .today:
             OrganiserPage(onBack: nav.pop, store: store, tab: .calendar)
         case .clipboard:
@@ -286,7 +288,7 @@ struct HomePage: View {
         case .system: SystemWidget { nav.push(.system) }
         case .today: TodayWidget { nav.push(.today) }
         case .storage: StorageWidget { nav.push(.storage) }
-        case .network: NetworkWidget { nav.push(.system) }
+        case .network: NetworkWidget { nav.push(.network) }
         case .pinned: PinnedReadings(store: store)
         case .controls: VStack(spacing: 8) { controls; HomeSliders(store: store) }
         case .tools: ToolsRow(openClipboard: { nav.push(.clipboard) }, openNote: { nav.push(.note) }, openText: { nav.push(.text) })
@@ -595,6 +597,12 @@ struct HomePage: View {
             ControlTile(title: "Film", status: moments.film ? (moments.sleepAt.map { "Sleeps at \($0.formatted(date: .omitted, time: .shortened))" } ?? "On") : "Off",
                         systemImage: "film.fill", isOn: moments.film, tint: Color(nsColor: .systemIndigo),
                         toggle: { moments.setFilm(!moments.film) }, open: { nav.push(.film) })
+            // The live notch (like a Dynamic Island): what's happening shows beside the notch while it happens.
+            if NSScreen.screens.contains(where: { $0.safeAreaInsets.top > 0 }) {
+                ControlTile(title: "Live Notch", status: store.settings.notchLive ? "On" : "Off", systemImage: "capsule.fill",
+                            isOn: store.settings.notchLive, tint: Color(nsColor: .systemPink),
+                            toggle: { store.settings.notchLive.toggle(); settle() }, open: nil)
+            }
             if PowerWatch.hasBattery, !Edition.isAppStore {
                 ControlTile(title: "Low Power", status: power.battery.lowPowerMode ? "On" : "Off", systemImage: "leaf.fill",
                             isOn: power.battery.lowPowerMode, tint: Tone.ok,

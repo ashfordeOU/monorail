@@ -9,7 +9,15 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Storage, the way the Mac shows it, and then some.** The Storage page draws the disk as System Settings does: one coloured segment each for Applications, Documents, Developer, iCloud Drive, Mail, Messages, Music, Photos, TV, the Trash, System Data and macOS, with free space at the end, a legend, and every category listed with its size and a way to show it in Finder. Then it explains System Data: swap and the sleep image, caches, logs, iPhone and iPad backups, Application Support, Apple Intelligence and other system assets, Docker and virtual machines, software updates and Time Machine snapshots, each with what it is and what to do about it. Home's storage card uses the same colours. <!-- monorail -->
+- **A Network page of its own.** The Network card now opens its own page: download and upload with the last few minutes drawn, how you're connected (Wi-Fi, Ethernet, iPhone, Thunderbolt), IPv4 and IPv6 addresses, the router and DNS servers; the Wi-Fi radio in detail (signal, noise, signal-to-noise, quality, transmit rate, band, channel and width, Wi-Fi 6 or 5, security) with advice when the signal is weak; the apps using the network right now with their speeds; latency to the router and the internet; a speed test; totals since the Mac started; and Copy Details for support. <!-- monorail -->
+- **A fuller System page.** How the processor's time splits between apps, macOS and idle, with its recent history; load averages, processes and disk speed; heat; memory pressure over the last hour with swap and swapping in and out, and advice when the Mac is swapping; the apps using the most memory; and this Mac: model, chip, cores, memory, macOS version and when it started.
+- **Live Notch on Home.** On a MacBook with a notch, a round toggle turns the live notch on and off.
+- **The Dashboard in the overview fits the screen.** It stays clear of the Dock wherever it is, and the active workspace's windows sit in a row above it, one click to go to one.
 - **Links to the panel and the Dashboard.** `monorail://panel` opens the menu bar panel (`panel/battery`, `panel/clipboard` and other pages too), and `monorail://dashboard/ai-usage` opens the Dashboard on any page, for scripts, Shortcuts and launchers.
+
+### Fixed
+- **Network and disk history read in percent.** The Dashboard's overview showed network and disk ranges as "Low 6691%"; they now read as speeds.
 
 ## [1.9.1] - 2026-11-13
 

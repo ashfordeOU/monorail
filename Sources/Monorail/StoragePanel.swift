@@ -205,6 +205,11 @@ final class StorageWatch: ObservableObject {
     }
 }
 
+private struct StoragePageHeight: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+
 private func levelColour(_ level: Storage.Level) -> Color {
     switch level {
     case .fine: return Color(nsColor: .systemBlue)
@@ -217,6 +222,7 @@ private func levelColour(_ level: Storage.Level) -> Color {
 struct StorageWidget: View {
     let open: () -> Void
     @ObservedObject private var storage = StorageWatch.shared
+    @ObservedObject private var mapper = StorageMapper.shared
 
     var body: some View {
         Button(action: open) {
@@ -226,7 +232,12 @@ struct StorageWidget: View {
                     Text(Storage.size(storage.free)).font(.figure(20))
                     Text("free").font(.system(size: 11)).foregroundStyle(.tertiary)
                 }
-                ProgressView(value: Double(storage.used), total: Double(max(storage.total, 1))).tint(levelColour(storage.level))
+                if mapper.segments.isEmpty {
+                    ProgressView(value: Double(storage.used), total: Double(max(storage.total, 1))).tint(levelColour(storage.level))
+                } else {
+                    // The same colours as the Storage page and System Settings.
+                    StorageBar(segments: mapper.segments, total: storage.total, free: storage.free, height: 7)
+                }
             }
             .tile()
         }
@@ -242,24 +253,28 @@ struct StoragePage: View {
     /// Inside the dashboard: no back button.
     var embedded = false
     @ObservedObject private var storage = StorageWatch.shared
+    @State private var contentHeight: CGFloat = 480
 
     var body: some View {
+        if embedded { content } else {
+            // In the panel: as tall as its content, up to a limit; then it scrolls.
+            ScrollView {
+                content.background(GeometryReader { proxy in Color.clear.preference(key: StoragePageHeight.self, value: proxy.size.height) })
+            }
+            .onPreferenceChange(StoragePageHeight.self) { contentHeight = $0 }
+            .frame(height: min(max(contentHeight, 200), 640))
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 8) {
             if !embedded { PageHeader(back: Brand.name, title: "Storage", onBack: onBack) }
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(Storage.size(storage.free)).font(.figure(22, weight: .semibold))
-                    Text("free of \(Storage.size(storage.total))").font(.system(size: 12)).foregroundStyle(.secondary)
-                    Spacer()
-                    Text("Macintosh HD").font(.system(size: 11)).foregroundStyle(.tertiary)
-                }
-                ProgressView(value: Double(storage.used), total: Double(max(storage.total, 1))).tint(levelColour(storage.level))
-                if storage.level != .fine {
-                    Label(storage.level == .critical ? "Almost full: the Mac slows down and updates can fail." : "Getting low: clear some space soon.",
-                          systemImage: "exclamationmark.triangle.fill").font(.system(size: 11.5)).foregroundStyle(levelColour(storage.level))
-                }
+            if storage.level != .fine {
+                Label(storage.level == .critical ? "Almost full: the Mac slows down and updates can fail." : "Getting low: clear some space soon.",
+                      systemImage: "exclamationmark.triangle.fill").font(.system(size: 11.5)).foregroundStyle(levelColour(storage.level))
+                    .padding(.horizontal, 4)
             }
-            .tile()
+            StorageMapCard()
             if storage.canClean { cleanupsCard } else { grantCard }
             largestCard
         }

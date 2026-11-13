@@ -1,0 +1,79 @@
+@testable import MonorailCore
+import XCTest
+
+final class StorageMapTests: XCTestCase {
+    func testComposeOrdersAndFindsSystemData() {
+        let gb: Int64 = 1_000_000_000
+        let bar = StorageMap.compose(used: 300 * gb, measured: [.applications: 80 * gb, .music: 54 * gb, .documents: 32 * gb, .mail: 0], macOS: 12 * gb)
+        XCTAssertEqual(bar.map(\.category), [.applications, .music, .documents, .systemData, .macOS])
+        XCTAssertEqual(bar.first(where: { $0.category == .systemData })?.bytes, 300 * gb - 166 * gb - 12 * gb)
+    }
+
+    func testComposeNeverGoesNegative() {
+        let bar = StorageMap.compose(used: 10, measured: [.documents: 50], macOS: 5)
+        XCTAssertNil(bar.first(where: { $0.category == .systemData }))
+    }
+
+    func testExplainSystemData() {
+        let parts = StorageMap.explain(systemData: 100, parts: [.caches: 30, .swap: 50, .logs: 0])
+        XCTAssertEqual(parts.map(\.part), [.swap, .caches, .other])
+        XCTAssertEqual(parts.last?.bytes, 20)
+    }
+
+    func testVolumesFromDiskutil() throws {
+        let plist: [String: Any] = ["Containers": [[
+            "Volumes": [
+                ["Roles": ["System"], "CapacityInUse": NSNumber(value: 11_000_000_000)],
+                ["Roles": ["Data"], "CapacityInUse": NSNumber(value: 280_000_000_000)],
+                ["Roles": ["Preboot"], "CapacityInUse": NSNumber(value: 6_000_000_000)],
+                ["Roles": ["Recovery"], "CapacityInUse": NSNumber(value: 1_000_000_000)],
+                ["Roles": ["VM"], "CapacityInUse": NSNumber(value: 4_000_000_000)],
+            ]]]]
+        let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+        let volumes = try XCTUnwrap(StorageMap.volumes(fromDiskutilPlist: data))
+        XCTAssertEqual(volumes.macOS, 18_000_000_000)
+        XCTAssertEqual(volumes.vm, 4_000_000_000)
+        XCTAssertEqual(volumes.data, 280_000_000_000)
+    }
+
+    func testSnapshotCount() {
+        let text = "Snapshots for disk /:\ncom.apple.TimeMachine.2026-11-12-101010.local\ncom.apple.TimeMachine.2026-11-13-101010.local\n"
+        XCTAssertEqual(StorageMap.snapshotCount(fromTmutil: text), 2)
+    }
+}
+
+final class NetworkDetailsTests: XCTestCase {
+    func testQuality() {
+        XCTAssertEqual(NetworkDetails.quality(rssi: -45, noise: -95).quality, .excellent)
+        XCTAssertEqual(NetworkDetails.quality(rssi: -62, noise: -92).quality, .good)
+        XCTAssertEqual(NetworkDetails.quality(rssi: -72, noise: -92).quality, .fair)
+        XCTAssertEqual(NetworkDetails.quality(rssi: -82, noise: -90).quality, .poor)
+        XCTAssertEqual(NetworkDetails.quality(rssi: -50, noise: -60).snr, 10)
+    }
+
+    func testBand() {
+        XCTAssertEqual(NetworkDetails.band(channel: 6), "2.4 GHz")
+        XCTAssertEqual(NetworkDetails.band(channel: 149), "5 GHz")
+        XCTAssertEqual(NetworkDetails.band(channel: 37, isSixGHz: true), "6 GHz")
+    }
+
+    func testNettopAndRates() {
+        let first = NetworkDetails.parseNettop(",bytes_in,bytes_out,\nSafari.512,1000,200,\nSafari.900,500,100,\nkernel_task.0,10,10,\n")
+        XCTAssertEqual(first.first, NetworkDetails.Traffic(name: "Safari", bytesIn: 1500, bytesOut: 300))
+        let second = NetworkDetails.parseNettop(",bytes_in,bytes_out,\nSafari.512,3000,400,\nSafari.900,500,100,\nkernel_task.0,10,10,\n")
+        let rates = NetworkDetails.rates(before: first, after: second, seconds: 2)
+        XCTAssertEqual(rates, [NetworkDetails.Traffic(name: "Safari", bytesIn: 1000, bytesOut: 100)])
+    }
+
+    func testRouteAndPing() {
+        let route = "   route to: default\ndestination: default\n    gateway: 192.168.1.1\n  interface: en0\n"
+        XCTAssertEqual(NetworkDetails.gateway(fromRoute: route), "192.168.1.1")
+        XCTAssertEqual(NetworkDetails.interface(fromRoute: route), "en0")
+        let ping = "3 packets transmitted, 3 packets received, 0.0% packet loss\nround-trip min/avg/max/stddev = 1.201/2.512/4.003/1.1 ms\n"
+        let result = NetworkDetails.ping(ping)
+        XCTAssertEqual(result?.averageMs ?? 0, 2.512, accuracy: 0.001)
+        XCTAssertEqual(result?.lossPercent, 0)
+        XCTAssertEqual(NetworkDetails.ping("3 packets transmitted, 0 packets received, 100.0% packet loss\n")?.lossPercent, 100)
+        XCTAssertEqual(NetworkDetails.latencyWord(12), "Snappy")
+    }
+}

@@ -94,8 +94,8 @@ struct SystemPage: View {
                 .tile(padding: 12)
                 ChipView(name: system.chipName, performance: system.performance, efficiency: system.efficiency)
                 memoryCard(m)
-                networkCard
                 if !Edition.isAppStore { processesCard }
+                SystemDetailCards()
                 HStack {
                     Text("Every core over the last few minutes").font(.system(size: 11)).foregroundStyle(.tertiary)
                     Spacer()
@@ -140,33 +140,6 @@ struct SystemPage: View {
                         Text(SystemStats.gigabytes(part.1)).font(.figure(11, weight: .medium))
                     }
                 }
-            }
-        }
-        .tile()
-    }
-
-    private var networkCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("NETWORK").font(.label).foregroundStyle(.secondary)
-                Spacer()
-                if system.vpn { Text("VPN on").font(.system(size: 10, weight: .semibold)).foregroundStyle(Tone.good) }
-            }
-            HStack(spacing: 18) {
-                VStack(alignment: .leading, spacing: 1) { Text(SystemStats.speed(system.down)).font(.figure(17)); Text("down").font(.system(size: 11)).foregroundStyle(.tertiary) }
-                VStack(alignment: .leading, spacing: 1) { Text(SystemStats.speed(system.up)).font(.figure(17)); Text("up").font(.system(size: 11)).foregroundStyle(.tertiary) }
-                Spacer()
-                Button(system.testing ? "Testing…" : "Speed Test") { system.runSpeedTest() }.disabled(system.testing).controlSize(.small)
-            }
-            if let result = system.speedTest { Text(result).font(.system(size: 11, weight: .medium)) }
-            HStack {
-                Text(system.localIP.map { "IP \($0)" } ?? "No network").font(.system(size: 11)).foregroundStyle(.secondary)
-                Spacer()
-                Text("Up \(SystemStats.uptime(system.uptime))").font(.system(size: 11)).foregroundStyle(.secondary)
-            }
-            if SystemStats.suggestsRestart(uptime: system.uptime) {
-                Text("It's been a while since your Mac restarted; a restart can free memory and finish updates.")
-                    .font(.system(size: 11)).foregroundStyle(Tone.ok).fixedSize(horizontal: false, vertical: true)
             }
         }
         .tile()
@@ -220,7 +193,7 @@ struct SystemWidget: View {
         .accessibilityLabel(Text("System: processor \(Int(system.total.rounded())) percent. Opens the System page"))
     }
 }
-/// Home's network card: speed now, and whether a VPN is on; opens the System page.
+/// Home's network card: speed now, and whether a VPN is on; opens the Network page.
 struct NetworkWidget: View {
     let open: () -> Void
     @ObservedObject private var system = SystemWatch.shared
@@ -244,7 +217,7 @@ struct NetworkWidget: View {
         .buttonStyle(PressStyle())
         .onAppear { system.setLive(true) }
         .onDisappear { system.setLive(false) }
-        .accessibilityLabel(Text("Network: down \(SystemStats.speed(system.down)), up \(SystemStats.speed(system.up)). Opens the System page"))
+        .accessibilityLabel(Text("Network: down \(SystemStats.speed(system.down)), up \(SystemStats.speed(system.up)). Opens the Network page"))
     }
 }
 #endif

@@ -148,8 +148,8 @@ struct OverviewSection: View {
                 tile(.cpu, "CPU", "\(Int(system.total.rounded()))%", "\(system.performance.count + system.efficiency.count) cores", hour.map(\.cpu), .systemOrange)
                 tile(.memory, "Memory", "\(Int((system.memory.pressure * 100).rounded()))%", "pressure \(system.memory.level.rawValue)", hour.map(\.memory), .systemBlue)
                 tile(.gpu, "GPU", hour.last?.gpu.map { "\(Int($0.rounded()))%" } ?? "–", "graphics", hour.compactMap(\.gpu), .systemPurple)
-                tile(.network, "Network", "↓ \(bytesRate(system.down))", "↑ \(bytesRate(system.up))", hour.map(\.downBytes), .systemTeal)
-                tile(.disk, "Disk", Storage.size(storage.free), "free · writing \(bytesRate(hour.last?.writeBytes ?? 0))", hour.map(\.writeBytes), .systemPink)
+                tile(.network, "Network", "↓ \(bytesRate(system.down))", "↑ \(bytesRate(system.up))", hour.map(\.downBytes), .systemTeal, format: bytesRate)
+                tile(.disk, "Disk", Storage.size(storage.free), "free · writing \(bytesRate(hour.last?.writeBytes ?? 0))", hour.map(\.writeBytes), .systemPink, format: bytesRate)
                 tile(.battery, "Battery", PowerWatch.hasBattery ? "\(power.battery.percent)%" : "Plugged in",
                      power.battery.isCharging ? "charging" : power.battery.onBattery ? "\(HomePage.clock(power.battery.minutesAtCurrentRate)) left" : "on power",
                      hour.compactMap { $0.battery.map(Double.init) }, .systemGreen)
@@ -176,7 +176,8 @@ struct OverviewSection: View {
         .onDisappear { system.setLive(false); power.setLive(false) }
     }
 
-    private func tile(_ section: DashboardSection, _ title: String, _ value: String, _ detail: String, _ spark: [Double], _ colour: NSColor) -> some View {
+    private func tile(_ section: DashboardSection, _ title: String, _ value: String, _ detail: String, _ spark: [Double], _ colour: NSColor,
+                      format: @escaping (Double) -> String = { String(format: "%.0f%%", $0) }) -> some View {
         Button { go(section) } label: {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
@@ -186,7 +187,7 @@ struct OverviewSection: View {
                 }
                 Text(value).font(.figure(24, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.6)
                 Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
-                TrendChart(values: spark, colour: Color(nsColor: colour), height: 34).allowsHitTesting(false)
+                TrendChart(values: spark, colour: Color(nsColor: colour), format: format, height: 34).allowsHitTesting(false)
             }
             .padding(14)
             .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(0.07)))

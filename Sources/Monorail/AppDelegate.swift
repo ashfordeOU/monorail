@@ -223,7 +223,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 // monorail://panel opens (or closes) the menu bar panel; monorail://panel/battery opens a page of it.
                 if let button = statusItem?.button {
                     let pages: [String: PanelPage] = ["battery": .battery, "clipboard": .clipboard, "system": .system, "storage": .storage,
-                                                      "today": .today, "focus": .focus, "awake": .awake, "evening": .evening, "film": .film]
+                                                      "today": .today, "network": .network, "focus": .focus, "awake": .awake, "evening": .evening, "film": .film]
                     popover.toggle(relativeTo: button, page: pages[argument.lowercased()] ?? .home)
                 }
             case "dashboard":

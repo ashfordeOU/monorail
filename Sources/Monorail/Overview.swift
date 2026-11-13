@@ -14,6 +14,10 @@ final class OverviewModel: ObservableObject {
     @Published var editing: StripKey?
     /// Room for the menu bar above the overview's content.
     @Published var topInset: CGFloat = 0
+    /// Room for the Dock (below, or at a side) so nothing hides behind it.
+    @Published var bottomInset: CGFloat = 0
+    @Published var leftInset: CGFloat = 0
+    @Published var rightInset: CGFloat = 0
     @Published var theme: Theme = .vivid
     /// "Overview", or the app whose windows are shown.
     @Published var heading = "Overview"
@@ -188,6 +192,55 @@ private struct OverviewBackground: View {
     }
 }
 
+/// The Dashboard tab's row of windows: the active workspace's windows as small cards, one click to go to one.
+struct DashboardWindowsRow: View {
+    @ObservedObject var model: OverviewModel
+    let actions: OverviewActions
+
+    var body: some View {
+        let strip = model.visibleStrips.first(where: \.isActive) ?? model.visibleStrips.first
+        let windows = strip?.columns.flatMap(\.windows) ?? []
+        if !windows.isEmpty {
+            HStack(spacing: 10) {
+                Label(strip?.title ?? "Windows", systemImage: "rectangle.split.3x1")
+                    .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.7)).lineLimit(1)
+                    .fixedSize()
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(windows) { window in
+                            Button { actions.focus(window.id) } label: {
+                                HStack(spacing: 8) {
+                                    if let icon = window.icon { Image(nsImage: icon).resizable().frame(width: 20, height: 20) }
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(window.appName).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                                        if !window.title.isEmpty && window.title != window.appName {
+                                            Text(window.title).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
+                                        }
+                                    }
+                                    .frame(maxWidth: 170, alignment: .leading)
+                                }
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10).padding(.vertical, 7)
+                                .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(Color.white.opacity(window.isFocused ? 0.18 : 0.08)))
+                                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .strokeBorder(Color.white.opacity(window.isFocused ? 0.35 : 0.08), lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
+                            .help("Go to \(window.appName)")
+                            .accessibilityLabel(Text("Go to \(window.appName): \(window.title)"))
+                        }
+                    }
+                }
+                Button { model.tab = .windows } label: {
+                    Text("All windows").font(.system(size: 12, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+}
+
 struct OverviewView: View {
     @ObservedObject var model: OverviewModel
     let actions: OverviewActions
@@ -209,12 +262,15 @@ struct OverviewView: View {
                         .padding(.bottom, 24)
                     }
                 } else {
+                    // The windows stay in reach while the Dashboard is open: this workspace's windows, small, in a row.
+                    DashboardWindowsRow(model: model, actions: actions)
                     DashboardContent(tab: model.tab)
                         .transition(.opacity)
                 }
             }
-            .padding(.horizontal, 44)
-            .padding(.bottom, 32)
+            .padding(.leading, 44 + model.leftInset)
+            .padding(.trailing, 44 + model.rightInset)
+            .padding(.bottom, 24 + model.bottomInset)
             // Clear the menu bar, then leave the same breathing room as the sides.
             .padding(.top, model.topInset + 34)
             if !model.picked.isEmpty {
@@ -845,6 +901,9 @@ final class OverviewController {
         if let screen {
             panel.setFrame(screen.frame, display: true)
             model.topInset = screen.frame.maxY - screen.visibleFrame.maxY
+            model.bottomInset = screen.visibleFrame.minY - screen.frame.minY
+            model.leftInset = screen.visibleFrame.minX - screen.frame.minX
+            model.rightInset = screen.frame.maxX - screen.visibleFrame.maxX
         }
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)

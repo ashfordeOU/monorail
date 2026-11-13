@@ -117,7 +117,7 @@ private struct SectionHeader: View {
     }
 }
 
-private extension View {
+extension View {
     func sectionScroll() -> some View { ScrollView { VStack(alignment: .leading, spacing: 14) { self }.padding(.bottom, 24) } }
 }
 

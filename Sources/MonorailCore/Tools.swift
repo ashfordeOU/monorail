@@ -152,7 +152,14 @@ public enum ScreenshotName {
     /// The most telling line (a title-like line near the top, not a clock or a menu), cut to six words.
     public static func suggest(from lines: [String]) -> String? {
         let trimmed = lines.prefix(12).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-        guard let best = trimmed.first(where: isCandidate) else { return nil }
+        guard var best = trimmed.first(where: isCandidate) else { return nil }
+        // A title before a separator ("Dashboard: battery and more") is the name.
+        for separator in [": ", " | ", " — ", " - "] {
+            if let range = best.range(of: separator), best[..<range.lowerBound].split(separator: " ").count >= 2 {
+                best = String(best[..<range.lowerBound])
+                break
+            }
+        }
         let words = best.split(whereSeparator: { $0 == " " || $0 == "/" || $0 == ":" || $0 == "|" }).prefix(6)
         let name = words.joined(separator: " ").trimmingCharacters(in: CharacterSet.punctuationCharacters.union(.whitespaces))
         return name.isEmpty ? nil : String(name.prefix(60))

@@ -3248,6 +3248,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 UserDefaults.standard.set(DashboardSection.ai.rawValue, forKey: "DashboardSection")
                 DashboardWindow.shared.show()
             })
+            list.append(PaletteCommand(id: "tools", title: "Tools", subtitle: "Screenshot names, images, PDFs, text and developer tools", symbol: "wrench.and.screwdriver",
+                                       keywords: "tools utilities toolbox convert rename") { ToolsWindow.shared.show() })
+            for tool in ToolKind.available {
+                list.append(PaletteCommand(id: "tool-" + tool.rawValue, title: tool.rawValue, subtitle: tool.about, symbol: tool.symbol,
+                                           keywords: "tool " + tool.group.lowercased()) { ToolsWindow.shared.show(tool) })
+            }
         }
         if !Edition.isAppStore {
             list.append(PaletteCommand(id: "page-live", title: "Live View", subtitle: "Every core, network and apps over time", symbol: "waveform.path.ecg",

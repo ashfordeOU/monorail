@@ -115,6 +115,11 @@ exec zsh -i
 CMD
 chmod +x /tmp/term.command
 
+log "Pre-approve screen capture for Monorail (macOS 15 asks again otherwise; runner only)"
+appr="$HOME/Library/Group Containers/group.com.apple.replayd/ScreenCaptureApprovals.plist"
+mkdir -p "$(dirname "$appr")"
+defaults write "$appr" "/Applications/Monorail.app/Contents/MacOS/Monorail" -date "3024-01-01 00:00:00 +0000" || true
+
 log "Settings: no usage counts, no update checks, welcome done, local API on"
 mkdir -p "$HOME/Library/Application Support/Monorail"
 cat > "$HOME/Library/Application Support/Monorail/settings.json" <<'JSON'
@@ -146,6 +151,11 @@ token() { cat "$dir/api-token" 2>/dev/null; }
 api() { curl -fsS -m 5 -X POST -H "Authorization: Bearer $(token)" -H "Content-Type: application/json" -d "{\"action\":\"$1\"}" "http://127.0.0.1:$port/action" >/dev/null 2>&1 || echo "  (action $1 failed)"; }
 log "What Monorail sees"
 curl -fsS -m 5 -H "Authorization: Bearer $(token)" "http://127.0.0.1:$port/windows" | python3 -m json.tool | head -60 || echo "no window list"
+
+log "Give the slides real widths, so two or three share the screen"
+api focus-first; sleep 0.8
+for w in half third half third two-thirds half; do api "width-$w"; sleep 0.7; api focus-right; sleep 0.7; done
+api focus-first; sleep 1.2
 
 shot() { sleep "${2:-1.6}"; screencapture -x "$out/$1.png"; echo "  $1"; }
 esc() { osascript -e 'tell application "System Events" to key code 53' >/dev/null 2>&1 || true; }

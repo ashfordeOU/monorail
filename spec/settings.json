@@ -717,7 +717,7 @@
       "about": "How many clips to remember (pinned ones don't count)."
     },
     {
-      "key": "focusMinutes",
+      "key": "sessionMinutes",
       "type": "Int",
       "default": "25",
       "about": "Focus sessions: length in minutes, background sound (\"none\", \"brown\", \"pink\", \"rain\") and, in Monorail, hiding your distracting apps while one runs."

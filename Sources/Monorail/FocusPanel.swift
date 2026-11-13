@@ -49,7 +49,7 @@ final class FocusWatch: ObservableObject {
 
     func start(minutes: Int? = nil) {
         guard !isRunning else { return }
-        let length = minutes ?? settings().focusMinutes
+        let length = minutes ?? settings().sessionMinutes
         started = Date()
         endsAt = Date().addingTimeInterval(Double(length) * 60)
         now = Date()
@@ -179,13 +179,13 @@ struct FocusPage: View {
                         .rotationEffect(.degrees(-90))
                         .animation(.linear(duration: 1), value: focus.progress)
                     VStack(spacing: 0) {
-                        Text(focus.isRunning ? TimeModel.countdown(focus.remaining) : "\(store.settings.focusMinutes):00").font(.figure(30, weight: .semibold))
+                        Text(focus.isRunning ? TimeModel.countdown(focus.remaining) : "\(store.settings.sessionMinutes):00").font(.figure(30, weight: .semibold))
                         Text(focus.isRunning ? "focusing" : "ready").font(.system(size: 11)).foregroundStyle(.secondary)
                     }
                 }
                 .frame(width: 130, height: 130)
                 .accessibilityElement(children: .combine)
-                Picker("Length", selection: $store.settings.focusMinutes) {
+                Picker("Length", selection: $store.settings.sessionMinutes) {
                     ForEach([15, 25, 50, 90], id: \.self) { Text("\($0) min").tag($0) }
                 }
                 .pickerStyle(.segmented).labelsHidden().disabled(focus.isRunning)

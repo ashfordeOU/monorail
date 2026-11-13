@@ -128,7 +128,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `worldClocks` | World clocks on the Today page: time zone identifiers ("Europe/London"). | `[]` |
 | `clipboardHistory` | Remember what you copy, for the Clipboard page. Passwords and other concealed copies are never kept. | `true` |
 | `clipboardKeep` | How many clips to remember (pinned ones don't count). | `50` |
-| `focusMinutes` | Focus sessions: length in minutes, background sound ("none", "brown", "pink", "rain") and, in Monorail, hiding your distracting apps while one runs. | `25` |
+| `sessionMinutes` | Focus sessions: length in minutes, background sound ("none", "brown", "pink", "rain") and, in Monorail, hiding your distracting apps while one runs. | `25` |
 | `focusSound` |  | `"none"` |
 | `focusHidesApps` |  | `true` |
 | `eyeBreaks` | A reminder every 20 minutes at the screen to look into the distance for 20 seconds. | `false` |

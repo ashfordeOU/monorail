@@ -764,7 +764,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var clipboardKeep = 50
     /// Focus sessions: length in minutes, background sound ("none", "brown", "pink", "rain") and, in Monorail,
     /// hiding your distracting apps while one runs.
-    public var focusMinutes = 25
+    public var sessionMinutes = 25
     public var focusSound = "none"
     public var focusHidesApps = true
     /// A reminder every 20 minutes at the screen to look into the distance for 20 seconds.
@@ -1165,7 +1165,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, focusMinutes, focusSound, focusHidesApps, eyeBreaks
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks
     }
 
     public init(from decoder: Decoder) throws {
@@ -1416,7 +1416,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         worldClocks = value(.worldClocks, d.worldClocks)
         clipboardHistory = value(.clipboardHistory, d.clipboardHistory)
         clipboardKeep = value(.clipboardKeep, d.clipboardKeep)
-        focusMinutes = value(.focusMinutes, d.focusMinutes)
+        sessionMinutes = value(.sessionMinutes, d.sessionMinutes)
         focusSound = value(.focusSound, d.focusSound)
         focusHidesApps = value(.focusHidesApps, d.focusHidesApps)
         eyeBreaks = value(.eyeBreaks, d.eyeBreaks)

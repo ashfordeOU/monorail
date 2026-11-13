@@ -512,7 +512,7 @@ struct HomePage: View {
                             toggle: { more.toggleFocus(); settle() }, open: nil)
             }
             // Low Power Mode needs an administrator, which the App Store's sandbox doesn't allow.
-            ControlTile(title: "Focus Session", status: focusSession.isRunning ? "\(TimeModel.countdown(focusSession.remaining)) left" : "\(store.settings.focusMinutes) min",
+            ControlTile(title: "Focus Session", status: focusSession.isRunning ? "\(TimeModel.countdown(focusSession.remaining)) left" : "\(store.settings.sessionMinutes) min",
                         systemImage: "timer", isOn: focusSession.isRunning, tint: Color(nsColor: .systemIndigo),
                         toggle: { focusSession.isRunning ? focusSession.stop() : focusSession.start() }, open: { nav.push(.focus) })
             ControlTile(title: "Film", status: moments.film ? (moments.sleepAt.map { "Sleeps at \($0.formatted(date: .omitted, time: .shortened))" } ?? "On") : "Off",

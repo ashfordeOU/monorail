@@ -19,5 +19,10 @@
 	<array>
 		<string>D69G45342Y.group.ashforde.suite</string>
 	</array>
+	<!-- Calendar and Reminders (the hardened runtime refuses them silently without these). -->
+	<key>com.apple.security.personal-information.calendars</key>
+	<true/>
+	<key>com.apple.security.personal-information.reminders</key>
+	<true/>
 </dict>
 </plist>

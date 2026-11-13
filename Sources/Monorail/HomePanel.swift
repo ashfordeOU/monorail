@@ -8,7 +8,7 @@ import SwiftUI
 // which slides across and resizes to fit. ‹ goes back. Nothing opens on top of anything else.
 
 enum PanelPage: Hashable {
-    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today, clipboard, note, focus, storage, text
+    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today, clipboard, note, focus, storage, text, reminders
 }
 
 final class PanelNavigator: ObservableObject {
@@ -109,11 +109,13 @@ struct PanelRoot: View {
         case .system:
             SystemPage(onBack: nav.pop)
         case .today:
-            TodayPage(onBack: nav.pop, store: store)
+            OrganiserPage(onBack: nav.pop, store: store, tab: .calendar)
         case .clipboard:
             ClipboardPage(onBack: nav.pop, store: store)
         case .note:
-            NotePage(onBack: nav.pop)
+            OrganiserPage(onBack: nav.pop, store: store, tab: .notes)
+        case .reminders:
+            OrganiserPage(onBack: nav.pop, store: store, tab: .reminders)
         case .focus:
             FocusPage(onBack: nav.pop, store: store)
         case .storage:

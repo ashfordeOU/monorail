@@ -26,6 +26,9 @@
 	<!-- Calendar events for meeting layouts. -->
 	<key>com.apple.security.personal-information.calendars</key>
 	<true/>
+	<!-- Reminders, for the Reminders tab. -->
+	<key>com.apple.security.personal-information.reminders</key>
+	<true/>
 	<!-- The folder Ashforde's apps share (Monorail and Keeper talk through it inside the sandbox). -->
 	<key>com.apple.security.application-groups</key>
 	<array>

@@ -130,7 +130,7 @@ struct ToolsRow: View {
             tool("doc.on.clipboard.fill", "Clipboard", clips.history.clips.first?.preview(24) ?? "Empty", Tone.blue, openClipboard)
             tool("eyedropper", "Colour", clips.colours.first?.hex ?? "Pick from screen", Color(nsColor: .systemPink)) { clips.pickColour() }
             tool("text.viewfinder", "Text", "From a picture", Color(nsColor: .systemTeal), openText)
-            tool("note.text", "Note", clips.note.isEmpty ? "Jot something" : "\(PlainText.counts(clips.note).words) words", Tone.ok, openNote)
+            tool("note.text", "Notes", clips.note.isEmpty ? (AppleNotes.available ? "Quick note and Apple Notes" : "Jot something") : "\(PlainText.counts(clips.note).words) words", Tone.ok, openNote)
         }
     }
 

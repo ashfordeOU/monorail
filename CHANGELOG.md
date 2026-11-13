@@ -8,6 +8,12 @@ and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Calendar, Reminders and Notes.** The Today card opens one page with three tabs. Calendar: a month you can click through, with dots on busy days, the chosen day's agenda (all-day events, times, places and a Join button) and New Event in a line, with world clocks and timers below. Reminders: overdue, today, coming up and no date, each with its list's colour; tick to complete and add one in a line, for today or whenever. Notes: the quick note, and in Monorail your Apple Notes too, newest first, searchable, opening in Notes with a click, and Save to Notes turns the quick note into a real one (Station sends it with macOS's Share to Notes, since the App Store doesn't let apps read Notes). Home's Today card says when reminders are due.
+
+### Fixed
+- **Allow Calendar works in Monorail.** The download version wasn't signed for calendar access, so macOS quietly refused the request; it now asks, and if you'd said Don't Allow before, the button opens the right page of System Settings.
+
 ## [1.9.0] - 2026-11-13
 
 ### Added

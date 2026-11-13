@@ -29,7 +29,7 @@ final class TodayWatch: ObservableObject {
     @Published private(set) var timers: [Countdown] = []
     @Published private(set) var now = Date()
 
-    private let store = EKEventStore()
+    let store = EKEventStore()
     private var clock: Timer?
 
     var next: Meeting? { meetings.first { $0.end > now } }
@@ -42,6 +42,12 @@ final class TodayWatch: ObservableObject {
     }
 
     func requestAccess() {
+        // Already answered "Don't Allow": macOS won't ask again, so take them to the switch.
+        if access == .denied || access == .restricted || access.rawValue == 4 {
+            PrivacyAccess.openSettings(.event)
+            return
+        }
+        NSApp.activate(ignoringOtherApps: true)
         let done: (Bool, Error?) -> Void = { [weak self] _, _ in
             DispatchQueue.main.async {
                 self?.access = EKEventStore.authorizationStatus(for: .event)
@@ -51,7 +57,7 @@ final class TodayWatch: ObservableObject {
         if #available(macOS 14.0, *) { store.requestFullAccessToEvents(completion: done) } else { store.requestAccess(to: .event, completion: done) }
     }
 
-    private var hasAccess: Bool {
+    var hasAccess: Bool {
         access == .authorized || (access.rawValue == 3)
     }
 
@@ -113,9 +119,8 @@ final class TodayWatch: ObservableObject {
     }
 }
 
-/// The Today page: this month, today's meetings with Join, world clocks and timers.
-struct TodayPage: View {
-    let onBack: () -> Void
+/// World clocks and timers, at the foot of the Calendar tab.
+struct ClocksAndTimers: View {
     @ObservedObject var store: SettingsStore
     @ObservedObject private var today = TodayWatch.shared
     @State private var addingCity = false
@@ -123,53 +128,9 @@ struct TodayPage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            PageHeader(back: Brand.name, title: "Today", onBack: onBack)
-            HStack(alignment: .top, spacing: 8) {
-                MonthView(date: today.now)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(today.now.formatted(.dateTime.weekday(.wide))).font(.system(size: 11, weight: .semibold)).foregroundStyle(Tone.high)
-                    Text(today.now.formatted(.dateTime.day())).font(.figure(34, weight: .bold))
-                    Text(today.now.formatted(.dateTime.month(.wide))).font(.system(size: 12)).foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .tile()
-            meetingsCard
             clocksCard
             timersCard
         }
-        .padding(12)
-        .onAppear { today.reload() }
-    }
-
-    private var meetingsCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("TODAY").font(.label).foregroundStyle(.secondary)
-            if today.access != .authorized && today.access.rawValue != 3 {
-                HStack {
-                    Text("See your meetings and join them in one click.").font(.system(size: 12)).foregroundStyle(.secondary)
-                    Spacer()
-                    Button("Allow Calendar") { today.requestAccess() }.controlSize(.small)
-                }
-            } else if today.meetings.isEmpty {
-                Text("Nothing else today.").font(.system(size: 12)).foregroundStyle(.secondary)
-            }
-            ForEach(today.meetings.filter { $0.end > today.now }.prefix(5)) { meeting in
-                HStack(spacing: 8) {
-                    RoundedRectangle(cornerRadius: 2).fill(Color(nsColor: meeting.colour)).frame(width: 3, height: 28)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(meeting.title).font(.system(size: 12, weight: .medium)).lineLimit(1)
-                        Text("\(meeting.start.formatted(date: .omitted, time: .shortened)) · \(TimeModel.until(meeting.start, end: meeting.end, now: today.now))")
-                            .font(.system(size: 11)).foregroundStyle(.secondary)
-                    }
-                    Spacer(minLength: 4)
-                    if let link = meeting.join {
-                        Button("Join") { NSWorkspace.shared.open(link) }.buttonStyle(.borderedProminent).controlSize(.small)
-                    }
-                }
-            }
-        }
-        .tile()
     }
 
     private var clocksCard: some View {
@@ -266,6 +227,13 @@ struct MonthView: View {
 struct TodayWidget: View {
     let open: () -> Void
     @ObservedObject private var today = TodayWatch.shared
+    @ObservedObject private var reminders = RemindersWatch.shared
+
+    /// "2 reminders due today", when Reminders is allowed and something is due or overdue.
+    private var dueLine: String? {
+        let due = reminders.reminders.filter { [.overdue, .today].contains(reminders.bucket($0)) }.count
+        return due == 0 ? nil : "\(due) reminder\(due == 1 ? "" : "s") due today"
+    }
 
     var body: some View {
         HStack(spacing: 10) {
@@ -283,7 +251,8 @@ struct TodayWidget: View {
                                 .font(.system(size: 11)).foregroundStyle(.secondary)
                         } else {
                             Text("Today").font(.system(size: 13, weight: .semibold))
-                            Text(today.timers.first.map { "\($0.title) · \(TimeModel.countdown($0.ends.timeIntervalSince(today.now)))" } ?? "Calendar, clocks and timers")
+                            Text(today.timers.first.map { "\($0.title) · \(TimeModel.countdown($0.ends.timeIntervalSince(today.now)))" }
+                                 ?? dueLine ?? "Calendar, reminders and notes")
                                 .font(.system(size: 11)).foregroundStyle(.secondary)
                         }
                     }
@@ -297,7 +266,10 @@ struct TodayWidget: View {
             }
         }
         .tile()
-        .onAppear { TodayWatch.shared.start() }
+        .onAppear {
+            TodayWatch.shared.start()
+            if PrivacyAccess.state(.reminder) == .allowed { RemindersWatch.shared.start() }
+        }
     }
 }
 #endif

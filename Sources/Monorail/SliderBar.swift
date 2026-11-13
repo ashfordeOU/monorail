@@ -1051,6 +1051,9 @@ final class SliderPopover {
             return
         }
         _ = accessibilityObserver
+        if let visible = (button.window?.screen ?? NSScreen.main)?.visibleFrame {
+            PanelLayout.maxHeight = max(visible.height * 0.7, 520)
+        }
         if builtGlass != store?.settings.panelGlass { panel = nil; host = nil }
         builtGlass = store?.settings.panelGlass
         let panel = self.panel ?? makePanel()

@@ -53,6 +53,28 @@ struct PanelContext {
     var more: SliderPopover.MoreControls
 }
 
+/// How tall the panel may grow: 70% of the screen below the menu bar (set as it opens), so it
+/// never runs off the bottom; the cards scroll inside while the status line and search stay put.
+enum PanelLayout {
+    static var maxHeight: CGFloat = 640
+    /// Room left for the cards once the status line, search and Customise link are in.
+    static var maxCardsHeight: CGFloat { max(maxHeight - (Edition.isAppStore ? 76 : 116), 280) }
+}
+
+private struct HomeCardsHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+
+/// Control Centre's look for the control tiles: round toggles with a label, four to a row.
+private struct CompactControlsKey: EnvironmentKey { static let defaultValue = false }
+extension EnvironmentValues {
+    var compactControls: Bool {
+        get { self[CompactControlsKey.self] }
+        set { self[CompactControlsKey.self] = newValue }
+    }
+}
+
 private struct PanelHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
@@ -149,6 +171,8 @@ struct HomePage: View {
     @ObservedObject private var moments = MomentsWatch.shared
     /// Bumped after a switch is flipped, to redraw once it has settled.
     @State private var tick = 0
+    /// The cards' natural height, to size (and if need be scroll) them.
+    @State private var cardsHeight: CGFloat = 400
 
     @ObservedObject private var today = TodayWatch.shared
     @ObservedObject private var focusSession = FocusWatch.shared
@@ -174,12 +198,19 @@ struct HomePage: View {
         let plan = layout
         VStack(alignment: .leading, spacing: 8) {
             statusLine(plan)
-            ForEach(rows(plan), id: \.self) { row in
-                HStack(alignment: .top, spacing: 8) {
-                    ForEach(row, id: \.self) { card in self.card(card, raised: plan.raised.contains(card)) }
+            ScrollView(showsIndicators: cardsHeight > PanelLayout.maxCardsHeight) {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(rows(plan), id: \.self) { row in
+                        HStack(alignment: .top, spacing: 8) {
+                            ForEach(row, id: \.self) { card in self.card(card, raised: plan.raised.contains(card)) }
+                        }
+                        .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                    }
                 }
-                .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                .background(GeometryReader { proxy in Color.clear.preference(key: HomeCardsHeightKey.self, value: proxy.size.height) })
             }
+            .frame(height: min(max(cardsHeight, 1), PanelLayout.maxCardsHeight))
+            .onPreferenceChange(HomeCardsHeightKey.self) { cardsHeight = $0 }
             if !Edition.isAppStore { searchBar }
             HStack {
                 Spacer()
@@ -538,7 +569,7 @@ struct HomePage: View {
         let awakeOn = context.awake.isOn()
         let eveningOn = store.settings.eveningOn || context.isEveningOn()
         let focusOn = more.isFocusOn()
-        return LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible())], spacing: 8) {
+        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 10) {
             ControlTile(title: "Stay Awake", status: awakeOn ? context.awake.status() : "Off", systemImage: "cup.and.saucer.fill",
                         isOn: awakeOn, tint: Tone.warm,
                         toggle: { awakeOn ? context.awake.end() : context.awake.start(store.settings.awakeDefaultMinutes); settle() },
@@ -570,6 +601,8 @@ struct HomePage: View {
                             toggle: { power.setLowPowerMode(!power.battery.lowPowerMode) }, open: { nav.push(.battery) })
             }
         }
+        .environment(\.compactControls, true)
+        .padding(.vertical, 4)
     }
 
     private var layoutsRow: some View {
@@ -638,8 +671,37 @@ struct ControlTile: View {
     var tint: Color = Tone.blue
     let toggle: () -> Void
     let open: (() -> Void)?
+    @Environment(\.compactControls) private var compact
 
     var body: some View {
+        if compact { round } else { wide }
+    }
+
+    /// Round, with its name under it; right-click (or Control-click) for its options page.
+    private var round: some View {
+        VStack(spacing: 5) {
+            Button(action: toggle) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(isOn ? Color.white : Color.primary)
+                    .frame(width: 42, height: 42)
+                    .background(Circle().fill(isOn ? tint : Color.primary.opacity(0.1)))
+                    .animation(Motion.pop, value: isOn)
+            }
+            .buttonStyle(PressStyle())
+            .accessibilityLabel(Text("\(title), \(status)"))
+            Text(title).font(.system(size: 10, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .help("\(title): \(status)" + (open != nil ? " · right-click for options" : ""))
+        .contextMenu {
+            Button(isOn ? "Turn Off" : "Turn On", action: toggle)
+            if let open { Button("Options…", action: open) }
+        }
+    }
+
+    private var wide: some View {
         HStack(spacing: 9) {
             Button(action: toggle) {
                 Image(systemName: systemImage)

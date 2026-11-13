@@ -11,6 +11,7 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 - **The App Store edition is now Signalbox.** A new name, a new icon (mostly navy with a band of Monorail's pink, two white rings and a pink pulse through the M) and a matching menu bar glyph: the M's two windows with a pulse running through them. Same app, same settings. <!-- station -->
 - **The Dashboard's new look.** A slim rail of icons down the side, a footer with what the app itself is using, your chip and how long since the Mac restarted, and ring gauges for CPU, memory and GPU in the menu bar readings. <!-- station -->
+- **A shorter menu bar panel.** It never takes more than about 70% of the screen's height: the cards scroll inside while the status line and search stay in place, and the controls are now a row of round toggles, as in Control Centre (right-click one for its options). <!-- station -->
 - **Easier to read over bright wallpapers.** The menu bar panel's glass now keeps a soft layer of the window colour under the text, so white text no longer fades over a white or bright wallpaper. On macOS 26 the panel uses Liquid Glass. Choose Automatic, Frosted or Solid in Settings → Appearance; Reduce Transparency (solid) and Increase Contrast (firmer edge, more opaque) in System Settings are followed, and the panel changes as soon as you change them. <!-- station -->
 
 ### Added

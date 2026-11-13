@@ -18,6 +18,12 @@ final class SystemWatch: ObservableObject {
     @Published private(set) var vpn = false
     @Published private(set) var speedTest: String?
     @Published private(set) var testing = false
+    /// The last few minutes, for the Live window: total load, each core, and network down and up.
+    @Published private(set) var totalHistory: [Double] = []
+    @Published private(set) var coreHistory: [[Double]] = []
+    @Published private(set) var downHistory: [Double] = []
+    @Published private(set) var upHistory: [Double] = []
+    static let historyLength = 120
 
     let chipName: String = SystemWatch.sysctlString("machdep.cpu.brand_string") ?? "Your Mac"
     var uptime: TimeInterval { ProcessInfo.processInfo.systemUptime }
@@ -48,6 +54,9 @@ final class SystemWatch: ObservableObject {
             performance = split.performance
             efficiency = split.efficiency
             total = SystemStats.average(loads)
+            Self.push(total, onto: &totalHistory)
+            if coreHistory.count != loads.count { coreHistory = Array(repeating: [], count: loads.count) }
+            for (i, load) in loads.enumerated() { Self.push(load, onto: &coreHistory[i]) }
         }
         lastTicks = ticks
         if let m = Self.memoryNow() { memory = m }
@@ -57,10 +66,17 @@ final class SystemWatch: ObservableObject {
             let seconds = now.timeIntervalSince(last.at)
             down = SystemStats.rate(from: last.down, to: d, seconds: seconds)
             up = SystemStats.rate(from: last.up, to: u, seconds: seconds)
+            Self.push(down, onto: &downHistory)
+            Self.push(up, onto: &upHistory)
         }
         lastBytes = (d, u, now)
         localIP = ip
         vpn = vpnOn
+    }
+
+    private static func push(_ value: Double, onto list: inout [Double]) {
+        list.append(value)
+        if list.count > historyLength { list.removeFirst(list.count - historyLength) }
     }
 
     /// Downloads 25 MB from Cloudflare's speed test and reports megabits per second.

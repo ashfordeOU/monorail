@@ -96,6 +96,11 @@ struct SystemPage: View {
                 memoryCard(m)
                 networkCard
                 if !Edition.isAppStore { processesCard }
+                HStack {
+                    Text("Every core over the last few minutes").font(.system(size: 11)).foregroundStyle(.tertiary)
+                    Spacer()
+                    Button("Open Live View") { LiveWindow.shared.show() }.controlSize(.small)
+                }
             }
             .padding(12)
             .background(GeometryReader { proxy in Color.clear.preference(key: SystemPageHeight.self, value: proxy.size.height) })

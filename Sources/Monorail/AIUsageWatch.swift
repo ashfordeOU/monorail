@@ -29,8 +29,15 @@ final class AIUsageWatch: ObservableObject {
 
     // MARK: Lifecycle
 
+    /// Sample reports for the screenshots CI draws; stops reading real accounts.
+    var previewing = false
+    func preview(_ sample: [String: AIReport]) {
+        previewing = true
+        reports = sample
+    }
+
     func start() {
-        guard timer == nil else { return }
+        guard timer == nil, !previewing else { return }
         if settings.aiAccounts.isEmpty { detectAccounts() }
         refresh()
         timer = Timer.every(300) { [weak self] _ in self?.refresh() }

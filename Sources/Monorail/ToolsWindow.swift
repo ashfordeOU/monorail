@@ -107,7 +107,12 @@ final class ToolsWindow {
     }
 }
 
-private struct ToolsRoot: View {
+/// Sample content for the screenshots CI draws (`--render-screens`); never set in normal use.
+enum ToolsPreview {
+    static var on = false
+}
+
+struct ToolsRoot: View {
     @AppStorage("ToolsChoice") private var choice = ToolKind.screenshotNames.rawValue
     @State private var search = ""
 
@@ -442,6 +447,18 @@ private struct ScreenshotNamesTool: View {
     @State private var note = ""
     @State private var onlyScreenshots = true
 
+    init() {
+        guard ToolsPreview.on else { return }
+        let desktop = URL(fileURLWithPath: "/Users/you/Desktop")
+        let samples = [("Screenshot 2026-11-13 at 09.41.22.png", "Quarterly revenue by region.png"),
+                       ("Screenshot 2026-11-13 at 10.02.51.png", "Flight to Lisbon confirmation.png"),
+                       ("Screenshot 2026-11-12 at 16.20.07.png", "Monorail Dashboard battery and storage.png"),
+                       ("Screenshot 2026-11-12 at 11.15.44.png", "Pull request review comments.png"),
+                       ("Screenshot 2026-11-11 at 19.03.10.png", "Recipe for lemon tart.png")]
+        _folder = State(initialValue: desktop)
+        _pairs = State(initialValue: samples.map { (from: desktop.appendingPathComponent($0.0), to: $0.1) })
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -662,7 +679,7 @@ private struct PDFTool: View {
 }
 
 private struct QRTool: View {
-    @State private var text = ""
+    @State private var text = ToolsPreview.on ? "https://monorail.ashforde.org" : ""
 
     private var image: NSImage? {
         guard !text.isEmpty else { return nil }

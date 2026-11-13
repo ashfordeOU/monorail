@@ -144,10 +144,40 @@ public struct AccessoryBattery: Equatable, Sendable, Identifiable {
         if n.contains("mouse") { return "magicmouse.fill" }
         if n.contains("trackpad") { return "rectangle.and.hand.point.up.left.fill" }
         if n.contains("keyboard") { return "keyboard.fill" }
+        if n.contains("(case)") { return "airpods.chargingcase" }
         if n.contains("airpods") || n.contains("beats") || n.contains("headphone") || n.contains("buds") { return "airpodspro" }
         if n.contains("pencil") { return "pencil" }
         if n.contains("controller") { return "gamecontroller.fill" }
         return "battery.75percent"
+    }
+
+    /// Batteries from macOS's Bluetooth report (`system_profiler SPBluetoothDataType -json`): AirPods
+    /// and other headphones give left, right and case; mice and keyboards one level. Monorail only
+    /// (the App Store's sandbox can't run it).
+    public static func fromBluetoothReport(_ json: Data) -> [AccessoryBattery] {
+        guard let root = try? JSONSerialization.jsonObject(with: json) as? [String: Any],
+              let sections = root["SPBluetoothDataType"] as? [[String: Any]] else { return [] }
+        var found: [AccessoryBattery] = []
+        func level(_ value: Any?) -> Int? {
+            guard let text = value as? String else { return nil }
+            return Int(text.trimmingCharacters(in: CharacterSet.decimalDigits.inverted))
+        }
+        for section in sections {
+            for device in section["device_connected"] as? [[String: Any]] ?? [] {
+                for (name, value) in device {
+                    guard let info = value as? [String: Any] else { continue }
+                    let parts: [(String, String)] = [("device_batteryLevelLeft", "left"), ("device_batteryLevelRight", "right"),
+                                                     ("device_batteryLevelCase", "case")]
+                    let split = parts.compactMap { key, label in level(info[key]).map { (label, $0) } }
+                    if !split.isEmpty {
+                        for (label, percent) in split { found.append(AccessoryBattery(name: "\(name) (\(label))", percent: percent)) }
+                    } else if let main = level(info["device_batteryLevelMain"]) ?? level(info["device_batteryLevel"]) {
+                        found.append(AccessoryBattery(name: name, percent: main))
+                    }
+                }
+            }
+        }
+        return found.sorted { $0.name < $1.name }
     }
 
     /// Accessories that just crossed below `threshold` since the last reading (so each warns once).

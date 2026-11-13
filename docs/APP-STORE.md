@@ -35,6 +35,28 @@ Low Power Mode, a local server, and moving windows) and undoes what it changes. 
 Actions tab runs it with the sandbox on and puts the results in the run's summary. Uploading to
 TestFlight is a separate tick box.
 
+## Measured: the features marked 🧪 (13 November 2026)
+
+The probe ran on GitHub's Mac with the sandbox on and Screen Recording and Bluetooth recorded as
+allowed in the permission database, as a person would allow them. 22 of 32 checks were allowed.
+
+| Feature | Sandbox says | In Station |
+|---|---|---|
+| Mouse, keyboard and trackpad batteries | ✅ IORegistry lookup allowed | Built |
+| AirPods battery (left, right, case) | ❌ the Bluetooth file is closed; the paired-device list waits on a Bluetooth prompt, and the levels themselves aren't public API | Monorail only (it reads macOS's Bluetooth report) |
+| Load per core, drawn as your chip | ✅ per-core ticks readable | Built |
+| Per-core temperatures | ❌ no SMC service visible; the other route is private API, which the App Store refuses | Heat as a state (normal, warm, hot) instead |
+| Network speed and speed test | ✅ interface counters readable; 5 MB downloaded at 102 Mbit/s | Built |
+| Scan your home folder | ✅ after you choose it once (closed without, as expected); security-scoped bookmark allowed, so it's remembered | Built: Choose Home Folder… |
+| Clean-ups to the Trash | ✅ moving to the Trash allowed | Built, after that one choice |
+| Text from the screen (OCR) | ✅ technically, with Screen Recording: captured the screen and read "Probe" from it. But Apple's review has refused screen capture for anything but recording or sharing (StepTwo, Color Picker, 1Password, 2019–20) | Built the allowed way: from a copied screenshot (⌃⇧⌘4) or a picture; Monorail selects on screen |
+| QR codes on screen | ✅ Vision reads them; same review rule as OCR | Built the same way |
+
+Precedents in the Mac App Store: ToothFairy (Bluetooth batteries), iStat Menus 7 (per-core load; no
+fan control or full sensors), Network Inspector and NetTop (live speed), DaisyDisk (scans after
+the folder is chosen), CleanMyMac's App Store edition (cleans, minus system areas), TextSniper
+and QRSpell (screen OCR and QR, needing Screen Recording).
+
 ## Status: parked (November 2026)
 
 **The sandboxed edition can't arrange windows, so it isn't submitted.** Tested on 9 November 2026

@@ -52,4 +52,18 @@ final class BatteryJournalTests: XCTestCase {
         XCTAssertEqual(now[0].symbol, "magicmouse.fill")
         XCTAssertEqual(now[1].symbol, "airpodspro")
     }
+
+    func testBluetoothReport() {
+        let json = """
+        {"SPBluetoothDataType":[{"device_connected":[
+          {"Sam's AirPods Pro":{"device_batteryLevelLeft":"80%","device_batteryLevelRight":"75 %","device_batteryLevelCase":"40%"}},
+          {"Magic Mouse":{"device_batteryLevelMain":"12%"}},
+          {"Speaker":{"device_address":"AA"}}]}]}
+        """.data(using: .utf8)!
+        let found = AccessoryBattery.fromBluetoothReport(json)
+        XCTAssertEqual(found.map(\.name), ["Magic Mouse", "Sam's AirPods Pro (case)", "Sam's AirPods Pro (left)", "Sam's AirPods Pro (right)"])
+        XCTAssertEqual(found.first { $0.name.hasSuffix("(right)") }?.percent, 75)
+        XCTAssertEqual(found[1].symbol, "airpods.chargingcase")
+        XCTAssertTrue(AccessoryBattery.fromBluetoothReport(Data("nope".utf8)).isEmpty)
+    }
 }

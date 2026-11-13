@@ -3,7 +3,7 @@ import XCTest
 
 final class FocusLogTests: XCTestCase {
     private var calendar: Calendar { var c = Calendar(identifier: .gregorian); c.timeZone = TimeZone(identifier: "UTC")!; return c }
-    private let noon = Date(timeIntervalSince1970: 1_700_000_000 - 1_700_000_000 % 86400 + 12 * 3600)
+    private let noon = Date(timeIntervalSince1970: TimeInterval(1_700_000_000 - 1_700_000_000 % 86400 + 12 * 3600 as Int))
 
     func testStreakCountsFinishedDaysInARow() {
         var log = FocusLog()

@@ -56,6 +56,7 @@ final class BatteryLog: ObservableObject {
     }
 
     private func tick() {
+        refreshBluetoothReport()
         readAccessories()
         guard PowerWatch.hasBattery else { return }
         let b = PowerWatch.shared.battery
@@ -80,6 +81,33 @@ final class BatteryLog: ObservableObject {
 
     // MARK: Accessories
 
+    /// The last reading of `system_profiler SPBluetoothDataType` (Monorail only), refreshed in the background.
+    private var bluetoothReport: [AccessoryBattery] = []
+    private var readingReport = false
+
+    private func refreshBluetoothReport() {
+        guard !Edition.isAppStore, !readingReport else { return }
+        readingReport = true
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: "/usr/sbin/system_profiler")
+            task.arguments = ["SPBluetoothDataType", "-json", "-detailLevel", "basic"]
+            let pipe = Pipe()
+            task.standardOutput = pipe
+            task.standardError = Pipe()
+            var data = Data()
+            if (try? task.run()) != nil {
+                data = pipe.fileHandleForReading.readDataToEndOfFile()
+                task.waitUntilExit()
+            }
+            let found = AccessoryBattery.fromBluetoothReport(data)
+            DispatchQueue.main.async {
+                self?.bluetoothReport = found
+                self?.readingReport = false
+            }
+        }
+    }
+
     private func readAccessories() {
         var found: [AccessoryBattery] = []
         var iterator: io_iterator_t = 0
@@ -96,6 +124,10 @@ final class BatteryLog: ObservableObject {
             }
             IOObjectRelease(service)
             service = IOIteratorNext(iterator)
+        }
+        // Monorail also reads macOS's Bluetooth report, which has AirPods (left, right, case).
+        if !Edition.isAppStore {
+            for extra in bluetoothReport where !found.contains(where: { $0.name == extra.name }) { found.append(extra) }
         }
         found.sort { $0.name < $1.name }
         for low in AccessoryBattery.newlyLow(found, before: accessories) {
@@ -247,7 +279,7 @@ struct AccessoriesCard: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Accessories").font(.callout.weight(.semibold))
             if log.accessories.isEmpty {
-                Text("Connected mice, keyboards and trackpads show here.").font(.caption).foregroundStyle(.secondary)
+                Text(Edition.isAppStore ? "Connected mice, keyboards and trackpads show here." : "Connected AirPods, mice, keyboards and trackpads show here.").font(.caption).foregroundStyle(.secondary)
             }
             ForEach(log.accessories) { item in
                 HStack(spacing: 8) {

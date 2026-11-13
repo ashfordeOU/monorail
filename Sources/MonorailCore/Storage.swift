@@ -4,12 +4,13 @@ import Foundation
 public enum Storage {
     public enum Level: String, Sendable { case fine, low, critical }
 
-    /// Under 10% or 20 GB free is low; under 5% or 5 GB is critical.
+    /// Under 5 GB free is critical (updates start failing). Low is under 20 GB, or under 10% of a
+    /// smaller disk; a big disk with plenty of gigabytes left isn't low just by percentage.
     public static func level(free: Int64, total: Int64) -> Level {
         guard total > 0 else { return .fine }
         let gb = Double(free) / 1_000_000_000, share = Double(free) / Double(total)
-        if gb < 5 || share < 0.05 { return .critical }
-        if gb < 20 || share < 0.10 { return .low }
+        if gb < 5 { return .critical }
+        if gb < 20 || (share < 0.10 && gb < 50) { return .low }
         return .fine
     }
 

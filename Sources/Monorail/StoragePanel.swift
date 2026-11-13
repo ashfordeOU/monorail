@@ -30,12 +30,50 @@ final class StorageWatch: ObservableObject {
 
     var level: Storage.Level { Storage.level(free: free, total: total) }
     var used: Int64 { max(total - free, 0) }
-    var canClean: Bool { !Edition.isAppStore }
+    /// Station looks at your home folder only after you choose it once in the Open dialog
+    /// (the App Store's rule); it remembers that choice with a security-scoped bookmark.
+    @Published private(set) var granted: URL?
+    var canClean: Bool { !Edition.isAppStore || granted != nil }
 
     /// The real home folder, not the sandbox's container.
-    static var home: URL {
+    static var realHome: URL {
         if let pw = getpwuid(getuid()), let dir = pw.pointee.pw_dir { return URL(fileURLWithPath: String(cString: dir)) }
         return FileManager.default.homeDirectoryForCurrentUser
+    }
+    static var home: URL { shared.granted ?? realHome }
+
+    private static let bookmarkKey = "StorageHomeBookmark"
+
+    init() {
+        guard Edition.isAppStore, let data = UserDefaults.standard.data(forKey: Self.bookmarkKey) else { return }
+        var stale = false
+        if let url = try? URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale),
+           url.startAccessingSecurityScopedResource() {
+            granted = url
+            if stale, let fresh = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
+                UserDefaults.standard.set(fresh, forKey: Self.bookmarkKey)
+            }
+        }
+    }
+
+    /// Station: ask once for the home folder, so clean-ups and the full scan can see it.
+    func grantHome() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.directoryURL = Self.realHome
+        panel.prompt = "Allow"
+        panel.message = "Choose your home folder (\(Self.realHome.lastPathComponent)) so \(Brand.name) can find space to free up. Nothing leaves your Mac, and everything removed goes to the Trash first."
+        NSApp.activate(ignoringOtherApps: true)
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        granted?.stopAccessingSecurityScopedResource()
+        _ = url.startAccessingSecurityScopedResource()
+        granted = url
+        if let data = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
+            UserDefaults.standard.set(data, forKey: Self.bookmarkKey)
+        }
+        cleanups = [:]
+        scanCleanups()
     }
 
     func start() {
@@ -108,7 +146,7 @@ final class StorageWatch: ObservableObject {
 
     /// Monorail looks in your home folder; Station looks only in a folder you choose.
     func findLargest(in folder: URL? = nil) {
-        if folder == nil, Edition.isAppStore {
+        if folder == nil, Edition.isAppStore, granted == nil {
             let panel = NSOpenPanel()
             panel.canChooseDirectories = true
             panel.canChooseFiles = false
@@ -219,7 +257,7 @@ struct StoragePage: View {
                 }
             }
             .tile()
-            if storage.canClean { cleanupsCard }
+            if storage.canClean { cleanupsCard } else { grantCard }
             largestCard
         }
         .padding(12)
@@ -227,6 +265,16 @@ struct StoragePage: View {
             storage.refresh()
             if storage.cleanups.isEmpty { storage.scanCleanups() }
         }
+    }
+
+    private var grantCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("FIND SPACE TO FREE UP").font(.label).foregroundStyle(.secondary)
+            Text("Xcode build files, old caches and downloads you've forgotten. Choose your home folder once, and \(Brand.name) can look.")
+                .font(.system(size: 12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Button("Choose Home Folder…") { storage.grantHome() }.controlSize(.small)
+        }
+        .tile()
     }
 
     private var cleanupsCard: some View {
@@ -266,11 +314,11 @@ struct StoragePage: View {
             HStack {
                 Text("LARGEST ITEMS").font(.label).foregroundStyle(.secondary)
                 Spacer()
-                Button(Edition.isAppStore ? "Choose Folder…" : (storage.largest.isEmpty ? "Find" : "Look Again")) { storage.findLargest() }
+                Button(Edition.isAppStore && !storage.canClean ? "Choose Folder…" : (storage.largest.isEmpty ? "Find" : "Look Again")) { storage.findLargest() }
                     .buttonStyle(.link).font(.system(size: 11)).disabled(storage.scanning)
             }
             if storage.largest.isEmpty {
-                Text(Edition.isAppStore ? "Pick a folder to see what's big inside it." : "Finds the biggest things in your home folder.")
+                Text(Edition.isAppStore && !storage.canClean ? "Pick a folder to see what's big inside it." : "Finds the biggest things in your home folder.")
                     .font(.system(size: 12)).foregroundStyle(.secondary)
             }
             ForEach(storage.largest, id: \.path) { item in

@@ -118,16 +118,18 @@ final class ClipboardWatch: ObservableObject {
     }
 }
 
-/// Tools on Home: Clipboard, a colour picker and a note, as three tiles.
+/// Tools on Home: Clipboard, a colour picker, text from a picture and a note.
 struct ToolsRow: View {
     let openClipboard: () -> Void
     let openNote: () -> Void
+    let openText: () -> Void
     @ObservedObject private var clips = ClipboardWatch.shared
 
     var body: some View {
-        HStack(spacing: 8) {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible())], spacing: 8) {
             tool("doc.on.clipboard.fill", "Clipboard", clips.history.clips.first?.preview(24) ?? "Empty", Tone.blue, openClipboard)
             tool("eyedropper", "Colour", clips.colours.first?.hex ?? "Pick from screen", Color(nsColor: .systemPink)) { clips.pickColour() }
+            tool("text.viewfinder", "Text", "From a picture", Color(nsColor: .systemTeal), openText)
             tool("note.text", "Note", clips.note.isEmpty ? "Jot something" : "\(PlainText.counts(clips.note).words) words", Tone.ok, openNote)
         }
     }

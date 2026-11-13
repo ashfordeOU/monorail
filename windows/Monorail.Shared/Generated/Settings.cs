@@ -138,6 +138,9 @@ public static class SettingKeys
     public const string ClipboardQuickPaste = "clipboardQuickPaste";
     public const string ClipboardIgnoredApps = "clipboardIgnoredApps";
     public const string ClipboardNotch = "clipboardNotch";
+    public const string WeatherPlaces = "weatherPlaces";
+    public const string WeatherFahrenheit = "weatherFahrenheit";
+    public const string NotchLive = "notchLive";
     public const string Modes = "modes";
     public const string CustomSwitches = "customSwitches";
     public const string BackdropColour = "backdropColour";
@@ -465,6 +468,10 @@ public static class SettingDefaults
     public const bool ClipboardQuickPaste = true;
     /// <summary>Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch).</summary>
     public const bool ClipboardNotch = false;
+    /// <summary>Weather in °F instead of °C.</summary>
+    public const bool WeatherFahrenheit = false;
+    /// <summary>Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…).</summary>
+    public const bool NotchLive = false;
     /// <summary>The Backdrop switch's colour (hex).</summary>
     public const string BackdropColour = "#1E2235";
     /// <summary>AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access).</summary>

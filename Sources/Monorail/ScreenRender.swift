@@ -72,6 +72,21 @@ enum ScreenRender {
         }
         ToolsPreview.on = false
 
+        // The new Dashboard pages: Switches, Time and Weather (sample weather), in the rail design.
+        var shotSettings = store.settings
+        shotSettings.worldClocks = ["America/New_York", "Asia/Tokyo", "Europe/Berlin"]
+        store.settings = shotSettings
+        for (section, file) in [(DashboardSection.switches, "switches"), (.time, "time")] {
+            UserDefaults.standard.set(section.rawValue, forKey: "DashboardSection")
+            let page = VStack(alignment: .leading, spacing: 16) {
+                Text("Dashboard").font(.system(size: 26, weight: .bold, design: .rounded)).foregroundStyle(.white)
+                SidebarDashboard().environment(\.colorScheme, .dark)
+            }
+            .padding(.horizontal, 24).padding(.top, 30).padding(.bottom, 12)
+            .background(LinearGradient(colors: [Color(red: 0.12, green: 0.16, blue: 0.3), Color(red: 0.04, green: 0.06, blue: 0.16)], startPoint: .top, endPoint: .bottom))
+            if save(AnyView(page), width: 1240, height: 980, appearance: .darkAqua, to: folder.appendingPathComponent("\(file).png")) { written += 1 }
+        }
+
         // The Clipboard window with a few of everything.
         ClipboardWatch.shared.preview(sampleClips())
         for (name, appearance) in [("light", NSAppearance.Name.aqua), ("dark", NSAppearance.Name.darkAqua)] {

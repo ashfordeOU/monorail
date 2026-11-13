@@ -334,3 +334,38 @@ public enum QuickCalc {
         }
     }
 }
+
+/// Live activities around the notch: something shows only while it's happening, most important first.
+public struct NotchActivity: Equatable, Sendable {
+    public enum Kind: Int, Sendable, Comparable {
+        // Lower comes first.
+        case sharing = 0, call, recording, timer, batteryLow, aiLimit, charging, awake, mode
+        public static func < (a: Kind, b: Kind) -> Bool { a.rawValue < b.rawValue }
+    }
+
+    public var kind: Kind
+    public var symbol: String
+    /// Short, for beside the notch ("24:10", "82%", "Sharing").
+    public var text: String
+    /// A colour name the app maps to a tint: "red", "green", "orange", "blue", "purple".
+    public var tint: String
+
+    public init(_ kind: Kind, symbol: String, text: String, tint: String) {
+        self.kind = kind
+        self.symbol = symbol
+        self.text = text
+        self.tint = tint
+    }
+
+    /// The one to show now, and how many more are going on.
+    public static func pick(_ list: [NotchActivity]) -> (top: NotchActivity, more: Int)? {
+        guard let top = list.min(by: { $0.kind < $1.kind }) else { return nil }
+        return (top, list.count - 1)
+    }
+
+    /// "24:10" or "1:02:03" for a countdown.
+    public static func countdown(_ seconds: TimeInterval) -> String {
+        let s = max(0, Int(seconds.rounded()))
+        return s >= 3600 ? String(format: "%d:%02d:%02d", s / 3600, s % 3600 / 60, s % 60) : String(format: "%d:%02d", s / 60, s % 60)
+    }
+}

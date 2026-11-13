@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 261,
+  "count": 264,
   "settings": [
     {
       "key": "layout",
@@ -799,6 +799,24 @@
       "type": "Bool",
       "default": "false",
       "about": "Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch)."
+    },
+    {
+      "key": "weatherPlaces",
+      "type": "[WeatherPlace]",
+      "default": "[]",
+      "about": "Weather: the places to show (the first is yours); found by name, no location access needed."
+    },
+    {
+      "key": "weatherFahrenheit",
+      "type": "Bool",
+      "default": "false",
+      "about": "Weather in °F instead of °C."
+    },
+    {
+      "key": "notchLive",
+      "type": "Bool",
+      "default": "false",
+      "about": "Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…)."
     },
     {
       "key": "modes",

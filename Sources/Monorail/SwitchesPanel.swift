@@ -359,6 +359,16 @@ struct SwitchesSection: View {
                     }
                 }
             }
+            if let store, NSScreen.screens.contains(where: { $0.safeAreaInsets.top > 0 }) {
+                DashCard(title: "Notch") {
+                    Toggle("Show what's happening beside the notch: sharing, a meeting, a timer, charging, an AI limit running low", isOn: Binding(
+                        get: { store.settings.notchLive }, set: { store.settings.notchLive = $0 }))
+                    Toggle("Push the pointer into the notch to open the clipboard", isOn: Binding(
+                        get: { store.settings.clipboardNotch }, set: { store.settings.clipboardNotch = $0 }))
+                    Text("Nothing shows while nothing's happening. Click it to open \(Brand.name).").font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+                .font(.system(size: 12.5))
+            }
             if Edition.isAppStore {
                 Text("Monorail, the free download, adds Finder, Dock, menu bar, keyboard and Trash switches, which the App Store's sandbox doesn't allow.")
                     .font(.system(size: 11.5)).foregroundStyle(.secondary)

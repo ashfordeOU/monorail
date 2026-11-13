@@ -15,7 +15,7 @@ public enum SuiteRoles {
 
     /// The jobs a resting app pauses.
     public enum Job: String, CaseIterable, Sendable {
-        case eveningColours, clipboardWatch, notifications, eyeBreaks, callAssertions, stayAwake
+        case eveningColours, clipboardWatch, notifications, eyeBreaks, callAssertions, stayAwake, notch
     }
 
     public static func role(isStation: Bool, monorailRunning: Bool, stepsBack: Bool = true) -> Role {

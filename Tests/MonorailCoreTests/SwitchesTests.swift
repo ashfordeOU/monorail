@@ -55,3 +55,16 @@ final class SwitchesTests: XCTestCase {
         XCTAssertEqual(QuickCalc.format(1.0 / 3), "0.3333333333")
     }
 }
+
+final class NotchActivityTests: XCTestCase {
+    func testPickAndCountdown() {
+        let list = [NotchActivity(.charging, symbol: "bolt", text: "82%", tint: "green"),
+                    NotchActivity(.sharing, symbol: "rectangle.on.rectangle", text: "Sharing", tint: "red"),
+                    NotchActivity(.timer, symbol: "timer", text: "24:10", tint: "orange")]
+        XCTAssertEqual(NotchActivity.pick(list)?.top.kind, .sharing)
+        XCTAssertEqual(NotchActivity.pick(list)?.more, 2)
+        XCTAssertNil(NotchActivity.pick([]))
+        XCTAssertEqual(NotchActivity.countdown(24 * 60 + 10), "24:10")
+        XCTAssertEqual(NotchActivity.countdown(3723), "1:02:03")
+    }
+}

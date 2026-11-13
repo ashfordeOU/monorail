@@ -16,7 +16,7 @@ enum DashboardTab: String, CaseIterable, Identifiable {
 
 enum DashboardSection: String, CaseIterable, Identifiable {
     case overview = "Overview", desk = "Desk", apps = "Apps", cpu = "CPU", memory = "Memory", gpu = "GPU", disk = "Disk", network = "Network",
-         battery = "Battery", devices = "Devices", sound = "Sound", ports = "Ports", agents = "Agents", ai = "AI Usage", switches = "Switches", today = "Today", trends = "Trends"
+         battery = "Battery", devices = "Devices", sound = "Sound", ports = "Ports", agents = "Agents", ai = "AI Usage", switches = "Switches", sensors = "Fans & Heat", time = "Time", weather = "Weather", today = "Today", trends = "Trends"
     var id: String { rawValue }
     var symbol: String {
         switch self {
@@ -35,6 +35,9 @@ enum DashboardSection: String, CaseIterable, Identifiable {
         case .agents: return "sparkles"
         case .ai: return "brain"
         case .switches: return "switch.2"
+        case .sensors: return "fanblades"
+        case .time: return "clock"
+        case .weather: return "cloud.sun"
         case .today: return "calendar"
         case .trends: return "chart.xyaxis.line"
         }
@@ -48,6 +51,7 @@ enum DashboardSection: String, CaseIterable, Identifiable {
 /// Settings for the dashboard's views that need them (the app delegate sets it).
 enum DashboardContext {
     static var store: SettingsStore?
+    static var openSettings: () -> Void = {}
 }
 
 /// Glass pill tabs, as in the Overview header.
@@ -88,27 +92,31 @@ struct SidebarDashboard: View {
     private var section: DashboardSection { DashboardSection(rawValue: sectionName).flatMap { DashboardSection.available.contains($0) ? $0 : nil } ?? .overview }
 
     var body: some View {
+        VStack(spacing: 0) {
         HStack(alignment: .top, spacing: 18) {
-            VStack(alignment: .leading, spacing: 2) {
-                ForEach(DashboardSection.available) { item in
-                    Button { sectionName = item.rawValue } label: {
-                        HStack(spacing: 9) {
-                            Image(systemName: item.symbol).frame(width: 18)
-                            Text(item.rawValue)
-                            Spacer()
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 2) {
+                    ForEach(DashboardSection.available) { item in
+                        Button { sectionName = item.rawValue } label: {
+                            VStack(spacing: 3) {
+                                Image(systemName: item.symbol).font(.system(size: 15, weight: section == item ? .semibold : .regular)).frame(height: 18)
+                                Text(item.short).font(.system(size: 10, weight: section == item ? .semibold : .regular)).lineLimit(1).minimumScaleFactor(0.8)
+                            }
+                            .frame(width: 66).padding(.vertical, 6)
+                            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(section == item ? Color(nsColor: .systemOrange).opacity(0.2) : .clear))
+                            .contentShape(Rectangle())
                         }
-                        .font(.system(size: 13, weight: section == item ? .semibold : .regular))
-                        .padding(.horizontal, 10).padding(.vertical, 6)
-                        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(section == item ? Color.white.opacity(0.16) : .clear))
-                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
+                        .foregroundStyle(section == item ? Color(nsColor: .systemOrange) : Color.white.opacity(0.72))
+                        .help(item.rawValue)
+                        .accessibilityLabel(Text(item.rawValue))
+                        .accessibilityAddTraits(section == item ? .isSelected : [])
                     }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(section == item ? Color.white : Color.white.opacity(0.75))
-                    .accessibilityAddTraits(section == item ? .isSelected : [])
                 }
-                Spacer()
+                .padding(.vertical, 4)
             }
-            .frame(width: 170)
+            .frame(width: 74)
+            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.white.opacity(0.05)))
             Group {
                 switch section {
                 case .overview: OverviewSection(go: { sectionName = $0.rawValue })
@@ -126,12 +134,77 @@ struct SidebarDashboard: View {
                 case .agents: AgentsSection()
                 case .ai: AIUsageSection()
                 case .switches: SwitchesSection()
+                case .sensors: SensorsSection()
+                case .time: TimeSection()
+                case .weather: WeatherSection()
                 case .today: TodayDashboard()
                 case .trends: TrendsSection()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        DashboardFooter()
+        }
+    }
+}
+
+extension DashboardSection {
+    /// The rail's one-word label.
+    var short: String {
+        switch self {
+        case .ai: return "AI"
+        case .sensors: return "Fans"
+        default: return rawValue
+        }
+    }
+}
+
+/// Along the bottom: what this app itself uses, the Mac, how long since it restarted, and Settings.
+struct DashboardFooter: View {
+    @State private var line = ""
+    @State private var lastCPU: (time: Double, at: Date)?
+    private let tick = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(line).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55)).monospacedDigit()
+            Spacer()
+            Text(Self.machine + " · up " + Self.uptime()).font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.55))
+            Button { DashboardContext.openSettings() } label: {
+                Label("Settings", systemImage: "gearshape").font(.system(size: 10.5, weight: .semibold))
+            }
+            .buttonStyle(.plain).foregroundStyle(Color(nsColor: .systemOrange))
+        }
+        .padding(.horizontal, 6).padding(.top, 8)
+        .onAppear(perform: update)
+        .onReceive(tick) { _ in update() }
+    }
+
+    private func update() {
+        var usage = rusage()
+        getrusage(RUSAGE_SELF, &usage)
+        let cpu = Double(usage.ru_utime.tv_sec + usage.ru_stime.tv_sec) + Double(usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1e6
+        var percent = 0.0
+        if let last = lastCPU { percent = max(0, (cpu - last.time) / max(Date().timeIntervalSince(last.at), 0.1) * 100) }
+        lastCPU = (cpu, Date())
+        var info = mach_task_basic_info()
+        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size / MemoryLayout<natural_t>.size)
+        let kr = withUnsafeMutablePointer(to: &info) { $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count) } }
+        let memory = kr == KERN_SUCCESS ? ByteCountFormatter.string(fromByteCount: Int64(info.resident_size), countStyle: .memory) : "–"
+        line = "\(Brand.name) " + String(format: "%.1f%%", percent) + " · " + memory
+    }
+
+    static let machine: String = {
+        var size = 0
+        sysctlbyname("machdep.cpu.brand_string", nil, &size, nil, 0)
+        var chars = [CChar](repeating: 0, count: max(size, 1))
+        sysctlbyname("machdep.cpu.brand_string", &chars, &size, nil, 0)
+        return String(cString: chars).replacingOccurrences(of: "Apple ", with: "")
+    }()
+
+    static func uptime() -> String {
+        let s = Int(ProcessInfo.processInfo.systemUptime)
+        return s >= 86400 ? "\(s / 86400)d" : s >= 3600 ? "\(s / 3600)h" : "\(s / 60)m"
     }
 }
 

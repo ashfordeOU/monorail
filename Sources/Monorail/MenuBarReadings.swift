@@ -40,6 +40,27 @@ final class MenuBarReadings {
 
     @objc private func open() { DashboardWindow.shared.show() }
 
+    /// A small ring gauge, orange (red under strain), drawn as a template-free image so it stays coloured.
+    static func ring(_ fraction: Double, strained: Bool, help: String) -> NSImage {
+        let image = NSImage(size: NSSize(width: 12, height: 12), flipped: false) { rect in
+            let inset = rect.insetBy(dx: 1.5, dy: 1.5)
+            let track = NSBezierPath(ovalIn: inset)
+            track.lineWidth = 2.2
+            NSColor.labelColor.withAlphaComponent(0.25).setStroke()
+            track.stroke()
+            let arc = NSBezierPath()
+            let f = min(max(fraction, 0), 1)
+            arc.appendArc(withCenter: NSPoint(x: rect.midX, y: rect.midY), radius: inset.width / 2, startAngle: 90, endAngle: 90 - 360 * f, clockwise: true)
+            arc.lineWidth = 2.2
+            arc.lineCapStyle = .round
+            (strained ? NSColor.systemRed : NSColor.systemOrange).setStroke()
+            arc.stroke()
+            return true
+        }
+        image.accessibilityDescription = help
+        return image
+    }
+
     private func update() {
         let now = Date()
         let ticks = SystemWatch.coreTicks()
@@ -49,8 +70,17 @@ final class MenuBarReadings {
         guard let last, let button = item?.button else { return }
         let seconds = now.timeIntervalSince(last.at)
         let text = NSMutableAttributedString()
-        func add(_ label: String, _ value: String, strained: Bool) {
+        func add(_ label: String, _ value: String, strained: Bool, ring: Double? = nil) {
             if text.length > 0 { text.append(NSAttributedString(string: "  ")) }
+            if let ring {
+                let attachment = NSTextAttachment()
+                attachment.image = Self.ring(ring, strained: strained, help: label)
+                attachment.bounds = NSRect(x: 0, y: -2, width: 12, height: 12)
+                text.append(NSAttributedString(attachment: attachment))
+                text.append(NSAttributedString(string: " "))
+                text.append(NSAttributedString(string: value, attributes: [.font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium), .foregroundColor: strained ? NSColor.systemRed : NSColor.labelColor]))
+                return
+            }
             let font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
             text.append(NSAttributedString(string: label.isEmpty ? "" : label + " ", attributes: [.font: NSFont.systemFont(ofSize: 9, weight: .semibold), .foregroundColor: NSColor.secondaryLabelColor]))
             text.append(NSAttributedString(string: value, attributes: [.font: font, .foregroundColor: strained ? NSColor.systemRed : NSColor.labelColor]))
@@ -59,12 +89,12 @@ final class MenuBarReadings {
             switch id {
             case "cpu":
                 let cpu = SystemStats.average(SystemStats.load(previous: last.ticks, now: ticks))
-                add("CPU", "\(Int(cpu.rounded()))%", strained: cpu > 85)
+                add("CPU", "\(Int(cpu.rounded()))%", strained: cpu > 85, ring: cpu / 100)
             case "memory":
                 let pressure = (SystemWatch.memoryNow()?.pressure ?? 0) * 100
-                add("MEM", "\(Int(pressure.rounded()))%", strained: pressure > 90)
+                add("MEM", "\(Int(pressure.rounded()))%", strained: pressure > 90, ring: pressure / 100)
             case "gpu":
-                if let gpu = SystemWatch.gpuUtilisation() { add("GPU", "\(Int(gpu.rounded()))%", strained: gpu > 90) }
+                if let gpu = SystemWatch.gpuUtilisation() { add("GPU", "\(Int(gpu.rounded()))%", strained: gpu > 90, ring: gpu / 100) }
             case "network":
                 add("", "↓\(SystemStats.speed(SystemStats.rate(from: last.net.0, to: down, seconds: seconds))) ↑\(SystemStats.speed(SystemStats.rate(from: last.net.1, to: up, seconds: seconds)))", strained: false)
             case "disk":

@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-261 settings.
+264 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -142,6 +142,9 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `clipboardQuickPaste` | Clipboard: ⌘⌃1 to ⌘⌃0 paste the last ten things you copied. | `true` |
 | `clipboardIgnoredApps` | Clipboard: apps whose copies are never kept (bundle identifiers). | `[]` |
 | `clipboardNotch` | Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch). | `false` |
+| `weatherPlaces` | Weather: the places to show (the first is yours); found by name, no location access needed. | `[]` |
+| `weatherFahrenheit` | Weather in °F instead of °C. | `false` |
+| `notchLive` | Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…). | `false` |
 | `modes` | Switches: modes (Recording, Call, Presentation, Deep Work and your own); each can start by itself when turned on. | `Mode.defaultSet` |
 | `customSwitches` | Switches you made from a shell command or a shortcut. | `[]` |
 | `backdropColour` | The Backdrop switch's colour (hex). | `"#1E2235"` |

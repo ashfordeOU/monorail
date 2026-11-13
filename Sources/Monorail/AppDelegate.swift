@@ -2143,6 +2143,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         SuiteRole.shared.onChange = { [weak self] role in self?.roleChanged(role) }
         SuiteRole.shared.start()
         DashboardContext.store = store
+        DashboardContext.openSettings = { [weak self] in self?.showSettings() }
         DeskContext.focus = { [weak self] id in self?.engine.focusAndReveal(WindowID(id)) }
         DeskContext.save = { [weak self] in self?.engine.perform(.takeSnapshot) }
         SystemAlerts.shared.enabled = { [weak self] in self?.store.settings.systemAlerts ?? true }
@@ -2157,6 +2158,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         SwitchContext.sharingScreen = { [weak self] in self?.shareWatch.isSharing ?? false }
         Switchboard.shared.start()
+        NotchLive.shared.open = { [weak self] in
+            guard let self, let button = self.statusItem?.button, !self.popover.isShown else { return }
+            self.popover.toggle(relativeTo: button)
+        }
+        NotchLive.shared.activities = { [weak self] in
+            guard let self else { return [] }
+            var list: [NotchActivity] = []
+            let now = Date()
+            if self.shareWatch.isSharing { list.append(NotchActivity(.sharing, symbol: "rectangle.inset.filled.and.person.filled", text: "Sharing", tint: "red")) }
+            if let meeting = TodayWatch.shared.meetings.first(where: { $0.start <= now && $0.end > now }) {
+                list.append(NotchActivity(.call, symbol: "video.fill", text: NotchActivity.countdown(meeting.end.timeIntervalSince(now)), tint: "green"))
+            }
+            if Switchboard.shared.activeModes.contains("recording") {
+                list.append(NotchActivity(.recording, symbol: "record.circle", text: "Rec", tint: "red"))
+            } else if let id = Switchboard.shared.activeModes.first, let mode = self.store.settings.modes.first(where: { $0.id == id }) {
+                list.append(NotchActivity(.mode, symbol: mode.symbol, text: mode.name, tint: "purple"))
+            }
+            if FocusWatch.shared.endsAt != nil, FocusWatch.shared.remaining > 0 {
+                list.append(NotchActivity(.timer, symbol: "timer", text: NotchActivity.countdown(FocusWatch.shared.remaining), tint: "orange"))
+            }
+            if PowerWatch.hasBattery {
+                let b = PowerWatch.shared.battery
+                if b.onBattery && b.percent <= 15 { list.append(NotchActivity(.batteryLow, symbol: "battery.25", text: "\(b.percent)%", tint: "red")) }
+                else if b.isCharging { list.append(NotchActivity(.charging, symbol: "bolt.fill", text: "\(b.percent)%", tint: "green")) }
+            }
+            if let top = AIUsageWatch.shared.headline, top.window.usedPercent >= 90 {
+                list.append(NotchActivity(.aiLimit, symbol: "brain", text: "\(Int(top.window.usedPercent))%", tint: "orange"))
+            }
+            if self.awake.isOn { list.append(NotchActivity(.awake, symbol: "cup.and.saucer.fill", text: "Awake", tint: "blue")) }
+            return list
+        }
         NotchOpener.shared.open = { [weak self] in
             guard let self, let button = self.statusItem?.button, !self.popover.isShown else { return }
             self.popover.toggle(relativeTo: button, page: .clipboard)
@@ -2238,6 +2270,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let liveReloadWasOn = engine.settings.liveReloadSettings
         engine.settings = settings
         ClipboardWatch.shared.apply(settings)
+        NotchLive.shared.set(settings.notchLive && !SuiteRole.shared.pauses(.notch))
         FocusWatch.shared.apply(settings)
         MenuBarReadings.shared.apply(settings.menuBarReadings)
         // The theme goes on Monorail's own windows only. Set on the whole app, it also reached the

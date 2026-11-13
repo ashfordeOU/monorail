@@ -283,7 +283,7 @@ private struct GeneratorTool: View {
                 HStack {
                     Text(value).font(.system(size: 14, design: .monospaced)).textSelection(.enabled)
                     Spacer()
-                    Button { copy(value) } label: { Image(systemName: "doc.on.doc") }.buttonStyle(.borderless).help("Copy")
+                    Button { copy(value) } label: { Image(systemName: "doc.on.doc") }.buttonStyle(.borderless).help("Copy").accessibilityLabel("Copy")
                 }
                 .padding(8)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
@@ -383,7 +383,7 @@ private struct HashTool: View {
                     Text(item.name).font(.system(size: 12, weight: .semibold)).frame(width: 70, alignment: .leading)
                     Text(item.hex).font(.system(size: 11.5, design: .monospaced)).textSelection(.enabled).lineLimit(2)
                     Spacer()
-                    Button { copy(item.hex) } label: { Image(systemName: "doc.on.doc") }.buttonStyle(.borderless).help("Copy")
+                    Button { copy(item.hex) } label: { Image(systemName: "doc.on.doc") }.buttonStyle(.borderless).help("Copy").accessibilityLabel("Copy")
                 }
             }
         }

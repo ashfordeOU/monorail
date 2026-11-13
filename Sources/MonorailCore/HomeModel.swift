@@ -2,7 +2,7 @@ import Foundation
 
 /// The cards on the home page of the menu bar panel.
 public enum HomeCard: String, CaseIterable, Sendable, Equatable {
-    case notices, battery, windows, agents, controls, layouts
+    case notices, heat, call, movie, battery, windows, agents, controls, layouts
 }
 
 /// What the home page knows when it opens: enough to decide what matters most.
@@ -16,9 +16,16 @@ public struct HomeSignals: Equatable, Sendable {
     public var clashes: Int
     public var updateAvailable: Bool
     public var paused: Bool
+    public var heat: Heat
+    public var onCall: Bool
+    public var movie: Bool
 
     public init(onBattery: Bool = false, percent: Int? = nil, minutesLeft: Int? = nil, drainRatio: Double? = nil,
-                agentsRunning: Int = 0, clashes: Int = 0, updateAvailable: Bool = false, paused: Bool = false) {
+                agentsRunning: Int = 0, clashes: Int = 0, updateAvailable: Bool = false, paused: Bool = false,
+                heat: Heat = .normal, onCall: Bool = false, movie: Bool = false) {
+        self.heat = heat
+        self.onCall = onCall
+        self.movie = movie
         self.onBattery = onBattery
         self.percent = percent
         self.minutesLeft = minutesLeft
@@ -58,6 +65,12 @@ public enum HomePlanner {
     public static func plan(_ s: HomeSignals) -> HomeLayout {
         var raised: [HomeCard] = []
         var reasons: [String] = []
+        // A call or a film comes first: it's what you're doing right now. Calm, not a warning.
+        if s.onCall { raised.append(.call) } else if s.movie { raised.append(.movie) }
+        if s.heat.needsYou {
+            raised.append(.heat)
+            reasons.append(s.heat == .throttling ? "Slowing down to cool" : "Running hot")
+        }
         if batteryIsLow(s) {
             raised.append(.battery)
             reasons.append("Battery low")
@@ -72,11 +85,13 @@ public enum HomePlanner {
 
         var cards = raised + calmOrder.filter { !raised.contains($0) }
         if s.agentsRunning == 0 { cards.removeAll { $0 == .agents } }
-        if !raised.contains(.notices) { cards.removeAll { $0 == .notices } }
+        for card in [HomeCard.notices, .heat, .call, .movie] where !raised.contains(card) { cards.removeAll { $0 == card } }
 
         let tone: HomeLayout.Tone = batteryIsLow(s) ? .urgent : reasons.isEmpty ? .calm : .attention
         let title: String
         switch reasons.count {
+        case 0 where s.onCall: title = "On a call"
+        case 0 where s.movie: title = "Movie mode"
         case 0: title = "All calm"
         case 1: title = reasons[0]
         default: title = "\(count(reasons.count)) things need you"

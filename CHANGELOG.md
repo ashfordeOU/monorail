@@ -7,6 +7,10 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Calls.** When the microphone or camera is in use, the panel's top card says you're on a call, keeps the Mac and its screen awake until it ends, has a Mute button for your microphone, and says whether the battery will last the call ("About 32 min of battery for this call. Plug in to be safe.").
+- **Film mode.** A switch on Home (and its own page) that keeps the screen on, pauses Evening Mode for true colours and quiets notices, with a sleep timer: 30 minutes to 2 hours, then Film mode ends and the Mac sleeps (Station lets it sleep on its own). It can also turn on by itself when a video plays, and says how much watching the battery has left.
+- **Heat.** When the Mac runs hot or starts slowing itself down to cool, a card moves to the top with the busiest app and Pause or Quit on it.
+- **Unplug reminder.** While charging, a notification at the level you choose (80–95%), once per charge, to keep the battery healthy.
 - **Station, the App Store edition.** Built from the same code as the menu bar half of Monorail: the panel with battery rings, Stay Awake and Evening Mode, without the window strip (the App Store's sandbox doesn't let apps move other apps' windows) and without asking for Accessibility. Its own name, icon, menu, first run and Settings, and a permanent card that points to the free Monorail. Builds as `dist/AppStore/Station.app`.
 
 ## [1.8.1] - 2026-11-13

@@ -403,7 +403,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         engine.onShowSwitcher = { [weak self] in self?.switcher.toggle() }
         engine.onShowOverview = { [weak self] in self?.overview.toggle() }
         engine.onNotice = { [weak self] text in
-            guard let self, !self.engine.isPresenting, !self.store.settings.quietMode else { return }
+            guard let self, !self.engine.isPresenting, !self.store.settings.quietMode, !MomentsWatch.shared.film else { return }
             self.toast.show(text)
         }
         engine.onAdjustSettings = { [weak self] change in
@@ -2092,6 +2092,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Evening Mode and the display controls are wired up in `wireUp`. Runs once, at launch.
     private func startEssentials() {
         apply(store.settings)
+        // Calls, films and heat (works in Station's sandbox too).
+        MomentsWatch.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
+        MomentsWatch.shared.onFilmChange = { [weak self] on in self?.evening.pauseForFilm(on) }
+        MomentsWatch.shared.start()
         store.startCloudSync()
         store.watchFile()
         startTelemetry()

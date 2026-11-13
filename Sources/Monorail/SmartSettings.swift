@@ -787,6 +787,19 @@ struct StayAwakePane: View {
                     .font(.callout).foregroundStyle(.secondary)
             }
             Section {
+                Toggle("Stay awake during calls (while the microphone or camera is in use)", isOn: $store.settings.awakeDuringCalls)
+                Toggle("Turn on Film mode by itself when a video plays", isOn: $store.settings.movieAuto)
+                Picker("While charging, tell me to unplug at", selection: $store.settings.chargeLimit) {
+                    Text("Never").tag(100)
+                    ForEach([80, 85, 90, 95], id: \.self) { Text("\($0)%").tag($0) }
+                }
+            } header: {
+                Text("Calls, films and charging")
+            } footer: {
+                Text("Film mode keeps the screen on, pauses Evening Mode for true colours and quiets notices; its sleep timer is in the panel.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+            Section {
                 Picker("End it when the battery drops to", selection: $store.settings.awakeBatteryCutoff) {
                     Text("Never").tag(0)
                     ForEach([5, 10, 15, 20, 30, 50], id: \.self) { Text("\($0)%").tag($0) }

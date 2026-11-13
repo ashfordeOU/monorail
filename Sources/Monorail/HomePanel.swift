@@ -8,7 +8,7 @@ import SwiftUI
 // which slides across and resizes to fit. ‹ goes back. Nothing opens on top of anything else.
 
 enum PanelPage: Hashable {
-    case home, battery, app(String), awake, evening, theme, whatsNew
+    case home, battery, app(String), awake, evening, theme, whatsNew, film
 }
 
 final class PanelNavigator: ObservableObject {
@@ -104,6 +104,8 @@ struct PanelRoot: View {
             subpage("Theme") { ThemeQuickPicker(store: store) }
         case .whatsNew:
             UpdatePage(updater: updater, onBack: nav.pop)
+        case .film:
+            FilmPage(onBack: nav.pop)
         }
     }
 
@@ -126,6 +128,7 @@ struct HomePage: View {
     @ObservedObject var nav: PanelNavigator
     let context: PanelContext
     @ObservedObject private var power = PowerWatch.shared
+    @ObservedObject private var moments = MomentsWatch.shared
     /// Bumped after a switch is flipped, to redraw once it has settled.
     @State private var tick = 0
 
@@ -137,7 +140,8 @@ struct HomePage: View {
             onBattery: PowerWatch.hasBattery && b.onBattery, percent: PowerWatch.hasBattery ? b.percent : nil,
             minutesLeft: b.minutesAtCurrentRate, drainRatio: power.rings.drainRatio,
             agentsRunning: Edition.isAppStore ? 0 : power.agents.count, clashes: Edition.isAppStore ? 0 : more.clashCount(),
-            updateAvailable: updater.available != nil, paused: paused.value))
+            updateAvailable: updater.available != nil, paused: paused.value,
+            heat: moments.heat, onCall: moments.call.isOnCall, movie: moments.film))
     }
 
     var body: some View {
@@ -208,6 +212,9 @@ struct HomePage: View {
     @ViewBuilder private func card(_ card: HomeCard, raised: Bool) -> some View {
         switch card {
         case .notices: notices
+        case .heat: heatCard
+        case .call: callCard
+        case .movie: filmCard
         case .battery: raised ? AnyView(batteryRaised) : AnyView(batteryWidget)
         case .windows: if Edition.isAppStore { MonorailCard() } else { windows }
         case .agents: agentsWidget
@@ -247,6 +254,82 @@ struct HomePage: View {
             Spacer(minLength: 4)
             if let button { Button(button, action: action).buttonStyle(.borderedProminent).controlSize(.small) }
         }
+    }
+
+    // MARK: Calls, films and heat
+
+    private var callCard: some View {
+        let call = moments.call
+        let b = power.battery
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 9) {
+                Image(systemName: call.cameraInUse ? "video.fill" : "phone.fill")
+                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                    .frame(width: 30, height: 30).background(Circle().fill(Tone.good))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(call.title).font(.system(size: 13, weight: .semibold))
+                    Text(store.settings.awakeDuringCalls ? "Your Mac stays awake until it ends" : "Mic \(call.micMuted ? "muted" : "on")")
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Button { moments.toggleMute() } label: {
+                    Label(call.micMuted ? "Unmute" : "Mute", systemImage: call.micMuted ? "mic.slash.fill" : "mic.fill")
+                }
+                .buttonStyle(.borderedProminent).tint(call.micMuted ? Tone.high : Color.primary.opacity(0.25)).controlSize(.small)
+            }
+            if b.onBattery, let note = Moments.callBattery(minutesLeft: b.minutesAtCurrentRate, video: call.cameraInUse) {
+                Text(note).font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+        }
+        .tile(tint: Tone.good)
+    }
+
+    private var filmCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 9) {
+                Image(systemName: "film.fill").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                    .frame(width: 30, height: 30).background(Circle().fill(Color(nsColor: .systemIndigo)))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Film mode").font(.system(size: 13, weight: .semibold))
+                    Text(moments.sleepAt.map { "Sleeps at \($0.formatted(date: .omitted, time: .shortened))" } ?? "Awake, true colours, no notices")
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Button("Sleep Timer") { nav.push(.film) }.controlSize(.small)
+                Button("End") { moments.setFilm(false) }.controlSize(.small)
+            }
+            if power.battery.onBattery, let note = Moments.movieBattery(minutesLeft: power.battery.minutesAtCurrentRate) {
+                Text(note).font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+        }
+        .tile(tint: Color(nsColor: .systemIndigo))
+    }
+
+    private var heatCard: some View {
+        let busiest = Edition.isAppStore ? nil : power.apps.max { $0.use.cpuPercent < $1.use.cpuPercent }
+        let tone = moments.heat == .throttling ? Tone.high : Tone.ok
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 9) {
+                Image(systemName: "thermometer").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                    .frame(width: 30, height: 30).background(Circle().fill(tone))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(moments.heat.title).font(.system(size: 13, weight: .semibold))
+                    Text(moments.heat.advice(busiest: busiest?.use.appName, cpuPercent: busiest?.use.cpuPercent))
+                        .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            if let app = busiest, power.canPause(app.id) {
+                HStack(spacing: 6) {
+                    Button("Pause \(app.use.appName)") { power.pause(app.id) }.buttonStyle(.borderedProminent)
+                    Button("Quit") { power.quit(app.id) }
+                }
+                .controlSize(.small)
+            }
+        }
+        .tile(tint: tone)
     }
 
     private var batteryWidget: some View {
@@ -408,6 +491,9 @@ struct HomePage: View {
                             toggle: { more.toggleFocus(); settle() }, open: nil)
             }
             // Low Power Mode needs an administrator, which the App Store's sandbox doesn't allow.
+            ControlTile(title: "Film", status: moments.film ? (moments.sleepAt.map { "Sleeps at \($0.formatted(date: .omitted, time: .shortened))" } ?? "On") : "Off",
+                        systemImage: "film.fill", isOn: moments.film, tint: Color(nsColor: .systemIndigo),
+                        toggle: { moments.setFilm(!moments.film) }, open: { nav.push(.film) })
             if PowerWatch.hasBattery, !Edition.isAppStore {
                 ControlTile(title: "Low Power", status: power.battery.lowPowerMode ? "On" : "Off", systemImage: "leaf.fill",
                             isOn: power.battery.lowPowerMode, tint: Tone.ok,
@@ -544,6 +630,46 @@ struct MonorailCard: View {
             }
         }
         .tile()
+    }
+}
+
+/// Film mode's page: on or off, and a sleep timer.
+struct FilmPage: View {
+    let onBack: () -> Void
+    @ObservedObject private var moments = MomentsWatch.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            PageHeader(back: Brand.name, title: "Film", onBack: onBack)
+            Toggle(isOn: Binding(get: { moments.film }, set: { moments.setFilm($0) })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Film mode").font(.system(size: 13, weight: .semibold))
+                    Text("Keeps the screen on, pauses Evening Mode for true colours, quiets notices and hides the slider bar.")
+                        .font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .toggleStyle(.switch)
+            .tile()
+            VStack(alignment: .leading, spacing: 8) {
+                Text("SLEEP TIMER").font(.label).foregroundStyle(.secondary)
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
+                    ForEach([30, 45, 60, 90, 120], id: \.self) { minutes in
+                        Button(BatteryState.duration(minutes)) {
+                            if !moments.film { moments.setFilm(true) }
+                            moments.setSleepTimer(minutes)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    Button("Off") { moments.setSleepTimer(nil) }.frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered).controlSize(.small)
+                Text(moments.sleepAt.map { "Film mode ends\(Edition.isAppStore ? "" : " and the Mac sleeps") at \($0.formatted(date: .omitted, time: .shortened))." }
+                     ?? (Edition.isAppStore ? "When it ends, Film mode turns off and your Mac can sleep as usual." : "When it ends, the Mac goes to sleep."))
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+            .tile()
+        }
+        .padding(12)
     }
 }
 

@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-232 settings.
+235 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -28,13 +28,13 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `focusBorderColor` | Hex colour of the focus border, e.g. "#4C8DFF". | `"#4C8DFF"` |
 | `dimInactive` | Darken tiled windows that do not have focus. | `false` |
 | `dimAmount` | Opacity of the dimming overlay, 0...1. | `0.2` |
-| `showColumnIndicator` | No longer used: the menu bar shows only the Monorail icon, and the position is in the panel. | `true` |
+| `showColumnIndicator` | Show "3/8" (focused column / columns) next to the menu bar icon. | `true` |
 | `newWindowPosition` | Where newly opened windows join the strip. | `.afterFocused` |
 | `appRules` | Per-app rules. | `AppSettings.defaultAppRules` |
 | `keymap` |  | `.default` |
 | `sliderBar` | The slider bar: a mini-map of the strip you can drag to slide. | `.whileMoving` |
 | `sliderBarEdge` |  | `.bottom` |
-| `iconOpensSlider` | Clicking the menu bar icon opens the Monorail panel; right-click shows the menu. | `true` |
+| `iconOpensSlider` | Clicking the menu bar icon shows the slider; right-click shows the menu. | `true` |
 | `groupByApp` | Group windows into full-screen slides by app as they open. | `true` |
 | `tilesPerSlide` | Windows per slide when grouping, unless an app rule says otherwise. | `2` |
 | `hotEdges` | Push the pointer against the left or right screen edge to slide. | `false` |
@@ -57,7 +57,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `autoRules` | Profile and layout changes by time of day or Wi-Fi network. | `[]` |
 | `smartGaps` | No gaps around a lone window; wider gaps on big displays. | `false` |
 | `launchSlots` | Quick launch: a letter opens or focuses an app (by bundle ID). | `[:]` |
-| `menuBarShowsApp` | No longer used. | `false` |
+| `menuBarShowsApp` | The menu bar shows the focused app's name next to the position. | `false` |
 | `modifierDrag` | Hold ⌃⌥ and drag anywhere in a window to move it; right-drag to resize. | `true` |
 | `titleBarSwipes` | Two-finger swipes on a window's title bar: left and right move its slide, up toggles full width, down minimises. | `false` |
 | `focusBorderGradient` | The focus border fades from its colour into a second one. | `false` |
@@ -86,7 +86,7 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `workspaceHUD` | Show the workspace's name in the middle of the screen when switching. | `true` |
 | `sliderTitles` | Window titles on the slider bar's tiles, and a smaller bar. | `false` |
 | `compactSlider` |  | `false` |
-| `menuBarStyle` | No longer used. | `.mini` |
+| `menuBarStyle` |  | `.mini` |
 | `compactMenuBarApplied` | Set once the narrower 1.1 menu bar has been applied to older settings. | `true` |
 | `quietMode` | No pop-up notices (confirmations, tips). | `false` |
 | `slideSound` | A soft click as the strip lands on a slide. | `false` |
@@ -117,17 +117,20 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `restoreHidesOthers` | Restoring a saved layout or snapshot hides (never quits) the apps that aren't in it. | `false` |
 | `reservedEdges` | Space kept clear at each screen edge for another app's bar or dock. | `ReservedEdges()` |
 | `appAppearance` | Monorail's own windows in light or dark, or following the Mac. | `.system` |
-| `powerMarkers` | On battery, ⚡ marks the windows of apps using the most power, and the Battery page lists them. | `true` |
+| `powerMarkers` | On battery, ⚡ marks the windows of apps using the most power, and ⚡ in the popover lists them. | `true` |
 | `parkPowerHogs` | On battery, hide (never quit) power-hungry apps left alone for an hour; they come back when plugged in. | `false` |
 | `batteryMenuBar` | A battery item in the menu bar (charge or time left), opening the battery panel. | `false` |
 | `batteryCards` | The battery panel's cards, in the order you arranged them, and the ones you hid. | `BatteryCards.standard` |
 | `batteryHiddenCards` |  | `[]` |
+| `awakeDuringCalls` | Keep the Mac and its display awake while the microphone or camera is in use. | `true` |
+| `movieAuto` | Movie mode turns on by itself when a video plays full screen. | `false` |
+| `chargeLimit` | While charging, a notice once the battery reaches `chargeLimit` (100 = off). | `100` |
 | `focusFlash` | A quick highlight of the focused window when focus moves by keyboard. | `false` |
 | `sliderOpacity` | The slider bar's opacity and size (0.8, 1 or 1.25). | `1.0` |
 | `sliderScale` |  | `1.0` |
 | `plainOverview` | The overview's backdrop: colourful, or plain. | `false` |
 | `overviewIconsOnly` | The overview with app icons only (no live previews). | `false` |
-| `menuBarShowsTitle` | No longer used. | `false` |
+| `menuBarShowsTitle` | The menu bar shows the focused window's title. | `false` |
 | `noticePosition` | Where notices appear and for how long (seconds). | `.top` |
 | `noticeDuration` |  | `1.8` |
 | `pomodoroFocus` | Pomodoro: focus and break lengths in minutes. | `25` |

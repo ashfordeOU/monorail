@@ -22,6 +22,13 @@ final class EveningLight {
     }
     /// Evening Mode rests while a colour-critical app (Settings → Evening Mode) is in front.
     private(set) var isPausedForApp = false
+    /// Film mode: true colours while you watch, warmth back afterwards.
+    private(set) var isPausedForFilm = false
+
+    func pauseForFilm(_ on: Bool) {
+        isPausedForFilm = on
+        update()
+    }
     /// Today's sunrise and sunset, worked out once a day.
     private var sun: (day: Int, value: SolarTimes.Day)?
     private var timer: Timer?
@@ -61,7 +68,7 @@ final class EveningLight {
                                   sun: settings.eveningSchedule == .sun ? todaysSun() : nil)
         isPausedForApp = level > 0.001 && EveningMode.isPaused(frontApp: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
                                                                 exceptions: settings.eveningPausedApps)
-        var wanted = Applied(level: isPausedForApp ? 0 : level, red: settings.eveningRed)
+        var wanted = Applied(level: isPausedForApp || isPausedForFilm ? 0 : level, red: settings.eveningRed)
         for (uuid, value) in settings.displayBrightness where value < 0.999 {
             wanted.brightness[uuid] = min(max(value, EveningMode.minimumBrightness), 1)
         }

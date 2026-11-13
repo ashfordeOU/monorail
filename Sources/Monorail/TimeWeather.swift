@@ -7,7 +7,7 @@ import SwiftUI
 
 /// The Dashboard's Time page: a dotted world map with day and night, a slider to look ahead,
 /// your clocks with who's at work, and the sun and moon where you are.
-struct TimeSection: View {
+struct WorldTimeSection: View {
     @State private var shift = 0.0
     @State private var adding = false
     @State private var query = ""

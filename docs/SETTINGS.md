@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-264 settings.
+268 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -142,6 +142,10 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `clipboardQuickPaste` | Clipboard: ⌘⌃1 to ⌘⌃0 paste the last ten things you copied. | `true` |
 | `clipboardIgnoredApps` | Clipboard: apps whose copies are never kept (bundle identifiers). | `[]` |
 | `clipboardNotch` | Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch). | `false` |
+| `meetingNotesOffer` | Meeting Notes: offer to take notes when a call starts. | `true` |
+| `meetingNotesSystemAudio` | Meeting Notes: hear the other people too, from the Mac's sound (needs Screen Recording permission); off records only your microphone. | `true` |
+| `homeOrder` | Home: your order for its cards ("windows", "today", "battery"…), and the ones you've hidden. | `[]` |
+| `homeHidden` |  | `[]` |
 | `weatherPlaces` | Weather: the places to show (the first is yours); found by name, no location access needed. | `[]` |
 | `weatherFahrenheit` | Weather in °F instead of °C. | `false` |
 | `notchLive` | Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…). | `false` |

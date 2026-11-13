@@ -74,7 +74,18 @@ public enum HomePlanner {
         s.onBattery && (s.drainRatio ?? 0) >= 1.6
     }
 
-    public static func plan(_ s: HomeSignals) -> HomeLayout {
+    /// The cards you can arrange on Home (the rest come and go by themselves).
+    public static let arrangeable: [HomeCard] = calmOrder
+
+    /// Your order for the calm cards: the saved one, with any card it doesn't mention added at the end.
+    public static func order(saved: [String]) -> [HomeCard] {
+        var list: [HomeCard] = []
+        for name in saved { if let card = HomeCard(rawValue: name), arrangeable.contains(card), !list.contains(card) { list.append(card) } }
+        for card in arrangeable where !list.contains(card) { list.append(card) }
+        return list
+    }
+
+    public static func plan(_ s: HomeSignals, order: [HomeCard] = calmOrder, hidden: Set<HomeCard> = []) -> HomeLayout {
         var raised: [HomeCard] = []
         var reasons: [String] = []
         // A call or a film comes first: it's what you're doing right now. Calm, not a warning.
@@ -102,7 +113,8 @@ public enum HomePlanner {
         if s.paused { reasons.append("Tiling paused") }
         if s.updateAvailable || s.clashes > 0 || s.paused { raised.append(.notices) }
 
-        var cards = raised + calmOrder.filter { !raised.contains($0) }
+        // Raised cards always show; your hidden cards stay hidden while calm.
+        var cards = raised + order.filter { !raised.contains($0) && !hidden.contains($0) }
         if s.agentsRunning == 0 { cards.removeAll { $0 == .agents } }
         for card in [HomeCard.notices, .heat, .call, .movie] where !raised.contains(card) { cards.removeAll { $0 == card } }
 

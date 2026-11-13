@@ -16,7 +16,7 @@ enum DashboardTab: String, CaseIterable, Identifiable {
 
 enum DashboardSection: String, CaseIterable, Identifiable {
     case overview = "Overview", desk = "Desk", apps = "Apps", cpu = "CPU", memory = "Memory", gpu = "GPU", disk = "Disk", network = "Network",
-         battery = "Battery", devices = "Devices", sound = "Sound", ports = "Ports", agents = "Agents", ai = "AI Usage", switches = "Switches", sensors = "Fans & Heat", time = "Time", weather = "Weather", today = "Today", trends = "Trends"
+         battery = "Battery", devices = "Devices", sound = "Sound", ports = "Ports", agents = "Agents", ai = "AI Usage", switches = "Switches", notes = "Meeting Notes", developer = "Developer", sensors = "Fans & Heat", time = "Time", weather = "Weather", today = "Today", trends = "Trends"
     var id: String { rawValue }
     var symbol: String {
         switch self {
@@ -36,6 +36,8 @@ enum DashboardSection: String, CaseIterable, Identifiable {
         case .ai: return "brain"
         case .switches: return "switch.2"
         case .sensors: return "fanblades"
+        case .developer: return "hammer"
+        case .notes: return "waveform.badge.mic"
         case .time: return "clock"
         case .weather: return "cloud.sun"
         case .today: return "calendar"
@@ -44,7 +46,7 @@ enum DashboardSection: String, CaseIterable, Identifiable {
     }
     /// What this edition can show: the App Store's sandbox hides other apps' processes and ports.
     static var available: [DashboardSection] {
-        Edition.isAppStore ? allCases.filter { ![.apps, .ports, .agents].contains($0) } : allCases
+        Edition.isAppStore ? allCases.filter { ![.apps, .ports, .agents, .developer].contains($0) } : allCases
     }
 }
 
@@ -135,7 +137,9 @@ struct SidebarDashboard: View {
                 case .ai: AIUsageSection()
                 case .switches: SwitchesSection()
                 case .sensors: SensorsSection()
-                case .time: TimeSection()
+                case .developer: DeveloperSection()
+                case .notes: MeetingNotesSection()
+                case .time: WorldTimeSection()
                 case .weather: WeatherSection()
                 case .today: TodayDashboard()
                 case .trends: TrendsSection()
@@ -154,6 +158,8 @@ extension DashboardSection {
         switch self {
         case .ai: return "AI"
         case .sensors: return "Fans"
+        case .developer: return "Dev"
+        case .notes: return "Notes"
         default: return rawValue
         }
     }

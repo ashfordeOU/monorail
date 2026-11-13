@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 264,
+  "count": 268,
   "settings": [
     {
       "key": "layout",
@@ -799,6 +799,30 @@
       "type": "Bool",
       "default": "false",
       "about": "Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch)."
+    },
+    {
+      "key": "meetingNotesOffer",
+      "type": "Bool",
+      "default": "true",
+      "about": "Meeting Notes: offer to take notes when a call starts."
+    },
+    {
+      "key": "meetingNotesSystemAudio",
+      "type": "Bool",
+      "default": "true",
+      "about": "Meeting Notes: hear the other people too, from the Mac's sound (needs Screen Recording permission); off records only your microphone."
+    },
+    {
+      "key": "homeOrder",
+      "type": "[String]",
+      "default": "[]",
+      "about": "Home: your order for its cards (\"windows\", \"today\", \"battery\"…), and the ones you've hidden."
+    },
+    {
+      "key": "homeHidden",
+      "type": "[String]",
+      "default": "[]",
+      "about": ""
     },
     {
       "key": "weatherPlaces",

@@ -13,6 +13,8 @@ final class MomentsWatch: ObservableObject {
     static let shared = MomentsWatch()
 
     @Published private(set) var call = CallState()
+    /// Told when a call starts (true) or ends (false).
+    var onCallChange: (Bool) -> Void = { _ in }
     @Published private(set) var heat: Heat = .normal
     @Published private(set) var film = false
     /// When the sleep timer ends Film mode (and, in Monorail, sleeps the Mac).
@@ -47,6 +49,7 @@ final class MomentsWatch: ObservableObject {
             let started = newCall.isOnCall && !call.isOnCall, ended = !newCall.isOnCall && call.isOnCall
             call = newCall
             if started, settings().awakeDuringCalls { hold(&callAssertion, "Monorail: on a call") }
+            if started || ended { onCallChange(started) }
             if ended { release(&callAssertion) }
         }
         autoFilm()

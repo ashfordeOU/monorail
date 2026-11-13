@@ -2158,6 +2158,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         SwitchContext.sharingScreen = { [weak self] in self?.shareWatch.isSharing ?? false }
         Switchboard.shared.start()
+        MeetingRecorder.shared.store = store
+        MomentsWatch.shared.onCallChange = { started in MeetingRecorder.shared.callChanged(started) }
         NotchLive.shared.open = { [weak self] in
             guard let self, let button = self.statusItem?.button, !self.popover.isShown else { return }
             self.popover.toggle(relativeTo: button)
@@ -2170,7 +2172,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if let meeting = TodayWatch.shared.meetings.first(where: { $0.start <= now && $0.end > now }) {
                 list.append(NotchActivity(.call, symbol: "video.fill", text: NotchActivity.countdown(meeting.end.timeIntervalSince(now)), tint: "green"))
             }
-            if Switchboard.shared.activeModes.contains("recording") {
+            if MeetingRecorder.shared.recording {
+                list.append(NotchActivity(.recording, symbol: "waveform", text: MeetingNotes.clock(MeetingRecorder.shared.elapsed), tint: "red"))
+            } else if Switchboard.shared.activeModes.contains("recording") {
                 list.append(NotchActivity(.recording, symbol: "record.circle", text: "Rec", tint: "red"))
             } else if let id = Switchboard.shared.activeModes.first, let mode = self.store.settings.modes.first(where: { $0.id == id }) {
                 list.append(NotchActivity(.mode, symbol: mode.symbol, text: mode.name, tint: "purple"))
@@ -3315,6 +3319,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             })
             list.append(PaletteCommand(id: "clipboard-window", title: "Clipboard", subtitle: "Everything you copied: text, images, files, boards and tags", symbol: "doc.on.clipboard",
                                        keywords: "clipboard history copied paste boards tags moodboard images") { ClipboardWindow.shared.show() })
+            list.append(PaletteCommand(id: "meeting-notes", title: MeetingRecorder.shared.recording ? "Stop Taking Notes" : "Take Meeting Notes",
+                                       subtitle: "Write down what's said, on this Mac", symbol: "waveform.badge.mic",
+                                       keywords: "meeting notes transcript record call minutes action items summary") {
+                MeetingRecorder.shared.recording ? MeetingRecorder.shared.stop() : MeetingRecorder.shared.start()
+            })
             list.append(PaletteCommand(id: "tools", title: "Tools", subtitle: "Screenshot names, images, PDFs, text and developer tools", symbol: "wrench.and.screwdriver",
                                        keywords: "tools utilities toolbox convert rename") { ToolsWindow.shared.show() })
             list.append(PaletteCommand(id: "switches", title: "Switches", subtitle: "System settings and actions in one click, and modes", symbol: "switch.2",

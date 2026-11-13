@@ -138,6 +138,10 @@ public static class SettingKeys
     public const string ClipboardQuickPaste = "clipboardQuickPaste";
     public const string ClipboardIgnoredApps = "clipboardIgnoredApps";
     public const string ClipboardNotch = "clipboardNotch";
+    public const string MeetingNotesOffer = "meetingNotesOffer";
+    public const string MeetingNotesSystemAudio = "meetingNotesSystemAudio";
+    public const string HomeOrder = "homeOrder";
+    public const string HomeHidden = "homeHidden";
     public const string WeatherPlaces = "weatherPlaces";
     public const string WeatherFahrenheit = "weatherFahrenheit";
     public const string NotchLive = "notchLive";
@@ -468,6 +472,10 @@ public static class SettingDefaults
     public const bool ClipboardQuickPaste = true;
     /// <summary>Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch).</summary>
     public const bool ClipboardNotch = false;
+    /// <summary>Meeting Notes: offer to take notes when a call starts.</summary>
+    public const bool MeetingNotesOffer = true;
+    /// <summary>Meeting Notes: hear the other people too, from the Mac's sound (needs Screen Recording permission); off records only your microphone.</summary>
+    public const bool MeetingNotesSystemAudio = true;
     /// <summary>Weather in °F instead of °C.</summary>
     public const bool WeatherFahrenheit = false;
     /// <summary>Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…).</summary>

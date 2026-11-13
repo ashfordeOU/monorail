@@ -8,7 +8,7 @@ import SwiftUI
 // which slides across and resizes to fit. ‹ goes back. Nothing opens on top of anything else.
 
 enum PanelPage: Hashable {
-    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today, clipboard, note, focus, storage, text, reminders
+    case home, battery, app(String), awake, evening, theme, whatsNew, film, system, today, clipboard, note, focus, storage, text, reminders, arrange
 }
 
 final class PanelNavigator: ObservableObject {
@@ -102,6 +102,8 @@ struct PanelRoot: View {
             subpage("Evening Mode") { EveningQuickControls(store: store, isOn: context.isEveningOn, openSettings: context.openEveningSettings) }
         case .theme:
             subpage("Theme") { ThemeQuickPicker(store: store) }
+        case .arrange:
+            subpage("Customise Home") { ArrangeHome(store: store) }
         case .whatsNew:
             UpdatePage(updater: updater, onBack: nav.pop)
         case .film:
@@ -162,7 +164,9 @@ struct HomePage: View {
             updateAvailable: updater.available != nil, paused: paused.value,
             heat: moments.heat, onCall: moments.call.isOnCall, movie: moments.film,
             meetingSoon: today.next.map { TimeModel.isImminent($0.start, end: $0.end, now: today.now) } ?? false,
-            diskLow: storage.level == .critical))
+            diskLow: storage.level == .critical),
+            order: HomePlanner.order(saved: store.settings.homeOrder),
+            hidden: Set(store.settings.homeHidden.compactMap(HomeCard.init(rawValue:))))
     }
 
     var body: some View {
@@ -177,6 +181,11 @@ struct HomePage: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.97)))
             }
             if !Edition.isAppStore { searchBar }
+            HStack {
+                Spacer()
+                Button { nav.push(.arrange) } label: { Label("Customise Home", systemImage: "slider.horizontal.3").font(.system(size: 11)) }
+                    .buttonStyle(.plain).foregroundStyle(.secondary)
+            }
         }
         .padding(12)
         .animation(Motion.reorder, value: plan.cards)
@@ -248,7 +257,7 @@ struct HomePage: View {
         case .storage: StorageWidget { nav.push(.storage) }
         case .network: NetworkWidget { nav.push(.system) }
         case .pinned: PinnedReadings(store: store)
-        case .controls: controls
+        case .controls: VStack(spacing: 8) { controls; HomeSliders(store: store) }
         case .tools: ToolsRow(openClipboard: { nav.push(.clipboard) }, openNote: { nav.push(.note) }, openText: { nav.push(.text) })
         case .layouts: if !Edition.isAppStore { layoutsRow }
         }
@@ -1040,5 +1049,91 @@ extension PowerWatch {
 
     /// The three rings: charge, time left against your usual, drain against your usual.
     var rings: BatteryRings { BatteryRings.make(battery, usualWatts: usualWatts) }
+}
+#endif
+
+#if os(macOS)
+/// Volume and warmth on Home, as sliders.
+struct HomeSliders: View {
+    @ObservedObject var store: SettingsStore
+    @ObservedObject private var sound = SoundControl.shared
+
+    var body: some View {
+        VStack(spacing: 8) {
+            row("speaker.wave.2.fill", "Volume", Binding(get: { Double(sound.volume) }, set: { sound.volume = Float($0) }))
+            row("sun.haze.fill", "Warmth", Binding(get: { store.settings.eveningOn ? store.settings.eveningStrength : 0 }, set: { value in
+                store.settings.eveningStrength = max(value, 0.05)
+                store.settings.eveningOn = value > 0.04
+            }))
+        }
+        .tile()
+        .onAppear { sound.refresh() }
+    }
+
+    private func row(_ symbol: String, _ title: String, _ value: Binding<Double>) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: symbol).font(.system(size: 11)).foregroundStyle(.secondary).frame(width: 16)
+            Slider(value: value, in: 0...1).controlSize(.small)
+                .accessibilityLabel(Text(title))
+        }
+    }
+}
+
+/// Choose which cards Home shows and in what order. Cards that need you (low battery, a call) still come first.
+struct ArrangeHome: View {
+    @ObservedObject var store: SettingsStore
+
+    var body: some View {
+        let order = HomePlanner.order(saved: store.settings.homeOrder)
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(Array(order.enumerated()), id: \.element) { index, card in
+                HStack(spacing: 8) {
+                    Toggle("", isOn: Binding(get: { !store.settings.homeHidden.contains(card.rawValue) }, set: { show in
+                        store.settings.homeHidden.removeAll { $0 == card.rawValue }
+                        if !show { store.settings.homeHidden.append(card.rawValue) }
+                    }))
+                    .labelsHidden().toggleStyle(.checkbox)
+                    Text(Self.title(card)).font(.system(size: 12.5))
+                    Spacer()
+                    Button { move(order, index, by: -1) } label: { Image(systemName: "chevron.up").accessibilityLabel("Move up") }
+                        .buttonStyle(.borderless).disabled(index == 0)
+                    Button { move(order, index, by: 1) } label: { Image(systemName: "chevron.down").accessibilityLabel("Move down") }
+                        .buttonStyle(.borderless).disabled(index == order.count - 1)
+                }
+                .padding(.vertical, 2)
+            }
+            Divider().padding(.vertical, 4)
+            HStack {
+                Text("Cards that need you, like a low battery or a call, still come first.").font(.system(size: 10.5)).foregroundStyle(.secondary)
+                Spacer()
+                Button("Reset") { store.settings.homeOrder = []; store.settings.homeHidden = [] }.controlSize(.small)
+            }
+        }
+    }
+
+    private func move(_ order: [HomeCard], _ index: Int, by step: Int) {
+        var list = order
+        let target = index + step
+        guard list.indices.contains(target) else { return }
+        list.swapAt(index, target)
+        store.settings.homeOrder = list.map(\.rawValue)
+    }
+
+    static func title(_ card: HomeCard) -> String {
+        switch card {
+        case .windows: return "Windows"
+        case .today: return "Today"
+        case .pinned: return "Pinned readings"
+        case .battery: return "Battery"
+        case .system: return "System"
+        case .storage: return "Storage"
+        case .network: return "Network"
+        case .agents: return "Coding agents"
+        case .controls: return "Controls and sliders"
+        case .tools: return "Clipboard, colour, text and notes"
+        case .layouts: return "Layouts"
+        default: return card.rawValue.capitalized
+        }
+    }
 }
 #endif

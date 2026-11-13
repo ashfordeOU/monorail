@@ -789,6 +789,13 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var clipboardIgnoredApps: [String] = []
     /// Clipboard: push the pointer up into the notch to open the clipboard (MacBooks with a notch).
     public var clipboardNotch = false
+    /// Meeting Notes: offer to take notes when a call starts.
+    public var meetingNotesOffer = true
+    /// Meeting Notes: hear the other people too, from the Mac's sound (needs Screen Recording permission); off records only your microphone.
+    public var meetingNotesSystemAudio = true
+    /// Home: your order for its cards ("windows", "today", "battery"…), and the ones you've hidden.
+    public var homeOrder: [String] = []
+    public var homeHidden: [String] = []
     /// Weather: the places to show (the first is yours); found by name, no location access needed.
     public var weatherPlaces: [WeatherPlace] = []
     /// Weather in °F instead of °C.
@@ -1209,7 +1216,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, weatherPlaces, weatherFahrenheit, notchLive, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, meetingNotesOffer, meetingNotesSystemAudio, homeOrder, homeHidden, weatherPlaces, weatherFahrenheit, notchLive, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
     }
 
     public init(from decoder: Decoder) throws {
@@ -1469,6 +1476,10 @@ public struct AppSettings: Equatable, Codable, Sendable {
         menuBarReadings = value(.menuBarReadings, d.menuBarReadings)
         systemAlerts = value(.systemAlerts, d.systemAlerts)
         homePins = value(.homePins, d.homePins)
+        meetingNotesOffer = value(.meetingNotesOffer, d.meetingNotesOffer)
+        meetingNotesSystemAudio = value(.meetingNotesSystemAudio, d.meetingNotesSystemAudio)
+        homeOrder = value(.homeOrder, d.homeOrder)
+        homeHidden = value(.homeHidden, d.homeHidden)
         weatherPlaces = value(.weatherPlaces, d.weatherPlaces)
         weatherFahrenheit = value(.weatherFahrenheit, d.weatherFahrenheit)
         notchLive = value(.notchLive, d.notchLive)

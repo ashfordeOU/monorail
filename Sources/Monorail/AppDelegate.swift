@@ -1529,7 +1529,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             list.append(PaletteCommand(id: "calc", title: "= \(answer)", subtitle: "Copy the answer", symbol: "equal.circle", keywords: q) { ClipboardWatch.shared.copy(answer) })
         }
         // "5 km in miles", "72 F to C".
-        if let converted = UnitConverter.answer(q) {
+        if let converted = UnitConversion.answer(q) {
             let result = converted.components(separatedBy: " = ").last ?? converted
             list.append(PaletteCommand(id: "convert", title: converted, subtitle: "Copy \(result)", symbol: "arrow.left.arrow.right", keywords: q) { ClipboardWatch.shared.copy(result) })
         }

@@ -2,7 +2,7 @@ import Foundation
 
 /// Unit conversion for the Tools window and the command palette: "5 km in miles", "72 F to C", "3 GB in MiB".
 /// Plain factors (and offsets for temperature), so it works the same on every system.
-public enum UnitConverter {
+public enum UnitConversion {
     public struct Unit: Equatable, Sendable, Identifiable {
         public var name: String
         public var symbols: [String]

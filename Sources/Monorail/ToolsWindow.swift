@@ -286,17 +286,17 @@ private struct TextTransformTool: View {
 /// Converts between units: type a sentence, or choose a kind of unit and see it in every unit at once.
 private struct ConverterTool: View {
     @State private var sentence = ""
-    @State private var categoryName = UnitConverter.categories[0].name
+    @State private var categoryName = UnitConversion.categories[0].name
     @State private var value = "1"
-    @State private var fromName = UnitConverter.categories[0].units[2].name
+    @State private var fromName = UnitConversion.categories[0].units[2].name
 
-    private var category: UnitConverter.Category { UnitConverter.categories.first { $0.name == categoryName } ?? UnitConverter.categories[0] }
+    private var category: UnitConversion.Category { UnitConversion.categories.first { $0.name == categoryName } ?? UnitConversion.categories[0] }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             TextField("Type a conversion, like 5 km in miles or 72 F to C", text: $sentence).textFieldStyle(.roundedBorder).font(.system(size: 14))
             if !sentence.isEmpty {
-                if let answer = UnitConverter.answer(sentence) {
+                if let answer = UnitConversion.answer(sentence) {
                     HStack {
                         Text(answer).font(.system(size: 20, weight: .semibold, design: .rounded)).textSelection(.enabled)
                         Spacer()
@@ -308,7 +308,7 @@ private struct ConverterTool: View {
             }
             Divider()
             HStack {
-                Picker("Kind", selection: $categoryName) { ForEach(UnitConverter.categories) { Text($0.name).tag($0.name) } }.frame(width: 200)
+                Picker("Kind", selection: $categoryName) { ForEach(UnitConversion.categories) { Text($0.name).tag($0.name) } }.frame(width: 200)
                     .onChange(of: categoryName) { _ in fromName = category.units.first?.name ?? "" }
                 TextField("Value", text: $value).textFieldStyle(.roundedBorder).frame(width: 110)
                 Picker("", selection: $fromName) { ForEach(category.units) { Text($0.name).tag($0.name) } }.labelsHidden().frame(width: 190)
@@ -316,7 +316,7 @@ private struct ConverterTool: View {
             if let amount = Double(value.replacingOccurrences(of: ",", with: ".")), let from = category.units.first(where: { $0.name == fromName }) {
                 VStack(spacing: 4) {
                     ForEach(category.units.filter { $0.name != fromName }) { unit in
-                        let result = UnitConverter.format(UnitConverter.convert(amount, from: from, to: unit))
+                        let result = UnitConversion.format(UnitConversion.convert(amount, from: from, to: unit))
                         HStack {
                             Text(unit.name).foregroundStyle(.secondary)
                             Spacer()

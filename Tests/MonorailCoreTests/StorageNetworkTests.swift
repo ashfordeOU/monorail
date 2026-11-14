@@ -139,25 +139,25 @@ final class SmartCardTests: XCTestCase {
 
 final class UnitConverterTests: XCTestCase {
     func testConversions() {
-        let km = UnitConverter.unit(named: "km")!.1, mi = UnitConverter.unit(named: "miles")!.1
-        XCTAssertEqual(UnitConverter.convert(5, from: km, to: mi), 3.10686, accuracy: 0.0001)
-        let c = UnitConverter.unit(named: "C")!.1, f = UnitConverter.unit(named: "fahrenheit")!.1
-        XCTAssertEqual(UnitConverter.convert(100, from: c, to: f), 212, accuracy: 0.0001)
-        XCTAssertEqual(UnitConverter.convert(32, from: f, to: c), 0, accuracy: 0.0001)
+        let km = UnitConversion.unit(named: "km")!.1, mi = UnitConversion.unit(named: "miles")!.1
+        XCTAssertEqual(UnitConversion.convert(5, from: km, to: mi), 3.10686, accuracy: 0.0001)
+        let c = UnitConversion.unit(named: "C")!.1, f = UnitConversion.unit(named: "fahrenheit")!.1
+        XCTAssertEqual(UnitConversion.convert(100, from: c, to: f), 212, accuracy: 0.0001)
+        XCTAssertEqual(UnitConversion.convert(32, from: f, to: c), 0, accuracy: 0.0001)
     }
 
     func testParseAndAnswer() {
-        XCTAssertEqual(UnitConverter.answer("5 km in miles"), "5 km = 3.10686 mi")
-        XCTAssertEqual(UnitConverter.answer("72F to C"), "72 °F = 22.2222 °C")
-        XCTAssertEqual(UnitConverter.answer("1 GiB in MB"), "1 GiB = 1073.74 MB")
-        XCTAssertEqual(UnitConverter.unit(named: "ms")?.1.name, "Milliseconds")
-        XCTAssertNil(UnitConverter.answer("5 km in kg"))
-        XCTAssertNil(UnitConverter.answer("hello"))
+        XCTAssertEqual(UnitConversion.answer("5 km in miles"), "5 km = 3.10686 mi")
+        XCTAssertEqual(UnitConversion.answer("72F to C"), "72 °F = 22.2222 °C")
+        XCTAssertEqual(UnitConversion.answer("1 GiB in MB"), "1 GiB = 1073.74 MB")
+        XCTAssertEqual(UnitConversion.unit(named: "ms")?.1.name, "Milliseconds")
+        XCTAssertNil(UnitConversion.answer("5 km in kg"))
+        XCTAssertNil(UnitConversion.answer("hello"))
     }
 
     func testFormat() {
-        XCTAssertEqual(UnitConverter.format(2.5), "2.5")
-        XCTAssertEqual(UnitConverter.format(3), "3")
+        XCTAssertEqual(UnitConversion.format(2.5), "2.5")
+        XCTAssertEqual(UnitConversion.format(3), "3")
     }
 }
 

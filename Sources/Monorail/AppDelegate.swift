@@ -2901,7 +2901,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             "preferAt": store.settings.suitePreferAt,
             "role": SuiteRole.shared.role.rawValue,
             "caps": ["closedLid": !Edition.isAppStore, "closedLidReady": false],
-            "state": ["awake": awake.isOn, "paused": engine.isPaused, "focusMode": engine.isFocusMode, "presenting": engine.isPresenting,
+            "state": ["awake": awake.isOn, "awakeStatus": awake.statusText, "paused": engine.isPaused, "focusMode": engine.isFocusMode, "presenting": engine.isPresenting,
                       "live": suiteLive.map(\.json)] as [String: Any],
             "links": ["monorail://settings", "monorail://awake", "monorail://awake/off"],
         ]

@@ -86,7 +86,7 @@ final class FocusWatch: ObservableObject {
     private var waterSince = Date()
 
     private func checkEyes() {
-        guard !SuiteRole.shared.pauses(.eyeBreaks) else { return }
+        guard !SuiteRole.shared.pauses(.eyeBreaks), !SuiteRole.shared.rests(.breaks) else { return }
         let idle = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: CGEventType(rawValue: ~0)!)
         // Five minutes away counts as a break for posture and water too.
         if idle >= 300 { postureSince = Date(); waterSince = Date() }

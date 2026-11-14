@@ -9,6 +9,8 @@ and versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **Keeper and Monorail share the work.** With both open, each job runs in one app only: Monorail keeps window arranging, clipboard history, evening warmth, break reminders, battery and coding agent alerts; Keeper takes timers' alarms, meeting notes, menu bar readings, display brightness, storage clean-ups, its charge limit and disk, system, AI and meeting alerts. The first time Keeper takes something over, a note says what, with Use Monorail's Instead; Settings ▸ General ▸ With Keeper picks per job, and everything comes back when Keeper quits. <!-- station -->
+- **Choose your island.** When Keeper and Monorail both have an island on, a window shows the two side by side and you pick one; the other hides while both run, and Monorail's live items (calls, Stay Awake, downloads, timers) show in Keeper's Island when that's the one. <!-- station -->
 - **The island is on by default**, with an **Island** toggle among Home's round controls (next to Evening and Stay Awake) to turn it off and on in one click. It works on every Mac now: beside the notch, or as a pill at the top of the screen.
 - **Volume in the island.** Change the volume and the island shows a speaker and a level bar for a moment, then tucks away. Turn it off in the Dashboard's Switches page.
 - **Downloads in the island.** While Safari, Chrome, Firefox, Edge or Opera is downloading, the island says what. <!-- monorail -->

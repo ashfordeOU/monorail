@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-276 settings.
+279 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -135,6 +135,9 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `focusHidesApps` |  | `true` |
 | `eyeBreaks` | A reminder every 20 minutes at the screen to look into the distance for 20 seconds. | `false` |
 | `stationStepsBack` | Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs). | `true` |
+| `suitePrefer` | With Keeper on the Mac too: who you chose to look after an area ("keeper" or "monorail"), by area (island, clipboard, alerts.disk…). Areas not listed follow the agreed list. | `[:]` |
+| `suitePreferAt` | When each of those choices was made (milliseconds since 1970), so the newest choice wins. | `[:]` |
+| `suiteNotesShown` | Areas whose "Keeper looks after this now" note has been shown once. | `[]` |
 | `menuBarIconStyle` | The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black. | `"colour"` |
 | `menuBarReadings` | Live readings next to the icon, in this order: "cpu", "memory", "gpu", "network", "disk", "battery", "ai" (the fullest AI plan limit). | `[]` |
 | `systemAlerts` | Notifications when the Mac strains: a runaway app, memory pressure, heavy swap. | `true` |

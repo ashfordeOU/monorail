@@ -268,7 +268,7 @@ final class MeetingRecorder: NSObject, ObservableObject, SCStreamOutput, SCStrea
     // MARK: Offer on calls
 
     func callChanged(_ started: Bool) {
-        if started, !recording, store?.settings.meetingNotesOffer ?? false { NotesOffer.shared.show() }
+        if started, !recording, store?.settings.meetingNotesOffer ?? false, !SuiteRole.shared.rests(.meetingNotes) { NotesOffer.shared.show() }
         if !started { NotesOffer.shared.hide() }
     }
 }

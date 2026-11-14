@@ -113,7 +113,8 @@ final class MomentsWatch: ObservableObject {
         guard Moments.shouldNudgeToUnplug(percent: b.percent, isCharging: b.isCharging, limit: settings().chargeLimit,
                                           alreadyNudged: nudgedThisCharge) else { return }
         nudgedThisCharge = true
-        guard !SuiteRole.shared.pauses(.notifications) else { return }
+        // Keeper's charge limit says this itself when it's on.
+        guard !SuiteRole.shared.quiet(.chargeLimit) else { return }
         let content = UNMutableNotificationContent()
         content.title = "Charged to \(b.percent)%"
         content.body = "Unplug now to keep the battery healthy."

@@ -793,6 +793,13 @@ public struct AppSettings: Equatable, Codable, Sendable {
     public var eyeBreaks = false
     /// Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs).
     public var stationStepsBack = true
+    /// With Keeper on the Mac too: who you chose to look after an area ("keeper" or "monorail"), by
+    /// area (island, clipboard, alerts.disk…). Areas not listed follow the agreed list.
+    public var suitePrefer: [String: String] = [:]
+    /// When each of those choices was made (milliseconds since 1970), so the newest choice wins.
+    public var suitePreferAt: [String: Double] = [:]
+    /// Areas whose "Keeper looks after this now" note has been shown once.
+    public var suiteNotesShown: [String] = []
     /// The menu bar icon: "colour" (Monorail's orange to pink) or "white". Never black.
     public var menuBarIconStyle = "colour"
     /// Live readings next to the icon, in this order: "cpu", "memory", "gpu", "network", "disk", "battery", "ai" (the fullest AI plan limit).
@@ -1250,7 +1257,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, thumbWheelSlides, sliderIconsOnly, panelGlass, meetingNotesOffer, meetingNotesSystemAudio, homeOrder, homeHidden, weatherPlaces, weatherFahrenheit, notchLive, smartCards, volumeHUD, postureBreaks, waterReminders, agentsCanChange, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, suitePrefer, suitePreferAt, suiteNotesShown, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, thumbWheelSlides, sliderIconsOnly, panelGlass, meetingNotesOffer, meetingNotesSystemAudio, homeOrder, homeHidden, weatherPlaces, weatherFahrenheit, notchLive, smartCards, volumeHUD, postureBreaks, waterReminders, agentsCanChange, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
     }
 
     public init(from decoder: Decoder) throws {
@@ -1506,6 +1513,9 @@ public struct AppSettings: Equatable, Codable, Sendable {
         focusHidesApps = value(.focusHidesApps, d.focusHidesApps)
         eyeBreaks = value(.eyeBreaks, d.eyeBreaks)
         stationStepsBack = value(.stationStepsBack, d.stationStepsBack)
+        suitePrefer = value(.suitePrefer, d.suitePrefer)
+        suitePreferAt = value(.suitePreferAt, d.suitePreferAt)
+        suiteNotesShown = value(.suiteNotesShown, d.suiteNotesShown)
         menuBarIconStyle = value(.menuBarIconStyle, d.menuBarIconStyle)
         menuBarReadings = value(.menuBarReadings, d.menuBarReadings)
         systemAlerts = value(.systemAlerts, d.systemAlerts)

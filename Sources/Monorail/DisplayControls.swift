@@ -69,7 +69,7 @@ final class DisplayMenu: NSObject {
             let header = NSMenuItem(title: screens.count > 1 ? "\(index + 1). \(screen.name)" : screen.name, action: nil, keyEquivalent: "")
             header.isEnabled = false
             menu.addItem(header)
-            menu.addItem(sliderItem(for: screen))
+            if !SuiteRole.shared.rests(.displayBrightness) { menu.addItem(sliderItem(for: screen)) }
             if let resolution = resolutionItem(for: screen) { menu.addItem(resolution) }
             if let refresh = refreshItem(for: screen) { menu.addItem(refresh) }
         }

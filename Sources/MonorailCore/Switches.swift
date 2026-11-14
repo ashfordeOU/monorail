@@ -341,6 +341,23 @@ public struct NotchActivity: Equatable, Sendable {
         // Lower comes first.
         case sharing = 0, call, recording, timer, batteryLow, aiLimit, charging, awake, mode, download, music
         public static func < (a: Kind, b: Kind) -> Bool { a.rawValue < b.rawValue }
+
+        /// Its name on the suite channel (SuiteLive.kind).
+        public var name: String {
+            switch self {
+            case .sharing: return "sharing"
+            case .call: return "call"
+            case .recording: return "recording"
+            case .timer: return "timer"
+            case .batteryLow: return "batteryLow"
+            case .aiLimit: return "aiLimit"
+            case .charging: return "charging"
+            case .awake: return "awake"
+            case .mode: return "mode"
+            case .download: return "download"
+            case .music: return "music"
+            }
+        }
     }
 
     public var kind: Kind

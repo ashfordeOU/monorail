@@ -132,7 +132,7 @@ final class SystemAlerts {
     private var busy: [String: Int] = [:]
 
     func check(_ sample: SystemHistory.Sample) {
-        guard enabled(), !SuiteRole.shared.pauses(.notifications) else { return }
+        guard enabled(), !SuiteRole.shared.quiet(.alertSystem) else { return }
         if sample.memory >= 92 { send("memory", "Memory is nearly full", "Apps may slow down. The Dashboard shows which ones use the most.") }
         if sample.swapGB >= 8 { send("swap", "Your Mac is swapping heavily", String(format: "%.1f GB in swap. Quitting a big app or restarting will speed things up.", sample.swapGB)) }
         guard !Edition.isAppStore else { return }

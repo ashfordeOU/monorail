@@ -291,6 +291,7 @@ private struct StationGeneralPane: View {
                     Label("Monorail is running and looking after everything.", systemImage: "checkmark.circle.fill").foregroundStyle(.secondary)
                 }
             }
+            SuiteSharingSection(store: store)
         }
         .formStyle(.grouped)
         .onAppear { launchAtLogin = LoginItem.isEnabled }
@@ -461,6 +462,7 @@ private struct GeneralPane: View {
             SyncSection(store: store)
             RestoreSection(store: store)
             BackupsSection(store: store)
+            SuiteSharingSection(store: store)
             Section {
                 ForEach(checks) { check in
                     HStack(alignment: .top, spacing: 10) {

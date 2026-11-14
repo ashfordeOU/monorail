@@ -144,6 +144,19 @@ public struct PeerHello: Equatable, Sendable {
     public var overlays: [String]
     /// Its links (keeper://awake, keeper://focus, keeper://stage).
     public var links: [String]
+    /// Every area it has switched on (SuiteArea raw values, e.g. "island", "alerts.disk").
+    public var areas: Set<String> = []
+    /// Owners the person chose in that app, per area ("keeper" or "monorail"), and when (epoch ms).
+    public var prefer: [String: String] = [:]
+    public var preferAt: [String: Double] = [:]
+    /// Things happening there that the island owner shows (state.live).
+    public var live: [SuiteLive] = []
+
+    /// The person's choice for `area` made in that app, if any.
+    public func choice(for area: SuiteArea) -> SuiteRules.Choice? {
+        guard let raw = prefer[area.rawValue], let app = SuiteRules.App(rawValue: raw) else { return nil }
+        return SuiteRules.Choice(app: app, at: preferAt[area.rawValue] ?? 0)
+    }
 
     public init(app: String, bundleID: String, version: String, pid: Int32, owns: Owns = Owns(), overlays: [String] = [], links: [String] = []) {
         self.app = app
@@ -174,6 +187,10 @@ public struct PeerHello: Equatable, Sendable {
         let caps = body["caps"] as? [String: Any] ?? [:]
         hello.caps = Caps(closedLid: caps["closedLid"] as? Bool ?? false, closedLidReady: caps["closedLidReady"] as? Bool ?? false)
         hello.isAwake = (body["state"] as? [String: Any])?["awake"] as? Bool ?? false
+        hello.areas = SuiteArea.announced(in: owns)
+        hello.prefer = (body["prefer"] as? [String: Any] ?? [:]).compactMapValues { $0 as? String }
+        hello.preferAt = (body["preferAt"] as? [String: Any] ?? [:]).compactMapValues { ($0 as? Double) ?? ($0 as? Int).map(Double.init) }
+        hello.live = ((body["state"] as? [String: Any])?["live"] as? [Any] ?? []).compactMap { ($0 as? [String: Any]).flatMap(SuiteLive.init(json:)) }
         if let state = body["state"] as? [String: Any], let handoff = state["awakeHandoff"] as? [String: Any],
             let id = handoff["id"] as? String, let ok = handoff["ok"] as? Bool
         {

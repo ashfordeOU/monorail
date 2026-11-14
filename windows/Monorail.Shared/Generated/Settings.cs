@@ -131,6 +131,9 @@ public static class SettingKeys
     public const string FocusHidesApps = "focusHidesApps";
     public const string EyeBreaks = "eyeBreaks";
     public const string StationStepsBack = "stationStepsBack";
+    public const string SuitePrefer = "suitePrefer";
+    public const string SuitePreferAt = "suitePreferAt";
+    public const string SuiteNotesShown = "suiteNotesShown";
     public const string MenuBarIconStyle = "menuBarIconStyle";
     public const string MenuBarReadings = "menuBarReadings";
     public const string SystemAlerts = "systemAlerts";

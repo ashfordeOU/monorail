@@ -483,7 +483,7 @@ final class AIUsageWatch: ObservableObject {
 
     private func alert(_ fresh: [String: AIReport], accounts: [AIAccount]) {
         let s = settings
-        guard !SuiteRole.shared.pauses(.notifications) else { return }
+        guard !SuiteRole.shared.quiet(.alertAI) else { return }
         for account in accounts where account.notify {
             guard let report = fresh[account.id] else { continue }
             for window in report.windows {

@@ -1,6 +1,6 @@
 {
   "generatedFrom": "Sources/MonorailCore/AppSettings.swift",
-  "count": 276,
+  "count": 279,
   "settings": [
     {
       "key": "layout",
@@ -757,6 +757,24 @@
       "type": "Bool",
       "default": "true",
       "about": "Signalbox: while Monorail runs, let Monorail lead (Signalbox hides its icon and pauses its jobs)."
+    },
+    {
+      "key": "suitePrefer",
+      "type": "[String: String]",
+      "default": "[:]",
+      "about": "With Keeper on the Mac too: who you chose to look after an area (\"keeper\" or \"monorail\"), by area (island, clipboard, alerts.disk…). Areas not listed follow the agreed list."
+    },
+    {
+      "key": "suitePreferAt",
+      "type": "[String: Double]",
+      "default": "[:]",
+      "about": "When each of those choices was made (milliseconds since 1970), so the newest choice wins."
+    },
+    {
+      "key": "suiteNotesShown",
+      "type": "[String]",
+      "default": "[]",
+      "about": "Areas whose \"Keeper looks after this now\" note has been shown once."
     },
     {
       "key": "menuBarIconStyle",

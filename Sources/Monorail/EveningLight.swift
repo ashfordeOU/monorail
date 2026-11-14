@@ -60,7 +60,7 @@ final class EveningLight {
     /// Works out the strength for now and shows it (call after settings change, for a live slider).
     func update() {
         // While Monorail leads, it owns the screen's colours; two apps writing them would flicker.
-        if SuiteRole.shared.pauses(.eveningColours) {
+        if SuiteRole.shared.pauses(.eveningColours) || SuiteRole.shared.rests(.eveningColours) {
             if !applied.isNeutral { restore() }
             return
         }
@@ -74,7 +74,8 @@ final class EveningLight {
         isPausedForApp = level > 0.001 && EveningMode.isPaused(frontApp: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
                                                                 exceptions: settings.eveningPausedApps)
         var wanted = Applied(level: isPausedForApp || isPausedForFilm ? 0 : level, red: settings.eveningRed)
-        for (uuid, value) in settings.displayBrightness where value < 0.999 {
+        // Keeper's display brightness leads when it's on: Monorail's software dimming steps back.
+        for (uuid, value) in settings.displayBrightness where value < 0.999 && !SuiteRole.shared.rests(.displayBrightness) {
             wanted.brightness[uuid] = min(max(value, EveningMode.minimumBrightness), 1)
         }
         guard abs(wanted.level - applied.level) > 0.002 || wanted.red != applied.red || wanted.brightness != applied.brightness

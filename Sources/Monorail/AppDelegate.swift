@@ -9,7 +9,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let store = SettingsStore()
     private lazy var engine = Engine(settings: store.settings)
     /// Keeper (or another Ashforde app) that said hello through the local API.
-    private var peer: PeerHello?
+    private var peer: PeerHello? {
+        didSet {
+            guard peer != oldValue else { return }
+            if let peer, Companions.isKeeper(peer.bundleID) { SuiteRole.shared.setKeeper(peer) }
+        }
+    }
     /// The peer, while it's still running.
     private var activePeer: PeerHello? {
         guard let peer, let app = NSRunningApplication(processIdentifier: peer.pid), !app.isTerminated,
@@ -2161,6 +2166,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         MonorailNudgeWatch.shared.start()
         SuiteRole.shared.settings = { [weak self] in self?.store.settings ?? AppSettings() }
         SuiteRole.shared.onChange = { [weak self] role in self?.roleChanged(role) }
+        SuiteRole.shared.onAreasChange = { [weak self] fresh in self?.areasChanged(fresh) }
+        SuiteRole.shared.$asking.receive(on: DispatchQueue.main).sink { [weak self] asking in
+            guard let self, asking.contains(.island), !self.islandAskedThisRun else { return }
+            self.islandAskedThisRun = true
+            IslandChoice.show { [weak self] app in self?.choose(.island, app) }
+        }.store(in: &subscriptions)
         SuiteRole.shared.start()
         DashboardContext.store = store
         DashboardContext.openSettings = { [weak self] in self?.showSettings() }
@@ -2304,10 +2315,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let liveReloadWasOn = engine.settings.liveReloadSettings
         engine.settings = settings
         ClipboardWatch.shared.apply(settings)
-        NotchLive.shared.set(settings.notchLive && !SuiteRole.shared.pauses(.notch))
-        VolumeWatch.shared.enabled = settings.notchLive && settings.volumeHUD
+        let islandHere = settings.notchLive && !SuiteRole.shared.pauses(.notch) && !SuiteRole.shared.rests(.island)
+        NotchLive.shared.set(islandHere)
+        VolumeWatch.shared.enabled = islandHere && settings.volumeHUD
+        MenuBarReadings.shared.apply(SuiteRole.shared.rests(.menuBarReadings) ? [] : settings.menuBarReadings)
         FocusWatch.shared.apply(settings)
-        MenuBarReadings.shared.apply(settings.menuBarReadings)
         // The theme goes on Monorail's own windows only. Set on the whole app, it also reached the
         // menu bar icon, which then came out black on a dark menu bar (or white on a light one).
         chosenAppearance = {
@@ -2326,6 +2338,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         updateBatteryItem(settings.batteryMenuBar)
         updateStatusItem()
         evening.update()
+        // Settings that change what Monorail has on change what Keeper hears (once per real change).
+        SuiteRole.shared.evaluateAreas()
+        if suite != nil, suiteAnnouncement != lastSuiteAnnouncement { publishSuiteHello() }
         WorkspaceColor.theme = settings.theme
         stats.isEnabled = settings.collectStats
         autoRules.rules = settings.autoRules
@@ -2881,10 +2896,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         [
             "app": Brand.name, "bundleID": Bundle.main.bundleIdentifier ?? BundleIDs.current,
             "version": Bundle.main.shortVersion, "pid": Int(ProcessInfo.processInfo.processIdentifier),
-            "owns": ["awake": false, "focus": false, "stage": false],
+            "owns": suiteOwns,
+            "prefer": store.settings.suitePrefer,
+            "preferAt": store.settings.suitePreferAt,
             "role": SuiteRole.shared.role.rawValue,
             "caps": ["closedLid": !Edition.isAppStore, "closedLidReady": false],
-            "state": ["awake": awake.isOn, "paused": engine.isPaused, "focusMode": engine.isFocusMode, "presenting": engine.isPresenting],
+            "state": ["awake": awake.isOn, "paused": engine.isPaused, "focusMode": engine.isFocusMode, "presenting": engine.isPresenting,
+                      "live": suiteLive.map(\.json)] as [String: Any],
             "links": ["monorail://settings", "monorail://awake", "monorail://awake/off"],
         ]
     }
@@ -2892,7 +2910,79 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func publishSuiteHello() {
         guard let suite else { return }
         suite.writeHello(Self.suiteName, suiteHello)
+        suite.writeState(Self.suiteName, ["live": suiteLive.map(\.json), "at": Date().timeIntervalSince1970 * 1000])
+        lastSuiteAnnouncement = suiteAnnouncement
         ringSuiteDoorbell()
+    }
+
+    /// What the hello says Monorail has on (SuiteArea), in the agreed shape. Stay Awake, focus and
+    /// presentation stay false: Monorail hands those to Keeper (PeerHello), as before.
+    private var suiteOwns: [String: Any] {
+        var owns = SuiteArea.ownsObject(SuiteRole.areasOn(store.settings, role: SuiteRole.shared.role))
+        owns["awake"] = false
+        owns["focus"] = false
+        owns["stage"] = false
+        owns["alarms"] = false  // each app rings only its own timers, so nothing rings twice
+        return owns
+    }
+
+    /// Things happening here, for the island owner (Keeper's Island when the person chose it).
+    private var suiteLive: [SuiteLive] {
+        NotchLive.shared.activities().map { SuiteLive(kind: $0.kind.name, title: $0.text, symbol: $0.symbol) }
+    }
+
+    /// The parts of the hello other apps act on, to publish again only when they change.
+    private var suiteAnnouncement: String {
+        let areas = SuiteRole.areasOn(store.settings, role: SuiteRole.shared.role).map(\.rawValue).sorted()
+        let prefer = store.settings.suitePrefer.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }
+        return (areas + ["|"] + prefer).joined(separator: ",")
+    }
+    private var lastSuiteAnnouncement = ""
+    private var islandAskedThisRun = false
+    private var lastLive: [SuiteLive] = []
+    private var liveTimer: Timer?
+
+    /// Keeper's Island shows Monorail's live items while it's the island: refresh them every few seconds.
+    private func keepLiveFresh() {
+        let needed = suite != nil && SuiteRole.shared.rests(.island)
+        if !needed { liveTimer?.invalidate(); liveTimer = nil; return }
+        guard liveTimer == nil else { return }
+        liveTimer = Timer.every(3) { [weak self] _ in
+            guard let self, let suite = self.suite else { return }
+            let live = self.suiteLive
+            guard live != self.lastLive else { return }
+            self.lastLive = live
+            suite.writeState(Self.suiteName, ["live": live.map(\.json), "at": Date().timeIntervalSince1970 * 1000])
+            self.ringSuiteDoorbell()
+        }
+    }
+
+    /// The person chose who looks after an area (nil: back to the agreed list).
+    private func choose(_ area: SuiteArea, _ app: SuiteRules.App?) {
+        if let app {
+            store.settings.suitePrefer[area.rawValue] = app.rawValue
+            store.settings.suitePreferAt[area.rawValue] = Date().timeIntervalSince1970 * 1000
+        } else {
+            store.settings.suitePrefer[area.rawValue] = nil
+            store.settings.suitePreferAt[area.rawValue] = nil
+        }
+        SuiteRole.shared.evaluateAreas()
+        publishSuiteHello()
+    }
+
+    /// Keeper took over (or gave back) some areas: everything looks again, and the first time an
+    /// area goes to Keeper a note says so, with a way to choose otherwise.
+    private func areasChanged(_ fresh: Set<SuiteArea>) {
+        evening.update()
+        apply(store.settings)
+        keepLiveFresh()
+        publishSuiteHello()
+        let unseen = fresh.filter { !store.settings.suiteNotesShown.contains($0.rawValue) }
+        guard !unseen.isEmpty else { return }
+        store.settings.suiteNotesShown += unseen.map(\.rawValue)
+        DispatchQueue.main.async { [weak self] in
+            SuiteNote.show(unseen) { self?.navigation.tab = .general; self?.showSettings() }
+        }
     }
 
     private func ringSuiteDoorbell() {

@@ -196,7 +196,7 @@ final class StorageWatch: ObservableObject {
     }
 
     private func notify(_ title: String, _ body: String) {
-        guard !SuiteRole.shared.pauses(.notifications) else { return }
+        guard !SuiteRole.shared.quiet(.alertDisk) else { return }
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
@@ -278,7 +278,7 @@ struct StoragePage: View {
                     .padding(.horizontal, 4)
             }
             StorageMapCard()
-            if storage.canClean { cleanupsCard } else { grantCard }
+            if SuiteRole.shared.rests(.storageCleanup) { keeperCleanupCard } else if storage.canClean { cleanupsCard } else { grantCard }
             largestCard
         }
         .padding(12)
@@ -294,6 +294,22 @@ struct StoragePage: View {
             Text("Xcode build files, old caches and downloads you've forgotten. Choose your home folder once, and \(Brand.name) can look.")
                 .font(.system(size: 12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             Button("Choose Home Folder…") { storage.grantHome() }.controlSize(.small)
+        }
+        .tile()
+    }
+
+    /// Keeper looks after clean-ups while it runs (agreed): one button to its Free Up Space.
+    private var keeperCleanupCard: some View {
+        let link = SuiteRole.shared.keeper?.links.first { $0.contains("space") || $0.contains("clean") } ?? Companions.keeperHome
+        return VStack(alignment: .leading, spacing: 6) {
+            Text("CLEAN-UPS").font(.label).foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles").foregroundStyle(.secondary)
+                Text("Keeper looks after clean-ups while it's open, so they don't run twice.").font(.system(size: 11.5))
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer()
+                Button("Free Up Space") { if let url = URL(string: link) { NSWorkspace.shared.open(url) } }.controlSize(.small)
+            }
         }
         .tile()
     }

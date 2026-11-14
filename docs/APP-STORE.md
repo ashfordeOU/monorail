@@ -151,5 +151,14 @@ it's doing), leaves requests in `requests/<to>/` and answers in `responses/<from
 doorbell (the distributed notification `com.ashforde.suite.changed`, with no payload). Both editions of
 both apps use it; the downloaded versions also keep the localhost API.
 
+**Who does what when both are open** (agreed with Keeper and approved, November 2026): each app
+announces the areas it has on in `hello.owns` (with a nested `alerts` object) and the person's
+choices in `hello.prefer` / `hello.preferAt`. The same pure rule list in both apps
+(`Sources/MonorailCore/SuiteRules.swift`, mirrored in Keeper's TypeScript) says which app rests: Keeper
+leads on alarms, meeting notes, menu bar readings, display brightness, storage clean-up, its charge
+limit and disk, network, system, AI and meeting alerts; Monorail on window arranging, clipboard,
+evening warmth, breaks, battery and agent alerts; the island is the person's choice (asked once,
+newest choice wins); the launcher stays in both. The island owner shows the other's `state.live` items.
+
 Keeper's App Store edition is being built in Keeper's own repository; both apps go to the App Store
 together when it's ready.

@@ -37,7 +37,7 @@ final class ClipboardWatch: ObservableObject {
     func apply(_ settings: AppSettings) {
         self.settings = settings
         history.keep = settings.clipboardKeep
-        let on = settings.clipboardHistory && !SuiteRole.shared.pauses(.clipboardWatch)
+        let on = settings.clipboardHistory && !SuiteRole.shared.pauses(.clipboardWatch) && !SuiteRole.shared.rests(.clipboard)
         if on, timer == nil {
             lastCount = NSPasteboard.general.changeCount
             timer = Timer.every(0.8) { [weak self] _ in self?.poll() }

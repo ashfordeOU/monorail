@@ -34,7 +34,14 @@ final class NotchLive {
         var compactWidth: CGFloat { hasNotch ? notchWidth + Self.wing * 2 : 230 }
         var compactHeight: CGFloat { hasNotch ? notchHeight : max(notchHeight - 2, 22) }
         var expandedWidth: CGFloat { max(compactWidth, 440) }
-        var expandedHeight: CGFloat { compactHeight + 210 }
+        /// As tall as what it shows: up to three activities, Now Playing, the shelf, and the button.
+        var expandedHeight: CGFloat {
+            if dropping { return compactHeight + 150 }
+            let rows = CGFloat(min(list.count, 3)) * 32 + (list.isEmpty ? 0 : 6)
+            let music: CGFloat = NowPlaying.shared.track == nil ? 0 : 66
+            let shelfHeight: CGFloat = shelf.isEmpty ? 44 : 92
+            return compactHeight + 20 + rows + music + shelfHeight + 34
+        }
         var big: Bool { expanded || dropping }
         var visible: Bool { !list.isEmpty || !shelf.isEmpty || big }
     }

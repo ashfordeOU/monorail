@@ -1,5 +1,6 @@
 #if os(macOS)
 import AppKit
+import CoreAudio
 import MonorailCore
 import SwiftUI
 import UniformTypeIdentifiers
@@ -27,6 +28,9 @@ final class NotchLive {
         @Published var expanded = false
         @Published var dropping = false
         @Published var shelf = NotchShelf()
+        /// A moment's reading, like the volume as it changes.
+        struct Flash: Equatable { var symbol: String; var level: Double }
+        @Published var flash: Flash?
         @Published var hasNotch = true
         @Published var notchWidth: CGFloat = 190
         @Published var notchHeight: CGFloat = 32
@@ -43,7 +47,7 @@ final class NotchLive {
             return compactHeight + 20 + rows + music + shelfHeight + 34
         }
         var big: Bool { expanded || dropping }
-        var visible: Bool { !list.isEmpty || !shelf.isEmpty || big }
+        var visible: Bool { !list.isEmpty || !shelf.isEmpty || big || flash != nil }
     }
 
     private static let shelfKey = "NotchShelf"
@@ -137,6 +141,24 @@ final class NotchLive {
             remove: { [weak self] url in self?.forget(url) },
             clear: { [weak self] in self?.clearShelf() })))
         return panel
+    }
+
+    // MARK: A moment's reading
+
+    private var flashWork: DispatchWorkItem?
+
+    /// Shows a reading in the island for a moment (the volume as it changes), then tucks away.
+    func flash(symbol: String, level: Double) {
+        guard timer != nil else { return }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { model.flash = .init(symbol: symbol, level: min(max(level, 0), 1)) }
+        place()
+        flashWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            withAnimation(.easeOut(duration: 0.25)) { self?.model.flash = nil }
+            self?.place()
+        }
+        flashWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6, execute: work)
     }
 
     // MARK: Hover, drags and the shelf
@@ -235,6 +257,28 @@ final class NotchLive {
 
         // The two sides of the notch: what's most important now, and how many more.
         private var wings: some View {
+            Group {
+                if let flash = model.flash, !model.big { flashWings(flash) } else { normalWings }
+            }
+        }
+
+        private func flashWings(_ flash: Model.Flash) -> some View {
+            HStack(spacing: 8) {
+                Image(systemName: flash.symbol).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
+                    .frame(width: Model.wing - 16, alignment: .center)
+                Spacer(minLength: 0)
+                GeometryReader { g in
+                    Capsule().fill(Color.white.opacity(0.2))
+                        .overlay(alignment: .leading) { Capsule().fill(Color.white).frame(width: g.size.width * flash.level) }
+                }
+                .frame(width: Model.wing - 26, height: 5)
+                .padding(.trailing, 13)
+            }
+            .animation(.spring(response: 0.25, dampingFraction: 0.85), value: flash.level)
+            .accessibilityLabel(Text("Volume \(Int((flash.level * 100).rounded())) percent"))
+        }
+
+        private var normalWings: some View {
             HStack(spacing: 0) {
                 Group {
                     if let top = model.list.first {
@@ -368,6 +412,7 @@ final class NotchLive {
             case .charging: return "Charging"
             case .awake: return "Staying awake"
             case .mode: return "Mode"
+            case .download: return "Downloading"
             case .music: return NowPlaying.shared.track.map { "\($0.title) · \($0.artist)" } ?? "Playing"
             }
         }
@@ -410,6 +455,65 @@ extension View {
     /// A gentle pulse for things that are live (sharing, a call, recording).
     @ViewBuilder func pulsing(_ on: Bool) -> some View {
         if #available(macOS 14, *), on, !Motion.reduced { self.symbolEffect(.pulse, options: .repeating) } else { self }
+    }
+}
+
+/// Tells the island when the output volume or mute changes, from Core Audio's own notices (nothing polled).
+final class VolumeWatch {
+    static let shared = VolumeWatch()
+    /// Settings → the island shows the volume as it changes.
+    var enabled = false { didSet { if enabled { start() } } }
+    private var device: AudioDeviceID = 0
+    private var lastLevel: Float?
+    private let queue = DispatchQueue.main
+    private var started = false
+
+    func start() {
+        guard !started else { return }
+        started = true
+        var address = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDefaultOutputDevice, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+        AudioObjectAddPropertyListenerBlock(AudioObjectID(kAudioObjectSystemObject), &address, queue) { [weak self] _, _ in self?.attach() }
+        attach()
+    }
+
+    private func attach() {
+        var id = AudioDeviceID(0), size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDefaultOutputDevice, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+        guard AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &size, &id) == noErr, id != device else { return }
+        device = id
+        lastLevel = level()
+        for selector in [kAudioDevicePropertyVolumeScalar, kAudioDevicePropertyMute] {
+            for element in [kAudioObjectPropertyElementMain, 1, 2] {
+                var a = AudioObjectPropertyAddress(mSelector: selector, mScope: kAudioDevicePropertyScopeOutput, mElement: element)
+                if AudioObjectHasProperty(id, &a) {
+                    AudioObjectAddPropertyListenerBlock(id, &a, queue) { [weak self] _, _ in self?.changed(from: id) }
+                }
+            }
+        }
+    }
+
+    private func level() -> Float? {
+        for element in [kAudioObjectPropertyElementMain, 1] {
+            var value = Float32(0), size = UInt32(MemoryLayout<Float32>.size)
+            var a = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyVolumeScalar, mScope: kAudioDevicePropertyScopeOutput, mElement: element)
+            if AudioObjectHasProperty(device, &a), AudioObjectGetPropertyData(device, &a, 0, nil, &size, &value) == noErr { return value }
+        }
+        return nil
+    }
+
+    private func muted() -> Bool {
+        var value = UInt32(0), size = UInt32(MemoryLayout<UInt32>.size)
+        var a = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyMute, mScope: kAudioDevicePropertyScopeOutput, mElement: kAudioObjectPropertyElementMain)
+        return AudioObjectHasProperty(device, &a) && AudioObjectGetPropertyData(device, &a, 0, nil, &size, &value) == noErr && value != 0
+    }
+
+    private func changed(from id: AudioDeviceID) {
+        guard enabled, id == device, let level = level() else { return }
+        defer { lastLevel = level }
+        let mute = muted()
+        guard lastLevel.map({ abs($0 - level) > 0.004 }) ?? true || mute else { return }
+        let symbol = mute || level == 0 ? "speaker.slash.fill" : level < 0.34 ? "speaker.wave.1.fill" : level < 0.67 ? "speaker.wave.2.fill" : "speaker.wave.3.fill"
+        NotchLive.shared.flash(symbol: symbol, level: mute ? 0 : Double(level))
     }
 }
 #endif

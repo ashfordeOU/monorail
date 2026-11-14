@@ -448,6 +448,7 @@ struct DevicesPane: View {
 
     var body: some View {
         Form {
+            PermissionsSection()
             Section {
                 Picker("Monorail key", selection: $store.settings.monorailKeySource) {
                     ForEach(MonorailKeySource.allCases, id: \.self) { Text($0.title).tag($0) }

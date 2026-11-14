@@ -14,7 +14,7 @@ import Vision
 /// developer tools, with a search field. Monorail adds the ones the App Store's sandbox doesn't allow.
 enum ToolKind: String, CaseIterable, Identifiable {
     case screenshotNames = "Screenshot Names", batchRename = "Batch Rename", images = "Convert Images", removeBackground = "Remove Background", pdf = "PDF"
-    case qr = "QR Code", wordCount = "Word Count", caseConvert = "Change Case", speak = "Read Aloud"
+    case qr = "QR Code", wordCount = "Word Count", caseConvert = "Change Case", speak = "Read Aloud", convert = "Convert Units"
     case json = "JSON", base64 = "Base64", hash = "Hashes", timestamp = "Timestamps", jwt = "JWT", cleanLink = "Clean Link"
     case password = "Password", uuid = "UUID", deadPixel = "Dead Pixel Test", ejectAll = "Eject All", cleanKeyboard = "Clean Keyboard"
 
@@ -23,7 +23,7 @@ enum ToolKind: String, CaseIterable, Identifiable {
     var group: String {
         switch self {
         case .screenshotNames, .batchRename, .images, .removeBackground, .pdf, .qr: return "Files"
-        case .wordCount, .caseConvert, .speak: return "Text"
+        case .wordCount, .caseConvert, .speak, .convert: return "Text"
         case .json, .base64, .hash, .timestamp, .jwt, .cleanLink, .password, .uuid: return "Developer"
         case .deadPixel, .ejectAll, .cleanKeyboard: return "Mac"
         }
@@ -40,6 +40,7 @@ enum ToolKind: String, CaseIterable, Identifiable {
         case .wordCount: return "textformat.123"
         case .caseConvert: return "textformat"
         case .speak: return "speaker.wave.2"
+        case .convert: return "arrow.left.arrow.right"
         case .json: return "curlybraces"
         case .base64: return "chevron.left.forwardslash.chevron.right"
         case .hash: return "number"
@@ -65,6 +66,7 @@ enum ToolKind: String, CaseIterable, Identifiable {
         case .wordCount: return "Words, characters, sentences and reading time."
         case .caseConvert: return "UPPER, lower, Title, Sentence, camelCase, snake_case and kebab-case."
         case .speak: return "Hear any text read aloud."
+        case .convert: return "Length, weight, temperature, volume, speed, area, data, time, energy and pressure. Type \"5 km in miles\" or pick the units."
         case .json: return "Tidy or minify JSON, and check it's valid."
         case .base64: return "Encode and decode Base64."
         case .hash: return "MD5, SHA-1, SHA-256 and SHA-512 of any text."
@@ -197,6 +199,7 @@ private struct ToolBody: View {
         case .wordCount: WordCountTool()
         case .caseConvert: CaseTool()
         case .speak: SpeakTool()
+        case .convert: ConverterTool()
         case .json: TextTransformTool(actions: [("Tidy", DevTools.prettyJSON), ("Minify", DevTools.minifyJSON)], failure: "That isn't valid JSON.")
         case .base64: TextTransformTool(actions: [("Encode", { DevTools.base64Encode($0) }), ("Decode", DevTools.base64Decode)], failure: "That isn't Base64 text.")
         case .hash: HashTool()
@@ -276,6 +279,54 @@ private struct TextTransformTool: View {
                 Button("Copy Result") { copy(output) }.disabled(output.isEmpty)
             }
             Editor(text: $output, placeholder: "The result appears here").frame(minHeight: 130)
+        }
+    }
+}
+
+/// Converts between units: type a sentence, or choose a kind of unit and see it in every unit at once.
+private struct ConverterTool: View {
+    @State private var sentence = ""
+    @State private var categoryName = UnitConverter.categories[0].name
+    @State private var value = "1"
+    @State private var fromName = UnitConverter.categories[0].units[2].name
+
+    private var category: UnitConverter.Category { UnitConverter.categories.first { $0.name == categoryName } ?? UnitConverter.categories[0] }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            TextField("Type a conversion, like 5 km in miles or 72 F to C", text: $sentence).textFieldStyle(.roundedBorder).font(.system(size: 14))
+            if !sentence.isEmpty {
+                if let answer = UnitConverter.answer(sentence) {
+                    HStack {
+                        Text(answer).font(.system(size: 20, weight: .semibold, design: .rounded)).textSelection(.enabled)
+                        Spacer()
+                        Button { copy(answer) } label: { Image(systemName: "doc.on.doc") }.buttonStyle(.borderless).help("Copy").accessibilityLabel("Copy")
+                    }
+                } else {
+                    Text("Try a number, a unit, “in”, and another unit of the same kind.").font(.callout).foregroundStyle(.secondary)
+                }
+            }
+            Divider()
+            HStack {
+                Picker("Kind", selection: $categoryName) { ForEach(UnitConverter.categories) { Text($0.name).tag($0.name) } }.frame(width: 200)
+                    .onChange(of: categoryName) { _ in fromName = category.units.first?.name ?? "" }
+                TextField("Value", text: $value).textFieldStyle(.roundedBorder).frame(width: 110)
+                Picker("", selection: $fromName) { ForEach(category.units) { Text($0.name).tag($0.name) } }.labelsHidden().frame(width: 190)
+            }
+            if let amount = Double(value.replacingOccurrences(of: ",", with: ".")), let from = category.units.first(where: { $0.name == fromName }) {
+                VStack(spacing: 4) {
+                    ForEach(category.units.filter { $0.name != fromName }) { unit in
+                        let result = UnitConverter.format(UnitConverter.convert(amount, from: from, to: unit))
+                        HStack {
+                            Text(unit.name).foregroundStyle(.secondary)
+                            Spacer()
+                            Text("\(result) \(unit.symbol)").font(.system(size: 13, design: .monospaced)).textSelection(.enabled)
+                            Button { copy(result) } label: { Image(systemName: "doc.on.doc") }.buttonStyle(.borderless).help("Copy").accessibilityLabel("Copy")
+                        }
+                        .padding(.vertical, 3)
+                    }
+                }
+            }
         }
     }
 }

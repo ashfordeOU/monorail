@@ -463,6 +463,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         trackpad.onVerticalSwipe = { [weak self] up in self?.engine.switchWorkspaceVertically(next: up) }
         meetings.onMeeting = { [weak self] title, link in self?.joinMeeting(title, link) }
         api.handler = { [weak self] method, path, body in self?.handleAPI(method, path, body) }
+        api.allowAgentChange = { [weak self] path, body in self?.agentMayChange(path, body) ?? false }
         scripts.bridge = scriptBridge()
         NotificationCenter.default.addObserver(forName: .monorailReloadScripts, object: nil, queue: .main) { [weak self] _ in
             self?.reloadScripts()
@@ -1527,6 +1528,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let answer = QuickCalc.format(value)
             list.append(PaletteCommand(id: "calc", title: "= \(answer)", subtitle: "Copy the answer", symbol: "equal.circle", keywords: q) { ClipboardWatch.shared.copy(answer) })
         }
+        // "5 km in miles", "72 F to C".
+        if let converted = UnitConverter.answer(q) {
+            let result = converted.components(separatedBy: " = ").last ?? converted
+            list.append(PaletteCommand(id: "convert", title: converted, subtitle: "Copy \(result)", symbol: "arrow.left.arrow.right", keywords: q) { ClipboardWatch.shared.copy(result) })
+        }
         if q.count >= 2 {
             for clip in ClipboardWatch.shared.history.shown(matching: q).prefix(4) {
                 list.append(PaletteCommand(id: "clip-\(clip.id)", title: clip.preview(60), subtitle: "Clipboard · paste it", symbol: clip.kind.symbol,
@@ -2206,6 +2212,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 list.append(NotchActivity(.aiLimit, symbol: "brain", text: "\(Int(top.window.usedPercent))%", tint: "orange"))
             }
             if self.awake.isOn { list.append(NotchActivity(.awake, symbol: "cup.and.saucer.fill", text: "Awake", tint: "blue")) }
+            // Only once the Storage page has looked in Downloads (so macOS has already asked, in context).
+            if !Edition.isAppStore, UserDefaults.standard.bool(forKey: "DownloadsReadable") {
+                let downloads = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads").path
+                let names = (try? FileManager.default.contentsOfDirectory(atPath: downloads)) ?? []
+                if let label = Downloading.label(Downloading.inProgress(names)) {
+                    list.append(NotchActivity(.download, symbol: "arrow.down.circle.fill", text: label, tint: "blue"))
+                }
+            }
             if let music = NowPlaying.shared.activity { list.append(music) }
             return list
         }
@@ -2291,6 +2305,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         engine.settings = settings
         ClipboardWatch.shared.apply(settings)
         NotchLive.shared.set(settings.notchLive && !SuiteRole.shared.pauses(.notch))
+        VolumeWatch.shared.enabled = settings.notchLive && settings.volumeHUD
         FocusWatch.shared.apply(settings)
         MenuBarReadings.shared.apply(settings.menuBarReadings)
         // The theme goes on Monorail's own windows only. Set on the whole app, it also reached the
@@ -2915,6 +2930,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // MARK: Local API
 
+    /// AI agents read freely; the first change they ask for waits for the person: this time, always, or no.
+    private var agentsAllowedThisSession = false
+    private func agentMayChange(_ path: [String], _ body: [String: Any]) -> Bool {
+        if store.settings.agentsCanChange || agentsAllowedThisSession { return true }
+        let what = (body["action"] as? String).map { "run “\($0)”" } ?? (body["text"] as? String).map { "do “\($0)”" } ?? "change “\(path.joined(separator: "/"))”"
+        let alert = NSAlert()
+        alert.messageText = "Let an AI agent change your Mac?"
+        alert.informativeText = "An agent connected to \(Brand.name) through MCP wants to \(what). Reading what's on screen never needs asking. You can change this any time in Settings ▸ Automation."
+        alert.addButton(withTitle: "Allow This Time")
+        alert.addButton(withTitle: "Always Allow")
+        alert.addButton(withTitle: "Don't Allow")
+        NSApp.activate(ignoringOtherApps: true)
+        switch alert.runModal() {
+        case .alertFirstButtonReturn: agentsAllowedThisSession = true; return true
+        case .alertSecondButtonReturn: store.settings.agentsCanChange = true; return true
+        default: return false
+        }
+    }
+
     private func handleAPI(_ method: String, _ path: [String], _ body: [String: Any]) -> Any? {
         func int(_ key: String) -> Int? { (body[key] as? Int) ?? (body[key] as? String).flatMap { Int($0) } }
         func text(_ key: String) -> String? { body[key] as? String }
@@ -3328,6 +3362,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             })
         }
         do {
+            list.append(PaletteCommand(id: "identify-displays", title: "Identify Displays", subtitle: "A big number and the name on every screen, for a moment",
+                                       symbol: "display.2", keywords: "screens monitors which display number name") { IdentifyDisplays.show() })
             list.append(PaletteCommand(id: "dashboard", title: "Dashboard", subtitle: "System, battery, storage and today, full size", symbol: "gauge.with.dots.needle.67percent",
                                        keywords: "system monitor activity apps cpu memory gpu disk network battery sound ports agents trends history") { DashboardWindow.shared.show() })
             list.append(PaletteCommand(id: "ai-usage", title: "AI Usage", subtitle: "Claude, Codex, Gemini, OpenClaw, Hermes, Ollama, LM Studio and API keys", symbol: "brain",

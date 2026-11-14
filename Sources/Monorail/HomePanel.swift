@@ -162,6 +162,15 @@ struct PanelRoot: View {
 
 // MARK: - Home
 
+/// Home's smart cards: readings that raise a card only while they matter, with hysteresis so they don't flicker.
+final class SmartReadings {
+    static let shared = SmartReadings()
+    private var cpu = Hysteresis(on: 85, off: 60)
+    private var memory = Hysteresis(on: 90, off: 80)
+    func cpuBusy(_ percent: Double) -> Bool { cpu.update(percent) }
+    func memoryTight(_ percent: Double) -> Bool { memory.update(percent) }
+}
+
 struct HomePage: View {
     @ObservedObject var model: SliderBarModel
     @ObservedObject var paused: PausedState
@@ -179,6 +188,7 @@ struct HomePage: View {
     @ObservedObject private var today = TodayWatch.shared
     @ObservedObject private var focusSession = FocusWatch.shared
     @ObservedObject private var storage = StorageWatch.shared
+    @ObservedObject private var system = SystemWatch.shared
     private var more: SliderPopover.MoreControls { context.more }
 
     private var layout: HomeLayout {
@@ -190,7 +200,9 @@ struct HomePage: View {
             updateAvailable: updater.available != nil, paused: paused.value,
             heat: moments.heat, onCall: moments.call.isOnCall, movie: moments.film,
             meetingSoon: today.next.map { TimeModel.isImminent($0.start, end: $0.end, now: today.now) } ?? false,
-            diskLow: storage.level == .critical),
+            diskLow: storage.level == .critical,
+            cpuBusy: store.settings.smartCards && SmartReadings.shared.cpuBusy(system.total),
+            memoryTight: store.settings.smartCards && SmartReadings.shared.memoryTight(system.memory.pressure * 100)),
             order: HomePlanner.order(saved: store.settings.homeOrder),
             hidden: Set(store.settings.homeHidden.compactMap(HomeCard.init(rawValue:))))
     }
@@ -597,12 +609,10 @@ struct HomePage: View {
             ControlTile(title: "Film", status: moments.film ? (moments.sleepAt.map { "Sleeps at \($0.formatted(date: .omitted, time: .shortened))" } ?? "On") : "Off",
                         systemImage: "film.fill", isOn: moments.film, tint: Color(nsColor: .systemIndigo),
                         toggle: { moments.setFilm(!moments.film) }, open: { nav.push(.film) })
-            // The live notch (like a Dynamic Island): what's happening shows beside the notch while it happens.
-            if NSScreen.screens.contains(where: { $0.safeAreaInsets.top > 0 }) {
-                ControlTile(title: "Live Notch", status: store.settings.notchLive ? "On" : "Off", systemImage: "capsule.fill",
-                            isOn: store.settings.notchLive, tint: Color(nsColor: .systemPink),
-                            toggle: { store.settings.notchLive.toggle(); settle() }, open: nil)
-            }
+            // The island at the top of the screen (beside the notch, or a pill on Macs without one), with its shelf.
+            ControlTile(title: "Island", status: store.settings.notchLive ? "On" : "Off", systemImage: "capsule.fill",
+                        isOn: store.settings.notchLive, tint: Color(nsColor: .systemPink),
+                        toggle: { store.settings.notchLive.toggle(); settle() }, open: nil)
             if PowerWatch.hasBattery, !Edition.isAppStore {
                 ControlTile(title: "Low Power", status: power.battery.lowPowerMode ? "On" : "Off", systemImage: "leaf.fill",
                             isOn: power.battery.lowPowerMode, tint: Tone.ok,
@@ -1176,6 +1186,8 @@ struct ArrangeHome: View {
             Divider().padding(.vertical, 4)
             HStack {
                 Text("Cards that need you, like a low battery or a call, still come first.").font(.system(size: 10.5)).foregroundStyle(.secondary)
+                Toggle("Raise System when the processor is busy or memory is nearly full", isOn: $store.settings.smartCards)
+                    .font(.system(size: 11.5)).toggleStyle(.checkbox)
                 Spacer()
                 Button("Reset") { store.settings.homeOrder = []; store.settings.homeHidden = [] }.controlSize(.small)
             }

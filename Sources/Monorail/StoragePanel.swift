@@ -119,6 +119,9 @@ final class StorageWatch: ObservableObject {
                 }
                 if bytes > 0 { found[cleanup.id] = Found(id: cleanup.id, bytes: bytes, urls: urls) }
             }
+            if (try? FileManager.default.contentsOfDirectory(atPath: home.appendingPathComponent("Downloads").path)) != nil {
+                UserDefaults.standard.set(true, forKey: "DownloadsReadable")
+            }
             DispatchQueue.main.async {
                 self?.cleanups = found
                 self?.scanning = false

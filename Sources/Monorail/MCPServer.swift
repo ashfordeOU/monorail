@@ -159,6 +159,8 @@ enum MCPServer {
         var request = URLRequest(url: url, timeoutInterval: 10)
         request.httpMethod = method
         request.setValue("Bearer \(LocalAPI.token())", forHTTPHeaderField: "Authorization")
+        // So Monorail knows the request comes from an AI agent, and asks before the first change.
+        request.setValue("mcp", forHTTPHeaderField: "X-Monorail-Client")
         if method != "GET" {
             request.httpBody = try? JSONSerialization.data(withJSONObject: body)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")

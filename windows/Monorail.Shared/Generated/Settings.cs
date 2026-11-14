@@ -148,6 +148,11 @@ public static class SettingKeys
     public const string WeatherPlaces = "weatherPlaces";
     public const string WeatherFahrenheit = "weatherFahrenheit";
     public const string NotchLive = "notchLive";
+    public const string SmartCards = "smartCards";
+    public const string VolumeHUD = "volumeHUD";
+    public const string PostureBreaks = "postureBreaks";
+    public const string WaterReminders = "waterReminders";
+    public const string AgentsCanChange = "agentsCanChange";
     public const string Modes = "modes";
     public const string CustomSwitches = "customSwitches";
     public const string BackdropColour = "backdropColour";
@@ -486,7 +491,17 @@ public static class SettingDefaults
     /// <summary>Weather in °F instead of °C.</summary>
     public const bool WeatherFahrenheit = false;
     /// <summary>Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…).</summary>
-    public const bool NotchLive = false;
+    public const bool NotchLive = true;
+    /// <summary>Home cards that matter only sometimes (busy processor, heat, low battery, a meeting soon) appear when they do.</summary>
+    public const bool SmartCards = true;
+    /// <summary>The island shows the volume as it changes.</summary>
+    public const bool VolumeHUD = true;
+    /// <summary>A reminder to sit up and stretch after 45 minutes at the Mac.</summary>
+    public const bool PostureBreaks = false;
+    /// <summary>A reminder to drink some water every hour at the Mac.</summary>
+    public const bool WaterReminders = false;
+    /// <summary>AI agents connected through MCP may change windows and settings without asking (reading never asks).</summary>
+    public const bool AgentsCanChange = false;
     /// <summary>The Backdrop switch's colour (hex).</summary>
     public const string BackdropColour = "#1E2235";
     /// <summary>AI Usage: ask Claude and Codex for live plan limits with their own sign-in (Claude's asks once for Keychain access).</summary>

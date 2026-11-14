@@ -118,3 +118,55 @@ final class NotchShelfTests: XCTestCase {
         XCTAssertEqual(NotchActivity.ranked(list).map(\.kind), [.sharing, .timer, .charging])
     }
 }
+
+final class SmartCardTests: XCTestCase {
+    func testHysteresis() {
+        var busy = Hysteresis(on: 85, off: 60)
+        XCTAssertFalse(busy.update(80))
+        XCTAssertTrue(busy.update(90))
+        XCTAssertTrue(busy.update(70))   // still busy: above the off level
+        XCTAssertFalse(busy.update(55))
+    }
+
+    func testBusyProcessorRaisesSystem() {
+        var signals = HomeSignals()
+        signals.cpuBusy = true
+        let layout = HomePlanner.plan(signals)
+        XCTAssertEqual(layout.raised, [.system])
+        XCTAssertEqual(layout.title, "Processor busy")
+    }
+}
+
+final class UnitConverterTests: XCTestCase {
+    func testConversions() {
+        let km = UnitConverter.unit(named: "km")!.1, mi = UnitConverter.unit(named: "miles")!.1
+        XCTAssertEqual(UnitConverter.convert(5, from: km, to: mi), 3.10686, accuracy: 0.0001)
+        let c = UnitConverter.unit(named: "C")!.1, f = UnitConverter.unit(named: "fahrenheit")!.1
+        XCTAssertEqual(UnitConverter.convert(100, from: c, to: f), 212, accuracy: 0.0001)
+        XCTAssertEqual(UnitConverter.convert(32, from: f, to: c), 0, accuracy: 0.0001)
+    }
+
+    func testParseAndAnswer() {
+        XCTAssertEqual(UnitConverter.answer("5 km in miles"), "5 km = 3.10686 mi")
+        XCTAssertEqual(UnitConverter.answer("72F to C"), "72 °F = 22.2222 °C")
+        XCTAssertEqual(UnitConverter.answer("1 GiB in MB"), "1 GiB = 1073.74 MB")
+        XCTAssertEqual(UnitConverter.unit(named: "ms")?.1.name, "Milliseconds")
+        XCTAssertNil(UnitConverter.answer("5 km in kg"))
+        XCTAssertNil(UnitConverter.answer("hello"))
+    }
+
+    func testFormat() {
+        XCTAssertEqual(UnitConverter.format(2.5), "2.5")
+        XCTAssertEqual(UnitConverter.format(3), "3")
+    }
+}
+
+final class DownloadingTests: XCTestCase {
+    func testDownloads() {
+        let files = Downloading.inProgress(["Report.pdf.download", "movie.mp4.crdownload", "done.zip", "photo.jpg.part"])
+        XCTAssertEqual(files, ["Report.pdf", "movie.mp4", "photo.jpg"])
+        XCTAssertEqual(Downloading.label(["Report.pdf"]), "Report.pdf")
+        XCTAssertEqual(Downloading.label(files), "3 files")
+        XCTAssertNil(Downloading.label([]))
+    }
+}

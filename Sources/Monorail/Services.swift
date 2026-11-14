@@ -69,6 +69,8 @@ final class LocalAPI {
     typealias Handler = (_ method: String, _ path: [String], _ body: [String: Any]) -> Any?
 
     var handler: Handler = { _, _, _ in nil }
+    /// Changes asked for by AI agents (through MCP) wait for the person to allow them. Reading never does.
+    var allowAgentChange: (_ path: [String], _ body: [String: Any]) -> Bool = { _, _ in true }
     private var listener: NWListener?
     private(set) var port: UInt16 = 0
 
@@ -170,7 +172,10 @@ final class LocalAPI {
             let body = (try? JSONSerialization.jsonObject(with: request.body)) as? [String: Any] ?? [:]
             let path = request.path.split(separator: "?").first.map(String.init) ?? ""
             let parts = path.split(separator: "/").map { String($0).removingPercentEncoding ?? String($0) }
-            if let answer = handler(request.method, parts, body) {
+            if request.headers["x-monorail-client"] == "mcp", request.method != "GET", !allowAgentChange(parts, body) {
+                status = "403 Forbidden"
+                result = ["error": "The person using this Mac didn't allow changes from AI agents. They can allow them in Monorail ▸ Settings ▸ Automation."]
+            } else if let answer = handler(request.method, parts, body) {
                 result = answer
             } else {
                 status = "404 Not Found"

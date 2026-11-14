@@ -155,6 +155,7 @@ enum SettingsIndex {
         ("New Template", "apps"),
         ("Add from the Gallery", "apps"),
         ("Local API on this Mac only (needed by the MCP server and the Raycast extension)", "automation"),
+        ("AI agents can change windows and settings without asking", "automation"),
         ("Address", "automation"),
         ("Copy Token", "automation"),
         ("Copy MCP Server Config", "automation"),

@@ -825,7 +825,17 @@ public struct AppSettings: Equatable, Codable, Sendable {
     /// Weather in °F instead of °C.
     public var weatherFahrenheit = false
     /// Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…).
-    public var notchLive = false
+    public var notchLive = true
+    /// Home cards that matter only sometimes (busy processor, heat, low battery, a meeting soon) appear when they do.
+    public var smartCards = true
+    /// The island shows the volume as it changes.
+    public var volumeHUD = true
+    /// A reminder to sit up and stretch after 45 minutes at the Mac.
+    public var postureBreaks = false
+    /// A reminder to drink some water every hour at the Mac.
+    public var waterReminders = false
+    /// AI agents connected through MCP may change windows and settings without asking (reading never asks).
+    public var agentsCanChange = false
     /// Switches: modes (Recording, Call, Presentation, Deep Work and your own); each can start by itself when turned on.
     public var modes: [Mode] = Mode.defaultSet
     /// Switches you made from a shell command or a shortcut.
@@ -1240,7 +1250,7 @@ public struct AppSettings: Equatable, Codable, Sendable {
         case animationCurve, animationFPS, rescueAfterCrash, clickSound, announceWindows, webhookURL, remoteCommands, compactMenuBarApplied, systemPromptsInFront, keepEverythingOnScreen, sliderBarStepsAside, dragToDock, gapHandles, shareUsageStats, usageNoticeShown, restoreBrowserTabs, floatSuggestions, assistantModel, meetingLayout, meetingNotesApp, sidecarFit, seenTips, menuWindowsInline, awakeKeepDisplayOn, awakeAllowScreenSaver, awakeDefaultMinutes, awakeBatteryCutoff, awakeMoveCursor, awakeMoveCursorMinutes, keepAvailable, arrangeScriptableApps, awakeDriveAlive, awakeClosedLid, awakeClosedLidOnlyOnPower, showAllSettings, eveningStrength, eveningOn, eveningSchedule, eveningStart, eveningEnd, eveningPausedApps, eveningRed, displayBrightness, windowSwitcherShortcut, edgeSnapping, edgeSnappingDefersToMacOS, awakeNotify, awakeSound, awakeShowTime, awakeOnLaunch, awakeTriggers, awakeTriggersOn, awakeLockAfterMinutes, fitMinimumWidth, wholeSlidesOnly, parkInCorner, monorailKeySource, mouseGestures, midiControl, midiMap, gameController, webRemote, webRemoteToken, headFocus, deepWorkApps, deepWorkFromCalendar, safeScreenShare, privateApps, privacyBlur, dimFollowsPointer, energySaver, presenterNotes, workspaceClipboard, driftWallpaper, notchHUD, soundPack, crashReports, askAfterCrash, confirmDestructiveAPI, stageNextWindow, distractionNudges, contentAwareWidths, pathRules, displayProfiles, agentAlerts, agentBringIntoView, ruleSuggestions, suggestedRules
         case pauseForStageManager, portraitStacks, restoreHidesOthers, reservedEdges, appAppearance, powerMarkers, parkPowerHogs
         case assistantProvider, assistantModels, assistantBaseURL, batteryMenuBar, batteryCards, batteryHiddenCards
-        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, thumbWheelSlides, sliderIconsOnly, panelGlass, meetingNotesOffer, meetingNotesSystemAudio, homeOrder, homeHidden, weatherPlaces, weatherFahrenheit, notchLive, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
+        case awakeDuringCalls, movieAuto, chargeLimit, worldClocks, clipboardHistory, clipboardKeep, sessionMinutes, focusSound, focusHidesApps, eyeBreaks, stationStepsBack, menuBarIconStyle, menuBarReadings, systemAlerts, homePins, thumbWheelSlides, sliderIconsOnly, panelGlass, meetingNotesOffer, meetingNotesSystemAudio, homeOrder, homeHidden, weatherPlaces, weatherFahrenheit, notchLive, smartCards, volumeHUD, postureBreaks, waterReminders, agentsCanChange, modes, customSwitches, backdropColour, clipboardImages, clipboardHideSensitive, clipboardQuickPaste, clipboardIgnoredApps, clipboardNotch, aiAccounts, aiLiveLimits, aiThresholds, aiNotifyResets, aiNotifyContext, aiNotifyIncidents
     }
 
     public init(from decoder: Decoder) throws {
@@ -1510,6 +1520,11 @@ public struct AppSettings: Equatable, Codable, Sendable {
         weatherPlaces = value(.weatherPlaces, d.weatherPlaces)
         weatherFahrenheit = value(.weatherFahrenheit, d.weatherFahrenheit)
         notchLive = value(.notchLive, d.notchLive)
+        smartCards = value(.smartCards, d.smartCards)
+        volumeHUD = value(.volumeHUD, d.volumeHUD)
+        postureBreaks = value(.postureBreaks, d.postureBreaks)
+        waterReminders = value(.waterReminders, d.waterReminders)
+        agentsCanChange = value(.agentsCanChange, d.agentsCanChange)
         modes = value(.modes, d.modes)
         customSwitches = value(.customSwitches, d.customSwitches)
         backdropColour = value(.backdropColour, d.backdropColour)

@@ -37,10 +37,12 @@ final class FocusWatch: ObservableObject {
     }
 
     func apply(_ settings: AppSettings) {
-        if settings.eyeBreaks, eyeTimer == nil {
-            activeSince = Date()
+        let anyBreaks = settings.eyeBreaks || settings.postureBreaks || settings.waterReminders
+        breaks = (settings.eyeBreaks, settings.postureBreaks, settings.waterReminders)
+        if anyBreaks, eyeTimer == nil {
+            activeSince = Date(); postureSince = Date(); waterSince = Date()
             eyeTimer = Timer.every(30) { [weak self] _ in self?.checkEyes() }
-        } else if !settings.eyeBreaks {
+        } else if !anyBreaks {
             eyeTimer?.invalidate()
             eyeTimer = nil
         }
@@ -79,13 +81,27 @@ final class FocusWatch: ObservableObject {
         if let endsAt, now >= endsAt { stop(finished: true) }
     }
 
+    private var breaks = (eyes: false, posture: false, water: false)
+    private var postureSince = Date()
+    private var waterSince = Date()
+
     private func checkEyes() {
         guard !SuiteRole.shared.pauses(.eyeBreaks) else { return }
         let idle = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: CGEventType(rawValue: ~0)!)
+        // Five minutes away counts as a break for posture and water too.
+        if idle >= 300 { postureSince = Date(); waterSince = Date() }
         if idle >= 60 { activeSince = Date(); return }
-        if EyeBreaks.isDue(activeSeconds: Date().timeIntervalSince(activeSince), idleSeconds: idle) {
+        if breaks.eyes, EyeBreaks.isDue(activeSeconds: Date().timeIntervalSince(activeSince), idleSeconds: idle) {
             activeSince = Date()
             notify("Rest your eyes", "Look at something 20 feet (6 metres) away for 20 seconds.")
+        }
+        if breaks.posture, Date().timeIntervalSince(postureSince) >= 45 * 60 {
+            postureSince = Date()
+            notify("Sit up and stretch", "Roll your shoulders, straighten your back, and stand for a minute if you can.")
+        }
+        if breaks.water, Date().timeIntervalSince(waterSince) >= 60 * 60 {
+            waterSince = Date()
+            notify("Have a glass of water", "An hour at the Mac. A drink keeps your head clear.")
         }
     }
 
@@ -204,6 +220,8 @@ struct FocusPage: View {
                     Toggle("Hide distracting apps while focusing", isOn: $store.settings.focusHidesApps)
                 }
                 Toggle("Eye breaks every 20 minutes", isOn: $store.settings.eyeBreaks)
+                Toggle("Sit up and stretch every 45 minutes", isOn: $store.settings.postureBreaks)
+                Toggle("A glass of water every hour", isOn: $store.settings.waterReminders)
             }
             .font(.system(size: 12)).tile()
             VStack(alignment: .leading, spacing: 6) {

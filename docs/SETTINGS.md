@@ -5,7 +5,7 @@ Generated from `Sources/MonorailCore/AppSettings.swift` by `scripts/gen-docs.py`
 Settings live in `~/Library/Application Support/Monorail/settings.json`. Every one can be changed in the
 Settings window; organisations can enforce any of them with a configuration profile (MDM) using these keys.
 
-271 settings.
+276 settings.
 
 | Key | What it does | Default |
 | --- | --- | --- |
@@ -151,7 +151,12 @@ Settings window; organisations can enforce any of them with a configuration prof
 | `homeHidden` |  | `[]` |
 | `weatherPlaces` | Weather: the places to show (the first is yours); found by name, no location access needed. | `[]` |
 | `weatherFahrenheit` | Weather in °F instead of °C. | `false` |
-| `notchLive` | Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…). | `false` |
+| `notchLive` | Live notch: on MacBooks with a notch, what's happening now shows beside it (sharing, a call, a timer, charging, an AI limit running low…). | `true` |
+| `smartCards` | Home cards that matter only sometimes (busy processor, heat, low battery, a meeting soon) appear when they do. | `true` |
+| `volumeHUD` | The island shows the volume as it changes. | `true` |
+| `postureBreaks` | A reminder to sit up and stretch after 45 minutes at the Mac. | `false` |
+| `waterReminders` | A reminder to drink some water every hour at the Mac. | `false` |
+| `agentsCanChange` | AI agents connected through MCP may change windows and settings without asking (reading never asks). | `false` |
 | `modes` | Switches: modes (Recording, Call, Presentation, Deep Work and your own); each can start by itself when turned on. | `Mode.defaultSet` |
 | `customSwitches` | Switches you made from a shell command or a shortcut. | `[]` |
 | `backdropColour` | The Backdrop switch's colour (hex). | `"#1E2235"` |

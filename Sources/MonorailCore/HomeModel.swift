@@ -23,10 +23,17 @@ public struct HomeSignals: Equatable, Sendable {
     public var meetingSoon: Bool
     /// The startup disk is nearly full.
     public var diskLow: Bool
+    /// The processor has been busy for a while (with hysteresis, so it doesn't flicker).
+    public var cpuBusy: Bool = false
+    /// Memory pressure is high.
+    public var memoryTight: Bool = false
 
     public init(onBattery: Bool = false, percent: Int? = nil, minutesLeft: Int? = nil, drainRatio: Double? = nil,
                 agentsRunning: Int = 0, clashes: Int = 0, updateAvailable: Bool = false, paused: Bool = false,
-                heat: Heat = .normal, onCall: Bool = false, movie: Bool = false, meetingSoon: Bool = false, diskLow: Bool = false) {
+                heat: Heat = .normal, onCall: Bool = false, movie: Bool = false, meetingSoon: Bool = false, diskLow: Bool = false,
+                cpuBusy: Bool = false, memoryTight: Bool = false) {
+        self.cpuBusy = cpuBusy
+        self.memoryTight = memoryTight
         self.diskLow = diskLow
         self.meetingSoon = meetingSoon
         self.heat = heat
@@ -107,6 +114,10 @@ public enum HomePlanner {
         if s.diskLow {
             raised.append(.storage)
             reasons.append("Disk almost full")
+        }
+        if s.cpuBusy || s.memoryTight {
+            raised.append(.system)
+            reasons.append(s.cpuBusy ? "Processor busy" : "Memory nearly full")
         }
         if s.updateAvailable { reasons.append("Update ready") }
         if s.clashes > 0 { reasons.append(s.clashes == 1 ? "A shortcut clash" : "\(s.clashes) shortcut clashes") }
@@ -201,5 +212,24 @@ public enum DrainBaseline {
     public static func watts(percentPerHour: Double?, wattHours: Double?) -> Double? {
         guard let p = percentPerHour, let wh = wattHours, wh > 0 else { return nil }
         return p / 100 * wh
+    }
+}
+
+/// A reading that switches on above one level and off only below a lower one, so a card or a reading
+/// doesn't flicker as the value wobbles around a threshold.
+public struct Hysteresis: Equatable, Sendable {
+    public let on: Double
+    public let off: Double
+    public private(set) var isOn = false
+
+    public init(on: Double, off: Double) {
+        self.on = on
+        self.off = min(off, on)
+    }
+
+    @discardableResult
+    public mutating func update(_ value: Double) -> Bool {
+        if isOn { if value < off { isOn = false } } else if value >= on { isOn = true }
+        return isOn
     }
 }

@@ -339,7 +339,7 @@ public enum QuickCalc {
 public struct NotchActivity: Equatable, Sendable {
     public enum Kind: Int, Sendable, Comparable {
         // Lower comes first.
-        case sharing = 0, call, recording, timer, batteryLow, aiLimit, charging, awake, mode, music
+        case sharing = 0, call, recording, timer, batteryLow, aiLimit, charging, awake, mode, download, music
         public static func < (a: Kind, b: Kind) -> Bool { a.rawValue < b.rawValue }
     }
 
@@ -400,4 +400,24 @@ public struct NotchShelf: Equatable, Sendable {
     public mutating func remove(_ path: String) { paths.removeAll { $0 == path } }
     public mutating func clear() { paths.removeAll() }
     public var isEmpty: Bool { paths.isEmpty }
+}
+
+/// Files still downloading, from their names in the Downloads folder (Safari, Chrome, Firefox, Edge, Opera).
+public enum Downloading {
+    public static let endings = [".download", ".crdownload", ".part", ".partial", ".opdownload"]
+
+    /// The names of files still on their way, without the browser's ending.
+    public static func inProgress(_ names: [String]) -> [String] {
+        names.compactMap { name in
+            guard let ending = endings.first(where: { name.lowercased().hasSuffix($0) }) else { return nil }
+            return String(name.dropLast(ending.count))
+        }
+    }
+
+    /// For the island: "Report.pdf" for one, "3 files" for more.
+    public static func label(_ files: [String]) -> String? {
+        guard let first = files.first else { return nil }
+        if files.count > 1 { return "\(files.count) files" }
+        return first.count > 14 ? String(first.prefix(13)) + "…" : first
+    }
 }

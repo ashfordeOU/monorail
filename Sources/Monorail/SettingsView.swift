@@ -1304,6 +1304,8 @@ private struct APISection: View {
         Section {
             Toggle("Local API on this Mac only (needed by the MCP server and the Raycast extension)", isOn: $store.settings.localAPI).hiddenInAppStore()
             if store.settings.localAPI {
+                Toggle("AI agents can change windows and settings without asking", isOn: $store.settings.agentsCanChange)
+                    .help("Off: the first time an agent connected through MCP wants to change something, Monorail asks you. Reading what's on screen never asks.")
                 LabeledContent("Address") {
                     Text("http://127.0.0.1:\(store.settings.apiPort)").font(.system(.callout, design: .monospaced)).textSelection(.enabled)
                 }

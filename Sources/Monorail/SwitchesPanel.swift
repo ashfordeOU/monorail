@@ -359,13 +359,19 @@ struct SwitchesSection: View {
                     }
                 }
             }
-            if let store, NSScreen.screens.contains(where: { $0.safeAreaInsets.top > 0 }) {
-                DashCard(title: "Notch") {
-                    Toggle("Show what's happening beside the notch: sharing, a meeting, a timer, charging, an AI limit running low", isOn: Binding(
+            if let store {
+                DashCard(title: "Island") {
+                    Toggle("The island: what's happening at the top of the screen (beside the notch, or a pill on Macs without one), with a shelf for files", isOn: Binding(
                         get: { store.settings.notchLive }, set: { store.settings.notchLive = $0 }))
-                    Toggle("Push the pointer into the notch to open the clipboard", isOn: Binding(
-                        get: { store.settings.clipboardNotch }, set: { store.settings.clipboardNotch = $0 }))
-                    Text("Nothing shows while nothing's happening. Click it to open \(Brand.name).").font(.system(size: 11)).foregroundStyle(.secondary)
+                    Toggle("Show the volume in the island as it changes", isOn: Binding(
+                        get: { store.settings.volumeHUD }, set: { store.settings.volumeHUD = $0 }))
+                        .disabled(!store.settings.notchLive)
+                    if NSScreen.screens.contains(where: { $0.safeAreaInsets.top > 0 }) {
+                        Toggle("Push the pointer into the notch to open the clipboard", isOn: Binding(
+                            get: { store.settings.clipboardNotch }, set: { store.settings.clipboardNotch = $0 }))
+                    }
+                    Text("Nothing shows while nothing's happening. Rest the pointer on it to open it; drag files to it to keep them. The Island toggle on Home turns it on and off.")
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
                 .font(.system(size: 12.5))
             }

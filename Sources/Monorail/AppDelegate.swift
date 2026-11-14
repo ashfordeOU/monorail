@@ -2940,6 +2940,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var lastSuiteAnnouncement = ""
     private var islandAskedThisRun = false
     private var lastLive: [SuiteLive] = []
+    private var lastLiveWrite = Date.distantPast
     private var liveTimer: Timer?
 
     /// Keeper's Island shows Monorail's live items while it's the island: refresh them every few seconds.
@@ -2950,8 +2951,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         liveTimer = Timer.every(3) { [weak self] _ in
             guard let self, let suite = self.suite else { return }
             let live = self.suiteLive
-            guard live != self.lastLive else { return }
+            // Keeper treats a state file older than 30 s as stale, so it's rewritten at least every 10 s.
+            guard live != self.lastLive || Date().timeIntervalSince(self.lastLiveWrite) >= 10 else { return }
             self.lastLive = live
+            self.lastLiveWrite = Date()
             suite.writeState(Self.suiteName, ["live": live.map(\.json), "at": Date().timeIntervalSince1970 * 1000])
             self.ringSuiteDoorbell()
         }

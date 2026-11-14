@@ -110,9 +110,14 @@ public struct PeerHello: Equatable, Sendable {
         public var closedLid = false
         /// …and is set up to switch it without asking for a password.
         public var closedLidReady = false
-        public init(closedLid: Bool = false, closedLidReady: Bool = false) {
+        /// It can keep the Mac awake while an app is open, and until transfers finish.
+        public var whileApp = false
+        public var whileDownloading = false
+        public init(closedLid: Bool = false, closedLidReady: Bool = false, whileApp: Bool = false, whileDownloading: Bool = false) {
             self.closedLid = closedLid
             self.closedLidReady = closedLidReady
+            self.whileApp = whileApp
+            self.whileDownloading = whileDownloading
         }
     }
 
@@ -121,13 +126,16 @@ public struct PeerHello: Equatable, Sendable {
         public var id: String
         public var ok: Bool
         public var closedLid: Bool
-        /// When it failed: "not-ready", "denied" or "failed".
+        /// When it failed: "not-ready", "unsafe", "denied" or "failed".
         public var reason: String?
-        public init(id: String, ok: Bool, closedLid: Bool = false, reason: String? = nil) {
+        /// Why, in plain words, to show the person.
+        public var why: String?
+        public init(id: String, ok: Bool, closedLid: Bool = false, reason: String? = nil, why: String? = nil) {
             self.id = id
             self.ok = ok
             self.closedLid = closedLid
             self.reason = reason
+            self.why = why
         }
     }
 
@@ -185,7 +193,8 @@ public struct PeerHello: Equatable, Sendable {
                               overlays: (body["overlays"] as? [Any] ?? []).compactMap { $0 as? String },
                               links: (body["links"] as? [Any] ?? []).compactMap { $0 as? String })
         let caps = body["caps"] as? [String: Any] ?? [:]
-        hello.caps = Caps(closedLid: caps["closedLid"] as? Bool ?? false, closedLidReady: caps["closedLidReady"] as? Bool ?? false)
+        hello.caps = Caps(closedLid: caps["closedLid"] as? Bool ?? false, closedLidReady: caps["closedLidReady"] as? Bool ?? false,
+                          whileApp: caps["whileApp"] as? Bool ?? false, whileDownloading: caps["whileDownloading"] as? Bool ?? false)
         hello.isAwake = (body["state"] as? [String: Any])?["awake"] as? Bool ?? false
         hello.areas = SuiteArea.announced(in: owns)
         hello.prefer = (body["prefer"] as? [String: Any] ?? [:]).compactMapValues { $0 as? String }
@@ -195,7 +204,7 @@ public struct PeerHello: Equatable, Sendable {
             let id = handoff["id"] as? String, let ok = handoff["ok"] as? Bool
         {
             hello.awakeHandoff = AwakeHandoff(id: id, ok: ok, closedLid: handoff["closedLid"] as? Bool ?? false,
-                                              reason: handoff["reason"] as? String)
+                                              reason: handoff["reason"] as? String, why: handoff["why"] as? String)
         }
         return hello
     }
@@ -208,10 +217,25 @@ public struct PeerHello: Equatable, Sendable {
     /// password prompt there); it then carries `closedLid=1`, a handoff id Keeper answers with,
     /// and `from=monorail`.
     public func awakeHandoffLink(for session: AwakeSession, closedLid: Bool, handoffID: String, now: Date = Date()) -> String? {
-        guard owns.awake, let link = PeerHello.awakeLink(for: session, now: now) else { return nil }
-        guard closedLid else { return link }
+        guard owns.awake, let link = handoffBase(for: session, now: now) else { return nil }
+        // Every link says it's Monorail's, so Keeper knows to carry the lid setting exactly.
+        guard closedLid else { return link + (link.contains("?") ? "&" : "?") + "from=monorail" }
         guard takesClosedLid else { return nil }
         return link + (link.contains("?") ? "&" : "?") + "closedLid=1&handoff=\(handoffID)&from=monorail"
+    }
+
+    /// The link for a session, including the kinds only a newer Keeper takes (while an app is open,
+    /// until transfers finish), which it says in its caps.
+    func handoffBase(for session: AwakeSession, now: Date) -> String? {
+        switch session {
+        case .whileApp(let id):
+            guard caps.whileApp, let encoded = id.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return nil }
+            return "keeper://awake?app=\(encoded)"
+        case .whileDownloading:
+            return caps.whileDownloading ? "keeper://awake?while=downloading" : nil
+        default:
+            return PeerHello.awakeLink(for: session, now: now)
+        }
     }
 
     /// Where a Stay Awake session started in Monorail goes while Keeper owns staying awake:

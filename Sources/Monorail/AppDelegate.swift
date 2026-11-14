@@ -958,7 +958,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if let answer = activePeer?.awakeHandoff, answer.id == id {
             if answer.ok { return }
             awake.start(session, fromPeer: true)
-            toast.show("Keeper couldn't keep your Mac running closed (\(answer.reason ?? "failed")), so Monorail does")
+            toast.show("Keeper couldn't keep your Mac running closed (\(answer.why ?? answer.reason ?? "failed")), so Monorail does")
             return
         }
         guard tries < 10 else {
@@ -2924,11 +2924,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let s = store.settings
         var session: [String: Any] = ["mode": "off", "closedLid": awake.isClosedLidOn, "closedLidWanted": s.awakeClosedLid,
                                       "closedLidOnlyOnPower": s.awakeClosedLidOnlyOnPower, "keepAvailable": s.keepAvailable,
-                                      "displayOn": s.awakeKeepDisplayOn]
+                                      "displayOn": s.awakeKeepDisplayOn, "moveCursor": s.awakeMoveCursor,
+                                      "moveCursorMinutes": s.awakeMoveCursorMinutes, "lockAfterMinutes": s.awakeLockAfterMinutes,
+                                      "screenSaverAllowed": s.awakeAllowScreenSaver]
         switch awake.session {
         case .indefinitely?: session["mode"] = "indefinitely"
         case .until(let date)?: session["mode"] = "until"; session["until"] = date.timeIntervalSince1970 * 1000
-        case .whileApp(let id)?: session["mode"] = "whileApp"; session["app"] = id
+        case .whileApp(let id)?: session["mode"] = "whileApp"; session["app"] = id; session["appName"] = UsageStats.appName(id)
         case .whileDownloading?: session["mode"] = "whileDownloading"
         case nil: if awake.isOn { session["mode"] = "trigger" }
         }
@@ -2967,7 +2969,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var suiteAnnouncement: String {
         let areas = SuiteRole.areasOn(store.settings, role: SuiteRole.shared.role).map(\.rawValue).sorted()
         let prefer = store.settings.suitePrefer.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }
-        let lid = "lid=\(store.settings.awakeClosedLid),\(awake.isClosedLidOn),\(store.settings.keepAvailable)"
+        let a = store.settings
+        // Stay Awake's settings too, so Keeper always reads the current ones (it carries them on a hand-over).
+        let lid = "awake=\(a.awakeClosedLid),\(awake.isClosedLidOn),\(a.keepAvailable),\(a.awakeClosedLidOnlyOnPower),\(a.awakeKeepDisplayOn),"
+            + "\(a.awakeMoveCursor),\(a.awakeMoveCursorMinutes),\(a.awakeLockAfterMinutes),\(a.awakeAllowScreenSaver)"
         return (areas + ["|"] + prefer + [lid]).joined(separator: ",")
     }
     private var lastSuiteAnnouncement = ""

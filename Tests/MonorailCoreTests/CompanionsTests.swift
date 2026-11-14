@@ -74,7 +74,9 @@ final class PeerTests: XCTestCase {
         // An older Keeper: no caps. Plain sessions go to it, lid-closed ones stay here.
         let old = try XCTUnwrap(PeerHello.decode(body))
         XCTAssertFalse(old.takesClosedLid)
-        XCTAssertEqual(old.awakeHandoffLink(for: .indefinitely, closedLid: false, handoffID: "a", now: now), "keeper://awake")
+        XCTAssertEqual(old.awakeHandoffLink(for: .indefinitely, closedLid: false, handoffID: "a", now: now), "keeper://awake?from=monorail")
+        XCTAssertEqual(old.awakeHandoffLink(for: .until(now.addingTimeInterval(600)), closedLid: false, handoffID: "a", now: now), "keeper://awake?for=10m&from=monorail")
+        XCTAssertNil(old.awakeHandoffLink(for: .whileApp("us.zoom.xos"), closedLid: false, handoffID: "a", now: now))
         XCTAssertNil(old.awakeHandoffLink(for: .indefinitely, closedLid: true, handoffID: "a", now: now))
         // Keeper that can, but isn't set up yet: still stays here.
         body["caps"] = ["closedLid": true, "closedLidReady": false]
@@ -86,6 +88,13 @@ final class PeerTests: XCTestCase {
                        "keeper://awake?closedLid=1&handoff=h1&from=monorail")
         XCTAssertEqual(ready.awakeHandoffLink(for: .until(now.addingTimeInterval(1800)), closedLid: true, handoffID: "h2", now: now),
                        "keeper://awake?for=30m&closedLid=1&handoff=h2&from=monorail")
+        // A Keeper that keeps the Mac awake while an app is open, or until transfers finish.
+        body["caps"] = ["closedLid": true, "closedLidReady": true, "whileApp": true, "whileDownloading": true]
+        let newer = try XCTUnwrap(PeerHello.decode(body))
+        XCTAssertEqual(newer.awakeHandoffLink(for: .whileApp("us.zoom.xos"), closedLid: false, handoffID: "a", now: now),
+                       "keeper://awake?app=us.zoom.xos&from=monorail")
+        XCTAssertEqual(newer.awakeHandoffLink(for: .whileDownloading, closedLid: false, handoffID: "a", now: now),
+                       "keeper://awake?while=downloading&from=monorail")
         // The ack, in a later hello.
         body["state"] = ["awake": true, "awakeHandoff": ["id": "h2", "ok": false, "closedLid": true, "reason": "denied", "at": 1]]
         XCTAssertEqual(PeerHello.decode(body)?.awakeHandoff,

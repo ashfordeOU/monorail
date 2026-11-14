@@ -20,6 +20,8 @@ final class StayAwake {
     private var lastActivityDeclared = Date.distantPast
     private var lastDriveWrite = Date.distantPast
     private var closedLidOn = false
+    /// Lid-closed mode is running now (for Keeper's hand-over).
+    var isClosedLidOn: Bool { closedLidOn }
     private var lidRequestPending = false
     /// Sleep was already disabled when lid-closed mode was wanted (by hand, or by Keeper): it's
     /// left exactly as it is, on and off.

@@ -2338,6 +2338,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         updateBatteryItem(settings.batteryMenuBar)
         updateStatusItem()
         evening.update()
+        forwardClosedLidIfKeeperOwns(settings)
         // Settings that change what Monorail has on change what Keeper hears (once per real change).
         SuiteRole.shared.evaluateAreas()
         if suite != nil, suiteAnnouncement != lastSuiteAnnouncement { publishSuiteHello() }
@@ -2901,7 +2902,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             "preferAt": store.settings.suitePreferAt,
             "role": SuiteRole.shared.role.rawValue,
             "caps": ["closedLid": !Edition.isAppStore, "closedLidReady": false],
-            "state": ["awake": awake.isOn, "awakeStatus": awake.statusText, "paused": engine.isPaused, "focusMode": engine.isFocusMode, "presenting": engine.isPresenting,
+            "state": ["awake": awake.isOn, "awakeStatus": awake.statusText, "awakeSession": suiteAwakeSession, "paused": engine.isPaused, "focusMode": engine.isFocusMode, "presenting": engine.isPresenting,
                       "live": suiteLive.map(\.json)] as [String: Any],
             "links": ["monorail://settings", "monorail://awake", "monorail://awake/off"],
         ]
@@ -2913,6 +2914,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         suite.writeState(Self.suiteName, ["live": suiteLive.map(\.json), "at": Date().timeIntervalSince1970 * 1000])
         lastSuiteAnnouncement = suiteAnnouncement
         ringSuiteDoorbell()
+    }
+
+    /// The Stay Awake session in full, so Keeper can carry it on exactly when it takes over:
+    /// mode (off, indefinitely, until, whileApp, whileDownloading), until (epoch ms), app (bundle ID),
+    /// trigger (its kind and value, when a trigger started it), closedLid (running now),
+    /// closedLidWanted (the setting), closedLidOnlyOnPower, keepAvailable, displayOn.
+    private var suiteAwakeSession: [String: Any] {
+        let s = store.settings
+        var session: [String: Any] = ["mode": "off", "closedLid": awake.isClosedLidOn, "closedLidWanted": s.awakeClosedLid,
+                                      "closedLidOnlyOnPower": s.awakeClosedLidOnlyOnPower, "keepAvailable": s.keepAvailable,
+                                      "displayOn": s.awakeKeepDisplayOn]
+        switch awake.session {
+        case .indefinitely?: session["mode"] = "indefinitely"
+        case .until(let date)?: session["mode"] = "until"; session["until"] = date.timeIntervalSince1970 * 1000
+        case .whileApp(let id)?: session["mode"] = "whileApp"; session["app"] = id
+        case .whileDownloading?: session["mode"] = "whileDownloading"
+        case nil: if awake.isOn { session["mode"] = "trigger" }
+        }
+        if let trigger = awake.triggeredBy { session["trigger"] = ["kind": trigger.kind.rawValue, "value": trigger.value] }
+        return session
+    }
+
+    /// While Keeper keeps the Mac awake, turning lid-closed mode on or off here goes to Keeper.
+    private var lastClosedLidSetting: Bool?
+    private func forwardClosedLidIfKeeperOwns(_ settings: AppSettings) {
+        defer { lastClosedLidSetting = settings.awakeClosedLid }
+        guard let before = lastClosedLidSetting, before != settings.awakeClosedLid,
+            let peer = activePeer, peer.owns.awake, peer.isAwake,
+            let url = URL(string: "keeper://awake?closedLid=\(settings.awakeClosedLid ? 1 : 0)&from=monorail")
+        else { return }
+        NSWorkspace.shared.open(url)
     }
 
     /// What the hello says Monorail has on (SuiteArea), in the agreed shape. Stay Awake, focus and
@@ -2935,7 +2967,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var suiteAnnouncement: String {
         let areas = SuiteRole.areasOn(store.settings, role: SuiteRole.shared.role).map(\.rawValue).sorted()
         let prefer = store.settings.suitePrefer.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }
-        return (areas + ["|"] + prefer).joined(separator: ",")
+        let lid = "lid=\(store.settings.awakeClosedLid),\(awake.isClosedLidOn),\(store.settings.keepAvailable)"
+        return (areas + ["|"] + prefer + [lid]).joined(separator: ",")
     }
     private var lastSuiteAnnouncement = ""
     private var islandAskedThisRun = false
